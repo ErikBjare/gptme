@@ -25,20 +25,19 @@ jobs:
       with:
         python-version: ${{ matrix.python_version }}
     - name: Install dependencies
-      shell: bash
       run: |
         pip install poetry
-        python -m venv venv
-        source venv/bin/activate || source venv/Scripts/activate
         make build
     - name: Run tests
-      shell: bash
       run: |
-        source venv/bin/activate || source venv/Scripts/activate
         make test
+    - name: Typecheck
+      run: |
         make typecheck
+    - name: Check for lint
+      run: |
+        make lint
     - name: Report coverage
-      shell: bash
       run: |
         # Allow failing, since sometimes codecov is grumpy and we just get "no healthy upstream"
         bash <(curl -s https://codecov.io/bash) || true

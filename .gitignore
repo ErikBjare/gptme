@@ -2,3 +2,4 @@
 *.*cache
 *.log
 __pycache__
+.coverage
