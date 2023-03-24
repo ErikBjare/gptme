@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Test on ${{ matrix.os }}, py-${{ matrix.python_version }}
+    runs-on: ${{ matrix.os }}
+    env:
+      RELEASE: false
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python_version: ['3.10']
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python_version }}
+    - name: Install dependencies
+      shell: bash
+      run: |
+        pip install poetry
+        python -m venv venv
+        source venv/bin/activate || source venv/Scripts/activate
+        make build
+    - name: Run tests
+      shell: bash
+      run: |
+        source venv/bin/activate || source venv/Scripts/activate
+        make test
+        make typecheck
+    - name: Report coverage
+      shell: bash
+      run: |
+        # Allow failing, since sometimes codecov is grumpy and we just get "no healthy upstream"
+        bash <(curl -s https://codecov.io/bash) || true
