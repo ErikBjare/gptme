@@ -115,5 +115,6 @@ def load_notes():
     assert docs
     return loader
 
+
 if __name__ == '__main__':
     main()
