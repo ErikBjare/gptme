@@ -16,6 +16,9 @@ click = "^8.0"
 langchain = "*"
 chromadb = "^0.3"
 beautifulsoup4 = "^4.12.0"
+google-search-results = "^2.4.2"
+colorama = "^0.4.6"
+termcolor = "^2.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,6 +26,7 @@ pytest = "^7.2"
 pytest-cov = "*"
 mypy = "*"
 ruff = "*"
+black = "*"
 
 [tool.ruff]
 ignore = ["E402", "E501"]
