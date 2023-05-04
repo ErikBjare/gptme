@@ -8,6 +8,8 @@ packages = [
     { include = "gpt_playground" },
 ]
 
+[tool.poetry.scripts]
+gptme = "gpt_playground.society:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -31,11 +31,16 @@ import itertools
 import io
 import functools
 import subprocess
+import ast
+from pathlib import Path
 
-from termcolor import colored, cprint
+from termcolor import colored
 from joblib import Memory
 import openai
 import click
+
+
+import ast
 
 memory = Memory(".cache/", verbose=0)
 
@@ -66,7 +71,7 @@ class Message:
         self,
         role: Literal["system", "user", "assistant"],
         content: str,
-        user: str = None,
+        user: str | None = None,
     ):
         assert role in ["system", "user", "assistant"]
         self.role = role
@@ -74,9 +79,8 @@ class Message:
         if user:
             self.user = user
         else:
-            self.user = {"system": "System", "user": "User", "assistant": "Assistant"}[
-                role
-            ]
+            role_names = {"system": "System", "user": "User", "assistant": "Assistant"}
+            self.user = role_names[role]
         self.timestamp = datetime.now()
 
     def to_dict(self):
@@ -350,8 +354,6 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
     error_during_execution = False
     if not ask or confirm.lower() in ["y", "yes"]:
         # parse code into statements
-        import ast
-
         try:
             statements = ast.parse(code).body
         except SyntaxError as e:
@@ -515,10 +517,15 @@ def print_log(log: Message | list[Message], oneline: bool = True) -> None:
         print("\n" + userprefix + output.rstrip())
 
 
-predefined_actions = {
+Actions = Literal["continue", "summarize", "load", "shell", "exit", "help"]
+
+action_descriptions: dict[Actions, str] = {
     "continue": "Continue",
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
+    "shell": "Execute a shell command",
+    "exit": "Exit the program",
+    "help": "Show this help message",
 }
 
 
@@ -526,21 +533,26 @@ def handle_cmd(cmd: str) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip(".")
     name, *args = cmd.split(" ")
-    if name == "continue":
-        raise NotImplementedError
-    elif name == "summarize":
-        raise NotImplementedError
-    elif name == "load":
-        filename = args[0] if args else input("Filename: ")
-        with open(filename) as f:
-            contents = f.read()
-        yield Message("system", f"# filename: {filename}\n\n{contents}")
-    elif name in ["help"]:
-        print("Available commands:")
-        for cmd, desc in predefined_actions.items():
-            print(f"  {cmd}: {desc}")
-    elif name in ["quit", "exit"]:
-        sys.exit(0)
+    match name:
+        case "bash" | "sh" | "shell":
+            yield from _execute_shell(" ".join(args))
+        case "python" | "py":
+            yield from _execute_python(" ".join(args))
+        case "continue":
+            raise NotImplementedError
+        case "summarize":
+            raise NotImplementedError
+        case "load":
+            filename = args[0] if args else input("Filename: ")
+            with open(filename) as f:
+                contents = f.read()
+            yield Message("system", f"# filename: {filename}\n\n{contents}")
+        case "exit":
+            sys.exit(0)
+        case _:
+            print("Available commands:")
+            for cmd, desc in action_descriptions.items():
+                print(f"  {cmd}: {desc}")
 
 
 def _prepare_log(log: list[Message]) -> list[Message]:
@@ -560,10 +572,11 @@ def _prepare_log(log: list[Message]) -> list[Message]:
 def cli():
     pass
 
+script_path = Path(os.path.realpath(__file__))
 
 @cli.command()
 @click.option(
-    "--logs", default="logs", help="Folder where conversation logs are stored"
+    "--logs", default=script_path.parent.parent / "logs", help="Folder where conversation logs are stored"
 )
 def main(logs: str):
     """Main interactivity loop."""
@@ -575,12 +588,16 @@ def main(logs: str):
     print_log(log, oneline=False)
     print("--- ^^^ past messages ^^^ ---")
 
+    def append_message(msg: Message) -> None:
+        """Appends a message to the log, writes the log, prints the message."""
+        log.append(msg)
+        write_log(log, logfile)
+        print_log(msg, oneline=False)
+
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
         for m in execute_msg(log[-1]):
-            log.append(m)
-            print_log([m], oneline=False)
-            write_log(log, logfile)
+            append_message(m)
 
     while True:
         # if last message was from the user (such as from crash/edited log), generate response
@@ -590,9 +607,7 @@ def main(logs: str):
                 continue
             if inquiry.startswith("."):
                 for msg in handle_cmd(inquiry):
-                    log.append(msg)
-                    write_log(log, logfile)
-                    print_log(msg, oneline=False)
+                    append_message(msg)
                 continue
             else:
                 log.append(Message("user", inquiry))
@@ -615,9 +630,7 @@ def main(logs: str):
 
         # log response and run tools
         for msg in itertools.chain([msg_response], execute_msg(msg_response)):
-            log.append(msg)
-            write_log(log, logfile)
-            print_log([msg], oneline=False)
+            append_message(msg)
 
 
 if __name__ == "__main__":
