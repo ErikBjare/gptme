@@ -6,10 +6,11 @@ authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
 packages = [
     { include = "gpt_playground" },
+    { include = "gptme" },
 ]
 
 [tool.poetry.scripts]
-gptme = "gpt_playground.society:main"
+gptme = "gptme.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
