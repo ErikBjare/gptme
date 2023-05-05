@@ -39,8 +39,7 @@ from joblib import Memory
 import openai
 import click
 
-
-import ast
+import typing
 
 memory = Memory(".cache/", verbose=0)
 
@@ -89,6 +88,61 @@ class Message:
             "role": self.role,
             "content": self.content,
         }
+
+
+class LogManager(list[Message]):
+    def __init__(self, log: list[Message] | None = None, logfile: str | None = None):
+        self.log = log or []
+        assert logfile is not None, "logfile must be specified"
+        self.logfile = logfile
+
+    def append(self, msg: Message, quiet=False) -> None:
+        """Appends a message to the log, writes the log, prints the message."""
+        self.log.append(msg)
+        self.write()
+        if not quiet:
+            self.print()
+
+    def write(self) -> None:
+        """Writes the log to the logfile."""
+        write_log(self.log, self.logfile)
+
+    def print(self):
+        print_log(self.log, oneline=False)
+
+    def prepare(self):
+        return prepare_log(self.log)
+
+    def undo(self):
+        """Removes the last message from the log."""
+        undid = None
+        assert self.log.pop().content == ".undo"
+        print(colored("Undoing messages:", "yellow"))
+        while undid is None or undid.role in ["system", "assistant"] or undid.content == ".undo":
+            undid = self.log.pop()
+            print(colored(f"  {undid.role}: {undid.content[:30]}...", "yellow"))
+
+    @classmethod
+    def load(cls, logfile=None) -> 'LogManager':
+        """Loads a conversation log."""
+        with open(logfile, "r") as file:
+            msgs = [Message(**json.loads(line)) for line in file.readlines()]
+        if not msgs:
+            msgs = initial_prompt()
+        return cls(msgs, logfile=logfile)
+
+
+def prepare_log(log: list[Message]) -> list[Message]:
+    """Prepares the log before sending it to the LLM."""
+    log_reduced = list(reduce_log(log))
+    if len(log) != len(log_reduced):
+        print(
+            f"Reduced log from {len_tokens(log)//1} to {len_tokens(log_reduced)//1} tokens"
+        )
+    log_limited = limit_log(log_reduced)
+    if len(log_reduced) != len(log_limited):
+        print(f"Limited log from {len(log_reduced)} to {len(log_limited)} messages")
+    return log_limited
 
 
 def get_logfile(logdir: str) -> str:
@@ -159,15 +213,6 @@ Avoid writing code blocks without a language specified, as it will be interprete
     return msgs
 
 
-def read_log(logfile=None) -> list[Message]:
-    """Reads the conversation log."""
-    with open(logfile, "r") as file:
-        log = [Message(**json.loads(line)) for line in file.readlines()]
-    if not log:
-        log = initial_prompt()
-    return log
-
-
 def write_log(msg_or_log: Message | list[Message], logfile) -> None:
     """
     Writes to the conversation log.
@@ -192,7 +237,7 @@ def write_log(msg_or_log: Message | list[Message], logfile) -> None:
 def msgs2text(msgs: list[Message]) -> str:
     output = ""
     for msg in msgs:
-        output += msg.user + ": " + msg.content + "\n"
+        output += f"{msg.user}: {msg.content}\n"
     return output
 
 
@@ -398,6 +443,8 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
         if error_during_execution:
             output += "Error during execution, aborting."
         yield Message("system", output)
+    else:
+        yield Message("system", "Aborted.")
 
 
 def test_execute_python():
@@ -517,10 +564,11 @@ def print_log(log: Message | list[Message], oneline: bool = True) -> None:
         print("\n" + userprefix + output.rstrip())
 
 
-Actions = Literal["continue", "summarize", "load", "shell", "exit", "help"]
+Actions = Literal["continue", "summarize", "load", "shell", "exit", "help", "undo"]
 
 action_descriptions: dict[Actions, str] = {
     "continue": "Continue",
+    "undo": "Undo the last action",
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
     "shell": "Execute a shell command",
@@ -529,7 +577,7 @@ action_descriptions: dict[Actions, str] = {
 }
 
 
-def handle_cmd(cmd: str) -> Generator[Message, None, None]:
+def handle_cmd(cmd: str, logmanager: LogManager) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip(".")
     name, *args = cmd.split(" ")
@@ -542,6 +590,8 @@ def handle_cmd(cmd: str) -> Generator[Message, None, None]:
             raise NotImplementedError
         case "summarize":
             raise NotImplementedError
+        case "undo":
+            logmanager.undo()
         case "load":
             filename = args[0] if args else input("Filename: ")
             with open(filename) as f:
@@ -551,21 +601,9 @@ def handle_cmd(cmd: str) -> Generator[Message, None, None]:
             sys.exit(0)
         case _:
             print("Available commands:")
-            for cmd, desc in action_descriptions.items():
+            for cmd in typing.get_args(Actions):
+                desc = action_descriptions[cmd] or "missing description"
                 print(f"  {cmd}: {desc}")
-
-
-def _prepare_log(log: list[Message]) -> list[Message]:
-    """Prepares the log before sending it to the LLM."""
-    log_reduced = list(reduce_log(log))
-    if len(log) != len(log_reduced):
-        print(
-            f"Reduced log from {len_tokens(log)//1} to {len_tokens(log_reduced)//1} tokens"
-        )
-    log_limited = limit_log(log_reduced)
-    if len(log_reduced) != len(log_limited):
-        print(f"Limited log from {len(log_reduced)} to {len(log_limited)} messages")
-    return log_limited
 
 
 @click.group()
@@ -575,62 +613,80 @@ def cli():
 script_path = Path(os.path.realpath(__file__))
 
 @cli.command()
+@click.argument("command" , default=None, required=False)
 @click.option(
     "--logs", default=script_path.parent.parent / "logs", help="Folder where conversation logs are stored"
 )
-def main(logs: str):
+def main(command: str | None, logs: str):
     """Main interactivity loop."""
     openai.api_key = os.environ["OPENAI_API_KEY"]
 
     logfile = get_logfile(logs)
-
-    log = read_log(logfile)
-    print_log(log, oneline=False)
+    logmanager = LogManager.load(logfile)
+    logmanager.print()
     print("--- ^^^ past messages ^^^ ---")
 
-    def append_message(msg: Message) -> None:
-        """Appends a message to the log, writes the log, prints the message."""
-        log.append(msg)
-        write_log(log, logfile)
-        print_log(msg, oneline=False)
+    log = logmanager.log
 
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
         for m in execute_msg(log[-1]):
-            append_message(m)
+            logmanager.append(m)
+
+    command_triggered = False
 
     while True:
-        # if last message was from the user (such as from crash/edited log), generate response
-        if log[-1].role != "user":
-            inquiry = input(colored("User", role_color["user"]) + ": ")
+        # if non-interactive command given on cli, exit
+        if command_triggered:
+            break
+
+        # If last message was a response, ask for input.
+        # If last message was from the user (such as from crash/edited log), 
+        # then skip asking for input and generate response
+        if log[-1].role in ["system", "assistant"]:
+            prompt = colored("User", role_color["user"]) + ": "
+            if command:
+                print(prompt + command)
+                inquiry = command
+                command = None
+                command_triggered = True
+            else:
+                inquiry = input(prompt)
+    
             if not inquiry:
                 continue
-            if inquiry.startswith("."):
-                for msg in handle_cmd(inquiry):
-                    append_message(msg)
-                continue
-            else:
-                log.append(Message("user", inquiry))
-                write_log(log, logfile)
+            logmanager.append(Message("user", inquiry))
+
+        assert log[-1].role == "user"
+        inquiry = log[-1].content
+        # if message starts with ., treat as command
+        # when command has been run, 
+        if inquiry.startswith("."):
+            for msg in handle_cmd(inquiry, logmanager):
+                logmanager.append(msg)
+            continue
 
         # if large context, try to reduce/summarize
-        log_prepared = _prepare_log(log)
-
-        # print in-progress indicator
-        print(colored("Assistant", "green", attrs=["bold"]) + ": Thinking...", end="\r")
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=msgs2dicts(log_prepared),
-            temperature=0,
-        )
-        print(" " * shutil.get_terminal_size().columns, end="\r")
+        log_prepared = prepare_log(log)
 
         # print response
-        msg_response = Message("assistant", response.choices[0].message.content)
+        msg_response = reply(log_prepared)
 
         # log response and run tools
         for msg in itertools.chain([msg_response], execute_msg(msg_response)):
-            append_message(msg)
+            logmanager.append(msg)
+
+
+def reply(messages: list[Message]) -> Message:
+    # print in-progress indicator
+    print(colored("Assistant", "green", attrs=["bold"]) + ": Thinking...", end="\r")
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=msgs2dicts(messages),
+        temperature=0,
+    )
+    print(" " * shutil.get_terminal_size().columns, end="\r")
+    return Message("assistant", response.choices[0].message.content)
 
 
 if __name__ == "__main__":
