@@ -6,6 +6,16 @@ GPT playground
 Just me playing with large language models, langchain, etc.
 
 
+## gptme
+
+An interactive CLI to let you chat with ChatGPT, with extra tools like:
+
+ - Execute shell/Python code on the local machine.
+   - Command output (stdout & stderr + error code) will be feeded back to the agent, making it able to self-correct errors etc.
+ - Handle long context sizes through summarization.
+   - (not very well developed)
+
+
 ## TODO
 
 Ideas for things to try:
