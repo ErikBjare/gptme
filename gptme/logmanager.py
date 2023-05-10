@@ -10,7 +10,7 @@ from .constants import role_color
 from .prompts import initial_prompt
 from .reduce import reduce_log, limit_log
 
-class LogManager(list[Message]):
+class LogManager:
     def __init__(self, log: list[Message] | None = None, logfile: str | None = None):
         self.log = log or []
         assert logfile is not None, "logfile must be specified"

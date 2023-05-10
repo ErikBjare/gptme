@@ -26,3 +26,6 @@ class Message:
             "role": self.role,
             "content": self.content,
         }
+
+    def __repr__(self):
+        return f"<Message role={self.role} content={self.content}>"

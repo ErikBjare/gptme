@@ -2,6 +2,8 @@ import os
 
 from .message import Message
 
+from .cli import __doc__ as cli_doc
+
 USER = os.environ["USER"]
 
 ABOUT_USER = """
@@ -18,12 +20,11 @@ Docs: https://docs.activitywatch.net/
 """
 
 
-
-
 def initial_prompt() -> list[Message]:
     """Initial prompt to start the conversation. If no history given."""
+    assert cli_doc
     msgs = []
-    msgs.append(Message("system", __doc__))
+    msgs.append(Message("system", cli_doc))
     msgs.append(Message("system", "The name of the user is " + USER))
     msgs.append(
         Message("system", "Here is some information about the user: " + ABOUT_USER)
