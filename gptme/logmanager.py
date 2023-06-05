@@ -1,6 +1,7 @@
 import json
 import shutil
 import textwrap
+from pathlib import Path
 
 from termcolor import colored
 
@@ -10,11 +11,19 @@ from .constants import role_color
 from .prompts import initial_prompt
 from .reduce import reduce_log, limit_log
 
+from typing import TypeAlias
+
+PathLike: TypeAlias = str | Path
+
+
 class LogManager:
-    def __init__(self, log: list[Message] | None = None, logfile: str | None = None):
+    def __init__(
+        self, log: list[Message] | None = None, logfile: PathLike | None = None
+    ):
         self.log = log or []
         assert logfile is not None, "logfile must be specified"
         self.logfile = logfile
+        # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
     def append(self, msg: Message, quiet=False) -> None:
         """Appends a message to the log, writes the log, prints the message."""
@@ -32,13 +41,25 @@ class LogManager:
 
     def undo(self):
         """Removes the last message from the log."""
-        undid = None
-        assert self.log.pop().content == ".undo"
-        print(colored("Undoing messages:", "yellow"))
-        while undid is None or undid.role in ["system", "assistant"] or undid.content == ".undo":
-            undid = self.log.pop()
-            print(colored(f"  {undid.role}: {undid.content[:30]}...", "yellow"))
+        undid = self.log.pop()
+        assert undid.content == ".undo"  # assert that the last message is an undo
+        peek = self.log[-1] if self.log else None
+        if not peek:
+            print(colored("Nothing to undo.", "yellow"))
+            return
 
+        print(colored("Undoing messages:", "yellow"))
+        while peek and (
+            peek.role in ["system", "assistant"] or peek.content == ".undo"
+        ):
+            undid = self.log.pop()
+            print(
+                colored(
+                    f"  {undid.role}: {textwrap.shorten(undid.content.strip(), width=30, placeholder='...')}",
+                    "red",
+                )
+            )
+            peek = self.log[-1] if self.log else None
 
     def prepare_messages(self) -> list[Message]:
         """Prepares the log into messages before sending it to the LLM."""
@@ -50,20 +71,22 @@ class LogManager:
             )
         msgs_limited = limit_log(msgs_reduced)
         if len(msgs_reduced) != len(msgs_limited):
-            print(f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages")
+            print(
+                f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages"
+            )
         return msgs_limited
 
     @classmethod
-    def load(cls, logfile=None) -> 'LogManager':
+    def load(cls, logfile=None, initial_msgs=initial_prompt()) -> "LogManager":
         """Loads a conversation log."""
         with open(logfile, "r") as file:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
         if not msgs:
-            msgs = initial_prompt()
+            msgs = initial_msgs
         return cls(msgs, logfile=logfile)
 
 
-def write_log(msg_or_log: Message | list[Message], logfile) -> None:
+def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
     """
     Writes to the conversation log.
     If a single message given, append.
@@ -82,7 +105,6 @@ def write_log(msg_or_log: Message | list[Message], logfile) -> None:
         raise TypeError(
             "Expected Message or list of Messages, got " + str(type(msg_or_log))
         )
-
 
 
 def print_log(log: Message | list[Message], oneline: bool = True) -> None:
