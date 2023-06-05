@@ -11,9 +11,9 @@ from contextlib import redirect_stdout
 from termcolor import colored
 import openai
 
-from .util import len_tokens
-from .message import Message
-from .cache import memory
+from ..util import len_tokens
+from ..message import Message
+from ..cache import memory
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ EMOJI_WARN = "⚠️"
 def _print_preview():
     # print a preview section header
     print(colored("Preview", "white", attrs=["bold"]))
+
 
 def _execute_save(text: str, ask=True) -> Generator[Message, None, None]:
     """Saves a codeblock to a file."""
@@ -140,7 +141,6 @@ def _capture_output(func):
 
 def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
-    # TODO: use a persistent python interpreter
     code = code.strip()
     if ask:
         _print_preview()

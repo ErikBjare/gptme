@@ -3,3 +3,4 @@
 *.log
 __pycache__
 .coverage
+*logs*

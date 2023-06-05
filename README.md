@@ -8,12 +8,39 @@ Just me playing with large language models, langchain, etc.
 
 ## gptme
 
-An interactive CLI to let you chat with ChatGPT, with extra tools like:
+An interactive CLI to let you interact with LLMs in a Chat-style interface.
 
- - Execute shell/Python code on the local machine.
-   - Command output (stdout & stderr + error code) will be feeded back to the agent, making it able to self-correct errors etc.
- - Handle long context sizes through summarization.
+With **features** like:
+
+ - Supports OpenAI and **any model that runs in llama**
+   - Thanks to llama-cpp-server!
+ - Tools
+   - Access to the local machine
+   - Execute shell/Python code on the local machine.
+     - Command output (stdout & stderr + error code) will be feeded back to the agent, making it able to self-correct errors etc.
+ - Can handle long context sizes through summarization.
    - (not very well developed)
+
+
+### Usage
+
+Install deps:
+
+```sh
+poetry install
+```
+
+To use locally, you need to start llama-cpp-server:
+
+```sh
+poetry run python -m llama_cpp.server --model ~/ML/Manticore-13B.ggmlv3.q4_1.bin
+```
+
+Then you can interact with it using:
+```sh
+gptme --llm llama
+
+```
 
 
 ## TODO
