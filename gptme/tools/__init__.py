@@ -202,7 +202,7 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
             output += "Error during execution, aborting."
         yield Message("system", output)
     else:
-        yield Message("system", "Aborted.")
+        yield Message("system", "Aborted, user chose not to run command.")
 
 
 def test_execute_python():

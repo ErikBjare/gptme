@@ -28,13 +28,12 @@ import os
 import sys
 import shutil
 import readline  # noqa: F401
-import itertools
 from pathlib import Path
 
 from termcolor import colored  # type: ignore
+from dotenv import load_dotenv
 import openai
 import click
-
 
 from .constants import role_color
 from .tools import (
@@ -50,7 +49,6 @@ from .logmanager import LogManager
 from .prompts import initial_prompt
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 LLMChoice = Literal["openai", "llama"]
@@ -60,6 +58,7 @@ readline.add_history("Have you heard about an open-source app called ActivityWat
 readline.add_history(
     "Explain the 'Attention is All You Need' paper in the style of Andrej Karpathy."
 )
+readline.add_history("Explain how public-key cryptography works as if I'm five.")
 
 
 def get_logfile(logdir: str) -> str:
@@ -129,16 +128,12 @@ def handle_cmd(cmd: str, logmanager: LogManager) -> Generator[Message, None, Non
                 print(f"  {cmd}: {desc}")
 
 
-@click.group()
-def cli():
-    pass
-
-
 script_path = Path(os.path.realpath(__file__))
 
 
-@cli.command()
+@click.command()
 @click.argument("command", default=None, required=False)
+@click.option("-v", "--verbose")
 @click.option(
     "--logs",
     default=script_path.parent.parent / "logs",
@@ -156,11 +151,22 @@ script_path = Path(os.path.realpath(__file__))
     default="short",
     help="Can be 'short', 'full', or a custom prompt",
 )
-def main(command: str | None, logs: str, llm: LLMChoice, stream: bool, prompt: str):
+def main(
+    command: str | None,
+    logs: str,
+    llm: LLMChoice,
+    stream: bool,
+    prompt: str,
+    verbose: bool,
+):
     """
     GPTMe, a CLI interface for LLMs.
     """
-    openai.api_key = os.environ["OPENAI_API_KEY"]
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+    load_dotenv()
+
+    if llm == "openai":
+        openai.api_key = os.environ["OPENAI_API_KEY"]
     openai.api_base = "http://localhost:8000/v1"
 
     if prompt in ["full", "short"]:
@@ -203,15 +209,15 @@ def main(command: str | None, logs: str, llm: LLMChoice, stream: bool, prompt: s
                 command_triggered = True
 
             if not inquiry:
-                print("Continue 1 (rare!)")
+                # Empty command, ask for input again
                 continue
-            logmanager.append(Message("user", inquiry))
+            logmanager.append(Message("user", inquiry), quiet=True)
 
         assert log[-1].role == "user"
         inquiry = log[-1].content
         # if message starts with ., treat as command
         # when command has been run,
-        if inquiry.startswith("."):
+        if inquiry.startswith(".") or inquiry.startswith("$"):
             for msg in handle_cmd(inquiry, logmanager):
                 logmanager.append(msg)
             if command:
@@ -226,7 +232,8 @@ def main(command: str | None, logs: str, llm: LLMChoice, stream: bool, prompt: s
 
             # log response and run tools
             if msg_response:
-                for msg in itertools.chain([msg_response], execute_msg(msg_response)):
+                logmanager.append(msg_response, quiet=True)
+                for msg in execute_msg(msg_response):
                     logmanager.append(msg)
         except KeyboardInterrupt:
             print("Interrupted")
@@ -255,11 +262,18 @@ def reply(messages: list[Message], stream: bool = False) -> Message:
         return Message("assistant", response)
 
 
+temperature = 0
+top_p = 0.1
+
+
 def _chat_complete(messages: list[Message]) -> str:
+    # This will generate code and such, so we need appropriate temperature and top_p params
+    # top_p controls diversity, temperature controls randomness
     response = openai.ChatCompletion.create(  # type: ignore
         model="gpt-3.5-turbo",
         messages=msgs2dicts(messages),
-        temperature=0,
+        temperature=temperature,
+        top_p=top_p,
     )
     return response.choices[0].message.content
 
@@ -270,7 +284,8 @@ def reply_stream(messages: list[Message]) -> Message:
     response = openai.ChatCompletion.create(  # type: ignore
         model="gpt-3.5-turbo",
         messages=msgs2dicts(messages),
-        temperature=0,
+        temperature=temperature,
+        top_p=top_p,
         stream=True,
         max_tokens=1000,
     )
@@ -285,14 +300,18 @@ def reply_stream(messages: list[Message]) -> Message:
     print_clear()
     print(f"{prefix}: ", end="")
     stop_reason = None
-    for chunk in response:
-        delta = chunk["choices"][0]["delta"]
-        deltas.append(delta)
-        stop_reason = chunk["choices"][0]["finish_reason"]
-        print(deltas_to_str([delta]), end="")
-        # need to flush stdout to get the print to show up
-        sys.stdout.flush()
-    print_clear()
+    try:
+        for chunk in response:
+            delta = chunk["choices"][0]["delta"]
+            deltas.append(delta)
+            stop_reason = chunk["choices"][0]["finish_reason"]
+            print(deltas_to_str([delta]), end="")
+            # need to flush stdout to get the print to show up
+            sys.stdout.flush()
+    except KeyboardInterrupt:
+        return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
+    finally:
+        print_clear()
     verbose = True
     if verbose:
         print(f" - Stop reason: {stop_reason}")

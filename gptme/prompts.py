@@ -51,53 +51,87 @@ def initial_prompt(short: bool = False) -> list[Message]:
             )
 
     if include_tools:
+        include_saveload = False
         msgs.append(
             Message(
                 "system",
-                "The assistant can use the following tools:"
-                + """
-    - Terminal
-        - Use by writing a markdown code block starting with ```sh or ```bash
-    - Python interpreter
-        - Use by writing a markdown code block starting with ```python
-    - Save and load files
-        - Saving is done by writing "save: <filename>" on the line after a code block
-        - Loading is done by writing "load: <filename>"
+                """
+The assistant can use the following tools:
 
-    Examples:
+- Terminal
+    - Use by writing a markdown code block starting with ```sh or ```bash
+- Python interpreter
+    - Use by writing a markdown code block starting with ```python
 
-    Run the following hello world script and save it to `hello.py`:
+Always write code blocks with a language specified.
+"""
+                + ""
+                if not include_saveload
+                else """
+- Save and load files
+    - Saving is done by writing "save: <filename>" on the line after a code block
+    - Loading is done by writing "load: <filename>"
 
-        ```python
-        #!/usr/bin/env python
-        print("Hello world!")
-        ```
-        // save: hello.py
+Examples:
 
-    NOTE: The `save:` command must be on the first line after the code block.
+Run the following hello world script and save it to `hello.py`:
 
-    Load the file `hello.py`:
+```python
+#!/usr/bin/env python
+print("Hello world!")
+```
+// save: hello.py
 
-        // load: hello.py
+NOTE: The `save:` command must be on the first line after the code block.
 
-    Run the script `hello.py` and save it to hello.sh:
+Load the file `hello.py`:
 
-        ```bash
-        #!/usr/bin/env bash
-        chmod +x hello.sh hello.py
-        python hello.py
-        ```
-        // save: hello.sh
+// load: hello.py
 
-    Avoid writing code blocks without a language specified, as it will be interpreted as a terminal command.""",
+Run the script `hello.py` and save it to hello.sh:
+
+```bash
+#!/usr/bin/env bash
+chmod +x hello.sh hello.py
+python hello.py
+```
+// save: hello.sh
+                """.strip(),
             )
         )
 
-    # The most basic prompt, always given.
+    include_exampleuse = True
+    if include_exampleuse:
+        msgs.append(
+            Message(
+                "system",
+                """
+Example use:
+
+User: Look in the current directory and learn about the project.
+Assistant: $ ls
+System: README.md Makefile src pyproject.toml
+Assistant: $ cat README.md
+System: ...
+""".strip(),
+            )
+        )
+
     msgs.append(
         Message(
-            "assistant",
-            "Hello, I am your personal AI assistant. How may I help you today?",
+            "system",
+            """
+Always remember you are an AI language model, and to generate good answers you might need to reason step-by-step.
+(In the words of Andrej Karpathy: LLMs need tokens to think)
+""".strip(),
         )
     )
+
+    # The most basic prompt, always given.
+    # msgs.append(
+    #     Message(
+    #         "assistant",
+    #         "Hello, I am your personal AI assistant. How may I help you today?",
+    #     )
+    # )
     return msgs
