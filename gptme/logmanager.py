@@ -30,7 +30,7 @@ class LogManager:
         self.log.append(msg)
         self.write()
         if not quiet:
-            self.print()
+            print_log(msg, oneline=False)
 
     def write(self) -> None:
         """Writes the log to the logfile."""
