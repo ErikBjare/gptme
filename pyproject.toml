@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gpt-playground"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
