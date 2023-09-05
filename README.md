@@ -30,7 +30,13 @@ Steps:
 
 ### Getting started
 
-Install dependencies:
+Install from pip:
+
+```sh
+pip install gptme-python
+```
+
+Or from source:
 ```sh
 poetry install  # or: pip install .
 ```
