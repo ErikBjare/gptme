@@ -20,7 +20,7 @@ A fancy CLI to interact with LLMs in a Chat-style interface, with additional cap
 
 ### Demo
 
-[![asciicast](https://asciinema.org/a/606375.svg)](https://asciinema.org/a/606375)
+[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
 
 Steps:
 
