@@ -23,8 +23,30 @@ def msgs2dicts(msgs: list[Message]) -> list[dict]:
 
 
 def generate_unique_name():
-    actions = ["running", "jumping", "walking", "skipping", "hopping", "flying"]
-    adjectives = ["funny", "red", "happy", "sad", "angry"]
+    actions = [
+        "running",
+        "jumping",
+        "walking",
+        "skipping",
+        "hopping",
+        "flying",
+        "swimming",
+        "crawling",
+        "sneaking",
+        "sprinting",
+    ]
+    adjectives = [
+        "funny",
+        "red",
+        "happy",
+        "sad",
+        "angry",
+        "silly",
+        "crazy",
+        "sneaky",
+        "sleepy",
+        "hungry",
+    ]
     nouns = [
         "walrus",
         "pelican",
@@ -35,6 +57,9 @@ def generate_unique_name():
         "mouse",
         "bird",
         "fish",
+        "dragon",
+        "unicorn",
+        "dinosaur",
     ]
 
     action = random.choice(actions)

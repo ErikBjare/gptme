@@ -160,17 +160,23 @@ System: ...
                 """
 Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
 
+```sh
+# create public repo from current directory, and push
+# note: --confirm and -y are deprecated, and no longer needed
+gh repo create $REPO --public --source . --push
+
 # show issues
-`gh issue list --repo $REPO`
+gh issue list --repo $REPO
 
 # read issue with comments
-`gh issue view $ISSUE --repo $REPO --comments`
+gh issue view $ISSUE --repo $REPO --comments
 
 # show recent workflows
-`gh run list --status failure --repo $REPO --limit 5`
+gh run list --status failure --repo $REPO --limit 5
 
 # show workflow
-`gh run view $RUN --repo $REPO --log`
+gh run view $RUN --repo $REPO --log
+```
 """,
             )
         )

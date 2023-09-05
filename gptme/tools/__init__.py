@@ -6,7 +6,6 @@ import logging
 import os
 import re
 import textwrap
-from code import compile_command
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Generator
 
@@ -25,9 +24,13 @@ logger = logging.getLogger(__name__)
 EMOJI_WARN = "⚠️"
 
 
-def _print_preview():
+def _print_preview(code=None, lang=None):
     # print a preview section header
+    print()
     print("[bold white]Preview[/bold white]")
+    if code:
+        print(Syntax(code.strip(), lang))
+        print()
 
 
 def _execute_save(text: str, ask=True) -> Generator[Message, None, None]:
@@ -137,21 +140,26 @@ shell = ShellSession()
 atexit.register(shell.close)
 
 
+def ask_execute() -> bool:
+    console = Console()
+    answer = console.input(
+        f"[bold yellow on red] {EMOJI_WARN} Execute code? (Y/n) [/] ",
+    )
+    return answer.lower() in ["y", "Y", "", "yes"]
+
+
 def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     cmd = cmd.strip()
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
     if ask:
-        _print_preview()
-        print(Syntax(f"$ {cmd.strip()}", "bash"))
-        console = Console()
-        confirm = console.input(
-            f"[red on light_yellow]{EMOJI_WARN} Execute command in terminal? (Y/n)[/] ",
-        )
-    if not ask or confirm.lower() in ["y", "Y", "", "yes"]:
+        _print_preview(f"$ {cmd}", "bash")
+        confirm = ask_execute()
+        print()
+
+    if not ask or confirm:
         returncode, stdout, stderr = shell.run_command(cmd)
-        print(returncode, stdout, stderr)
         stdout = _shorten_stdout(stdout.strip())
         stderr = _shorten_stdout(stderr.strip())
 
@@ -161,46 +169,33 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         if stderr:
             msg += f"stderr:\n```\n{stderr}\n```\n\n"
         if not stdout and not stderr:
-            msg += "No output\n\n"
+            msg += "No output\n"
         msg += f"Return code: {returncode}"
 
         yield Message("system", msg)
 
 
 locals_ = {}  # type: ignore
-globals_ = {}  # type: ignore
 
 
 def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
-        _print_preview()
-        print("```python")
-        print(Syntax(code, "python"))
-        print("```")
-        console = Console()
-        confirm = console.input(
-            f"[bold red on light_yellow] {EMOJI_WARN} Execute Python code? (y/N)[/] ",
-        )
+        _print_preview(code, "python")
+        confirm = ask_execute()
+        print()
 
-    if not ask or confirm.lower() in ["y", "yes"]:
+    if not ask or confirm:
         # remove blank lines
         code = "\n".join([line for line in code.split("\n") if line.strip()])
 
         exc = None
-        try:
-            code_compiled = compile_command(code, symbol="exec")
-        except SyntaxError as e:
-            print(f"Syntax error during compilation:\n  {e}")
-            yield Message("system", "Syntax error during compilation.")
-            return
-
         with redirect_stdout(io.StringIO()) as out, redirect_stderr(
             io.StringIO()
         ) as err:
             try:
-                exec(code_compiled, globals_, locals_)  # type: ignore
+                exec(code, locals_, locals_)  # type: ignore
             except Exception as e:
                 exc = e
         stdout = out.getvalue().strip()
