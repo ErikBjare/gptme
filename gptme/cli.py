@@ -192,6 +192,9 @@ def main(
     _load_readline_history()
 
     if llm == "openai":
+        if "OPENAI_API_KEY" not in os.environ:
+            print("Error: OPENAI_API_KEY not set, see the README.")
+            sys.exit(1)
         openai.api_key = os.environ["OPENAI_API_KEY"]
     else:
         openai.api_base = "http://localhost:8000/v1"
