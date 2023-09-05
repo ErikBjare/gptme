@@ -1,9 +1,11 @@
 GPTMe
 =====
 
+*/ʤiː piː tiː miː/*
+
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
 
-A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
+A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code.
 
 ## Demo
 
@@ -24,7 +26,7 @@ Steps:
  - Self-correcting commands
    - Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
  - Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
-   - Thanks to llama-cpp-server!
+   - Thanks to llama-cpp-python server!
  - Handles long contexts through summarization, truncation, and pinning.
    - (wip, not very well developed)
 
