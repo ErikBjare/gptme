@@ -5,6 +5,16 @@ GPTMe
 
 A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
 
+## Demo
+
+[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
+
+Steps:
+
+1. Create a new dir 'gptme-test-fib' and git init
+2. Write a fib function to fib.py, commit
+3. Create a public repo and push to GitHub
+
 ## Features
 
  - Directly execute suggested shell commands on the local machine.
@@ -18,17 +28,15 @@ A fancy CLI to interact with LLMs in a Chat-style interface, with additional cap
  - Handles long contexts through summarization, truncation, and pinning.
    - (wip, not very well developed)
 
-### Demo
+## Use Cases
 
-[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
+ - **Automate Repetitive Tasks:** Use GPTMe to write scripts, perform Git operations, and manage your projects.
+ - **Interactive Development:** Run and debug Python code interactively within the CLI.
+ - **Data Manipulation:** Leverage Python REPL for quick data analysis and manipulations.
+ - **Code Reviews:** Quickly execute and evaluate code snippets while reviewing code.
+ - **Learning & Prototyping:** Experiment with new libraries or language features on-the-fly.
 
-Steps:
-
-1. Create a new dir 'gptme-test-fib' and git init
-2. Write a fib function to fib.py, commit
-3. Create a public repo and push to GitHub
-
-### Getting started
+## Getting started
 
 Install from pip:
 
@@ -46,7 +54,7 @@ To get started with your first conversation, run:
 gptme
 ```
 
-#### Local model
+### Local model
 
 To run local models, you need to start the llama-cpp-python server:
 ```sh
@@ -57,7 +65,7 @@ poetry run python -m llama_cpp.server --model $MODEL
 gptme --llm llama
 ```
 
-### Usage
+## Usage
 
 ```sh
 $ gptme --help
