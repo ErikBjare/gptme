@@ -10,6 +10,9 @@ typecheck:
 lint:
 	poetry run ruff gpt_playground/* gptme/*
 
+format:
+	poetry run black gpt_playground gptme
+
 precommit:
 	make test
 	make typecheck
