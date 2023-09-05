@@ -7,7 +7,7 @@ This is an AI agent called GPTMe, it is designed to be a helpful companion.
 It should be able to help the user in various ways, such as:
 
  - Writing code
- - Using the shell
+ - Using the shell and Python REPL
  - Assisting with technical tasks
  - Writing prose (such as email, code docs, etc.)
  - Acting as an executive assistant
@@ -19,7 +19,7 @@ THe agent should always output code and commands in markdown code blocks with th
 Since the agent is long-living, it should be able to remember things that the user has told it,
 to do so, it needs to be able to store and query past conversations in a database.
 """
-# The above docstring is the first message that the agent will see.
+# The above may be used as a prompt for the agent.
 import logging
 import os
 import readline  # noqa: F401
@@ -37,7 +37,7 @@ from rich import print
 from rich.console import Console
 
 from .constants import role_color
-from .logmanager import LogManager
+from .logmanager import LogManager, print_log
 from .message import Message
 from .prompts import initial_prompt
 from .tools import (
@@ -81,7 +81,9 @@ def execute_msg(msg: Message) -> Generator[Message, None, None]:
     yield from _execute_save(msg.content)
 
 
-Actions = Literal["continue", "summarize", "load", "shell", "exit", "help", "undo"]
+Actions = Literal[
+    "continue", "summarize", "load", "shell", "python", "replay", "undo", "help", "exit"
+]
 
 action_descriptions: dict[Actions, str] = {
     "continue": "Continue",
@@ -89,8 +91,10 @@ action_descriptions: dict[Actions, str] = {
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
     "shell": "Execute a shell command",
+    "python": "Execute a Python command",
     "exit": "Exit the program",
     "help": "Show this help message",
+    "replay": "Rerun all commands in the conversation (does not store output in log)",
 }
 
 
@@ -118,6 +122,12 @@ def handle_cmd(cmd: str, logmanager: LogManager) -> Generator[Message, None, Non
             yield Message("system", f"# filename: {filename}\n\n{contents}")
         case "exit":
             sys.exit(0)
+        case "replay":
+            print("Replaying conversation...")
+            for msg in logmanager.log:
+                if msg.role == "assistant":
+                    for msg in execute_msg(msg):
+                        print_log(msg, oneline=False)
         case _:
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
@@ -125,9 +135,21 @@ def handle_cmd(cmd: str, logmanager: LogManager) -> Generator[Message, None, Non
 
 
 script_path = Path(os.path.realpath(__file__))
+action_readme = "\n".join(
+    f"  .{cmd:10s}  {desc}." for cmd, desc in action_descriptions.items()
+)
 
 
-@click.command()
+docstring = f"""
+GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
+
+The chat offers some commands that can be used to interact with the system:
+
+\b
+{action_readme}"""
+
+
+@click.command(help=docstring)
 @click.argument("command", default=None, required=False)
 @click.option("-v", "--verbose")
 @click.option(
@@ -160,9 +182,6 @@ def main(
     prompt: str,
     verbose: bool,
 ):
-    """
-    GPTMe, a chat-CLI for LLMs enabling them to execute commands and code.
-    """
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
     load_dotenv()
     _load_readline_history()

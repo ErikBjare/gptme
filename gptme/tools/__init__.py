@@ -181,14 +181,12 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
             )
         )
 
-    error_during_execution = False
     if not ask or confirm.lower() in ["y", "yes"]:
         # remove blank lines
         code = "\n".join([line for line in code.split("\n") if line.strip()])
 
         exc = None
         try:
-            print(code)
             code_compiled = compile_command(code, symbol="exec")
         except SyntaxError as e:
             print(f"Syntax error during compilation:\n  {e}")
@@ -206,18 +204,17 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
         stderr = err.getvalue().strip()
         # print(f"Completed execution: stdout={stdout}, stderr={stderr}, exc={exc}")
 
-        if exc:
-            print(f"Exception during execution:\n  {exc.__class__.__name__}: {exc}")
-            error_during_execution = True
-
         output = ""
         if stdout:
             output += f"stdout:\n{stdout}\n\n"
         if stderr:
             output += f"stderr:\n{stderr}\n\n"
-        if error_during_execution:
-            output += "Error during execution."
-        yield Message("system", ">>> " + code + ("\n\n" + stdout))
+        if exc:
+            tb = exc.__traceback__
+            while tb.tb_next:
+                tb = tb.tb_next
+            output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"
+        yield Message("system", "Executed code block.\n\n" + output)
     else:
         yield Message("system", "Aborted, user chose not to run command.")
 
