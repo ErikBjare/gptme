@@ -50,7 +50,6 @@ from .tools import (
 from .util import epoch_to_age, generate_unique_name, msgs2dicts
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 LLMChoice = Literal["openai", "llama"]
@@ -98,15 +97,17 @@ action_descriptions: dict[Actions, str] = {
 }
 
 
-def handle_cmd(cmd: str, logmanager: LogManager) -> Generator[Message, None, None]:
+def handle_cmd(
+    cmd: str, logmanager: LogManager, no_confirm: bool
+) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip(".")
     name, *args = cmd.split(" ")
     match name:
         case "bash" | "sh" | "shell":
-            yield from _execute_shell(" ".join(args))
+            yield from _execute_shell(" ".join(args), ask=not no_confirm)
         case "python" | "py":
-            yield from _execute_python(" ".join(args))
+            yield from _execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
             raise NotImplementedError
         case "summarize":
@@ -174,6 +175,9 @@ The chat offers some commands that can be used to interact with the system:
     help="Stream responses",
 )
 @click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
+@click.option(
+    "-y", "--no-confirm", is_flag=True, help="Skips all confirmation prompts."
+)
 def main(
     prompt: str | None,
     prompt_system: str,
@@ -181,6 +185,7 @@ def main(
     llm: LLMChoice,
     stream: bool,
     verbose: bool,
+    no_confirm: bool,
 ):
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
     load_dotenv()
@@ -198,6 +203,8 @@ def main(
 
     LOGDIR = Path("~/.local/share/gptme/logs").expanduser()
     if name:
+        if name == "random":
+            name = generate_unique_name()
         logpath = LOGDIR / (f"{datetime.now().strftime('%Y-%m-%d')}-{name}")
     else:
         # let user select between starting a new conversation and loading a previous one
@@ -273,7 +280,7 @@ def main(
         # if message starts with ., treat as command
         # when command has been run,
         if inquiry.startswith(".") or inquiry.startswith("$"):
-            for msg in handle_cmd(inquiry, logmanager):
+            for msg in handle_cmd(inquiry, logmanager, no_confirm):
                 logmanager.append(msg)
             if prompt:
                 command_triggered = True
@@ -332,6 +339,7 @@ def prompt_input(prompt: str, value=None) -> str:
     if value:
         print(prompt + value)
     else:
+        console = Console()
         value = console.input(prompt)
     return value
 
