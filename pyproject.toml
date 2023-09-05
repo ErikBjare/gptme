@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "gptme"
+name = "gptme-python"
 version = "0.2.1"
-description = ""
+description = "A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine."
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
 packages = [
