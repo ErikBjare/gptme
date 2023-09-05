@@ -32,6 +32,7 @@ Steps:
 
 ## Use Cases
 
+ - **Shell Copilot:** Use GPTMe to execute shell commands on your local machine, using natural language (no more memorizing flags!).
  - **Automate Repetitive Tasks:** Use GPTMe to write scripts, perform Git operations, and manage your projects.
  - **Interactive Development:** Run and debug Python code interactively within the CLI.
  - **Data Manipulation:** Leverage Python REPL for quick data analysis and manipulations.
