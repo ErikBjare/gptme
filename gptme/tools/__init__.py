@@ -171,8 +171,8 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         yield Message("system", msg)
 
 
-locals_ = {}
-globals_ = {}
+locals_ = {}  # type: ignore
+globals_ = {}  # type: ignore
 
 
 def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
@@ -208,7 +208,7 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
             io.StringIO()
         ) as err:
             try:
-                exec(code_compiled, globals_, locals_)
+                exec(code_compiled, globals_, locals_)  # type: ignore
             except Exception as e:
                 exc = e
         stdout = out.getvalue().strip()
@@ -222,9 +222,9 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
             output += f"stderr:\n{stderr}\n\n"
         if exc:
             tb = exc.__traceback__
-            while tb.tb_next:
-                tb = tb.tb_next
-            output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"
+            while tb.tb_next:  # type: ignore
+                tb = tb.tb_next  # type: ignore
+            output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"  # type: ignore
         yield Message("system", "Executed code block.\n\n" + output)
     else:
         yield Message("system", "Aborted, user chose not to run command.")
