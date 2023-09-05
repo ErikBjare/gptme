@@ -3,7 +3,7 @@ GPTMe
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
 
-An interactive CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
+A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
 
 ## Features
 
@@ -35,14 +35,19 @@ Install dependencies:
 poetry install  # or: pip install .
 ```
 
-(optional) To run local models, you need to start llama-cpp-server:
+To get started with your first conversation, run:
+```sh
+gptme
+```
+
+#### Local model
+
+To run local models, you need to start the llama-cpp-python server:
 ```sh
 MODEL=~/ML/WizardCoder-Python-34B-V1.0-GGUF/wizardcoder-python-34b-v1.0.Q5_K_M.gguf
 poetry run python -m llama_cpp.server --model $MODEL
-```
 
-Then you can interact with it using:
-```sh
+# Now, to use it:
 gptme --llm llama
 ```
 
@@ -50,16 +55,31 @@ gptme --llm llama
 
 ```sh
 $ gptme --help
-Usage: gptme [OPTIONS] [COMMAND]
+Usage: gptme [OPTIONS] [PROMPT]
 
-  GPTMe, a chat-CLI for LLMs enabling them to execute commands and code.
+  GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
+
+  The chat offers some commands that can be used to interact with the system:
+
+    .continue    Continue.
+    .undo        Undo the last action.
+    .summarize   Summarize the conversation so far.
+    .load        Load a file.
+    .shell       Execute a shell command.
+    .python      Execute a Python command.
+    .exit        Exit the program.
+    .help        Show this help message.
+    .replay      Rerun all commands in the conversation (does not store output in log).
 
 Options:
-  -v, --verbose TEXT
-  --name TEXT           Folder name for conversation, defaults to today's date
-  --llm [openai|llama]  LLM to use.
-  --stream              Stream responses
-  --prompt TEXT         System prompt. Can be 'full', 'short', or something
-                        custom.
-  --help                Show this message and exit.
+  --prompt-system TEXT    System prompt. Can be 'full', 'short', or something
+                          custom.
+  --name TEXT             Name of conversation. Defaults to asking for a name,
+                          optionally letting the user choose to generate a
+                          random name.
+  --llm [openai|llama]    LLM to use.
+  --stream / --no-stream  Stream responses
+  -v, --verbose           Verbose output.
+  -y, --no-confirm        Skips all confirmation prompts.
+  --help                  Show this message and exit.
 ```
