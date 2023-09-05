@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "gpt-playground"
-version = "0.1.1"
+name = "gptme"
+version = "0.2.0"
 description = ""
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
 packages = [
-    { include = "gpt_playground" },
     { include = "gptme" },
+    { include = "gpt_playground" },
 ]
 
 [tool.poetry.scripts]
@@ -24,6 +24,8 @@ colorama = "^0.4.6"
 termcolor = "^2.3.0"
 llama-cpp-python = {extras = ["server"], version = "^0.1.57"}
 python-dotenv = "^1.0.0"
+rich = "^13.5.2"
+pick = "^2.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

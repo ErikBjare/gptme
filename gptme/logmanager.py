@@ -2,16 +2,16 @@ import json
 import shutil
 import textwrap
 from pathlib import Path
-
-from termcolor import colored
-
-from .message import Message
-from .util import len_tokens
-from .constants import role_color
-from .prompts import initial_prompt
-from .reduce import reduce_log, limit_log
-
 from typing import TypeAlias
+
+from rich import print
+from rich.syntax import Syntax
+
+from .constants import role_color
+from .message import Message
+from .prompts import initial_prompt
+from .reduce import limit_log, reduce_log
+from .util import len_tokens
 
 PathLike: TypeAlias = str | Path
 
@@ -39,25 +39,24 @@ class LogManager:
     def print(self):
         print_log(self.log, oneline=False)
 
-    def undo(self):
+    def undo(self, n: int = 1) -> None:
         """Removes the last message from the log."""
-        undid = self.log.pop()
-        assert undid.content == ".undo"  # assert that the last message is an undo
+        undid = self.log[-1] if self.log else None
+        if undid and undid.content.startswith(".undo"):
+            self.log.pop()
+
+        # Doesn't work for multiple undos in a row, but useful in testing
+        # assert undid.content == ".undo"  # assert that the last message is an undo
         peek = self.log[-1] if self.log else None
         if not peek:
-            print(colored("Nothing to undo.", "yellow"))
+            print("[yellow]Nothing to undo.[/yellow]")
             return
 
-        print(colored("Undoing messages:", "yellow"))
-        while peek and (
-            peek.role in ["system", "assistant"] or peek.content == ".undo"
-        ):
+        print("[yellow]Undoing messages:[/yellow]")
+        for _ in range(n):
             undid = self.log.pop()
             print(
-                colored(
-                    f"  {undid.role}: {textwrap.shorten(undid.content.strip(), width=30, placeholder='...')}",
-                    "red",
-                )
+                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=30, placeholder='...')}[/red]",
             )
             peek = self.log[-1] if self.log else None
 
@@ -110,7 +109,8 @@ def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
 def print_log(log: Message | list[Message], oneline: bool = True) -> None:
     """Prints the log to the console."""
     for msg in log if isinstance(log, list) else [log]:
-        userprefix = colored(msg.user, role_color[msg.role], attrs=["bold"]) + ": "
+        color = role_color[msg.role]
+        userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
         # get terminal width
         max_len = shutil.get_terminal_size().columns - len(userprefix)
         output = ""
@@ -125,5 +125,19 @@ def print_log(log: Message | list[Message], oneline: bool = True) -> None:
             output += ("\n  " if multiline else "") + textwrap.indent(
                 msg.content, prefix="  "
             )[2:]
-        output = colored(output, "light_grey")
-        print("\n" + userprefix + output.rstrip())
+
+        # find code-blocks and syntax highlight them with rich
+        startstr = "```python"
+        if startstr in output:
+            code_start = output.find(startstr)
+            code_end = (
+                output[code_start + len(startstr) :].find("```")
+                + code_start
+                + len(startstr)
+            )
+            code = output[code_start + 10 : code_end]
+            print(f"\n{userprefix}: {output[:code_start]}{startstr}")
+            print(Syntax(code.rstrip(), "python"))
+            print(f"  ```{output[code_end+3:]}")
+        else:
+            print(f"\n{userprefix}: {output.rstrip()}")

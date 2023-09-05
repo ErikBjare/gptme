@@ -36,7 +36,7 @@ Example:
 Lets find some TODOs using the SearchTODO tool. You can pass it a search term to filter the results, but for now we'll check all.
 Action: SearchTODO
 Action Input: ""
-Result: - [ ] 
+Result: - [ ]
 Observation: I need to categorize
 
 """.strip()
@@ -66,8 +66,8 @@ def _prompt() -> str:
 def _load_roam_todos(filter: str = "") -> str:
     """Use rg to find TODOs in the roam-backup"""
     todos = []
-    rg = subprocess.run(["rg", "--no-filename", "--no-line-number", 
-                         r"\{\{\[\[TODO\]\]\}\}", path_todos], 
+    rg = subprocess.run(["rg", "--no-filename", "--no-line-number",
+                         r"\{\{\[\[TODO\]\]\}\}", path_todos],
                         capture_output=True)
     if rg.returncode != 0:
         stderr_stripped = '\n'.join(rg.stderr.decode("utf-8").split('\n')[:5])
@@ -106,7 +106,7 @@ tool_search = Tool(
 )
 
 def tool_prioritize(tasks: str):
-    template = PromptTemplate(template="""Rank these TODOs by their priority. 
+    template = PromptTemplate(template="""Rank these TODOs by their priority.
 Annotate with tags like: #value-high, #size-small, etc.
 
 Tasks:
@@ -152,7 +152,7 @@ def answer(prompt: str = ""):
     print("Running chain with prompt: ", prompt)
     tools = [tool_search, tool_searchtodo, tool_terminal2, tool_prioritize]
 
-    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", 
+    agent = initialize_agent(tools, llm, agent="zero-shot-react-description",
                              verbose=True, return_intermediate_steps=True)
     resp = agent(prompt)
     return resp

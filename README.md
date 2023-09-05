@@ -1,52 +1,55 @@
-GPT playground
-==============
+GPTMe
+=====
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
 
-Just me playing with large language models, langchain, etc.
-
-
-## gptme
-
-An interactive CLI to let you interact with LLMs in a Chat-style interface.
+An interactive CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
 
 With **features** like:
 
- - Supports OpenAI and **any model that runs in llama**
+ - Directly execute suggested shell commands on the local machine.
+   - Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
+   - Also spins up a Python REPL to run Python code interactively.
+ - Self-correcting commands
+   - Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
+ - Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
    - Thanks to llama-cpp-server!
- - Tools
-   - Access to the local machine
-   - Execute shell/Python code on the local machine.
-     - Command output (stdout & stderr + error code) will be feeded back to the agent, making it able to self-correct errors etc.
- - Can handle long context sizes through summarization.
-   - (not very well developed)
+ - Handles long contexts through summarization, truncation, and pinning.
+   - (wip, not very well developed)
 
 
-### Usage
+### Getting started
 
-Install deps:
-
+Install dependencies:
 ```sh
-poetry install
+poetry install  # or: pip install .
 ```
 
-To use locally, you need to start llama-cpp-server:
-
+(optional) To run local models, you need to start llama-cpp-server:
 ```sh
-poetry run python -m llama_cpp.server --model ~/ML/Manticore-13B.ggmlv3.q4_1.bin
+MODEL=~/ML/WizardCoder-Python-34B-V1.0-GGUF/wizardcoder-python-34b-v1.0.Q5_K_M.gguf
+poetry run python -m llama_cpp.server --model $MODEL
 ```
 
 Then you can interact with it using:
 ```sh
 gptme --llm llama
-
 ```
 
+### Usage
 
-## TODO
+```sh
+$ gptme --help
+Usage: gptme [OPTIONS] [COMMAND]
 
-Ideas for things to try:
+  GPTMe, a chat-CLI for LLMs enabling them to execute commands and code.
 
- - An agent that looks up the latest CI job, and if it failed, tries to figure out how to fix it.
- - An agent that looks up recent GitHub issues, tries to generate an answer.
- - An agent that looks up recent GitHub PRs, tries to generate an action (comment, ask for human review, merge, close).
+Options:
+  -v, --verbose TEXT
+  --name TEXT           Folder name for conversation, defaults to today's date
+  --llm [openai|llama]  LLM to use.
+  --stream              Stream responses
+  --prompt TEXT         System prompt. Can be 'full', 'short', or something
+                        custom.
+  --help                Show this message and exit.
+```

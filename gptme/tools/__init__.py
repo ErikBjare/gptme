@@ -1,19 +1,23 @@
-from typing import Generator
-import textwrap
-import os
-import subprocess
-import functools
-import io
 import ast
+import code
+import io
 import logging
-from contextlib import redirect_stdout
+import os
+import re
+import subprocess
+import textwrap
+from code import compile_command
+from contextlib import redirect_stderr, redirect_stdout
+from typing import Generator
 
-from termcolor import colored
 import openai
+from rich import print
+from rich.syntax import Syntax
+from termcolor import colored
 
-from ..util import len_tokens
-from ..message import Message
 from ..cache import memory
+from ..message import Message
+from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +26,7 @@ EMOJI_WARN = "⚠️"
 
 def _print_preview():
     # print a preview section header
-    print(colored("Preview", "white", attrs=["bold"]))
+    print("[bold white]Preview[/bold white]")
 
 
 def _execute_save(text: str, ask=True) -> Generator[Message, None, None]:
@@ -90,6 +94,40 @@ def _execute_codeblock(codeblock: str) -> Generator[Message, None, None]:
         logger.warning(f"Unknown codeblock type {codeblock_lang}")
 
 
+def _shorten_stdout(stdout: str) -> str:
+    """Shortens stdout to 1000 tokens."""
+    lines = stdout.split("\n")
+
+    # strip iso8601 timestamps
+    lines = [
+        re.sub(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.]\d{3,9}Z?", "", line)
+        for line in lines
+    ]
+    # strip dates like "2017-08-02 08:48:43 +0000 UTC"
+    lines = [
+        re.sub(
+            r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line
+        ).strip()
+        for line in lines
+    ]
+
+    # strip common prefixes
+    prefix = os.path.commonprefix(lines)
+    if prefix:
+        lines = [line[len(prefix) :] for line in lines]
+
+    pre_lines = 30
+    post_lines = 30
+    if len(lines) > pre_lines + post_lines:
+        lines = (
+            lines[:pre_lines]
+            + [f"... ({len(lines) - pre_lines - post_lines} truncated) ..."]
+            + lines[-post_lines:]
+        )
+
+    return "\n".join(lines)
+
+
 def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     cmd = cmd.strip()
@@ -107,36 +145,23 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         )
     if not ask or confirm.lower() in ["y", "Y", "", "yes"]:
         p = subprocess.run(cmd, capture_output=True, shell=True, text=True)
-        stdout = p.stdout.strip()
-        stderr = p.stderr.strip()
+        stdout = _shorten_stdout(p.stdout.strip())
+        stderr = _shorten_stdout(p.stderr.strip())
+
         msg = f"Ran command:\n```bash\n{cmd}\n```\n\n"
         if stdout:
-            msg += f"Output:\n\n```bash\n{stdout}\n```\n\n"
+            msg += f"stdout:\n```\n{stdout}\n```\n\n"
         if stderr:
-            msg += f"Error:\n\n```bash\n{stderr}\n```\n\n"
+            msg += f"stderr:\n```\n{stderr}\n```\n\n"
         if not stdout and not stderr:
             msg += "No output\n\n"
-        if p.returncode != 0:
-            msg += f"Return code: {p.returncode}"
-        else:
-            msg += "Ran successfully"
+        msg += f"Return code: {p.returncode}"
 
         yield Message("system", msg)
 
 
-locals_ = locals()
-
-
-def _capture_output(func):
-    """Captures stdout and stderr from a function and returns them as a string."""
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            func(*args, **kwargs)
-            yield buf.getvalue()
-
-    return wrapper
+locals_ = {}
+globals_ = {}
 
 
 def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
@@ -144,7 +169,9 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
     code = code.strip()
     if ask:
         _print_preview()
-        print(">>> " + colored(code, "light_yellow"))
+        print("```python")
+        print(Syntax(code, "python"))
+        print("```")
         confirm = input(
             colored(
                 f" {EMOJI_WARN} Execute Python code? (y/N) ",
@@ -156,51 +183,41 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
 
     error_during_execution = False
     if not ask or confirm.lower() in ["y", "yes"]:
-        # parse code into statements
+        # remove blank lines
+        code = "\n".join([line for line in code.split("\n") if line.strip()])
+
+        exc = None
         try:
-            statements = ast.parse(code).body
+            print(code)
+            code_compiled = compile_command(code, symbol="exec")
         except SyntaxError as e:
-            yield Message("system", f"SyntaxError: {e}")
+            print(f"Syntax error during compilation:\n  {e}")
+            yield Message("system", "Syntax error during compilation.")
             return
 
-        output = ""
-        # execute statements
-        for stmt in statements:
-            stmt_str = ast.unparse(stmt)
-            output += ">>> " + stmt_str + "\n"
+        with redirect_stdout(io.StringIO()) as out, redirect_stderr(
+            io.StringIO()
+        ) as err:
             try:
-                # if stmt is assignment or function def, have to use exec
-                if (
-                    isinstance(stmt, ast.Assign)
-                    or isinstance(stmt, ast.AnnAssign)
-                    or isinstance(stmt, ast.Assert)
-                    or isinstance(stmt, ast.ClassDef)
-                    or isinstance(stmt, ast.FunctionDef)
-                    or isinstance(stmt, ast.Import)
-                    or isinstance(stmt, ast.ImportFrom)
-                    or isinstance(stmt, ast.If)
-                    or isinstance(stmt, ast.For)
-                    or isinstance(stmt, ast.While)
-                    or isinstance(stmt, ast.With)
-                    or isinstance(stmt, ast.Try)
-                    or isinstance(stmt, ast.AsyncFor)
-                    or isinstance(stmt, ast.AsyncFunctionDef)
-                    or isinstance(stmt, ast.AsyncWith)
-                ):
-                    with io.StringIO() as buf, redirect_stdout(buf):
-                        exec(stmt_str, globals(), locals_)
-                        result = buf.getvalue().strip()
-                else:
-                    result = eval(stmt_str, globals(), locals_)
-                if result:
-                    output += str(result) + "\n"
+                exec(code_compiled, globals_, locals_)
             except Exception as e:
-                output += f"{e.__class__.__name__}: {e}\n"
-                error_during_execution = True
-                break
+                exc = e
+        stdout = out.getvalue().strip()
+        stderr = err.getvalue().strip()
+        # print(f"Completed execution: stdout={stdout}, stderr={stderr}, exc={exc}")
+
+        if exc:
+            print(f"Exception during execution:\n  {exc.__class__.__name__}: {exc}")
+            error_during_execution = True
+
+        output = ""
+        if stdout:
+            output += f"stdout:\n{stdout}\n\n"
+        if stderr:
+            output += f"stderr:\n{stderr}\n\n"
         if error_during_execution:
-            output += "Error during execution, aborting."
-        yield Message("system", output)
+            output += "Error during execution."
+        yield Message("system", ">>> " + code + ("\n\n" + stdout))
     else:
         yield Message("system", "Aborted, user chose not to run command.")
 
@@ -239,3 +256,48 @@ def summarize(msg: Message) -> Message:
     else:
         summary = _llm_summarize(msg.content)
     return Message("system", f"Here is a summary of the response:\n{summary}")
+
+
+# OLD
+def old():
+    # parse code into statements
+    try:
+        statements = ast.parse(code).body
+    except SyntaxError as e:
+        yield Message("system", f"SyntaxError: {e}")
+        return
+
+    output = ""
+    # execute statements
+    for stmt in statements:
+        stmt_str = ast.unparse(stmt)
+        output += ">>> " + stmt_str + "\n"
+        try:
+            # if stmt is assignment or function def, have to use exec
+            if (
+                isinstance(stmt, ast.Assign)
+                or isinstance(stmt, ast.AnnAssign)
+                or isinstance(stmt, ast.Assert)
+                or isinstance(stmt, ast.ClassDef)
+                or isinstance(stmt, ast.FunctionDef)
+                or isinstance(stmt, ast.Import)
+                or isinstance(stmt, ast.ImportFrom)
+                or isinstance(stmt, ast.If)
+                or isinstance(stmt, ast.For)
+                or isinstance(stmt, ast.While)
+                or isinstance(stmt, ast.With)
+                or isinstance(stmt, ast.Try)
+                or isinstance(stmt, ast.AsyncFor)
+                or isinstance(stmt, ast.AsyncFunctionDef)
+                or isinstance(stmt, ast.AsyncWith)
+            ):
+                with io.StringIO() as buf, redirect_stdout(buf):
+                    exec(stmt_str, globals(), locals_)
+                    result = buf.getvalue().strip()
+            else:
+                result = eval(stmt_str, globals(), locals_)
+            if result:
+                output += str(result) + "\n"
+        except Exception as e:
+            output += f"{e.__class__.__name__}: {e}\n"
+            break

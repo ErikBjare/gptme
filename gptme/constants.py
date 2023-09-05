@@ -1,5 +1,5 @@
 role_color = {
-    "user": "blue",
-    "assistant": "green",
-    "system": "light_grey",
+    "user": "bright_green",
+    "assistant": "bright_cyan",
+    "system": "grey42",
 }
