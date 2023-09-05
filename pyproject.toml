@@ -16,16 +16,13 @@ gptme = "gptme.cli:main"
 python = "^3.10"
 openai = "^0.27"
 click = "^8.0"
-langchain = "*"
-chromadb = "^0.3"
-beautifulsoup4 = "^4.12.0"
-google-search-results = "^2.4.2"
 colorama = "^0.4.6"
 termcolor = "^2.3.0"
 llama-cpp-python = {extras = ["server"], version = "^0.1.57"}
 python-dotenv = "^1.0.0"
 rich = "^13.5.2"
 pick = "^2.2.0"
+joblib = "^1.3.2"
 
 
 [tool.poetry.group.dev.dependencies]
