@@ -35,6 +35,8 @@ jobs:
       run: |
         make build
     - name: Run tests
+      env:
+        TERM: xterm
       run: |
         make test
     - name: Typecheck
