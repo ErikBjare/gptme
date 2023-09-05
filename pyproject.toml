@@ -6,7 +6,6 @@ authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
 packages = [
     { include = "gptme" },
-    { include = "gpt_playground" },
 ]
 
 [tool.poetry.scripts]
