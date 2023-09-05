@@ -202,6 +202,7 @@ def main(
         promptmsgs = [Message("system", prompt_system)]
 
     LOGDIR = Path("~/.local/share/gptme/logs").expanduser()
+    LOGDIR.mkdir(parents=True, exist_ok=True)
     if name:
         if name == "random":
             name = generate_unique_name()
