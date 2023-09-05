@@ -150,12 +150,16 @@ The chat offers some commands that can be used to interact with the system:
 
 
 @click.command(help=docstring)
-@click.argument("command", default=None, required=False)
-@click.option("-v", "--verbose")
+@click.argument("prompt", default=None, required=False)
+@click.option(
+    "--prompt-system",
+    default="full",
+    help="System prompt. Can be 'full', 'short', or something custom.",
+)
 @click.option(
     "--name",
     default=None,
-    help="Folder name for conversation, defaults to today's date",
+    help="Name of conversation. Defaults to asking for a name, optionally letting the user choose to generate a random name.",
 )
 @click.option(
     "--llm",
@@ -164,22 +168,18 @@ The chat offers some commands that can be used to interact with the system:
     type=click.Choice(["openai", "llama"]),
 )
 @click.option(
-    "--stream",
+    "--stream/--no-stream",
     is_flag=True,
     default=True,
     help="Stream responses",
 )
-@click.option(
-    "--prompt",
-    default="full",
-    help="System prompt. Can be 'full', 'short', or something custom.",
-)
+@click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
 def main(
-    command: str | None,
+    prompt: str | None,
+    prompt_system: str,
     name: str,
     llm: LLMChoice,
     stream: bool,
-    prompt: str,
     verbose: bool,
 ):
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
@@ -191,12 +191,12 @@ def main(
     else:
         openai.api_base = "http://localhost:8000/v1"
 
-    if prompt in ["full", "short"]:
-        promptmsgs = initial_prompt(short=prompt == "short")
+    if prompt_system in ["full", "short"]:
+        promptmsgs = initial_prompt(short=prompt_system == "short")
     else:
-        promptmsgs = [Message("system", prompt)]
+        promptmsgs = [Message("system", prompt_system)]
 
-    LOGDIR = script_path.parent.parent / "logs"
+    LOGDIR = Path("~/.local/share/gptme/logs").expanduser()
     if name:
         logpath = LOGDIR / (f"{datetime.now().strftime('%Y-%m-%d')}-{name}")
     else:
@@ -258,9 +258,8 @@ def main(
             (last_msg.role in ["system", "assistant"])
             or (log[-1].role == "user" and log[-1].content.startswith("."))
         ):
-            inquiry = prompt_user(command)
-            if command:
-                command = None
+            inquiry = prompt_user(prompt)
+            if prompt:
                 command_triggered = True
 
             if not inquiry:
@@ -276,7 +275,7 @@ def main(
         if inquiry.startswith(".") or inquiry.startswith("$"):
             for msg in handle_cmd(inquiry, logmanager):
                 logmanager.append(msg)
-            if command:
+            if prompt:
                 command_triggered = True
                 print("Continue 2")
             continue
