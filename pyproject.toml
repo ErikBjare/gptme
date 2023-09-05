@@ -16,8 +16,6 @@ gptme = "gptme.cli:main"
 python = "^3.10"
 openai = "^0.27"
 click = "^8.0"
-colorama = "^0.4.6"
-termcolor = "^2.3.0"
 llama-cpp-python = {extras = ["server"], version = "^0.1.57", optional=true}
 python-dotenv = "^1.0.0"
 rich = "^13.5.2"

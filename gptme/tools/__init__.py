@@ -12,8 +12,8 @@ from typing import Generator
 
 import openai
 from rich import print
+from rich.console import Console
 from rich.syntax import Syntax
-from termcolor import colored
 
 from ..cache import memory
 from ..message import Message
@@ -144,14 +144,10 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         cmd = cmd[len("$ ") :]
     if ask:
         _print_preview()
-        print("$ ", end="")
-        print(Syntax(cmd, "bash"))
-        confirm = input(
-            colored(
-                f"{EMOJI_WARN} Execute command in terminal? (Y/n) ",
-                "red",
-                "on_light_yellow",
-            )
+        print(Syntax(f"$ {cmd.strip()}", "bash"))
+        console = Console()
+        confirm = console.input(
+            f"[red on light_yellow]{EMOJI_WARN} Execute command in terminal? (Y/n)[/] ",
         )
     if not ask or confirm.lower() in ["y", "Y", "", "yes"]:
         returncode, stdout, stderr = shell.run_command(cmd)
@@ -183,13 +179,9 @@ def _execute_python(code: str, ask=True) -> Generator[Message, None, None]:
         print("```python")
         print(Syntax(code, "python"))
         print("```")
-        confirm = input(
-            colored(
-                f" {EMOJI_WARN} Execute Python code? (y/N) ",
-                "red",
-                "on_light_yellow",
-                attrs=["bold"],
-            )
+        console = Console()
+        confirm = console.input(
+            f"[bold red on light_yellow] {EMOJI_WARN} Execute Python code? (y/N)[/] ",
         )
 
     if not ask or confirm.lower() in ["y", "yes"]:
