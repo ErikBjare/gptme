@@ -49,7 +49,12 @@ Or from source:
 poetry install  # or: pip install .
 ```
 
-To get started with your first conversation, run:
+[Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable:
+```sh
+OPENAI_API_KEY=...
+```
+
+Now, to get started with your first conversation, run:
 ```sh
 gptme
 ```
