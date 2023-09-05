@@ -18,15 +18,15 @@ A fancy CLI to interact with LLMs in a Chat-style interface, with additional cap
  - Handles long contexts through summarization, truncation, and pinning.
    - (wip, not very well developed)
 
-### Demo (TODO)
+### Demo
+
+[![asciicast](https://asciinema.org/a/606375.svg)](https://asciinema.org/a/606375)
 
 Steps:
 
 1. Create a new dir 'gptme-test-fib' and git init
-2. Write a fibonacci function in Python to fib.py, commit
-3. Create a repo and push to GitHub
-
-(I will be creating a screencast of this soon, but it works today!)
+2. Write a fib function to fib.py, commit
+3. Create a public repo and push to GitHub
 
 ### Getting started
 
