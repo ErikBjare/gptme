@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 
 LLMChoice = Literal["openai", "llama"]
+OpenAIModel = Literal["gpt-3.5-turbo", "gpt4"]
 
 
 def get_logfile(logdir: Path) -> Path:
@@ -169,6 +170,12 @@ The chat offers some commands that can be used to interact with the system:
     type=click.Choice(["openai", "llama"]),
 )
 @click.option(
+    "--openai-model",
+    default="gpt-3.5-turbo",
+    help="OpenAI model to use",
+    type=click.Choice(["gpt-3.5-turbo", "gpt4"]),
+)
+@click.option(
     "--stream/--no-stream",
     is_flag=True,
     default=True,
@@ -183,6 +190,7 @@ def main(
     prompt_system: str,
     name: str,
     llm: LLMChoice,
+    openai_model: OpenAIModel,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
@@ -294,7 +302,7 @@ def main(
         # if large context, try to reduce/summarize
         # print response
         try:
-            msg_response = reply(logmanager.prepare_messages(), stream)
+            msg_response = reply(logmanager.prepare_messages(), openai_model, stream)
 
             # log response and run tools
             if msg_response:
@@ -348,12 +356,12 @@ def prompt_input(prompt: str, value=None) -> str:
     return value
 
 
-def reply(messages: list[Message], stream: bool = False) -> Message:
+def reply(messages: list[Message], model: OpenAIModel, stream: bool = False) -> Message:
     if stream:
-        return reply_stream(messages)
+        return reply_stream(messages, model)
     else:
         print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-        response = _chat_complete(messages)
+        response = _chat_complete(messages, model)
         print(" " * shutil.get_terminal_size().columns, end="\r")
         return Message("assistant", response)
 
@@ -361,11 +369,8 @@ def reply(messages: list[Message], stream: bool = False) -> Message:
 temperature = 0
 top_p = 0.1
 
-# model = "gpt-3.5-turbo"
-model = "gpt-4"
 
-
-def _chat_complete(messages: list[Message]) -> str:
+def _chat_complete(messages: list[Message], model: OpenAIModel) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     response = openai.ChatCompletion.create(  # type: ignore
@@ -377,7 +382,7 @@ def _chat_complete(messages: list[Message]) -> str:
     return response.choices[0].message.content
 
 
-def reply_stream(messages: list[Message]) -> Message:
+def reply_stream(messages: list[Message], model: OpenAIModel) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
     response = openai.ChatCompletion.create(  # type: ignore
         model=model,
