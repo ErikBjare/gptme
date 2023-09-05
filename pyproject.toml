@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gptme"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
