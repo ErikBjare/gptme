@@ -5,11 +5,12 @@ GPTMe
 
 An interactive CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine.
 
-With **features** like:
+## Features
 
  - Directly execute suggested shell commands on the local machine.
    - Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
    - Also spins up a Python REPL to run Python code interactively.
+   - Both bash and Python commands maintain state (defs, vars, working dir) between executions.
  - Self-correcting commands
    - Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
  - Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
@@ -17,6 +18,15 @@ With **features** like:
  - Handles long contexts through summarization, truncation, and pinning.
    - (wip, not very well developed)
 
+### Demo (TODO)
+
+Steps:
+
+1. Create a new dir 'gptme-test-fib' and git init
+2. Write a fibonacci function in Python to fib.py, commit
+3. Create a repo and push to GitHub
+
+(I will be creating a screencast of this soon, but it works today!)
 
 ### Getting started
 
