@@ -43,7 +43,7 @@ Steps:
 Install from pip:
 
 ```sh
-pip install gptme-python
+pip install gptme-python   # requires Python 3.10+
 ```
 
 Or from source:
