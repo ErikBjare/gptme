@@ -112,10 +112,11 @@ def _shorten_stdout(stdout: str) -> str:
         for line in lines
     ]
 
-    # strip common prefixes
-    prefix = os.path.commonprefix(lines)
-    if prefix:
-        lines = [line[len(prefix) :] for line in lines]
+    # strip common prefixes, useful for things like `gh runs view`
+    if len(lines) > 5:
+        prefix = os.path.commonprefix(lines)
+        if prefix:
+            lines = [line[len(prefix) :] for line in lines]
 
     pre_lines = 30
     post_lines = 30
@@ -154,6 +155,7 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         )
     if not ask or confirm.lower() in ["y", "Y", "", "yes"]:
         returncode, stdout, stderr = shell.run_command(cmd)
+        print(returncode, stdout, stderr)
         stdout = _shorten_stdout(stdout.strip())
         stderr = _shorten_stdout(stderr.strip())
 
