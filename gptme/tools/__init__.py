@@ -1,10 +1,10 @@
 import ast
+import atexit
 import code
 import io
 import logging
 import os
 import re
-import subprocess
 import textwrap
 from code import compile_command
 from contextlib import redirect_stderr, redirect_stdout
@@ -18,6 +18,7 @@ from termcolor import colored
 from ..cache import memory
 from ..message import Message
 from ..util import len_tokens
+from .shell import ShellSession
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,13 @@ def _shorten_stdout(stdout: str) -> str:
     return "\n".join(lines)
 
 
+# init shell
+shell = ShellSession()
+
+# close on exit
+atexit.register(shell.close)
+
+
 def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     cmd = cmd.strip()
@@ -135,7 +143,8 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         cmd = cmd[len("$ ") :]
     if ask:
         _print_preview()
-        print("$ " + colored(cmd, "light_yellow"))
+        print("$ ", end="")
+        print(Syntax(cmd, "bash"))
         confirm = input(
             colored(
                 f"{EMOJI_WARN} Execute command in terminal? (Y/n) ",
@@ -144,9 +153,9 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
             )
         )
     if not ask or confirm.lower() in ["y", "Y", "", "yes"]:
-        p = subprocess.run(cmd, capture_output=True, shell=True, text=True)
-        stdout = _shorten_stdout(p.stdout.strip())
-        stderr = _shorten_stdout(p.stderr.strip())
+        returncode, stdout, stderr = shell.run_command(cmd)
+        stdout = _shorten_stdout(stdout.strip())
+        stderr = _shorten_stdout(stderr.strip())
 
         msg = f"Ran command:\n```bash\n{cmd}\n```\n\n"
         if stdout:
@@ -155,7 +164,7 @@ def _execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
             msg += f"stderr:\n```\n{stderr}\n```\n\n"
         if not stdout and not stderr:
             msg += "No output\n\n"
-        msg += f"Return code: {p.returncode}"
+        msg += f"Return code: {returncode}"
 
         yield Message("system", msg)
 
