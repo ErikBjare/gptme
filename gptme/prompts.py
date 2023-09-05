@@ -1,10 +1,8 @@
 import os
-
-from .message import Message
+import subprocess
 
 from .cli import __doc__ as cli_doc
-
-import subprocess
+from .message import Message
 
 USER = os.environ["USER"]
 
@@ -12,6 +10,7 @@ ABOUT_ERB = """
 Erik Bjäreholt is a software engineer who is passionate about building tools that make people's lives easier.
 He is known for building ActivityWatch, a open-source time tracking app.
 """
+
 ABOUT_ACTIVITYWATCH = """
 ActivityWatch is a free and open-source time tracking app.
 
@@ -24,8 +23,8 @@ Docs: https://docs.activitywatch.net/
 
 def initial_prompt(short: bool = False) -> list[Message]:
     """Initial prompt to start the conversation. If no history given."""
-    include_about = not short
-    include_user = not short
+    include_about = False
+    include_user = False
     include_tools = not short
 
     assert cli_doc
@@ -56,51 +55,65 @@ def initial_prompt(short: bool = False) -> list[Message]:
             Message(
                 "system",
                 """
-The assistant can use the following tools:
+                You are a helpful assistant that will help the user with their tasks.
+The assistant shows the user how to use tools to interact with the system and access the internet.
+The assistant should be concise and not verbose, it should assume the user is very knowledgeable.
+All commands should be copy-pasteable and runnable, do not use placeholders like `$REPO` or `<issue>`.
 
-- Terminal
-    - Use by writing a markdown code block starting with ```sh or ```bash
-- Python interpreter
-    - Use by writing a markdown code block starting with ```python
+Here are some examples:
 
-Always write code blocks with a language specified.
+# Terminal
+Use by writing a code block like this:
+
+```bash
+pwd
+ls
+```
+
+# Python interpreter
+Use by writing a code block like this:
+
+```python
+print("Hello world!")
+```
 """
                 + ""
                 if not include_saveload
                 else """
-- Save and load files
-    - Saving is done by writing "save: <filename>" on the line after a code block
-    - Loading is done by writing "load: <filename>"
+# Save files
+Saving is done using `echo` with a redirect operator.
+Example to save `hello.py`:
 
-Examples:
-
-Run the following hello world script and save it to `hello.py`:
-
-```python
-#!/usr/bin/env python
-print("Hello world!")
+```bash
+echo '#!/usr/bin/env python
+print("Hello world!")' > hello.py
 ```
-// save: hello.py
 
-NOTE: The `save:` command must be on the first line after the code block.
+# Read files
+Loading is done using `cat`.
+Example to load `hello.py`:
 
-Load the file `hello.py`:
+```bash
+cat hello.py
+```
 
-// load: hello.py
+# Putting it together
 
 Run the script `hello.py` and save it to hello.sh:
 
+# hello.sh
 ```bash
 #!/usr/bin/env bash
 chmod +x hello.sh hello.py
 python hello.py
 ```
-// save: hello.sh
-                """.strip(),
+""",
             )
         )
 
-    include_exampleuse = True
+    # Short/concise example use
+    # DEPRECATED
+    include_exampleuse = False
     if include_exampleuse:
         msgs.append(
             Message(
@@ -117,15 +130,18 @@ System: ...
             )
         )
 
-    msgs.append(
-        Message(
-            "system",
-            """
-Always remember you are an AI language model, and to generate good answers you might need to reason step-by-step.
-(In the words of Andrej Karpathy: LLMs need tokens to think)
-""".strip(),
+    # Karpathy wisdom and CoT hint
+    include_wisdom = False
+    if include_wisdom:
+        msgs.append(
+            Message(
+                "system",
+                """
+    Always remember you are an AI language model, and to generate good answers you might need to reason step-by-step.
+    (In the words of Andrej Karpathy: LLMs need tokens to think)
+    """.strip(),
+            )
         )
-    )
 
     # The most basic prompt, always given.
     # msgs.append(
@@ -134,4 +150,29 @@ Always remember you are an AI language model, and to generate good answers you m
     #         "Hello, I am your personal AI assistant. How may I help you today?",
     #     )
     # )
+
+    # gh examples
+    include_gh = True
+    if include_gh:
+        msgs.append(
+            Message(
+                "system",
+                """
+Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
+
+# show issues
+`gh issue list --repo $REPO`
+
+# read issue with comments
+`gh issue view $ISSUE --repo $REPO --comments`
+
+# show recent workflows
+`gh run list --status failure --repo $REPO --limit 5`
+
+# show workflow
+`gh run view $RUN --repo $REPO --log`
+""",
+            )
+        )
+
     return msgs

@@ -1,9 +1,9 @@
-from typing import Generator
 import logging
+from typing import Generator
 
 from .message import Message
-from .util import len_tokens
 from .tools import summarize
+from .util import len_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ def reduce_log(log: list[Message]) -> Generator[Message, None, None]:
     yield log[0]
     for msg in log[1:]:
         tokens += len_tokens(msg.content)
-        if msg.role in ["system", "assistant"]:
+        if msg.role in ["system", "assistant"] and not msg.pinned:
             if len_tokens(msg.content) > 100:
                 msg = summarize(msg)
         yield msg
