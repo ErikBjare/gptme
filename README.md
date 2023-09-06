@@ -85,6 +85,7 @@ Usage: gptme [OPTIONS] [PROMPT]
 
     .continue    Continue.
     .undo        Undo the last action.
+    .log         Show the conversation log.
     .summarize   Summarize the conversation so far.
     .load        Load a file.
     .shell       Execute a shell command.
@@ -94,14 +95,37 @@ Usage: gptme [OPTIONS] [PROMPT]
     .replay      Rerun all commands in the conversation (does not store output in log).
 
 Options:
-  --prompt-system TEXT    System prompt. Can be 'full', 'short', or something
-                          custom.
-  --name TEXT             Name of conversation. Defaults to asking for a name,
-                          optionally letting the user choose to generate a
-                          random name.
-  --llm [openai|llama]    LLM to use.
-  --stream / --no-stream  Stream responses
-  -v, --verbose           Verbose output.
-  -y, --no-confirm        Skips all confirmation prompts.
-  --help                  Show this message and exit.
+  --prompt-system TEXT            System prompt. Can be 'full', 'short', or
+                                  something custom.
+  --name TEXT                     Name of conversation. Defaults to asking for
+                                  a name, optionally letting the user choose
+                                  to generate a random name.
+  --llm [openai|llama]            LLM to use.
+  --model [gpt-4|gpt-3.5-turbo|wizardcoder-...]
+                                  Model to use (gpt-3.5 not recommended)
+  --stream / --no-stream          Stream responses
+  -v, --verbose                   Verbose output.
+  -y, --no-confirm                Skips all confirmation prompts.
+  --show-hidden                   Show hidden system messages.
+  --help                          Show this message and exit.
 ```
+
+
+## Stats
+
+### Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/ErikBjare/gptme.svg)](https://starchart.cc/ErikBjare/gptme)
+
+### Downloads
+
+ - [PePy](https://pepy.tech/project/gptme-python)
+   - ![Downloads all-time](https://static.pepy.tech/badge/gptme-python)
+   - ![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)
+ - [PyPiStats](https://pypistats.org/packages/gptme-python)
+
+## Links
+
+ - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)
+ - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
+ - [HN announcement](https://news.ycombinator.com/item?id=37394845)
