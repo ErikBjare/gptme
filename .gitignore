@@ -1,6 +1,8 @@
-.env
+.env*
+*venv
 *.*cache
 *.log
 __pycache__
 .coverage
 *logs*
+dist
