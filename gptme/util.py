@@ -1,7 +1,13 @@
 import random
 from datetime import datetime, timedelta
 
+from rich import print
+from rich.console import Console
+from rich.syntax import Syntax
+
 from .message import Message
+
+EMOJI_WARN = "⚠️"
 
 
 def len_tokens(content: str | list[Message]) -> float:
@@ -82,3 +88,24 @@ def epoch_to_age(epoch):
         return "yesterday"
     else:
         return f"{age.days} days ago ({datetime.fromtimestamp(epoch).strftime('%Y-%m-%d')})"
+
+
+def print_preview(code=None, lang=None):
+    # print a preview section header
+    print()
+    print("[bold white]Preview[/bold white]")
+    if code:
+        print(Syntax(code.strip(), lang))
+        print()
+
+
+def ask_execute(default=True) -> bool:
+    # TODO: add a way to outsource ask_execute decision to another agent/LLM
+    console = Console()
+    choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
+    # answer = None
+    # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
+    answer = console.input(
+        f"[bold yellow on red] {EMOJI_WARN} Execute code? {choicestr} [/] ",
+    )
+    return answer.lower() in (["y", "yes"] + [""] if default else [])

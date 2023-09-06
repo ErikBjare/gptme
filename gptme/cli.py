@@ -36,24 +36,25 @@ from pick import pick
 from rich import print
 from rich.console import Console
 
+from .config import get_config
 from .constants import role_color
 from .logmanager import LogManager, print_log
 from .message import Message
 from .prompts import initial_prompt
 from .tools import (
-    _execute_codeblock,
-    _execute_linecmd,
-    _execute_python,
-    _execute_save,
-    _execute_shell,
+    execute_codeblock,
+    execute_linecmd,
+    execute_python,
+    execute_shell,
 )
+from .tools.shell import get_shell
 from .util import epoch_to_age, generate_unique_name, msgs2dicts
 
 logger = logging.getLogger(__name__)
 
 
 LLMChoice = Literal["openai", "llama"]
-OpenAIModel = Literal["gpt-3.5-turbo", "gpt4"]
+ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
 
 
 def get_logfile(logdir: Path) -> Path:
@@ -70,24 +71,34 @@ def execute_msg(msg: Message) -> Generator[Message, None, None]:
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     for line in msg.content.splitlines():
-        yield from _execute_linecmd(line)
+        yield from execute_linecmd(line)
 
     # get all markdown code blocks
     # we support blocks beginning with ```python and ```bash
     codeblocks = [codeblock for codeblock in msg.content.split("```")[1::2]]
     for codeblock in codeblocks:
-        yield from _execute_codeblock(codeblock)
-
-    yield from _execute_save(msg.content)
+        yield from execute_codeblock(codeblock)
 
 
 Actions = Literal[
-    "continue", "summarize", "load", "shell", "python", "replay", "undo", "help", "exit"
+    "continue",
+    "summarize",
+    "log",
+    "summarize",
+    "context",
+    "load",
+    "shell",
+    "python",
+    "replay",
+    "undo",
+    "help",
+    "exit",
 ]
 
 action_descriptions: dict[Actions, str] = {
     "continue": "Continue",
     "undo": "Undo the last action",
+    "log": "Show the conversation log",
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
     "shell": "Execute a shell command",
@@ -106,13 +117,18 @@ def handle_cmd(
     name, *args = cmd.split(" ")
     match name:
         case "bash" | "sh" | "shell":
-            yield from _execute_shell(" ".join(args), ask=not no_confirm)
+            yield from execute_shell(" ".join(args), ask=not no_confirm)
         case "python" | "py":
-            yield from _execute_python(" ".join(args), ask=not no_confirm)
+            yield from execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
             raise NotImplementedError
+        case "log":
+            logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
             raise NotImplementedError
+        case "context":
+            # print context msg
+            print(_gen_context_msg())
         case "undo":
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
@@ -170,10 +186,10 @@ The chat offers some commands that can be used to interact with the system:
     type=click.Choice(["openai", "llama"]),
 )
 @click.option(
-    "--openai-model",
-    default="gpt-3.5-turbo",
-    help="OpenAI model to use",
-    type=click.Choice(["gpt-3.5-turbo", "gpt4"]),
+    "--model",
+    default="gpt-4",
+    help="Model to use (gpt-3.5 not recommended)",
+    type=click.Choice(["gpt-4", "gpt-3.5-turbo", "wizardcoder-..."]),
 )
 @click.option(
     "--stream/--no-stream",
@@ -185,25 +201,36 @@ The chat offers some commands that can be used to interact with the system:
 @click.option(
     "-y", "--no-confirm", is_flag=True, help="Skips all confirmation prompts."
 )
+@click.option(
+    "--show-hidden",
+    is_flag=True,
+    help="Show hidden system messages.",
+)
 def main(
     prompt: str | None,
     prompt_system: str,
     name: str,
     llm: LLMChoice,
-    openai_model: OpenAIModel,
+    model: ModelChoice,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
+    show_hidden: bool,
 ):
+    config = get_config()
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
     load_dotenv()
     _load_readline_history()
 
     if llm == "openai":
-        if "OPENAI_API_KEY" not in os.environ:
-            print("Error: OPENAI_API_KEY not set, see the README.")
+        if "OPENAI_API_KEY" in os.environ:
+            api_key = os.environ["OPENAI_API_KEY"]
+        elif api_key := config["env"]["OPENAI_API_KEY"]:
+            pass
+        else:
+            print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)
-        openai.api_key = os.environ["OPENAI_API_KEY"]
+        openai.api_key = api_key
     else:
         openai.api_base = "http://localhost:8000/v1"
 
@@ -214,10 +241,16 @@ def main(
 
     LOGDIR = Path("~/.local/share/gptme/logs").expanduser()
     LOGDIR.mkdir(parents=True, exist_ok=True)
-    if name:
-        if name == "random":
-            name = generate_unique_name()
-        logpath = LOGDIR / (f"{datetime.now().strftime('%Y-%m-%d')}-{name}")
+    datestr = datetime.now().strftime("%Y-%m-%d")
+    logpath = LOGDIR
+    if name == "random":
+        # check if name exists, if so, generate another one
+        while not logpath or logpath.exists():
+            if name == "random":
+                name = generate_unique_name()
+            logpath = LOGDIR / (f"{datestr}-{name}")
+    elif name:
+        logpath = LOGDIR / (f"{datestr}-{name}")
     else:
         # let user select between starting a new conversation and loading a previous one
         # using the library
@@ -244,13 +277,15 @@ def main(
             name = input("Name for conversation (or empty for random words): ")
             if not name:
                 name = generate_unique_name()
-            logpath = LOGDIR / (datetime.now().strftime("%Y-%m-%d") + f"-{name}")
+            logpath = LOGDIR / f"{datestr}-{name}"
         else:
             logpath = LOGDIR / prev_conv_files[index - 1].parent
 
     print(f"Using logdir {logpath}")
     logfile = get_logfile(logpath)
-    logmanager = LogManager.load(logfile, initial_msgs=promptmsgs)
+    logmanager = LogManager.load(
+        logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
+    )
     logmanager.print()
     print("--- ^^^ past messages ^^^ ---")
 
@@ -302,7 +337,14 @@ def main(
         # if large context, try to reduce/summarize
         # print response
         try:
-            msg_response = reply(logmanager.prepare_messages(), openai_model, stream)
+            # performs reduction/context trimming
+            msgs = logmanager.prepare_messages()
+
+            # append temporary message with current context
+            msgs += [_gen_context_msg()]
+
+            # generate response
+            msg_response = reply(msgs, model, stream)
 
             # log response and run tools
             if msg_response:
@@ -311,6 +353,20 @@ def main(
                     logmanager.append(msg)
         except KeyboardInterrupt:
             print("Interrupted")
+
+
+def _gen_context_msg() -> Message:
+    shell = get_shell()
+    msgstr = ""
+
+    _, pwd, _ = shell.run_command("echo pwd: $(pwd)")
+    msgstr += f"$ pwd\n{pwd.strip()}\n"
+
+    ret, git, _ = shell.run_command("git status -s")
+    if ret == 0:
+        msgstr += f"$ git status\n{git}\n"
+
+    return Message("system", msgstr.strip(), hide=True)
 
 
 CONFIG_PATH = Path("~/.config/gptme").expanduser()
@@ -356,7 +412,7 @@ def prompt_input(prompt: str, value=None) -> str:
     return value
 
 
-def reply(messages: list[Message], model: OpenAIModel, stream: bool = False) -> Message:
+def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
     if stream:
         return reply_stream(messages, model)
     else:
@@ -370,7 +426,7 @@ temperature = 0
 top_p = 0.1
 
 
-def _chat_complete(messages: list[Message], model: OpenAIModel) -> str:
+def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     response = openai.ChatCompletion.create(  # type: ignore
@@ -382,7 +438,7 @@ def _chat_complete(messages: list[Message], model: OpenAIModel) -> str:
     return response.choices[0].message.content
 
 
-def reply_stream(messages: list[Message], model: OpenAIModel) -> Message:
+def reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
     response = openai.ChatCompletion.create(  # type: ignore
         model=model,

@@ -20,6 +20,7 @@ python-dotenv = "^1.0.0"
 rich = "^13.5.2"
 pick = "^2.2.0"
 joblib = "^1.3.2"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
@@ -27,6 +28,7 @@ pytest-cov = "*"
 mypy = "*"
 ruff = "*"
 black = "*"
+types-toml = "^0.10.8.7"
 
 [tool.poetry.extras]
 server = ["llama-cpp-python"]

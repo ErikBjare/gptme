@@ -18,11 +18,15 @@ PathLike: TypeAlias = str | Path
 
 class LogManager:
     def __init__(
-        self, log: list[Message] | None = None, logfile: PathLike | None = None
+        self,
+        log: list[Message] | None = None,
+        logfile: PathLike | None = None,
+        show_hidden=False,
     ):
         self.log = log or []
         assert logfile is not None, "logfile must be specified"
         self.logfile = logfile
+        self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
     def append(self, msg: Message, quiet=False) -> None:
@@ -36,8 +40,8 @@ class LogManager:
         """Writes the log to the logfile."""
         write_log(self.log, self.logfile)
 
-    def print(self):
-        print_log(self.log, oneline=False)
+    def print(self, show_hidden: bool | None = None):
+        print_log(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
 
     def undo(self, n: int = 1) -> None:
         """Removes the last message from the log."""
@@ -64,6 +68,7 @@ class LogManager:
         """Prepares the log into messages before sending it to the LLM."""
         msgs = self.log
         msgs_reduced = list(reduce_log(msgs))
+
         if len(msgs) != len(msgs_reduced):
             print(
                 f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
@@ -76,13 +81,15 @@ class LogManager:
         return msgs_limited
 
     @classmethod
-    def load(cls, logfile=None, initial_msgs=initial_prompt()) -> "LogManager":
+    def load(
+        cls, logfile=None, initial_msgs=initial_prompt(), **kwargs
+    ) -> "LogManager":
         """Loads a conversation log."""
         with open(logfile, "r") as file:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
         if not msgs:
             msgs = initial_msgs
-        return cls(msgs, logfile=logfile)
+        return cls(msgs, logfile=logfile, **kwargs)
 
 
 def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
@@ -106,9 +113,15 @@ def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
         )
 
 
-def print_log(log: Message | list[Message], oneline: bool = True) -> None:
+def print_log(
+    log: Message | list[Message], oneline: bool = True, show_hidden=False
+) -> None:
     """Prints the log to the console."""
+    skipped_hidden = 0
     for msg in log if isinstance(log, list) else [log]:
+        if msg.hide and not show_hidden:
+            skipped_hidden += 1
+            continue
         color = role_color[msg.role]
         userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
         # get terminal width
@@ -141,3 +154,7 @@ def print_log(log: Message | list[Message], oneline: bool = True) -> None:
             print(f"  ```{output[code_end+3:]}")
         else:
             print(f"\n{userprefix}: {output.rstrip()}")
+    if skipped_hidden:
+        print(
+            f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
+        )

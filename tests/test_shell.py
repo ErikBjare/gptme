@@ -1,4 +1,4 @@
-from gptme.tools import ShellSession
+from gptme.tools.shell import ShellSession
 
 
 def test_echo():

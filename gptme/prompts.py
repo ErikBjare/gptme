@@ -1,18 +1,13 @@
 import os
-import subprocess
 
 from .cli import __doc__ as cli_doc
+from .config import get_config
 from .message import Message
 
 USER = os.environ["USER"]
 
-ABOUT_ERB = """
-Erik Bjäreholt is a software engineer who is passionate about building tools that make people's lives easier.
-He is known for building ActivityWatch, a open-source time tracking app.
-"""
-
 ABOUT_ACTIVITYWATCH = """
-ActivityWatch is a free and open-source time tracking app.
+ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices.
 
 It runs locally on the user's computer and has a REST API available at http://localhost:5600/api/.
 
@@ -23,8 +18,11 @@ Docs: https://docs.activitywatch.net/
 
 def initial_prompt(short: bool = False) -> list[Message]:
     """Initial prompt to start the conversation. If no history given."""
+    config = get_config()
+
     include_about = False
-    include_user = False
+    include_user = True
+    include_project = False
     include_tools = not short
 
     assert cli_doc
@@ -33,21 +31,32 @@ def initial_prompt(short: bool = False) -> list[Message]:
         msgs.append(Message("system", cli_doc))
     if include_user:
         msgs.append(Message("system", "$ whoami\n" + USER))
-        pwd = subprocess.run(["pwd"], capture_output=True, text=True).stdout
-        msgs.append(Message("system", f"$ pwd\n{pwd}"))
-        if USER == "erb":
-            msgs.append(
-                Message(
-                    "system", "Here is some information about the user: " + ABOUT_ERB
-                )
+
+        # NOTE: this is better to have as a temporary message that's updated with every request, so that the information is up-to-date
+        # pwd = subprocess.run(["pwd"], capture_output=True, text=True).stdout
+        # msgs.append(Message("system", f"$ pwd\n{pwd}"))
+
+        msgs.append(
+            Message(
+                "system",
+                "Here is some information about the user: "
+                + config["prompt"]["about_user"],
             )
-            msgs.append(
-                Message(
-                    "system",
-                    "Here is some information about ActivityWatch: "
-                    + ABOUT_ACTIVITYWATCH,
-                )
+        )
+    if include_project:
+        # TODO: detect from git root folder name
+        project = "activitywatch"
+        # TODO: enshrine in config
+        config["prompt"]["project"] = {
+            "activitywatch": ABOUT_ACTIVITYWATCH,
+        }
+        msgs.append(
+            Message(
+                "system",
+                f"Some information about the current project {project}: "
+                + config["prompt"]["project"][project],
             )
+        )
 
     if include_tools:
         include_saveload = False
@@ -59,15 +68,21 @@ def initial_prompt(short: bool = False) -> list[Message]:
 The assistant shows the user how to use tools to interact with the system and access the internet.
 The assistant should be concise and not verbose, it should assume the user is very knowledgeable.
 All commands should be copy-pasteable and runnable, do not use placeholders like `$REPO` or `<issue>`.
+Do not suggest the user open a browser or editor, instead show them how to do it in the shell.
+When the output of a command is of interest, end the code block so that the user can execute it before continuing.
 
 Here are some examples:
 
 # Terminal
 Use by writing a code block like this:
 
+> User: learn about the project
 ```bash
-pwd
 ls
+```
+> stdout: README.md
+```bash
+cat README.md
 ```
 
 # Python interpreter
@@ -82,8 +97,8 @@ print("Hello world!")
                 else """
 # Save files
 Saving is done using `echo` with a redirect operator.
-Example to save `hello.py`:
 
+> User: write a Hello world script to hello.py
 ```bash
 echo '#!/usr/bin/env python
 print("Hello world!")' > hello.py
@@ -91,65 +106,22 @@ print("Hello world!")' > hello.py
 
 # Read files
 Loading is done using `cat`.
-Example to load `hello.py`:
 
+> User: read hello.py
 ```bash
 cat hello.py
 ```
 
 # Putting it together
 
-Run the script `hello.py` and save it to hello.sh:
-
-# hello.sh
+> User: run hello.py
 ```bash
-#!/usr/bin/env bash
-chmod +x hello.sh hello.py
 python hello.py
 ```
 """,
+                hide=True,
             )
         )
-
-    # Short/concise example use
-    # DEPRECATED
-    include_exampleuse = False
-    if include_exampleuse:
-        msgs.append(
-            Message(
-                "system",
-                """
-Example use:
-
-User: Look in the current directory and learn about the project.
-Assistant: $ ls
-System: README.md Makefile src pyproject.toml
-Assistant: $ cat README.md
-System: ...
-""".strip(),
-            )
-        )
-
-    # Karpathy wisdom and CoT hint
-    include_wisdom = False
-    if include_wisdom:
-        msgs.append(
-            Message(
-                "system",
-                """
-    Always remember you are an AI language model, and to generate good answers you might need to reason step-by-step.
-    (In the words of Andrej Karpathy: LLMs need tokens to think)
-    """.strip(),
-            )
-        )
-
-    # The most basic prompt, always given.
-    # msgs.append(
-    #     Message(
-    #         "assistant",
-    #         "Hello, I am your personal AI assistant. How may I help you today?",
-    #     )
-    # )
 
     # gh examples
     include_gh = True
@@ -178,6 +150,7 @@ gh run list --status failure --repo $REPO --limit 5
 gh run view $RUN --repo $REPO --log
 ```
 """,
+                hide=True,
             )
         )
 
