@@ -23,4 +23,8 @@ jobs:
       env:
         PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
       run: |
+        # set pyproject.toml version to github.ref_name (without v prefix)
+        # just in case someone forgot...
+        VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+        sed -i 's/^version = ".*"$/version = "'"$VERSION"'"/' pyproject.toml
         poetry publish --build --username=__token__ --password=$PYPI_TOKEN
