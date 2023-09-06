@@ -4,6 +4,7 @@ GPTMe
 */ʤiː piː tiː miː/*
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
+[![PyPI version](https://badge.fury.io/py/gptme-python.svg)](https://pypi.org/project/gptme-python/)
 
 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code.
 
