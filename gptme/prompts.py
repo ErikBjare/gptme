@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from .cli import __doc__ as cli_doc
 from .config import get_config
@@ -59,7 +60,6 @@ def initial_prompt(short: bool = False) -> list[Message]:
         )
 
     if include_tools:
-        include_saveload = False
         msgs.append(
             Message(
                 "system",
@@ -91,10 +91,7 @@ Use by writing a code block like this:
 ```python
 print("Hello world!")
 ```
-"""
-                + ""
-                if not include_saveload
-                else """
+
 # Save files
 Saving is done using `echo` with a redirect operator.
 
@@ -124,7 +121,8 @@ python hello.py
         )
 
     # gh examples
-    include_gh = True
+    # only include if gh is installed
+    include_gh = shutil.which("gh") is not None
     if include_gh:
         msgs.append(
             Message(
