@@ -359,7 +359,7 @@ def _gen_context_msg() -> Message:
     shell = get_shell()
     msgstr = ""
 
-    _, pwd, _ = shell.run_command("echo pwd: $(pwd)")
+    _, pwd, _ = shell.run_command("pwd")
     msgstr += f"$ pwd\n{pwd.strip()}\n"
 
     ret, git, _ = shell.run_command("git status -s")

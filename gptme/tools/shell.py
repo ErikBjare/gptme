@@ -2,7 +2,6 @@ import atexit
 import os
 import re
 import select
-import shlex
 import subprocess
 from typing import Generator
 
@@ -24,13 +23,11 @@ class ShellSession:
         self.stderr_fd = self.process.stderr.fileno()  # type: ignore
         self.delimiter = "END_OF_COMMAND_OUTPUT"
 
-    def run_command(self, command: str | list[str]) -> tuple[int | None, str, str]:
+    def run_command(self, command: str) -> tuple[int | None, str, str]:
         assert self.process.stdin
-        if isinstance(command, list):
-            command = " ".join(shlex.quote(arg) for arg in command)
 
-        full_command = f"{command}; echo ReturnCode:$?; echo {self.delimiter}"
-        self.process.stdin.write(full_command + "\n")
+        full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
+        self.process.stdin.write(full_command)
         self.process.stdin.flush()
 
         stdout = []
@@ -45,12 +42,12 @@ class ShellSession:
                     line = os.read(fd, 4096).decode("utf-8")
                     if "ReturnCode:" in line:
                         return_code_str = (
-                            line.split("ReturnCode:")[1].split("\n")[0].strip()
+                            line.split("ReturnCode:")[1].split(" ")[0].strip()
                         )
                         return_code = int(return_code_str)
                     if self.delimiter in line:
                         read_delimiter = True
-                        line = line.replace(self.delimiter, "")
+                        continue
                     if line:
                         stdout.append(line)
                 elif fd == self.stderr_fd:
