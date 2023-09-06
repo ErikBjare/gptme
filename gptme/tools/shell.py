@@ -39,7 +39,10 @@ class ShellSession:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
             for fd in rlist:
                 if fd == self.stdout_fd:
-                    line = os.read(fd, 4096).decode("utf-8")
+                    data = os.read(fd, 4096).decode("utf-8")
+                elif fd == self.stderr_fd:
+                    data = os.read(fd, 4096).decode("utf-8")
+                for line in data.split("\n"):
                     if "ReturnCode:" in line:
                         return_code_str = (
                             line.split("ReturnCode:")[1].split(" ")[0].strip()
@@ -49,11 +52,10 @@ class ShellSession:
                         read_delimiter = True
                         continue
                     if line:
-                        stdout.append(line)
-                elif fd == self.stderr_fd:
-                    line = os.read(fd, 4096).decode("utf-8")
-                    if line:
-                        stderr.append(line)
+                        if fd == self.stdout_fd:
+                            stdout.append(line)
+                        elif fd == self.stderr_fd:
+                            stderr.append(line)
             if read_delimiter:
                 break
         return (
