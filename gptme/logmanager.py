@@ -50,14 +50,14 @@ class LogManager:
         # assert undid.content == ".undo"  # assert that the last message is an undo
         peek = self.log[-1] if self.log else None
         if not peek:
-            print("[yellow]Nothing to undo.[/yellow]")
+            print("[yellow]Nothing to undo.[/]")
             return
 
-        print("[yellow]Undoing messages:[/yellow]")
+        print("[yellow]Undoing messages:[/]")
         for _ in range(n):
             undid = self.log.pop()
             print(
-                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=30, placeholder='...')}[/red]",
+                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
             )
             peek = self.log[-1] if self.log else None
 
