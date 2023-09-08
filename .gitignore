@@ -6,3 +6,6 @@ __pycache__
 .coverage
 *logs*
 dist
+*.gif
+*.cast
+*.png
