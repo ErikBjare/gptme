@@ -263,8 +263,8 @@ def main(
             # performs reduction/context trimming
             msgs = logmanager.prepare_messages()
 
-            # append temporary message with current context
-            msgs += [_gen_context_msg()]
+            # append temporary message with current context, right before user message
+            msgs = msgs[:-1] + [_gen_context_msg()] + msgs[-1:]
 
             # generate response
             msg_response = reply(msgs, model, stream)
