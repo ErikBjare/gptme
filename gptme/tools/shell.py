@@ -4,9 +4,12 @@ import re
 import select
 import subprocess
 from typing import Generator
+import logging
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+
+logger = logging.getLogger(__name__)
 
 
 class ShellSession:
@@ -22,6 +25,12 @@ class ShellSession:
         self.stdout_fd = self.process.stdout.fileno()  # type: ignore
         self.stderr_fd = self.process.stderr.fileno()  # type: ignore
         self.delimiter = "END_OF_COMMAND_OUTPUT"
+
+        # send `set -euxo pipefail`
+        self.run_command("set -euxo pipefail")
+
+        # set env vars like PAGER
+        self.run_command("export PAGER=cat")
 
     def run_command(self, command: str) -> tuple[int | None, str, str]:
         assert self.process.stdin
@@ -47,7 +56,12 @@ class ShellSession:
                         return_code_str = (
                             line.split("ReturnCode:")[1].split(" ")[0].strip()
                         )
-                        return_code = int(return_code_str)
+                        try:
+                            return_code = int(return_code_str)
+                        except ValueError:
+                            logger.error(
+                                "Failed to parse return code:", return_code_str
+                            )
                     if self.delimiter in line:
                         read_delimiter = True
                         continue
@@ -58,10 +72,15 @@ class ShellSession:
                             stderr.append(line)
             if read_delimiter:
                 break
+
+        # if stderr only contains '+' lines, it's probably just bash printing the command, so filter it out
+        if all(line.startswith("+") for line in stderr):
+            stderr = []
+
         return (
             return_code,
-            "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
-            "".join(stderr).strip(),
+            "\n".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
+            "\n".join(stderr).strip(),
         )
 
     def close(self):

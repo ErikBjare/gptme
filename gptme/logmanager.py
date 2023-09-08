@@ -8,7 +8,7 @@ from rich import print
 from rich.syntax import Syntax
 
 from .constants import ROLE_COLOR
-from .message import Message
+from .message import Message, print_msg
 from .prompts import initial_prompt
 from .reduce import limit_log, reduce_log
 from .util import len_tokens
@@ -34,14 +34,14 @@ class LogManager:
         self.log.append(msg)
         self.write()
         if not quiet:
-            print_log(msg, oneline=False)
+            print_msg(msg, oneline=False)
 
     def write(self) -> None:
         """Writes the log to the logfile."""
         write_log(self.log, self.logfile)
 
     def print(self, show_hidden: bool | None = None):
-        print_log(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
+        print_msg(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
 
     def undo(self, n: int = 1) -> None:
         """Removes the last message from the log."""
@@ -53,14 +53,14 @@ class LogManager:
         # assert undid.content == ".undo"  # assert that the last message is an undo
         peek = self.log[-1] if self.log else None
         if not peek:
-            print("[yellow]Nothing to undo.[/yellow]")
+            print("[yellow]Nothing to undo.[/]")
             return
 
-        print("[yellow]Undoing messages:[/yellow]")
+        print("[yellow]Undoing messages:[/]")
         for _ in range(n):
             undid = self.log.pop()
             print(
-                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=30, placeholder='...')}[/red]",
+                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
             )
             peek = self.log[-1] if self.log else None
 

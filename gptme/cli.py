@@ -36,11 +36,12 @@ from rich.console import Console
 
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
-from .logmanager import LogManager, print_log
-from .message import Message
+from .logmanager import LogManager
+from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
+from .tools.summarize import summarize
 from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
@@ -91,11 +92,11 @@ def handle_cmd(
         case "python" | "py":
             yield from execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
-            raise NotImplementedError
+            yield Message("user", "Please continue.")
         case "log":
             logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
-            raise NotImplementedError
+            print(summarize(logmanager.prepare_messages()))
         case "context":
             # print context msg
             print(_gen_context_msg())
@@ -115,7 +116,7 @@ def handle_cmd(
             for msg in logmanager.log:
                 if msg.role == "assistant":
                     for msg in execute_msg(msg):
-                        print_log(msg, oneline=False)
+                        print_msg(msg, oneline=False)
         case _:
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
@@ -327,7 +328,7 @@ def _gen_context_msg() -> Message:
     if ret == 0 and git:
         msgstr += f"$ {cmd}\n{git}\n"
 
-    return Message("system", msgstr.strip(), hide=True)
+    return Message("system", msgstr.strip(), hide=False)
 
 
 # default history if none found
@@ -393,7 +394,6 @@ def get_logfile(name: str) -> Path:
 def prompt_user(value=None) -> str:
     response = prompt_input(PROMPT_USER, value)
     if response:
-        readline.add_history(response)
         readline.write_history_file(HISTORY_FILE)
     return response
 

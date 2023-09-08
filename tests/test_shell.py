@@ -7,8 +7,8 @@ def test_echo():
 
     # Run a echo command
     ret, out, err = shell.run_command("echo 'Hello World!'")
-    assert err.strip() == ""  # Expecting no stderr
     assert out.strip() == "Hello World!"  # Expecting stdout to be "Hello World!"
+    assert err.strip() == ""  # Expecting no stderr
     assert ret == 0  # Process should exit with 0
 
     # Close the shell session
@@ -21,14 +21,15 @@ def test_cd():
 
     # Run a cd command
     ret, out, err = shell.run_command("cd /tmp")
-    assert err.strip() == ""  # Expecting no stderr
-    assert ret == 0  # Process should exit with 0
+    assert out.strip() == ""
+    assert err.strip() == ""
+    assert ret == 0
 
     # Check the current directory
     ret, out, err = shell.run_command("pwd")
-    assert err.strip() == ""  # Expecting no stderr
     assert out.strip() == "/tmp"  # Should be in /tmp now
-    assert ret == 0  # Process should exit with 0
+    assert err.strip() == ""
+    assert ret == 0
 
     # Close the shell session
     shell.close()
