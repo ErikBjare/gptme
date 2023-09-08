@@ -67,10 +67,19 @@ gptme
 
 ### Local model
 
-To run local models, you need to start the llama-cpp-python server:
+To run local models, you need to install and run the [llama-cpp-python][llama-cpp-python] server. To ensure you get the most out of your hardware, make sure you build it with [the appropriate hardware acceleration][hwaccel].
+
+For macOS, you can find detailed instructions [here][metal].
+
+I recommend the WizardCoder-Python models.
+
+[llama-cpp-python]: https://github.com/abetlen/llama-cpp-python
+[hwaccel]: https://github.com/abetlen/llama-cpp-python#installation-with-hardware-acceleration
+[metal]: https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md
+
 ```sh
-MODEL=~/ML/WizardCoder-Python-34B-V1.0-GGUF/wizardcoder-python-34b-v1.0.Q5_K_M.gguf
-poetry run python -m llama_cpp.server --model $MODEL
+MODEL=~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
+poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--n_gpu_layer 1` if you have a M1/M2 chip
 
 # Now, to use it:
 gptme --llm llama
