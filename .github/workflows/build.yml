@@ -34,6 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         make build
+        poetry run playwright install
     - name: Run tests
       env:
         TERM: xterm
