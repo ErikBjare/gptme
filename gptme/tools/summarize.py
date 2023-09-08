@@ -3,7 +3,7 @@ import logging
 import openai
 
 from ..cache import memory
-from ..message import Message
+from ..message import Message, format_msgs
 from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
@@ -26,14 +26,26 @@ def _llm_summarize(content: str) -> str:
     return summary
 
 
-def summarize(msg: Message) -> Message:
+def summarize(msg: Message | list[Message]) -> Message:
     """Uses a cheap LLM to summarize long outputs."""
-    if len_tokens(msg.content) > 200:
+    # construct plaintext from message(s)
+    msgs = msg if isinstance(msg, list) else [msg]
+    content = "\n".join(format_msgs(msgs))
+    summary = _summarize(content)
+    # construct message from summary
+    summary_msg = Message(
+        role="system", content=f"Summary of the conversation:\n{summary})"
+    )
+    return summary_msg
+
+
+def _summarize(s: str) -> str:
+    if len_tokens(s) > 200:
         # first 100 tokens
-        beginning = " ".join(msg.content.split()[:150])
+        beginning = " ".join(s.split()[:150])
         # last 100 tokens
-        end = " ".join(msg.content.split()[-100:])
+        end = " ".join(s.split()[-100:])
         summary = _llm_summarize(beginning + "\n...\n" + end)
     else:
-        summary = _llm_summarize(msg.content)
-    return Message("system", f"Here is a summary of the response:\n{summary}")
+        summary = _llm_summarize(s)
+    return summary

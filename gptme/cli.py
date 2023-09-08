@@ -43,7 +43,7 @@ from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
-from .tools.summarize import _llm_summarize
+from .tools.summarize import summarize
 from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
@@ -103,10 +103,13 @@ def handle_cmd(
             logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
             msgs = logmanager.prepare_messages()
-            msgstrs = [msg.format() for msg in msgs if not msg.hide]
-            logstr = "\n".join(s for s in msgstrs)
-            summary = _llm_summarize(logstr)
+            msgs = [m for m in msgs if not m.hide]
+            summary = summarize(msgs)
             print(f"Summary: {summary}")
+        case "log":
+            logmanager.print(show_hidden="--hidden" in args)
+        case "summarize":
+            print(summarize(logmanager.prepare_messages()))
         case "context":
             # print context msg
             print(_gen_context_msg())
