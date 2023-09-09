@@ -5,6 +5,8 @@ GPTMe
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
 [![PyPI version](https://badge.fury.io/py/gptme-python.svg)](https://pypi.org/project/gptme-python/)
+[![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
+[![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
 
 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code.
 
@@ -118,12 +120,12 @@ Options:
 
 [![Stargazers over time](https://starchart.cc/ErikBjare/gptme.svg)](https://starchart.cc/ErikBjare/gptme)
 
-### Downloads
+### Download stats
 
- - [PePy](https://pepy.tech/project/gptme-python)
-   - ![Downloads all-time](https://static.pepy.tech/badge/gptme-python)
-   - ![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)
+ - [PePy][pepy]
  - [PyPiStats](https://pypistats.org/packages/gptme-python)
+
+[pepy]: https://pepy.tech/project/gptme-python
 
 ## Links
 
