@@ -317,12 +317,15 @@ def _gen_context_msg() -> Message:
     shell = get_shell()
     msgstr = ""
 
-    _, pwd, _ = shell.run_command("pwd")
-    msgstr += f"$ pwd\n{pwd.strip()}\n"
+    cmd = "pwd"
+    ret, pwd, _ = shell.run_command(cmd)
+    assert ret == 0
+    msgstr += f"$ {cmd}\n{pwd.strip()}\n"
 
-    ret, git, _ = shell.run_command("git status -s")
-    if ret == 0:
-        msgstr += f"$ git status\n{git}\n"
+    cmd = "git status -s"
+    ret, git, _ = shell.run_command(cmd)
+    if ret == 0 and git:
+        msgstr += f"$ {cmd}\n{git}\n"
 
     return Message("system", msgstr.strip(), hide=True)
 
