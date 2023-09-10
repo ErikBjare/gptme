@@ -26,6 +26,7 @@ toml = "^0.10.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
 pytest-cov = "*"
+pytest-profiling = "^1.7.0"
 mypy = "*"
 ruff = "*"
 black = "*"

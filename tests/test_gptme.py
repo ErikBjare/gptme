@@ -28,8 +28,8 @@ def test_shell(name: str):
         result = runner.invoke(
             gptme.cli.main, ["-y", "--name", name, '.shell echo "yes"']
         )
-        assert result.exit_code == 0
         assert "yes\n" in result.output
+        assert result.exit_code == 0
 
 
 def test_python(name: str):
@@ -38,8 +38,8 @@ def test_python(name: str):
         result = runner.invoke(
             gptme.cli.main, ["-y", "--name", name, '.python print("yes")']
         )
-        assert result.exit_code == 0
         assert "yes\n" in result.output
+        assert result.exit_code == 0
 
 
 def test_python_error(name: str):
@@ -48,8 +48,8 @@ def test_python_error(name: str):
         result = runner.invoke(
             gptme.cli.main, ["-y", "--name", name, '.python raise Exception("yes")']
         )
-        assert result.exit_code == 0
         assert "Exception: yes" in result.output
+        assert result.exit_code == 0
 
 
 @pytest.mark.slow
@@ -65,7 +65,7 @@ def test_generate_primes(name: str):
                 "print the first 10 prime numbers",
             ],
         )
-        assert result.exit_code == 0
         # check that the 9th and 10th prime is present
         assert "23" in result.output
         assert "29" in result.output
+        assert result.exit_code == 0

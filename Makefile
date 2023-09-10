@@ -2,8 +2,11 @@ build:
 	poetry install
 
 test:
-	@# pass `-m "not slow"` to skip slow tests if SLOW is not set
+	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
 	poetry run pytest tests -v --cov=gptme --cov-report=term-missing --cov-report=html $(if $(SLOW),, -m "not slow")
+
+test-flameprof:
+	poetry run pytest tests -v --cov=gptme --cov-report=term-missing --cov-report=html --profile-svg
 
 typecheck:
 	poetry run mypy --ignore-missing-imports gptme
