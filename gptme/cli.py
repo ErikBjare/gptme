@@ -116,7 +116,7 @@ def handle_cmd(
             print("Replaying conversation...")
             for msg in logmanager.log:
                 if msg.role == "assistant":
-                    for msg in execute_msg(msg):
+                    for msg in execute_msg(msg, ask=True):
                         print_log(msg, oneline=False)
         case _:
             print("Available commands:")
