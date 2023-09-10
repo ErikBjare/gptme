@@ -1,5 +1,5 @@
-GPTMe
-=====
+GPTMe 👨‍💻🤝🤖🤝💻
+==================
 
 */ʤiː piː tiː miː/*
 
@@ -8,41 +8,46 @@ GPTMe
 [![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
 [![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
 
-A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code.
+📜 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code, making them able to assist in all kinds of development and terminal-based work.
 
-## Demo
+A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter")
+
+## 🎥 Demo
 
 [![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
 
-Steps:
+<details>
+<summary>Steps</summary>
+<ol>
+    <li> Create a new dir 'gptme-test-fib' and git init
+    <li> Write a fib function to fib.py, commit
+    <li> Create a public repo and push to GitHub
+</ol>
+</details>
 
-1. Create a new dir 'gptme-test-fib' and git init
-2. Write a fib function to fib.py, commit
-3. Create a public repo and push to GitHub
+## 🌟 Features
 
-## Features
+- 💻 Directly execute suggested shell commands on the local machine.
+  - 🛠 Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
+  - 🐍 Also spins up a Python REPL to run Python code interactively.
+  - 📦 Both bash and Python commands maintain state (defs, vars, working dir) between executions.
+- 🔄 Self-correcting commands
+  - ❌ Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
+- 🤖 Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
+  - 🙏 Thanks to llama-cpp-python server!
+- 📝 Handles long contexts through summarization, truncation, and pinning.
+  - 🚧 (wip, not very well developed)
 
- - Directly execute suggested shell commands on the local machine.
-   - Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
-   - Also spins up a Python REPL to run Python code interactively.
-   - Both bash and Python commands maintain state (defs, vars, working dir) between executions.
- - Self-correcting commands
-   - Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
- - Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
-   - Thanks to llama-cpp-python server!
- - Handles long contexts through summarization, truncation, and pinning.
-   - (wip, not very well developed)
+## 🛠 Use Cases
 
-## Use Cases
+- 🎯 **Shell Copilot:** Use GPTMe to execute shell commands on your local machine, using natural language (no more memorizing flags!).
+- 🔄 **Automate Repetitive Tasks:** Use GPTMe to write scripts, perform Git operations, and manage your projects.
+- 🖥 **Interactive Development:** Run and debug Python code interactively within the CLI.
+- 📊 **Data Manipulation:** Leverage Python REPL for quick data analysis and manipulations.
+- 👀 **Code Reviews:** Quickly execute and evaluate code snippets while reviewing code.
+- 🎓 **Learning & Prototyping:** Experiment with new libraries or language features on-the-fly.
 
- - **Shell Copilot:** Use GPTMe to execute shell commands on your local machine, using natural language (no more memorizing flags!).
- - **Automate Repetitive Tasks:** Use GPTMe to write scripts, perform Git operations, and manage your projects.
- - **Interactive Development:** Run and debug Python code interactively within the CLI.
- - **Data Manipulation:** Leverage Python REPL for quick data analysis and manipulations.
- - **Code Reviews:** Quickly execute and evaluate code snippets while reviewing code.
- - **Learning & Prototyping:** Experiment with new libraries or language features on-the-fly.
-
-## Getting started
+## 🚀 Getting Started
 
 Install from pip:
 
@@ -55,7 +60,7 @@ Or from source:
 poetry install  # or: pip install .
 ```
 
-[Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable:
+🔑 [Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable:
 ```sh
 OPENAI_API_KEY=...
 ```
@@ -65,7 +70,7 @@ Now, to get started with your first conversation, run:
 gptme
 ```
 
-### Local model
+### 🖥 Local Models
 
 To run local models, you need to install and run the [llama-cpp-python][llama-cpp-python] server. To ensure you get the most out of your hardware, make sure you build it with [the appropriate hardware acceleration][hwaccel].
 
@@ -85,7 +90,7 @@ poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--
 gptme --llm llama
 ```
 
-## Usage
+## 🛠 Usage
 
 ```sh
 $ gptme --help
@@ -123,13 +128,13 @@ Options:
 ```
 
 
-## Stats
+## 📊 Stats
 
-### Stargazers over time
+### ⭐ Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/ErikBjare/gptme.svg)](https://starchart.cc/ErikBjare/gptme)
 
-### Download stats
+### 📈 Download Stats
 
  - [PePy][pepy]
  - [PyPiStats](https://pypistats.org/packages/gptme-python)
@@ -137,13 +142,34 @@ Options:
 [pepy]: https://pepy.tech/project/gptme-python
 
 
-## Development
+## 💻 Development
 
 Do you want to contribute? Or do you have questions relating to development? 
 
 Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 
-## Links
+## 🚀 Future plans
+
+### 🎛 Fine tuning
+
+While current LLMs do okay in this domain, they often take weird approaches that I think could be addressed by fine-tuning on conversation history. 
+
+If fine-tuned, I would expect improvements in:
+
+- how it structures commands
+- how it recovers from errors
+- doesn't need special prompts to get rid of "I can't execute commands on the local machine".
+- and more...
+
+### 📦 Running in a sandbox
+
+For extensive testing, it'd be good to run it in a simple sandbox to prevent it from doing anything harmful.
+
+## 🔀 Alternatives
+
+Looking for other similar projects? Check out [Are Copilots Local Yet?](https://github.com/ErikBjare/are-co-pilots-local-yet)
+
+## 🔗 Links
 
  - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)
  - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
