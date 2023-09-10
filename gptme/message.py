@@ -68,9 +68,12 @@ def print_msg(
                 output = msg.content.replace("\n", "\\n")[:max_len] + "..."
         else:
             multiline = len(msg.content.split("\n")) > 1
-            output += ("\n  " if multiline else "") + textwrap.indent(
-                msg.content, prefix="  "
-            )[2:]
+            output += "\n  " if multiline else ""
+            for i, block in enumerate(msg.content.split("\n```")):
+                if i % 2 == 0:
+                    output += "\n" + textwrap.indent(block, prefix="  ")
+                else:
+                    output += "\n```" + block.rstrip() + "\n```"
 
         # find code-blocks and syntax highlight them with rich
         startstr = "```python"
