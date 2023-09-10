@@ -23,61 +23,31 @@ to do so, it needs to be able to store and query past conversations in a databas
 import logging
 import os
 import readline  # noqa: F401
-import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Generator, Literal
 
 import click
-import openai
 from dotenv import load_dotenv
 from pick import pick
 from rich import print
 from rich.console import Console
 
-from .config import get_config
-from .constants import role_color
+from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
+from .llm import init_llm, reply
 from .logmanager import LogManager, print_log
 from .message import Message
 from .prompts import initial_prompt
-from .tools import (
-    execute_codeblock,
-    execute_linecmd,
-    execute_python,
-    execute_shell,
-)
+from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
-from .util import epoch_to_age, generate_unique_name, msgs2dicts
+from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
 
 
 LLMChoice = Literal["openai", "llama"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
-
-
-def get_logfile(logdir: Path) -> Path:
-    if not os.path.exists(logdir):
-        os.mkdir(logdir)
-    logfile = logdir / "conversation.jsonl"
-    if not os.path.exists(logfile):
-        open(logfile, "w").close()
-    return logfile
-
-
-def execute_msg(msg: Message) -> Generator[Message, None, None]:
-    """Uses any tools called in a message and returns the response."""
-    assert msg.role == "assistant", "Only assistant messages can be executed"
-
-    for line in msg.content.splitlines():
-        yield from execute_linecmd(line)
-
-    # get all markdown code blocks
-    # we support blocks beginning with ```python and ```bash
-    codeblocks = [codeblock for codeblock in msg.content.split("```")[1::2]]
-    for codeblock in codeblocks:
-        yield from execute_codeblock(codeblock)
 
 
 Actions = Literal[
@@ -176,8 +146,8 @@ The chat offers some commands that can be used to interact with the system:
 )
 @click.option(
     "--name",
-    default=None,
-    help="Name of conversation. Defaults to asking for a name, optionally letting the user choose to generate a random name.",
+    default="random",
+    help="Name of conversation. Defaults to generating a random name. Pass 'ask' to be prompted for a name.",
 )
 @click.option(
     "--llm",
@@ -217,72 +187,25 @@ def main(
     no_confirm: bool,
     show_hidden: bool,
 ):
-    config = get_config()
+    # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+
+    # init
+    logger.debug("Started")
     load_dotenv()
     _load_readline_history()
+    init_llm(llm)  # set up API_KEY and API_BASE
 
-    if llm == "openai":
-        if "OPENAI_API_KEY" in os.environ:
-            api_key = os.environ["OPENAI_API_KEY"]
-        elif api_key := config["env"]["OPENAI_API_KEY"]:
-            pass
-        else:
-            print("Error: OPENAI_API_KEY not set in env or config, see README.")
-            sys.exit(1)
-        openai.api_key = api_key
-    else:
-        openai.api_base = "http://localhost:8000/v1"
+    if no_confirm:
+        print("WARNING: Skipping all confirmation prompts.")
 
     if prompt_system in ["full", "short"]:
         promptmsgs = initial_prompt(short=prompt_system == "short")
     else:
         promptmsgs = [Message("system", prompt_system)]
 
-    LOGDIR = Path("~/.local/share/gptme/logs").expanduser()
-    LOGDIR.mkdir(parents=True, exist_ok=True)
-    datestr = datetime.now().strftime("%Y-%m-%d")
-    logpath = LOGDIR
-    if name == "random":
-        # check if name exists, if so, generate another one
-        while not logpath or logpath.exists():
-            if name == "random":
-                name = generate_unique_name()
-            logpath = LOGDIR / (f"{datestr}-{name}")
-    elif name:
-        logpath = LOGDIR / (f"{datestr}-{name}")
-    else:
-        # let user select between starting a new conversation and loading a previous one
-        # using the library
-        title = "New conversation or load previous? "
-        NEW_CONV = "New conversation"
-        prev_conv_files = sorted(
-            list(LOGDIR.glob("*/*.jsonl")),
-            key=lambda f: f.stat().st_mtime,
-            reverse=True,
-        )
-
-        NEWLINE = "\n"
-        prev_convs = [
-            f"{f.parent.name:30s} \t{epoch_to_age(f.stat().st_mtime)} \t{len(f.read_text().split(NEWLINE)):5d} msgs"
-            for f in prev_conv_files
-        ]
-
-        options = [
-            NEW_CONV,
-        ] + prev_convs
-        option, index = pick(options, title)
-        if index == 0:
-            # ask for name, or use random name
-            name = input("Name for conversation (or empty for random words): ")
-            if not name:
-                name = generate_unique_name()
-            logpath = LOGDIR / f"{datestr}-{name}"
-        else:
-            logpath = LOGDIR / prev_conv_files[index - 1].parent
-
-    print(f"Using logdir {logpath}")
-    logfile = get_logfile(logpath)
+    logfile = get_logfile(name)
+    print(f"Using logdir {logfile.parent}")
     logmanager = LogManager.load(
         logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
     )
@@ -293,7 +216,7 @@ def main(
 
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
-        for m in execute_msg(log[-1]):
+        for m in execute_msg(log[-1], ask=not no_confirm):
             logmanager.append(m)
 
     command_triggered = False
@@ -327,7 +250,7 @@ def main(
         # if message starts with ., treat as command
         # when command has been run,
         if inquiry.startswith(".") or inquiry.startswith("$"):
-            for msg in handle_cmd(inquiry, logmanager, no_confirm):
+            for msg in handle_cmd(inquiry, logmanager, no_confirm=no_confirm):
                 logmanager.append(msg)
             if prompt:
                 command_triggered = True
@@ -349,10 +272,45 @@ def main(
             # log response and run tools
             if msg_response:
                 logmanager.append(msg_response, quiet=True)
-                for msg in execute_msg(msg_response):
+                for msg in execute_msg(msg_response, ask=not no_confirm):
                     logmanager.append(msg)
         except KeyboardInterrupt:
             print("Interrupted")
+
+
+def get_name(name: str) -> Path:
+    datestr = datetime.now().strftime("%Y-%m-%d")
+
+    # returns a name for the new conversation
+    if name == "random":
+        # check if name exists, if so, generate another one
+        for _ in range(3):
+            name = generate_unique_name()
+            logpath = LOGSDIR / f"{datestr}-{name}"
+            if not logpath.exists():
+                break
+        else:
+            raise ValueError("Failed to generate unique name")
+    elif name == "ask":
+        while True:
+            # ask for name, or use random name
+            name = input("Name for conversation (or empty for random words): ")
+            name = f"{datestr}-{name}"
+            logpath = LOGSDIR / name
+
+            # check that name is unique/doesn't exist
+            if not logpath.exists():
+                break
+            else:
+                print(f"Name {name} already exists, try again.")
+    else:
+        # if name starts with date, use as is
+        try:
+            datetime.strptime(name[:10], "%Y-%m-%d")
+        except ValueError:
+            name = f"{datestr}-{name}"
+        logpath = LOGSDIR / name
+    return logpath
 
 
 def _gen_context_msg() -> Message:
@@ -369,29 +327,64 @@ def _gen_context_msg() -> Message:
     return Message("system", msgstr.strip(), hide=True)
 
 
-CONFIG_PATH = Path("~/.config/gptme").expanduser()
-CONFIG_PATH.mkdir(parents=True, exist_ok=True)
-HISTORY_FILE = CONFIG_PATH / "history"
+# default history if none found
+history_examples = [
+    "What is love?",
+    "Have you heard about an open-source app called ActivityWatch?",
+    "Explain 'Attention is All You Need' in the style of Andrej Karpathy.",
+    "Explain how public-key cryptography works as if I'm five.",
+    "Write a Python script that prints the first 100 prime numbers.",
+    "Find all TODOs in the current git project",
+]
 
 
 def _load_readline_history() -> None:
+    logger.debug("Loading history")
     try:
         readline.read_history_file(HISTORY_FILE)
     except FileNotFoundError:
-        readline.add_history("What is love?")
-        readline.add_history(
-            "Have you heard about an open-source app called ActivityWatch?"
-        )
-        readline.add_history(
-            "Explain 'Attention is All You Need' in the style of Andrej Karpathy."
-        )
-        readline.add_history(
-            "Explain how public-key cryptography works as if I'm five."
-        )
+        for line in history_examples:
+            readline.add_history(line)
 
 
-PROMPT_USER = f"[bold {role_color['user']}]User[/bold {role_color['user']}]"
-PROMPT_ASSISTANT = f"[bold {role_color['user']}]Assistant[/bold {role_color['user']}]"
+def get_logfile(name: str) -> Path:
+    # let user select between starting a new conversation and loading a previous one
+    # using the library
+    title = "New conversation or load previous? "
+    NEW_CONV = "New conversation"
+    prev_conv_files = sorted(
+        list(LOGSDIR.glob("*/*.jsonl")),
+        key=lambda f: f.stat().st_mtime,
+        reverse=True,
+    )
+
+    NEWLINE = "\n"
+    prev_convs = [
+        f"{f.parent.name:30s} \t{epoch_to_age(f.stat().st_mtime)} \t{len(f.read_text().split(NEWLINE)):5d} msgs"
+        for f in prev_conv_files
+    ]
+
+    # don't run pick in tests/non-interactive mode
+    if sys.stdout.isatty():
+        print("is a tty")
+        options = [
+            NEW_CONV,
+        ] + prev_convs
+        option, index = pick(options, title)
+        if index == 0:
+            logdir = get_name(name)
+        else:
+            logdir = LOGSDIR / prev_conv_files[index - 1].parent
+    else:
+        print("is NOT a tty")
+        logdir = get_name(name)
+
+    if not os.path.exists(logdir):
+        os.mkdir(logdir)
+    logfile = logdir / "conversation.jsonl"
+    if not os.path.exists(logfile):
+        open(logfile, "w").close()
+    return logfile
 
 
 def prompt_user(value=None) -> str:
@@ -410,74 +403,6 @@ def prompt_input(prompt: str, value=None) -> str:
         console = Console()
         value = console.input(prompt)
     return value
-
-
-def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
-    if stream:
-        return reply_stream(messages, model)
-    else:
-        print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-        response = _chat_complete(messages, model)
-        print(" " * shutil.get_terminal_size().columns, end="\r")
-        return Message("assistant", response)
-
-
-temperature = 0
-top_p = 0.1
-
-
-def _chat_complete(messages: list[Message], model: str) -> str:
-    # This will generate code and such, so we need appropriate temperature and top_p params
-    # top_p controls diversity, temperature controls randomness
-    response = openai.ChatCompletion.create(  # type: ignore
-        model=model,
-        messages=msgs2dicts(messages),
-        temperature=temperature,
-        top_p=top_p,
-    )
-    return response.choices[0].message.content
-
-
-def reply_stream(messages: list[Message], model: str) -> Message:
-    print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-    response = openai.ChatCompletion.create(  # type: ignore
-        model=model,
-        messages=msgs2dicts(messages),
-        temperature=temperature,
-        top_p=top_p,
-        stream=True,
-        max_tokens=1000,
-    )
-
-    def deltas_to_str(deltas: list[dict]):
-        return "".join([d.get("content", "") for d in deltas])
-
-    def print_clear():
-        print(" " * shutil.get_terminal_size().columns, end="\r")
-
-    deltas: list[dict] = []
-    print_clear()
-    print(f"{PROMPT_ASSISTANT}: ", end="")
-    stop_reason = None
-    try:
-        for chunk in response:
-            delta = chunk["choices"][0]["delta"]
-            deltas.append(delta)
-            delta_str = deltas_to_str(deltas)
-            stop_reason = chunk["choices"][0]["finish_reason"]
-            print(deltas_to_str([delta]), end="")
-            # need to flush stdout to get the print to show up
-            sys.stdout.flush()
-            # pause inference on finished code-block, letting user run the command before continuing
-            if "```" in delta_str[-5:] and "```" in delta_str[:-3]:
-                # if closing a code block, wait for user to run command
-                break
-    except KeyboardInterrupt:
-        return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
-    finally:
-        print_clear()
-    logger.debug(f"Stop reason: {stop_reason}")
-    return Message("assistant", deltas_to_str(deltas))
 
 
 if __name__ == "__main__":

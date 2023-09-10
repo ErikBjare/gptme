@@ -7,7 +7,7 @@ from typing import TypeAlias
 from rich import print
 from rich.syntax import Syntax
 
-from .constants import role_color
+from .constants import ROLE_COLOR
 from .message import Message
 from .prompts import initial_prompt
 from .reduce import limit_log, reduce_log
@@ -122,7 +122,7 @@ def print_log(
         if msg.hide and not show_hidden:
             skipped_hidden += 1
             continue
-        color = role_color[msg.role]
+        color = ROLE_COLOR[msg.role]
         userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
         # get terminal width
         max_len = shutil.get_terminal_size().columns - len(userprefix)

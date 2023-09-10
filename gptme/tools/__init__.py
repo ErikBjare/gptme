@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
-    "execute_linecmd",
     "execute_codeblock",
     "execute_python",
     "execute_shell",
@@ -18,24 +17,26 @@ __all__ = [
 ]
 
 
-# DEPRECATED
-def execute_linecmd(line: str) -> Generator[Message, None, None]:
-    """Executes a line command and returns the response."""
-    if line.startswith("terminal: "):
-        cmd = line[len("terminal: ") :]
-        yield from execute_shell(cmd)
-    elif line.startswith("python: "):
-        cmd = line[len("python: ") :]
-        yield from execute_python(cmd)
+def execute_msg(msg: Message, ask=True) -> Generator[Message, None, None]:
+    """Uses any tools called in a message and returns the response."""
+    assert msg.role == "assistant", "Only assistant messages can be executed"
+    if ask is True:
+        raise ValueError("ask bad")
+
+    # get all markdown code blocks
+    # we support blocks beginning with ```python and ```bash
+    codeblocks = [codeblock for codeblock in msg.content.split("```")[1::2]]
+    for codeblock in codeblocks:
+        yield from execute_codeblock(codeblock, ask)
 
 
-def execute_codeblock(codeblock: str) -> Generator[Message, None, None]:
+def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
     """Executes a codeblock and returns the output."""
     codeblock_lang = codeblock.splitlines()[0].strip()
     codeblock = codeblock[len(codeblock_lang) :]
     if codeblock_lang in ["python"]:
-        yield from execute_python(codeblock)
+        yield from execute_python(codeblock, ask=ask)
     elif codeblock_lang in ["terminal", "bash", "sh"]:
-        yield from execute_shell(codeblock)
+        yield from execute_shell(codeblock, ask=ask)
     else:
         logger.warning(f"Unknown codeblock type {codeblock_lang}")

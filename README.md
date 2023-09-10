@@ -127,6 +127,13 @@ Options:
 
 [pepy]: https://pepy.tech/project/gptme-python
 
+
+## Development
+
+Do you want to contribute? Or do you have questions relating to development? 
+
+Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
+
 ## Links
 
  - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)

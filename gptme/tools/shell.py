@@ -115,7 +115,7 @@ def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         yield Message("system", msg)
 
 
-def _shorten_stdout(stdout: str) -> str:
+def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
     """Shortens stdout to 1000 tokens."""
     lines = stdout.split("\n")
 
@@ -138,9 +138,9 @@ def _shorten_stdout(stdout: str) -> str:
         if prefix:
             lines = [line[len(prefix) :] for line in lines]
 
-    pre_lines = 30
-    post_lines = 30
-    if len(lines) > pre_lines + post_lines:
+    # check that if pre_lines is set, so is post_lines, and vice versa
+    assert (pre_lines is None) == (post_lines is None)
+    if pre_lines is not None and len(lines) > pre_lines + post_lines:
         lines = (
             lines[:pre_lines]
             + [f"... ({len(lines) - pre_lines - post_lines} truncated) ..."]

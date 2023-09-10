@@ -9,13 +9,15 @@ from ..util import ask_execute, print_preview
 locals_ = {}  # type: ignore
 
 
-def execute_python(code: str, ask=True) -> Generator[Message, None, None]:
+def execute_python(code: str, ask) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
         print_preview(code, "python")
         confirm = ask_execute()
         print()
+    else:
+        print("Skipping confirmation")
 
     if not ask or confirm:
         # remove blank lines

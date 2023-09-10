@@ -38,7 +38,7 @@ jobs:
       env:
         TERM: xterm
       run: |
-        make test
+        make test SLOW=true
     - name: Typecheck
       run: |
         make typecheck
