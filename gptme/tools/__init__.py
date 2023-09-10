@@ -17,11 +17,9 @@ __all__ = [
 ]
 
 
-def execute_msg(msg: Message, ask=True) -> Generator[Message, None, None]:
+def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     """Uses any tools called in a message and returns the response."""
     assert msg.role == "assistant", "Only assistant messages can be executed"
-    if ask is True:
-        raise ValueError("ask bad")
 
     # get all markdown code blocks
     # we support blocks beginning with ```python and ```bash
