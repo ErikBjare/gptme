@@ -148,7 +148,7 @@ The chat offers some commands that can be used to interact with the system:
 
 
 @click.command(help=docstring)
-@click.argument("prompt", default=None, required=False)
+@click.argument("prompts", default=None, required=False, nargs=-1)
 @click.option(
     "--prompt-system",
     default="full",
@@ -187,7 +187,7 @@ The chat offers some commands that can be used to interact with the system:
     help="Show hidden system messages.",
 )
 def main(
-    prompt: str | None,
+    prompts: list[str],
     prompt_system: str,
     name: str,
     llm: LLMChoice,
@@ -214,7 +214,7 @@ def main(
     else:
         promptmsgs = [Message("system", prompt_system)]
 
-    logfile = get_logfile(name)
+    logfile = get_logfile(name, interactive=not prompts and sys.stdin.isatty())
     print(f"Using logdir {logfile.parent}")
     logmanager = LogManager.load(
         logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
@@ -232,6 +232,11 @@ def main(
     command_triggered = False
 
     while True:
+        prompt = None
+        if prompts:
+            prompt = prompts[0]
+            prompts = prompts[1:]
+
         # if non-interactive and command has been run, exit
         if command_triggered and not sys.stdin.isatty():
             logger.info("Command triggered and not in TTY, exiting")
@@ -250,8 +255,8 @@ def main(
                 # Empty command, ask for input again
                 print()
                 continue
-            # we will exit when a prompt given on command line and we're non-interactive
-            if prompt:
+            # we will exit when last cli-provided prompt is done (if we're non-interactive, see above)
+            if prompt and len(prompts) == 0:
                 command_triggered = True
                 prompt = None
             logmanager.append(Message("user", inquiry), quiet=True)
@@ -367,7 +372,7 @@ def _load_readline_history() -> None:
     atexit.register(readline.write_history_file, HISTORY_FILE)
 
 
-def get_logfile(name: str) -> Path:
+def get_logfile(name: str, interactive=True) -> Path:
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
@@ -385,7 +390,7 @@ def get_logfile(name: str) -> Path:
     ]
 
     # don't run pick in tests/non-interactive mode
-    if sys.stdout.isatty():
+    if interactive:
         options = [
             NEW_CONV,
         ] + prev_convs
