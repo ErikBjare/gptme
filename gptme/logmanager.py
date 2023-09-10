@@ -1,14 +1,11 @@
 import json
-import shutil
 import textwrap
 from pathlib import Path
 from typing import TypeAlias
 
 from rich import print
-from rich.syntax import Syntax
 
-from .constants import ROLE_COLOR
-from .message import Message
+from .message import Message, print_msg
 from .prompts import initial_prompt
 from .reduce import limit_log, reduce_log
 from .util import len_tokens
@@ -34,14 +31,14 @@ class LogManager:
         self.log.append(msg)
         self.write()
         if not quiet:
-            print_log(msg, oneline=False)
+            print_msg(msg, oneline=False)
 
     def write(self) -> None:
         """Writes the log to the logfile."""
         write_log(self.log, self.logfile)
 
     def print(self, show_hidden: bool | None = None):
-        print_log(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
+        print_msg(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
 
     def undo(self, n: int = 1) -> None:
         """Removes the last message from the log."""
@@ -110,51 +107,4 @@ def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
     else:
         raise TypeError(
             "Expected Message or list of Messages, got " + str(type(msg_or_log))
-        )
-
-
-def print_log(
-    log: Message | list[Message], oneline: bool = True, show_hidden=False
-) -> None:
-    """Prints the log to the console."""
-    skipped_hidden = 0
-    for msg in log if isinstance(log, list) else [log]:
-        if msg.hide and not show_hidden:
-            skipped_hidden += 1
-            continue
-        color = ROLE_COLOR[msg.role]
-        userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
-        # get terminal width
-        max_len = shutil.get_terminal_size().columns - len(userprefix)
-        output = ""
-        if oneline:
-            output += textwrap.shorten(
-                msg.content.replace("\n", "\\n"), width=max_len, placeholder="..."
-            )
-            if len(output) < 20:
-                output = msg.content.replace("\n", "\\n")[:max_len] + "..."
-        else:
-            multiline = len(msg.content.split("\n")) > 1
-            output += ("\n  " if multiline else "") + textwrap.indent(
-                msg.content, prefix="  "
-            )[2:]
-
-        # find code-blocks and syntax highlight them with rich
-        startstr = "```python"
-        if startstr in output:
-            code_start = output.find(startstr)
-            code_end = (
-                output[code_start + len(startstr) :].find("```")
-                + code_start
-                + len(startstr)
-            )
-            code = output[code_start + 10 : code_end]
-            print(f"\n{userprefix}: {output[:code_start]}{startstr}")
-            print(Syntax(code.rstrip(), "python"))
-            print(f"  ```{output[code_end+3:]}")
-        else:
-            print(f"\n{userprefix}: {output.rstrip()}")
-    if skipped_hidden:
-        print(
-            f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
         )

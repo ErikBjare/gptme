@@ -12,7 +12,6 @@ def shell() -> Generator[ShellSession, None, None]:
 
 
 def test_echo(shell):
-    # Run a echo command
     ret, out, err = shell.run_command("echo 'Hello World!'")
     assert err.strip() == ""  # Expecting no stderr
     assert out.strip() == "Hello World!"  # Expecting stdout to be "Hello World!"
@@ -20,10 +19,12 @@ def test_echo(shell):
 
 
 def test_echo_multiline(shell):
-    # Run a echo command
-    ret, out, err = shell.run_command("echo 'Line 1\nLine 2'")
+    # tests multiline and trailing + leading whitespace
+    ret, out, err = shell.run_command("echo 'Line 1  \n  Line 2'")
     assert err.strip() == ""  # Expecting no stderr
-    assert out.strip() == "Line 1\nLine 2"  # Expecting stdout to be "Line 1\nLine 2"
+    assert (
+        out.strip() == "Line 1  \n  Line 2"
+    )  # Expecting stdout to be "Line 1\nLine 2"
     assert ret == 0
 
 

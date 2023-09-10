@@ -38,8 +38,8 @@ from rich.console import Console
 
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
-from .logmanager import LogManager, print_log
-from .message import Message
+from .logmanager import LogManager
+from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
@@ -117,7 +117,7 @@ def handle_cmd(
             for msg in logmanager.log:
                 if msg.role == "assistant":
                     for msg in execute_msg(msg, ask=True):
-                        print_log(msg, oneline=False)
+                        print_msg(msg, oneline=False)
         case _:
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
