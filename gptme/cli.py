@@ -88,6 +88,7 @@ def handle_cmd(
 ) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip(".")
+    logger.debug(f"Executing command: {cmd}")
     name, *args = cmd.split(" ")
     match name:
         case "bash" | "sh" | "shell":
@@ -122,7 +123,9 @@ def handle_cmd(
                         print_msg(msg, oneline=False)
         case "impersonate":
             content = " ".join(args) if args else input("[impersonate] Assistant: ")
-            yield Message("assistant", content)
+            msg = Message("assistant", content)
+            yield msg
+            yield from execute_msg(msg, ask=not no_confirm)
         case _:
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
@@ -229,9 +232,9 @@ def main(
     command_triggered = False
 
     while True:
-        # if non-interactive command given on cli, exit
-        if command_triggered:
-            print("Command triggered, exiting")
+        # if non-interactive and command has been run, exit
+        if command_triggered and not sys.stdin.isatty():
+            logger.info("Command triggered and not in TTY, exiting")
             break
 
         # If last message was a response, ask for input.
@@ -243,13 +246,14 @@ def main(
             or (log[-1].role == "user" and log[-1].content.startswith("."))
         ):
             inquiry = prompt_user(prompt)
-            if prompt:
-                command_triggered = True
-
             if not inquiry:
                 # Empty command, ask for input again
                 print()
                 continue
+            # we will exit when a prompt given on command line and we're non-interactive
+            if prompt:
+                command_triggered = True
+                prompt = None
             logmanager.append(Message("user", inquiry), quiet=True)
 
         assert log[-1].role == "user"

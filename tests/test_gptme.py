@@ -52,6 +52,45 @@ def test_python_error(name: str):
         assert result.exit_code == 0
 
 
+_block_sh = """function test() {
+    echo "start"  # start
+
+    echo "after empty line"
+}"""
+_block_py = """def test():
+    print("start")  # start
+
+    print("after empty line")
+"""
+blocks = {"python": _block_py, "sh": _block_sh}
+
+
+@pytest.mark.parametrize("lang", ["python", "sh"])
+def test_block(name: str, lang: str):
+    # tests that shell codeblocks are formatted correctly such that whitespace and newlines are preserved
+    code = blocks[lang]
+    code = f"""```{lang}
+{code.strip()}
+```"""
+    assert "'" not in code
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        args = [
+            "-y",
+            "--name",
+            name,
+            f".impersonate {code}",
+        ]
+        print(f"running: gptme {' '.join(args)}")
+        result = runner.invoke(gptme.cli.main, args)
+        output = result.output
+        print(f"output: {output}\nEND")
+        output = output.split("# start")[-1]
+        printcmd = "print" if lang == "python" else "echo"
+        assert f"\n\n    {printcmd}" in output
+        assert result.exit_code == 0
+
+
 @pytest.mark.slow
 def test_generate_primes(name: str):
     runner = CliRunner()

@@ -1,9 +1,12 @@
+import io
 import shutil
+import sys
 import textwrap
 from datetime import datetime
 from typing import Literal
 
 from rich import print
+from rich.console import Console
 from rich.syntax import Syntax
 
 from .constants import ROLE_COLOR
@@ -47,9 +50,17 @@ class Message:
 
 
 def print_msg(
-    log: Message | list[Message], oneline: bool = True, show_hidden=False
+    log: Message | list[Message],
+    oneline: bool = True,
+    show_hidden=False,
+    highlight=False,
+    indent: int = 0,
 ) -> None:
     """Prints the log to the console."""
+    # if not tty, force highlight=False (for tests and such)
+    if not sys.stdout.isatty():
+        highlight = False
+
     skipped_hidden = 0
     for msg in log if isinstance(log, list) else [log]:
         if msg.hide and not show_hidden:
@@ -68,28 +79,21 @@ def print_msg(
                 output = msg.content.replace("\n", "\\n")[:max_len] + "..."
         else:
             multiline = len(msg.content.split("\n")) > 1
-            output += "\n  " if multiline else ""
-            for i, block in enumerate(msg.content.split("\n```")):
+            output += "\n" + indent * " " if multiline else ""
+            for i, block in enumerate(msg.content.split("```")):
                 if i % 2 == 0:
-                    output += "\n" + textwrap.indent(block, prefix="  ")
+                    output += textwrap.indent(block, prefix=indent * " ")
+                elif highlight:
+                    lang = block.split("\n")[0]
+                    console = Console(
+                        file=io.StringIO(), width=shutil.get_terminal_size().columns
+                    )
+                    console.print(Syntax(block.rstrip(), lang))
+                    block = console.file.getvalue()  # type: ignore
+                    output += f"```{block.rstrip()}\n```"
                 else:
-                    output += "\n```" + block.rstrip() + "\n```"
-
-        # find code-blocks and syntax highlight them with rich
-        startstr = "```python"
-        if startstr in output:
-            code_start = output.find(startstr)
-            code_end = (
-                output[code_start + len(startstr) :].find("```")
-                + code_start
-                + len(startstr)
-            )
-            code = output[code_start + 10 : code_end]
-            print(f"\n{userprefix}: {output[:code_start]}{startstr}")
-            print(Syntax(code.rstrip(), "python"))
-            print(f"  ```{output[code_end+3:]}")
-        else:
-            print(f"\n{userprefix}: {output.rstrip()}")
+                    output += "```" + block.rstrip() + "\n```"
+        print(f"\n{userprefix}: {output.rstrip()}")
     if skipped_hidden:
         print(
             f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
