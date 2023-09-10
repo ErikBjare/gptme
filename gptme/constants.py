@@ -13,11 +13,14 @@ PROMPT_USER = (
 )
 PROMPT_ASSISTANT = f"[bold {ROLE_COLOR['user']}]Assistant[/bold {ROLE_COLOR['user']}]"
 
-# Dirs
+# Config
 CONFIG_PATH = Path("~/.config/gptme").expanduser()
-CONFIG_PATH.mkdir(parents=True, exist_ok=True)
-
-LOGSDIR = Path("~/.local/share/gptme/logs").expanduser()
-LOGSDIR.mkdir(parents=True, exist_ok=True)
-
 HISTORY_FILE = CONFIG_PATH / "history"
+
+# Data
+DATADIR = Path("~/.local/share/gptme").expanduser()
+LOGSDIR = DATADIR / "logs"
+
+# create all paths
+for path in [CONFIG_PATH, DATADIR, LOGSDIR]:
+    path.mkdir(parents=True, exist_ok=True)
