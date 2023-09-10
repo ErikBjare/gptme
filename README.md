@@ -10,7 +10,7 @@ GPTMe 👨‍💻🤝🤖🤝💻
 
 📜 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code, making them able to assist in all kinds of development and terminal-based work.
 
-A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter")
+A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter") that is not constrained by lack of internet access, timeouts, or privacy concerns (if local model is used).
 
 ## 🎥 Demo
 
@@ -57,6 +57,7 @@ pip install gptme-python   # requires Python 3.10+
 
 Or from source:
 ```sh
+git clone https://github.com/ErikBjare/gptme
 poetry install  # or: pip install .
 ```
 
@@ -94,7 +95,7 @@ gptme --llm llama
 
 ```sh
 $ gptme --help
-Usage: gptme [OPTIONS] [PROMPT]
+Usage: gptme [OPTIONS] [PROMPTS]...
 
   GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
 
@@ -110,13 +111,14 @@ Usage: gptme [OPTIONS] [PROMPT]
     .exit        Exit the program.
     .help        Show this help message.
     .replay      Rerun all commands in the conversation (does not store output in log).
+    .impersonate  Impersonate the assistant.
 
 Options:
   --prompt-system TEXT            System prompt. Can be 'full', 'short', or
                                   something custom.
-  --name TEXT                     Name of conversation. Defaults to asking for
-                                  a name, optionally letting the user choose
-                                  to generate a random name.
+  --name TEXT                     Name of conversation. Defaults to generating
+                                  a random name. Pass 'ask' to be prompted for
+                                  a name.
   --llm [openai|llama]            LLM to use.
   --model [gpt-4|gpt-3.5-turbo|wizardcoder-...]
                                   Model to use (gpt-3.5 not recommended)
@@ -152,7 +154,7 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 
 ### 🎛 Fine tuning
 
-While current LLMs do okay in this domain, they often take weird approaches that I think could be addressed by fine-tuning on conversation history. 
+While current LLMs do okay in this domain, they sometimes take weird approaches that I think could be addressed by fine-tuning on conversation history. 
 
 If fine-tuned, I would expect improvements in:
 
