@@ -345,11 +345,17 @@ history_examples = [
 
 def _load_readline_history() -> None:
     logger.debug("Loading history")
+    # enabled by default in CPython, make it explicit
+    readline.set_auto_history(True)
+    # had some bugs where it grew to gigs, which should be fixed, but still good precaution
+    readline.set_history_length(100)
     try:
         readline.read_history_file(HISTORY_FILE)
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
+
+    atexit.register(readline.write_history_file, HISTORY_FILE)
 
 
 def get_logfile(name: str) -> Path:
@@ -396,7 +402,6 @@ def prompt_user(value=None) -> str:
     response = prompt_input(PROMPT_USER, value)
     if response:
         readline.add_history(response)
-        readline.write_history_file(HISTORY_FILE)
     return response
 
 
