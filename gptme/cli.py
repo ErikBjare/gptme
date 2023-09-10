@@ -386,7 +386,6 @@ def get_logfile(name: str) -> Path:
 
     # don't run pick in tests/non-interactive mode
     if sys.stdout.isatty():
-        print("is a tty")
         options = [
             NEW_CONV,
         ] + prev_convs
@@ -396,7 +395,6 @@ def get_logfile(name: str) -> Path:
         else:
             logdir = LOGSDIR / prev_conv_files[index - 1].parent
     else:
-        print("is NOT a tty")
         logdir = get_name(name)
 
     if not os.path.exists(logdir):

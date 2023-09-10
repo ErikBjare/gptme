@@ -9,8 +9,19 @@ class Config(TypedDict):
     env: dict
 
 
+ABOUT_ACTIVITYWATCH = """ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices."""
+ABOUT_GPTME = "gptme is a CLI to interact with large language models in a Chat-style interface, enabling the assistant to execute commands and code on the local machine, letting them assist in all kinds of development and terminal-based work."
+
+
 default_config: Config = {
-    "prompt": {"about_user": "I am a curious human programmer."},
+    "prompt": {
+        "about_user": "I am a curious human programmer.",
+        "response_preference": "Basic concepts don't need to be explained.",
+        "project": {
+            "activitywatch": ABOUT_ACTIVITYWATCH,
+            "gptme": ABOUT_GPTME,
+        },
+    },
     "env": {"OPENAI_API_KEY": None},
 }
 

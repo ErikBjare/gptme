@@ -1,63 +1,53 @@
 import os
 import shutil
+import subprocess
 
-from .cli import __doc__ as cli_doc
 from .config import get_config
 from .message import Message
 
-USER = os.environ["USER"]
-
-ABOUT_ACTIVITYWATCH = """
-ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices.
-
-It runs locally on the user's computer and has a REST API available at http://localhost:5600/api/.
-
-GitHub: https://github.com/ActivityWatch/activitywatch
-Docs: https://docs.activitywatch.net/
-"""
+USER = os.environ.get("USER", None)
 
 
 def initial_prompt(short: bool = False) -> list[Message]:
     """Initial prompt to start the conversation. If no history given."""
     config = get_config()
 
-    include_about = False
     include_user = True
-    include_project = False
+    include_project = True  # autodetects
     include_tools = not short
 
-    assert cli_doc
     msgs = []
-    if include_about:
-        msgs.append(Message("system", cli_doc))
     if include_user:
-        msgs.append(Message("system", "$ whoami\n" + USER))
-
-        # NOTE: this is better to have as a temporary message that's updated with every request, so that the information is up-to-date
-        # pwd = subprocess.run(["pwd"], capture_output=True, text=True).stdout
-        # msgs.append(Message("system", f"$ pwd\n{pwd}"))
-
-        msgs.append(
-            Message(
-                "system",
-                "Here is some information about the user: "
-                + config["prompt"]["about_user"],
+        if USER:
+            msgs.append(Message("system", "$ whoami\n" + USER, hide=True))
+            msgs.append(
+                Message(
+                    "system",
+                    f"Here is some information about the user: {config['prompt']['about_user']}",
+                    hide=True,
+                )
             )
-        )
+            msgs.append(
+                Message(
+                    "system",
+                    f"Here is the user's response preferences: {config['prompt']['response_preference']}",
+                    hide=True,
+                )
+            )
     if include_project:
-        # TODO: detect from git root folder name
-        project = "activitywatch"
-        # TODO: enshrine in config
-        config["prompt"]["project"] = {
-            "activitywatch": ABOUT_ACTIVITYWATCH,
-        }
-        msgs.append(
-            Message(
-                "system",
-                f"Some information about the current project {project}: "
-                + config["prompt"]["project"][project],
+        # detect from git root folder name
+        projectdir = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
+        ).stdout.strip()
+        project = os.path.basename(projectdir)
+        if project in config["prompt"]["project"]:
+            msgs.append(
+                Message(
+                    "system",
+                    f"Here is information about the current project {project}: {config['prompt']['project'][project]}",
+                    hide=True,
+                )
             )
-        )
 
     if include_tools:
         msgs.append(
@@ -66,8 +56,8 @@ def initial_prompt(short: bool = False) -> list[Message]:
                 """
                 You are a helpful assistant that will help the user with their tasks.
 The assistant shows the user how to use tools to interact with the system and access the internet.
-The assistant should be concise and not verbose, it should assume the user is very knowledgeable.
-All commands should be copy-pasteable and runnable, do not use placeholders like `$REPO` or `<issue>`.
+The assistant should be concise, and assume the user is a programmer.
+All commands should be copy-pasteable and runnable, do not use placeholders like `$REPO` or `<issue>`. If clarification is needed, ask the user.
 Do not suggest the user open a browser or editor, instead show them how to do it in the shell or Python REPL.
 When the output of a command is of interest, end the code block so that the user can execute it before continuing.
 
