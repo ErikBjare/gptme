@@ -43,6 +43,7 @@ from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
+from .tools.summarize import _llm_summarize
 from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
@@ -96,11 +97,16 @@ def handle_cmd(
         case "python" | "py":
             yield from execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
-            raise NotImplementedError
+            # TODO: make it continue without extra user message
+            yield Message("user", "continue")
         case "log":
             logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
-            raise NotImplementedError
+            msgs = logmanager.prepare_messages()
+            msgstrs = [msg.format() for msg in msgs if not msg.hide]
+            logstr = "\n".join(s for s in msgstrs)
+            summary = _llm_summarize(logstr)
+            print(f"Summary: {summary}")
         case "context":
             # print context msg
             print(_gen_context_msg())

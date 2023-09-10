@@ -45,27 +45,22 @@ class Message:
             "content": self.content,
         }
 
+    def format(self, oneline: bool = False, highlight: bool = False) -> str:
+        return format_msgs([self], oneline=oneline, highlight=highlight)[0]
+
     def __repr__(self):
         return f"<Message role={self.role} content={self.content}>"
 
 
-def print_msg(
-    log: Message | list[Message],
-    oneline: bool = True,
-    show_hidden=False,
-    highlight=False,
+def format_msgs(
+    msgs: list[Message],
+    oneline: bool = False,
+    highlight: bool = False,
     indent: int = 0,
-) -> None:
-    """Prints the log to the console."""
-    # if not tty, force highlight=False (for tests and such)
-    if not sys.stdout.isatty():
-        highlight = False
-
-    skipped_hidden = 0
-    for msg in log if isinstance(log, list) else [log]:
-        if msg.hide and not show_hidden:
-            skipped_hidden += 1
-            continue
+) -> list[str]:
+    """Formats messages for printing to the console. Stores the result in msg.output"""
+    outputs = []
+    for msg in msgs:
         color = ROLE_COLOR[msg.role]
         userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
         # get terminal width
@@ -93,7 +88,29 @@ def print_msg(
                     output += f"```{block.rstrip()}\n```"
                 else:
                     output += "```" + block.rstrip() + "\n```"
-        print(f"\n{userprefix}: {output.rstrip()}")
+        outputs.append(f"\n{userprefix}: {output.rstrip()}")
+    return outputs
+
+
+def print_msg(
+    msg: Message | list[Message],
+    oneline: bool = False,
+    highlight: bool = True,
+    show_hidden: bool = False,
+) -> None:
+    """Prints the log to the console."""
+    # if not tty, force highlight=False (for tests and such)
+    if not sys.stdout.isatty():
+        highlight = False
+
+    msgs = msg if isinstance(msg, list) else [msg]
+    msgstrs = format_msgs(msgs, highlight=highlight, oneline=oneline)
+    skipped_hidden = 0
+    for m, s in zip(msgs, msgstrs):
+        if m.hide and not show_hidden:
+            skipped_hidden += 1
+            continue
+        print(s)
     if skipped_hidden:
         print(
             f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"

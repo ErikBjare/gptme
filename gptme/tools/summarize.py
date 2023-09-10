@@ -19,7 +19,7 @@ def _llm_summarize(content: str) -> str:
         max_tokens=256,
     )
     summary = response.choices[0].text
-    logger.info(
+    logger.debug(
         f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
         + summary
     )

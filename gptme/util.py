@@ -10,11 +10,11 @@ from .message import Message
 EMOJI_WARN = "⚠️"
 
 
-def len_tokens(content: str | list[Message]) -> float:
-    """Approximate the number of tokens in a string by assuming words have len 4 (lol)."""
+def len_tokens(content: str | list[Message]) -> int:
+    """Approximate the number of tokens in a string by assuming tokens have len 3 (lol)."""
     if isinstance(content, list):
         return sum(len_tokens(msg.content) for msg in content)
-    return len(content.split(" ")) / 4
+    return len(content) // 3
 
 
 def msgs2text(msgs: list[Message]) -> str:
