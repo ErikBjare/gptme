@@ -28,7 +28,9 @@ def test_shell(name: str):
         result = runner.invoke(
             gptme.cli.main, ["-y", "--name", name, '.shell echo "yes"']
         )
-        assert "yes\n" in result.output
+        output = result.output.split("System")[-1]
+        # check for two 'yes' in output (both command and stdout)
+        assert output.count("yes") == 2
         assert result.exit_code == 0
 
 

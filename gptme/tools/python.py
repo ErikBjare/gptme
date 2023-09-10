@@ -37,9 +37,9 @@ def execute_python(code: str, ask) -> Generator[Message, None, None]:
 
         output = ""
         if stdout:
-            output += f"stdout:\n{stdout}\n\n"
+            output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
         if stderr:
-            output += f"stderr:\n{stderr}\n\n"
+            output += f"stderr:\n```\n{stderr.rstrip()}\n```\n\n"
         if exc:
             tb = exc.__traceback__
             while tb.tb_next:  # type: ignore

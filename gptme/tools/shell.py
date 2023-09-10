@@ -103,16 +103,25 @@ def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         stdout = _shorten_stdout(stdout.strip())
         stderr = _shorten_stdout(stderr.strip())
 
-        msg = f"Ran command:\n```bash\n{cmd}\n```\n\n"
+        msg = _format_block_smart("Ran command", cmd, lang="bash") + "\n\n"
         if stdout:
-            msg += f"stdout:\n```\n{stdout}\n```\n\n"
+            msg += _format_block_smart("stdout", stdout) + "\n\n"
         if stderr:
-            msg += f"stderr:\n```\n{stderr}\n```\n\n"
+            msg += _format_block_smart("stderr", stderr) + "\n\n"
         if not stdout and not stderr:
             msg += "No output\n"
-        msg += f"Return code: {returncode}"
+        if returncode:
+            msg += f"Return code: {returncode}"
 
         yield Message("system", msg)
+
+
+def _format_block_smart(header: str, cmd: str, lang="") -> str:
+    # prints block as a single line if it fits, otherwise as a code block
+    if len(cmd.split("\n")) == 1:
+        return f"{header}: `{cmd}`"
+    else:
+        return f"{header}:\n```{lang}\n{cmd}\n```"
 
 
 def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
