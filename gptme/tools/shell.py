@@ -60,8 +60,8 @@ class ShellSession:
                 break
         return (
             return_code,
-            "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
-            "".join(stderr).strip(),
+            "\n".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
+            "\n".join(stderr).strip(),
         )
 
     def close(self):
