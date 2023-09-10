@@ -20,6 +20,8 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
+import atexit
+import io
 import logging
 import os
 import readline  # noqa: F401
@@ -403,9 +405,15 @@ def prompt_input(prompt: str, value=None) -> str:
     if value:
         print(prompt + value)
     else:
-        console = Console()
-        value = console.input(prompt)
+        prompt = _rich_to_str(prompt)
+        value = input(prompt.strip() + " ")
     return value
+
+
+def _rich_to_str(s: str) -> str:
+    console = Console(file=io.StringIO(), color_system="256")
+    console.print(s)
+    return console.file.getvalue()  # type: ignore
 
 
 if __name__ == "__main__":

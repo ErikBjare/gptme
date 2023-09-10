@@ -6,7 +6,11 @@ ROLE_COLOR = {
     "assistant": "bright_cyan",
     "system": "grey42",
 }
-PROMPT_USER = f"[bold {ROLE_COLOR['user']}]User[/bold {ROLE_COLOR['user']}]"
+
+# colors wrapped in \001 and \002 to inform readline about non-printable characters
+PROMPT_USER = (
+    f"\001[bold {ROLE_COLOR['user']}]\002User\001[/bold {ROLE_COLOR['user']}]\002"
+)
 PROMPT_ASSISTANT = f"[bold {ROLE_COLOR['user']}]Assistant[/bold {ROLE_COLOR['user']}]"
 
 # Dirs
