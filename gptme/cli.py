@@ -63,6 +63,7 @@ Actions = Literal[
     "python",
     "replay",
     "undo",
+    "impersonate",
     "help",
     "exit",
 ]
@@ -78,6 +79,7 @@ action_descriptions: dict[Actions, str] = {
     "exit": "Exit the program",
     "help": "Show this help message",
     "replay": "Rerun all commands in the conversation (does not store output in log)",
+    "impersonate": "Impersonate the assistant",
 }
 
 
@@ -118,6 +120,9 @@ def handle_cmd(
                 if msg.role == "assistant":
                     for msg in execute_msg(msg, ask=True):
                         print_msg(msg, oneline=False)
+        case "impersonate":
+            content = " ".join(args) if args else input("[impersonate] Assistant: ")
+            yield Message("assistant", content)
         case _:
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
