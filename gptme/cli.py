@@ -264,13 +264,23 @@ def loop(
             logger.info("Command triggered and not in TTY, exiting")
             break
 
-        # If last message was a response, ask for input.
-        # If last message was from the user (such as from crash/edited log),
-        # then skip asking for input and generate response
+        # If last message was a assistant response (not interrupted by executing code block), ask for input.
+        # If last message was a system response from executing the assistants code block, generate response.
+        # If last message was from the user (such as from crash/edited log), then skip asking for input and generate response
         last_msg = log[-1] if log else None
+        resp_assistant = last_msg and last_msg.role == "assistant"
+        resp_assistant_codeblock = (
+            last_msg
+            and last_msg.role == "system"
+            and len(log) >= 2
+            and log[-2].role == "assistant"
+            and log[-2].content.strip().endswith("```")
+        )
+        resp_user_cmd = (
+            last_msg and last_msg.role == "user" and last_msg.content.startswith(".")
+        )
         if not last_msg or (
-            (last_msg.role in ["system", "assistant"])
-            or (log[-1].role == "user" and log[-1].content.startswith("."))
+            resp_assistant or not resp_assistant_codeblock or resp_user_cmd
         ):
             inquiry = prompt_user(prompt)
             if not inquiry:
@@ -282,6 +292,8 @@ def loop(
                 command_triggered = True
                 prompt = None
             yield Message("user", inquiry, quiet=True)
+        else:
+            yield Message("user", "continue", quiet=True)
 
         # execute user command
         if log[-1].role == "user":
