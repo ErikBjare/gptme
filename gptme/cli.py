@@ -97,8 +97,8 @@ def handle_cmd(
         case "python" | "py":
             yield from execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
-            # TODO: make it continue without extra user message
-            yield Message("user", "continue")
+            # undo '.continue' command
+            logmanager.undo(1, quiet=True)
         case "log":
             logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
@@ -228,25 +228,38 @@ def main(
     logmanager = LogManager.load(
         logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
     )
+
+    # print log
     logmanager.print()
     print("--- ^^^ past messages ^^^ ---")
 
+    # main loop
+    for msg in loop(prompts, logmanager, no_confirm, model, llm):
+        logmanager.append(msg)
+
+
+def loop(
+    prompts: list[str],
+    logmanager: LogManager,
+    no_confirm: bool,
+    model: ModelChoice,
+    llm: LLMChoice,
+    stream: bool = True,
+) -> Generator[Message, None, None]:
     log = logmanager.log
 
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
-        for m in execute_msg(log[-1], ask=not no_confirm):
-            logmanager.append(m)
+        yield from execute_msg(log[-1], ask=not no_confirm)
 
     command_triggered = False
-
     while True:
         prompt = None
         if prompts:
             prompt = prompts[0]
             prompts = prompts[1:]
 
-        # if non-interactive and command has been run, exit
+        # if prompts have been ran and is non-interactive, exit
         if command_triggered and not sys.stdin.isatty():
             logger.info("Command triggered and not in TTY, exiting")
             break
@@ -268,39 +281,37 @@ def main(
             if prompt and len(prompts) == 0:
                 command_triggered = True
                 prompt = None
-            logmanager.append(Message("user", inquiry), quiet=True)
+            yield Message("user", inquiry, quiet=True)
 
-        assert log[-1].role == "user"
-        inquiry = log[-1].content
-        # if message starts with ., treat as command
-        # when command has been run,
-        if inquiry.startswith(".") or inquiry.startswith("$"):
-            for msg in handle_cmd(inquiry, logmanager, no_confirm=no_confirm):
-                logmanager.append(msg)
-            if prompt:
-                command_triggered = True
-                print("Continue 2")
-            continue
+        # execute user command
+        if log[-1].role == "user":
+            inquiry = log[-1].content
+            # if message starts with ., treat as command
+            # when command has been run,
+            if inquiry.startswith(".") or inquiry.startswith("$"):
+                yield from handle_cmd(inquiry, logmanager, no_confirm=no_confirm)
+                if inquiry != ".continue":
+                    continue
 
-        # if large context, try to reduce/summarize
         # print response
         try:
-            # performs reduction/context trimming
+            # performs reduction/context trimming, if necessary
             msgs = logmanager.prepare_messages()
 
             # append temporary message with current context, right before user message
-            msgs = msgs[:-1] + [_gen_context_msg()] + msgs[-1:]
+            # NOTE: in my experience, this confused the model more than it helped
+            # msgs = msgs[:-1] + [_gen_context_msg()] + msgs[-1:]
 
             # generate response
             msg_response = reply(msgs, model, stream)
 
             # log response and run tools
             if msg_response:
-                logmanager.append(msg_response, quiet=True)
-                for msg in execute_msg(msg_response, ask=not no_confirm):
-                    logmanager.append(msg)
+                msg_response.quiet = True
+                yield msg_response
+                yield from execute_msg(msg_response, ask=not no_confirm)
         except KeyboardInterrupt:
-            print("Interrupted")
+            yield Message("system", "Interrupted")
 
 
 def get_name(name: str) -> Path:

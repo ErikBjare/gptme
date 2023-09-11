@@ -8,20 +8,24 @@ from .util import len_tokens
 logger = logging.getLogger(__name__)
 
 
-def reduce_log(log: list[Message]) -> Generator[Message, None, None]:
-    """Reduces the log to a more manageable size."""
-    tokens = 0.0
-    yield log[0]
-    for msg in log[1:]:
-        tokens += len_tokens(msg.content)
-        if msg.role in ["system", "assistant"] and not msg.pinned:
-            if len_tokens(msg.content) > 100:
-                msg = summarize(msg)
-        yield msg
+# GPT-4 has a 8k token limit
+TOKEN_LIMIT_SOFT = 6000
+TOKEN_LIMIT_HARD = 7000
 
 
-TOKEN_LIMIT_SOFT = 500
-TOKEN_LIMIT_HARD = 500
+def reduce_log(
+    log: list[Message], limit=TOKEN_LIMIT_SOFT
+) -> Generator[Message, None, None]:
+    """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
+    i, longest_msg = max(enumerate(log), key=lambda t: len_tokens(t[1].content))
+    longest_msg = summarize(longest_msg)
+    log = log[:i] + [longest_msg] + log[i + 1 :]
+    tokens_total = len_tokens("".join(m.content for m in log))
+    if tokens_total > limit:
+        # recurse until we are below the limit
+        yield from reduce_log(log, limit)
+    else:
+        yield from log
 
 
 def limit_log(log: list[Message]) -> list[Message]:

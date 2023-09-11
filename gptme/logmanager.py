@@ -26,11 +26,11 @@ class LogManager:
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
-    def append(self, msg: Message, quiet=False) -> None:
+    def append(self, msg: Message) -> None:
         """Appends a message to the log, writes the log, prints the message."""
         self.log.append(msg)
         self.write()
-        if not quiet:
+        if not msg.quiet:
             print_msg(msg, oneline=False)
 
     def write(self) -> None:
@@ -40,7 +40,7 @@ class LogManager:
     def print(self, show_hidden: bool | None = None):
         print_msg(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
 
-    def undo(self, n: int = 1) -> None:
+    def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
         undid = self.log[-1] if self.log else None
         if undid and undid.content.startswith(".undo"):
@@ -53,12 +53,14 @@ class LogManager:
             print("[yellow]Nothing to undo.[/]")
             return
 
-        print("[yellow]Undoing messages:[/]")
+        if not quiet:
+            print("[yellow]Undoing messages:[/yellow]")
         for _ in range(n):
             undid = self.log.pop()
-            print(
-                f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
-            )
+            if not quiet:
+                print(
+                    f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
+                )
             peek = self.log[-1] if self.log else None
 
     def prepare_messages(self) -> list[Message]:

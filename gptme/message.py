@@ -13,7 +13,7 @@ from .constants import ROLE_COLOR
 
 
 class Message:
-    """A message sent to or from the AI."""
+    """A message in the assistant conversation."""
 
     def __init__(
         self,
@@ -22,6 +22,7 @@ class Message:
         user: str | None = None,
         pinned: bool = False,
         hide: bool = False,
+        quiet: bool = False,
     ):
         assert role in ["system", "user", "assistant"]
         self.role = role
@@ -37,6 +38,8 @@ class Message:
         self.pinned = pinned
         # Wether this message should be hidden from the chat output (but still be sent to the assistant)
         self.hide = hide
+        # Wether this message should be printed on execution (will still print on resume, unlike hide)
+        self.quiet = quiet
 
     def to_dict(self):
         """Return a dict representation of the message, serializable to JSON."""
