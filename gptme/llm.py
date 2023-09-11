@@ -94,7 +94,9 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
             # pause inference on finished code-block, letting user run the command before continuing
-            if "\n```" in delta_str[-5:] and "```" in delta_str[:-3]:
+            codeblock_started = "```" in delta_str[:-3]
+            codeblock_finished = "```" in delta_str[-5:]
+            if codeblock_started and codeblock_finished:
                 # if closing a code block, wait for user to run command
                 break
     except KeyboardInterrupt:

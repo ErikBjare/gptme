@@ -7,7 +7,7 @@ from rich import print
 
 from .message import Message, print_msg
 from .prompts import initial_prompt
-from .reduce import limit_log, reduce_log
+from .tools.reduce import limit_log, reduce_log
 from .util import len_tokens
 
 PathLike: TypeAlias = str | Path
