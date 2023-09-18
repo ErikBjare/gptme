@@ -9,7 +9,7 @@ from ..util import ask_execute, print_preview
 locals_ = {}  # type: ignore
 
 
-def execute_python(code: str, ask) -> Generator[Message, None, None]:
+def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
@@ -19,35 +19,35 @@ def execute_python(code: str, ask) -> Generator[Message, None, None]:
     else:
         print("Skipping confirmation")
 
-    if not ask or confirm:
-        # remove blank lines
-        code = "\n".join([line for line in code.split("\n") if line.strip()])
-
-        exc = None
-        with redirect_stdout(io.StringIO()) as out, redirect_stderr(
-            io.StringIO()
-        ) as err:
-            try:
-                exec(code, locals_, locals_)  # type: ignore
-            except Exception as e:
-                exc = e
-        stdout = out.getvalue().strip()
-        stderr = err.getvalue().strip()
-        # print(f"Completed execution: stdout={stdout}, stderr={stderr}, exc={exc}")
-
-        output = ""
-        if stdout:
-            output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
-        if stderr:
-            output += f"stderr:\n```\n{stderr.rstrip()}\n```\n\n"
-        if exc:
-            tb = exc.__traceback__
-            while tb.tb_next:  # type: ignore
-                tb = tb.tb_next  # type: ignore
-            output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"  # type: ignore
-        yield Message("system", "Executed code block.\n\n" + output)
-    else:
+    if ask and not confirm:
+        # early return
         yield Message("system", "Aborted, user chose not to run command.")
+        return
+
+    # remove blank lines
+    code = "\n".join([line for line in code.split("\n") if line.strip()])
+
+    exc = None
+    with redirect_stdout(io.StringIO()) as out, redirect_stderr(io.StringIO()) as err:
+        try:
+            exec(code, locals_, locals_)  # type: ignore
+        except Exception as e:
+            exc = e
+    stdout = out.getvalue().strip()
+    stderr = err.getvalue().strip()
+    # print(f"Completed execution: stdout={stdout}, stderr={stderr}, exc={exc}")
+
+    output = ""
+    if stdout:
+        output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
+    if stderr:
+        output += f"stderr:\n```\n{stderr.rstrip()}\n```\n\n"
+    if exc:
+        tb = exc.__traceback__
+        while tb.tb_next:  # type: ignore
+            tb = tb.tb_next  # type: ignore
+        output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"  # type: ignore
+    yield Message("system", "Executed code block.\n\n" + output)
 
 
 def test_execute_python():

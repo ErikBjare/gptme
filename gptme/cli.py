@@ -20,6 +20,7 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
+
 import atexit
 import io
 import logging
@@ -40,7 +41,7 @@ from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
 from .logmanager import LogManager
 from .message import Message, print_msg
-from .prompts import initial_prompt
+from .prompts import initial_prompt_single_message
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
 from .tools.summarize import summarize
@@ -219,7 +220,7 @@ def main(
         print("WARNING: Skipping all confirmation prompts.")
 
     if prompt_system in ["full", "short"]:
-        promptmsgs = initial_prompt(short=prompt_system == "short")
+        promptmsgs = [initial_prompt_single_message(short=prompt_system == "short")]
     else:
         promptmsgs = [Message("system", prompt_system)]
 

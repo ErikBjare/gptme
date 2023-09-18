@@ -1,5 +1,6 @@
 import json
 import textwrap
+import logging
 from pathlib import Path
 from typing import TypeAlias
 
@@ -11,6 +12,8 @@ from .tools.reduce import limit_log, reduce_log
 from .util import len_tokens
 
 PathLike: TypeAlias = str | Path
+
+logger = logging.getLogger(__name__)
 
 
 class LogManager:
@@ -69,12 +72,12 @@ class LogManager:
         msgs_reduced = list(reduce_log(msgs))
 
         if len(msgs) != len(msgs_reduced):
-            print(
+            logger.info(
                 f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
             )
         msgs_limited = limit_log(msgs_reduced)
         if len(msgs_reduced) != len(msgs_limited):
-            print(
+            logger.info(
                 f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages"
             )
         return msgs_limited

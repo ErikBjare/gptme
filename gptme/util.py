@@ -1,4 +1,5 @@
 import random
+import logging
 from datetime import datetime, timedelta
 
 from rich import print
@@ -7,13 +8,37 @@ from rich.syntax import Syntax
 
 from .message import Message
 
+import tiktoken
+
 EMOJI_WARN = "⚠️"
 
+logger = logging.getLogger(__name__)
 
-def len_tokens(content: str | list[Message]) -> int:
+
+# FIXME: model assumption
+def len_tokens(content: str | list[Message], model: str = "gpt-4") -> int:
+    """Get the number of tokens in a string."""
+    if isinstance(content, list):
+        return sum(len_tokens(msg.content, model) for msg in content)
+    return len(get_tokenizer(model).encode(content))
+
+
+def get_tokenizer(model: str):
+    if "gpt-4" in model or "gpt-3.5" in model:
+        return tiktoken.encoding_for_model(model)
+
+    logger.debug(
+        f"No encoder implemented for model {model}."
+        "Defaulting to tiktoken cl100k_base encoder."
+        "Use results only as estimates."
+    )
+    return tiktoken.get_encoding("cl100k_base")
+
+
+def len_tokens_approx(content: str | list[Message]) -> int:
     """Approximate the number of tokens in a string by assuming tokens have len 3 (lol)."""
     if isinstance(content, list):
-        return sum(len_tokens(msg.content) for msg in content)
+        return sum(len_tokens_approx(msg.content) for msg in content)
     return len(content) // 3
 
 

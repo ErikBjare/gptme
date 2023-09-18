@@ -17,7 +17,11 @@ def reduce_log(
     log: list[Message], limit=TOKEN_LIMIT_SOFT
 ) -> Generator[Message, None, None]:
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
-    i, longest_msg = max(enumerate(log), key=lambda t: len_tokens(t[1].content))
+    # filter out pinned messages
+    i, longest_msg = max(
+        [(i, m) for i, m in enumerate(log) if not m.pinned],
+        key=lambda t: len_tokens(t[1].content),
+    )
     longest_msg = summarize(longest_msg)
     log = log[:i] + [longest_msg] + log[i + 1 :]
     tokens_total = len_tokens("".join(m.content for m in log))
@@ -30,7 +34,7 @@ def reduce_log(
 
 def limit_log(log: list[Message]) -> list[Message]:
     """
-    Picks chat log messages, until the total number of tokens exceeds 2000.
+    Picks chat log messages, until the total number of tokens exceeds TOKEN_LIMIT_SOFT.
     Walks in reverse order through the log, and picks messages until the total number of tokens exceeds 2000.
     Will always pick the first few system messages.
     """
@@ -44,14 +48,14 @@ def limit_log(log: list[Message]) -> list[Message]:
         initial_system_msgs.append(msg)
         tokens += len_tokens(msg.content)
 
-    # Pick the last messages until we exceed the token limit
+    # Pick the messages in latest-first order
     msgs = []
     for msg in reversed(log[len(initial_system_msgs) :]):
         tokens += len_tokens(msg.content)
-        if tokens > TOKEN_LIMIT_HARD:
+        if tokens > TOKEN_LIMIT_SOFT:
             break
         msgs.append(msg)
 
     if tokens > TOKEN_LIMIT_SOFT:
-        logger.debug(f"Log exceeded {TOKEN_LIMIT_SOFT} tokens")
+        logger.debug(f"Log exceeded {TOKEN_LIMIT_HARD} tokens")
     return initial_system_msgs + list(reversed(msgs))
