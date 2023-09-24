@@ -20,7 +20,6 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
-
 import atexit
 import io
 import logging
@@ -34,7 +33,7 @@ from typing import Generator, Literal
 import click
 from dotenv import load_dotenv
 from pick import pick
-from rich import print
+from rich import print  # noqa: F401
 from rich.console import Console
 
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
@@ -217,14 +216,25 @@ def main(
     init_llm(llm)  # set up API_KEY and API_BASE
 
     if no_confirm:
-        print("WARNING: Skipping all confirmation prompts.")
+        logger.warning("Skipping all confirmation prompts.")
 
     if prompt_system in ["full", "short"]:
         promptmsgs = [initial_prompt_single_message(short=prompt_system == "short")]
     else:
         promptmsgs = [Message("system", prompt_system)]
 
-    logfile = get_logfile(name, interactive=not prompts and sys.stdin.isatty())
+    is_interactive = not prompts and sys.stdin.isatty()
+    if not is_interactive:
+        # fetch prompt from stdin
+        prompt_stdin = _read_stdin()
+        if prompt_stdin:
+            promptmsgs += [Message("system", prompt_stdin)]
+
+            # Attempt to switch to interactive mode
+            sys.stdin.close()
+            sys.stdin = open("/dev/tty")
+
+    logfile = get_logfile(name, interactive=is_interactive)
     print(f"Using logdir {logfile.parent}")
     logmanager = LogManager.load(
         logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
@@ -452,6 +462,19 @@ def _rich_to_str(s: str) -> str:
     console = Console(file=io.StringIO(), color_system="256")
     console.print(s)
     return console.file.getvalue()  # type: ignore
+
+
+def _read_stdin() -> str:
+    chunk_size = 1024  # 1 KB
+    all_data = ""
+
+    while True:
+        chunk = sys.stdin.read(chunk_size)
+        if not chunk:
+            break
+        all_data += chunk
+
+    return all_data
 
 
 if __name__ == "__main__":
