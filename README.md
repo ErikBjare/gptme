@@ -35,6 +35,8 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
   - ❌ Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
 - 🤖 Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
   - 🙏 Thanks to llama-cpp-python server!
+- 🚰 Pipe in context via stdin or as arguments.
+  - 📝 Lets you quickly pass needed context.
 - 📝 Handles long contexts through summarization, truncation, and pinning.
   - 🚧 (wip, not very well developed)
 
