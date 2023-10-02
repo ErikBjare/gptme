@@ -28,6 +28,7 @@ import readline  # noqa: F401
 import sys
 from datetime import datetime
 from pathlib import Path
+from time import sleep
 from typing import Generator, Literal
 
 import click
@@ -39,11 +40,17 @@ from rich.console import Console
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
 from .logmanager import LogManager
-from .message import Message, print_msg
+from .message import (
+    Message,
+    msgs_to_toml,
+    print_msg,
+    toml_to_msgs,
+)
 from .prompts import initial_prompt_single_message
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
 from .tools.summarize import summarize
+from .tools.useredit import edit_text_with_editor
 from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
@@ -57,6 +64,7 @@ Actions = Literal[
     "continue",
     "summarize",
     "log",
+    "edit",
     "summarize",
     "context",
     "load",
@@ -73,6 +81,7 @@ action_descriptions: dict[Actions, str] = {
     "continue": "Continue",
     "undo": "Undo the last action",
     "log": "Show the conversation log",
+    "edit": "Edit previous messages",
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
     "shell": "Execute a shell command",
@@ -106,6 +115,32 @@ def handle_cmd(
             msgs = [m for m in msgs if not m.hide]
             summary = summarize(msgs)
             print(f"Summary: {summary}")
+        case "edit":
+            # edit previous messages
+
+            # first undo the '.edit' command itself
+            assert logmanager.log[-1].content == ".edit"
+            logmanager.undo(1, quiet=True)
+
+            # generate editable toml of all messages
+            t = msgs_to_toml(reversed(logmanager.log))  # type: ignore
+            res = None
+            while not res:
+                t = edit_text_with_editor(t, "toml")
+                try:
+                    res = toml_to_msgs(t)
+                except Exception as e:
+                    print(f"\nFailed to parse TOML: {e}")
+                    try:
+                        sleep(1)
+                    except KeyboardInterrupt:
+                        yield Message("system", "Interrupted")
+                        return
+            logmanager.log = list(reversed(res))
+            logmanager.write()
+            # now we need to redraw the log so the user isn't seeing stale messages in their buffer
+            # logmanager.print()
+            logger.info("Applied edited messages")
         case "log":
             logmanager.print(show_hidden="--hidden" in args)
         case "summarize":
@@ -301,6 +336,8 @@ def loop(
             # when command has been run,
             if inquiry.startswith(".") or inquiry.startswith("$"):
                 yield from handle_cmd(inquiry, logmanager, no_confirm=no_confirm)
+                # we need to re-assign `log` here since it may be replaced by `handle_cmd`
+                log = logmanager.log
                 if inquiry != ".continue":
                     continue
 

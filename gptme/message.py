@@ -5,6 +5,7 @@ import textwrap
 from datetime import datetime
 from typing import Literal
 
+import tomlkit
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
@@ -23,11 +24,12 @@ class Message:
         pinned: bool = False,
         hide: bool = False,
         quiet: bool = False,
+        timestamp: datetime | None = None,
     ):
         assert role in ["system", "user", "assistant"]
         self.role = role
         self.content = content.strip()
-        self.timestamp = datetime.now()
+        self.timestamp = timestamp or datetime.now()
         if user:
             self.user = user
         else:
@@ -118,3 +120,108 @@ def print_msg(
         print(
             f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
         )
+
+
+def msg_to_toml(msg: Message) -> str:
+    """Converts a message to a TOML string, for easy editing by hand in editor to then be parsed back."""
+    # TODO: escape msg.content
+    flags = []
+    if msg.pinned:
+        flags.append("pinned")
+    if msg.hide:
+        flags.append("hide")
+    if msg.quiet:
+        flags.append("quiet")
+
+    # doublequotes need to be escaped
+    content = msg.content.replace('"', '\\"')
+    return f'''[message]
+role = "{msg.role}"
+content = """
+{content}
+"""
+timestamp = "{msg.timestamp.isoformat()}"
+'''
+
+
+def msgs_to_toml(msgs: list[Message]) -> str:
+    """Converts a list of messages to a TOML string, for easy editing by hand in editor to then be parsed back."""
+    t = ""
+    for msg in msgs:
+        t += msg_to_toml(msg).replace("[message]", "[[messages]]") + "\n\n"
+
+    return t
+
+
+def toml_to_msg(toml: str) -> Message:
+    """
+    Converts a TOML string to a message.
+
+    The string can be a single [[message]].
+    """
+
+    t = tomlkit.parse(toml)
+    assert "message" in t and isinstance(t["message"], dict)
+    msg: dict = t["message"]  # type: ignore
+
+    return Message(
+        msg["role"],
+        msg["content"],
+        user=msg.get("user"),
+        pinned=msg.get("pinned", False),
+        hide=msg.get("hide", False),
+        quiet=msg.get("quiet", False),
+        timestamp=datetime.fromisoformat(msg["timestamp"]),
+    )
+
+
+def toml_to_msgs(toml: str) -> list[Message]:
+    """
+    Converts a TOML string to a list of messages.
+
+    The string can be a whole file with multiple [[messages]].
+    """
+    t = tomlkit.parse(toml)
+    assert "messages" in t and isinstance(t["messages"], list)
+    msgs: list[dict] = t["messages"]  # type: ignore
+
+    return [
+        Message(
+            msg["role"],
+            msg["content"],
+            user=msg.get("user"),
+            pinned=msg.get("pinned", False),
+            hide=msg.get("hide", False),
+            quiet=msg.get("quiet", False),
+            timestamp=datetime.fromisoformat(msg["timestamp"]),
+        )
+        for msg in msgs
+    ]
+
+
+def test_toml():
+    msg = Message(
+        "system",
+        '''Hello world!
+"""Difficult to handle string"""
+''',
+    )
+    t = msg_to_toml(msg)
+    print(t)
+    m = toml_to_msg(t)
+    print(m)
+    assert msg.content == m.content
+    assert msg.role == m.role
+    assert msg.timestamp.date() == m.timestamp.date()
+    assert msg.timestamp.timetuple() == m.timestamp.timetuple()
+
+    msg2 = Message("user", "Hello computer!")
+    ts = msgs_to_toml([msg, msg2])
+    print(ts)
+    ms = toml_to_msgs(ts)
+    print(ms)
+    assert len(ms) == 2
+    assert ms[0].role == msg.role
+    assert ms[0].timestamp.timetuple() == msg.timestamp.timetuple()
+    assert ms[0].content == msg.content
+    assert ms[1].content == msg2.content

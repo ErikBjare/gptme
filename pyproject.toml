@@ -25,6 +25,7 @@ toml = "^0.10.2"
 playwright = "^1.37.0"
 tiktoken = "^0.5.1"
 jedi = {version = "^0.19.0"}
+tomlkit = "^0.12.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"

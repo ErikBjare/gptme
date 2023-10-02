@@ -1571,6 +1571,17 @@ files = [
 ]
 
 [[package]]
+name = "tomlkit"
+version = "0.12.1"
+description = "Style preserving TOML library"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tomlkit-0.12.1-py3-none-any.whl", hash = "sha256:712cbd236609acc6a3e2e97253dfc52d4c2082982a88f61b640ecf0817eab899"},
+    {file = "tomlkit-0.12.1.tar.gz", hash = "sha256:38e1ff8edb991273ec9f6181244a6a391ac30e9f5098e7535640ea6be97a7c86"},
+]
+
+[[package]]
 name = "tqdm"
 version = "4.66.1"
 description = "Fast, Extensible Progress Meter"
@@ -1762,4 +1773,4 @@ server = ["llama-cpp-python"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "97bf085fac7ecb98d2142de540f25eff5371047b26730b00cf71b0bf6c9691bb"
+content-hash = "7e147cb5d93a04758c2f31ceea636b7621d73263a0b71635e2e1956adef6dbf0"
