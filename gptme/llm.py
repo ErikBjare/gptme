@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 
-import openai
+from litellm import completion
 from rich import print
 
 from .config import config_path, get_config, set_config_value
@@ -76,7 +76,7 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
-    response = openai.ChatCompletion.create(  # type: ignore
+    response = completion(  # type: ignore
         model=model,
         messages=msgs2dicts(messages),
         temperature=temperature,
@@ -87,7 +87,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-    response = openai.ChatCompletion.create(  # type: ignore
+    response = completion(  # type: ignore
         model=model,
         messages=msgs2dicts(messages),
         temperature=temperature,
