@@ -21,6 +21,7 @@ to do so, it needs to be able to store and query past conversations in a databas
 """
 # The above may be used as a prompt for the agent.
 import atexit
+import importlib.metadata
 import io
 import logging
 import os
@@ -54,11 +55,10 @@ from .tools.useredit import edit_text_with_editor
 from .util import epoch_to_age, generate_unique_name
 
 logger = logging.getLogger(__name__)
-
+print_builtin = __builtins__["print"]  # type: ignore
 
 LLMChoice = Literal["openai", "llama"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
-
 
 Actions = Literal[
     "continue",
@@ -236,6 +236,11 @@ The chat offers some commands that can be used to interact with the system:
     is_flag=True,
     help="Show hidden system messages.",
 )
+@click.option(
+    "--version",
+    is_flag=True,
+    help="Show version.",
+)
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -247,7 +252,13 @@ def main(
     no_confirm: bool,
     show_hidden: bool,
     interactive: bool,
+    version: bool,
 ):
+    if version:
+        # print version and exit
+        print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
+        exit(0)
+
     # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
