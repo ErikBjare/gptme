@@ -1,15 +1,15 @@
 import logging
+from functools import lru_cache
 
 import openai
 
-from ..cache import memory
 from ..message import Message, format_msgs
 from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
 
 
-@memory.cache
+@lru_cache(maxsize=100)
 def _llm_summarize(content: str) -> str:
     """Summarizes a long text using a LLM algorithm."""
     response = openai.Completion.create(

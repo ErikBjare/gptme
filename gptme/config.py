@@ -1,7 +1,7 @@
 import os
 from typing import TypedDict
 
-import toml
+import tomlkit
 
 
 class Config(TypedDict):
@@ -44,12 +44,12 @@ def _load_config() -> Config:
         # If not, create it and write some default settings
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
         with open(config_path, "w") as config_file:
-            toml.dump(default_config, config_file)
+            tomlkit.dump(default_config, config_file)
         print(f"Created config file at {config_path}")
 
     # Now you can read the settings from the config file like this:
     with open(config_path, "r") as config_file:
-        config: dict = toml.load(config_file)
+        config: dict = tomlkit.load(config_file)
 
         # TODO: validate
         config = Config(**config)  # type: ignore
