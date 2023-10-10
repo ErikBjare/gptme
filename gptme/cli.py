@@ -20,6 +20,7 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
+
 import atexit
 import importlib.metadata
 import io
@@ -28,6 +29,7 @@ import os
 import readline  # noqa: F401
 import sys
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from time import sleep
 from typing import Generator, Literal
@@ -60,6 +62,8 @@ print_builtin = __builtins__["print"]  # type: ignore
 LLMChoice = Literal["openai", "llama"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
 
+CMDFIX = "/"  # prefix for commands, e.g. /help
+
 Actions = Literal[
     "continue",
     "summarize",
@@ -78,7 +82,7 @@ Actions = Literal[
 ]
 
 action_descriptions: dict[Actions, str] = {
-    "continue": "Continue",
+    "continue": "Continue response",
     "undo": "Undo the last action",
     "log": "Show the conversation log",
     "edit": "Edit previous messages",
@@ -86,18 +90,19 @@ action_descriptions: dict[Actions, str] = {
     "load": "Load a file",
     "shell": "Execute a shell command",
     "python": "Execute a Python command",
-    "exit": "Exit the program",
-    "help": "Show this help message",
-    "replay": "Rerun all commands in the conversation (does not store output in log)",
+    "replay": "Re-execute past commands in the conversation (does not store output in log)",
     "impersonate": "Impersonate the assistant",
+    "help": "Show this help message",
+    "exit": "Exit the program",
 }
+COMMANDS = list(action_descriptions.keys())
 
 
 def handle_cmd(
-    cmd: str, logmanager: LogManager, no_confirm: bool
+    cmd: str, log: LogManager, no_confirm: bool
 ) -> Generator[Message, None, None]:
     """Handles a command."""
-    cmd = cmd.lstrip(".")
+    cmd = cmd.lstrip(CMDFIX)
     logger.debug(f"Executing command: {cmd}")
     name, *args = cmd.split(" ")
     match name:
@@ -106,24 +111,25 @@ def handle_cmd(
         case "python" | "py":
             yield from execute_python(" ".join(args), ask=not no_confirm)
         case "continue":
-            # undo '.continue' command
-            logmanager.undo(1, quiet=True)
+            # undo '/continue' command
+            log.undo(1, quiet=True)
         case "log":
-            logmanager.print(show_hidden="--hidden" in args)
+            log.undo(1, quiet=True)
+            log.print(show_hidden="--hidden" in args)
         case "summarize":
-            msgs = logmanager.prepare_messages()
+            msgs = log.prepare_messages()
             msgs = [m for m in msgs if not m.hide]
             summary = summarize(msgs)
             print(f"Summary: {summary}")
         case "edit":
             # edit previous messages
 
-            # first undo the '.edit' command itself
-            assert logmanager.log[-1].content == ".edit"
-            logmanager.undo(1, quiet=True)
+            # first undo the '/edit' command itself
+            assert log.log[-1].content == f"{CMDFIX}edit"
+            log.undo(1, quiet=True)
 
             # generate editable toml of all messages
-            t = msgs_to_toml(reversed(logmanager.log))  # type: ignore
+            t = msgs_to_toml(reversed(log.log))  # type: ignore
             res = None
             while not res:
                 t = edit_text_with_editor(t, "toml")
@@ -136,22 +142,18 @@ def handle_cmd(
                     except KeyboardInterrupt:
                         yield Message("system", "Interrupted")
                         return
-            logmanager.log = list(reversed(res))
-            logmanager.write()
+            log.log = list(reversed(res))
+            log.write()
             # now we need to redraw the log so the user isn't seeing stale messages in their buffer
-            # logmanager.print()
+            # log.print()
             logger.info("Applied edited messages")
-        case "log":
-            logmanager.print(show_hidden="--hidden" in args)
-        case "summarize":
-            print(summarize(logmanager.prepare_messages()))
         case "context":
             # print context msg
             print(_gen_context_msg())
         case "undo":
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
-            logmanager.undo(n)
+            log.undo(n)
         case "load":
             filename = args[0] if args else input("Filename: ")
             with open(filename) as f:
@@ -160,8 +162,9 @@ def handle_cmd(
         case "exit":
             sys.exit(0)
         case "replay":
+            log.undo(1, quiet=True)
             print("Replaying conversation...")
-            for msg in logmanager.log:
+            for msg in log.log:
                 if msg.role == "assistant":
                     for msg in execute_msg(msg, ask=True):
                         print_msg(msg, oneline=False)
@@ -171,8 +174,10 @@ def handle_cmd(
             yield msg
             yield from execute_msg(msg, ask=not no_confirm)
         case _:
-            # first undo the '.help' command itself
-            logmanager.undo(1, quiet=True)
+            if log.log[-1].content != f"{CMDFIX}help":
+                print("Unknown command")
+            # undo the '/help' command itself
+            log.undo(1, quiet=True)
 
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
@@ -181,7 +186,7 @@ def handle_cmd(
 
 script_path = Path(os.path.realpath(__file__))
 action_readme = "\n".join(
-    f"  .{cmd:10s}  {desc}." for cmd, desc in action_descriptions.items()
+    f"  {CMDFIX}{cmd:10s}  {desc}." for cmd, desc in action_descriptions.items()
 )
 
 
@@ -348,7 +353,7 @@ def execute_cmd(msg, log):
 
     # if message starts with ., treat as command
     # when command has been run,
-    if msg.content[:1] in [".", "$", "/"]:
+    if msg.content[:1] in ["/"]:
         for resp in handle_cmd(msg.content, log, no_confirm=True):
             log.append(resp)
         return True
@@ -365,8 +370,9 @@ def loop(
     """Runs a single pass of the chat."""
 
     # if last message was from assistant, try to run tools again
-    if log[-1].role == "assistant":
-        yield from execute_msg(log[-1], ask=not no_confirm)
+    # FIXME: can't do this here because it will run twice
+    # if log[-1].role == "assistant":
+    #     yield from execute_msg(log[-1], ask=not no_confirm)
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -460,6 +466,58 @@ history_examples = [
 ]
 
 
+def _completer(text: str, state: int) -> str | None:
+    """
+    Tab completion for readline.
+
+    Completes /commands and paths in arguments.
+
+    The completer function is called as function(text, state), for state in 0, 1, 2, …, until it returns a non-string value.
+    It should return the next possible completion starting with text.
+    """
+    return _matches(text)[state]
+
+
+@lru_cache(maxsize=1)
+def _matches(text: str) -> list[str]:
+    """Returns a list of matches for text to complete."""
+
+    # if text starts with /, complete with commands or files as absolute paths
+    if text.startswith("/"):
+        # if no text, list all commands
+        all_commands = [f"{CMDFIX}{cmd}" for cmd in COMMANDS if cmd != "help"]
+        if not text[1:]:
+            return all_commands
+        # else, filter commands with text
+        else:
+            matching_files = [str(p) for p in Path("/").glob(text[1:] + "*")]
+            return [
+                cmd for cmd in all_commands if cmd.startswith(text)
+            ] + matching_files
+
+    # if text starts with ., complete with current dir
+    elif text.startswith("."):
+        if not text[1:]:
+            return [str(Path.cwd())]
+        else:
+            all_files = [str(p) for p in Path.cwd().glob("*")]
+            return [f for f in all_files if f.startswith(text)]
+
+    # if text starts with ../, complete with parent dir
+    elif text.startswith(".."):
+        if not text[2:]:
+            return [str(Path.cwd().parent)]
+        else:
+            return [str(p) for p in Path.cwd().parent.glob(text[2:] + "*")]
+
+    # else, complete with files in current dir
+    else:
+        if not text:
+            return [str(Path.cwd())]
+        else:
+            return [str(p) for p in Path.cwd().glob(text + "*")]
+
+
 def _load_readline_history() -> None:
     logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
@@ -471,6 +529,20 @@ def _load_readline_history() -> None:
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
+
+    # set up tab completion
+    print("Setting up tab completion")
+    readline.set_completer(_completer)
+    readline.set_completer_delims(" ")
+    readline.parse_and_bind("tab: complete")
+
+    # https://github.com/python/cpython/issues/102130#issuecomment-1439242363
+    if "libedit" in readline.__doc__:  # type: ignore
+        print("Found libedit readline")
+        readline.parse_and_bind("bind ^I rl_complete")
+    else:
+        print("Found gnu readline")
+        readline.parse_and_bind("tab: complete")
 
     atexit.register(readline.write_history_file, HISTORY_FILE)
 
@@ -526,7 +598,12 @@ def prompt_input(prompt: str, value=None) -> str:
         print(prompt + value)
     else:
         prompt = _rich_to_str(prompt)
+
+        # https://stackoverflow.com/a/53260487/965332
+        original_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
         value = input(prompt.strip() + " ")
+        sys.stdout = original_stdout
     return value
 
 

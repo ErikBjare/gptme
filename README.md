@@ -10,7 +10,7 @@ GPTMe 👨‍💻🤝🤖🤝💻
 
 📜 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code, making them able to assist in all kinds of development and terminal-based work.
 
-A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter") that is not constrained by lack of internet access, timeouts, or privacy concerns (if local model is used).
+A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter") that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local model is used).
 
 ## 🎥 Demo
 
@@ -103,17 +103,18 @@ Usage: gptme [OPTIONS] [PROMPTS]...
 
   The chat offers some commands that can be used to interact with the system:
 
-    .continue    Continue.
-    .undo        Undo the last action.
-    .log         Show the conversation log.
-    .summarize   Summarize the conversation so far.
-    .load        Load a file.
-    .shell       Execute a shell command.
-    .python      Execute a Python command.
-    .exit        Exit the program.
-    .help        Show this help message.
-    .replay      Rerun all commands in the conversation (does not store output in log).
-    .impersonate  Impersonate the assistant.
+    /continue    Continue response.
+    /undo        Undo the last action.
+    /log         Show the conversation log.
+    /edit        Edit previous messages.
+    /summarize   Summarize the conversation so far.
+    /load        Load a file.
+    /shell       Execute a shell command.
+    /python      Execute a Python command.
+    /replay      Re-execute past commands in the conversation (does not store output in log).
+    /impersonate  Impersonate the assistant.
+    /help        Show this help message.
+    /exit        Exit the program.
 
 Options:
   --prompt-system TEXT            System prompt. Can be 'full', 'short', or
@@ -127,7 +128,12 @@ Options:
   --stream / --no-stream          Stream responses
   -v, --verbose                   Verbose output.
   -y, --no-confirm                Skips all confirmation prompts.
+  -i, --interactive / -n, --non-interactive
+                                  Choose interactive mode, or not. Non-
+                                  interactive implies --no-confirm, and is
+                                  used in testing.
   --show-hidden                   Show hidden system messages.
+  --version                       Show version.
   --help                          Show this message and exit.
 ```
 

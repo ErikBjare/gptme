@@ -4,6 +4,8 @@ import gptme.cli
 import pytest
 from click.testing import CliRunner
 
+CMDFIX = gptme.cli.CMDFIX
+
 
 @pytest.fixture(scope="session")
 def runid():
@@ -25,7 +27,9 @@ def test_help():
 def test_shell(name: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = runner.invoke(gptme.cli.main, ["--name", name, '.shell echo "yes"'])
+        result = runner.invoke(
+            gptme.cli.main, ["--name", name, f'{CMDFIX}shell echo "yes"']
+        )
         output = result.output.split("System")[-1]
         # check for two 'yes' in output (both command and stdout)
         assert output.count("yes") == 2
@@ -35,7 +39,9 @@ def test_shell(name: str):
 def test_python(name: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = runner.invoke(gptme.cli.main, ["--name", name, '.python print("yes")'])
+        result = runner.invoke(
+            gptme.cli.main, ["--name", name, f'{CMDFIX}python print("yes")']
+        )
         assert "yes\n" in result.output
         assert result.exit_code == 0
 
@@ -45,7 +51,7 @@ def test_python_error(name: str):
     with runner.isolated_filesystem():
         result = runner.invoke(
             gptme.cli.main,
-            ["--name", name, '.python raise Exception("yes")'],
+            ["--name", name, f'{CMDFIX}python raise Exception("yes")'],
         )
         assert "Exception: yes" in result.output
         assert result.exit_code == 0
@@ -77,7 +83,7 @@ def test_block(name: str, lang: str):
         args = [
             "--name",
             name,
-            f".impersonate {code}",
+            f"{CMDFIX}impersonate {code}",
         ]
         print(f"running: gptme {' '.join(args)}")
         result = runner.invoke(gptme.cli.main, args)
@@ -89,6 +95,7 @@ def test_block(name: str, lang: str):
         assert result.exit_code == 0
 
 
+# TODO: these could be fast if we had a cache
 @pytest.mark.slow
 def test_generate_primes(name: str):
     runner = CliRunner()
