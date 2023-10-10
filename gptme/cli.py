@@ -171,6 +171,9 @@ def handle_cmd(
             yield msg
             yield from execute_msg(msg, ask=not no_confirm)
         case _:
+            # first undo the '.help' command itself
+            logmanager.undo(1, quiet=True)
+
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
                 print(f"  {cmd}: {desc}")
@@ -282,6 +285,13 @@ def main(
     else:
         promptmsgs = [Message("system", prompt_system)]
 
+    # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
+    logfile = get_logfile(
+        name, interactive=(not prompts and interactive) and sys.stdin.isatty()
+    )
+    print(f"Using logdir {logfile.parent}")
+    log = LogManager.load(logfile, initial_msgs=promptmsgs, show_hidden=show_hidden)
+
     # if stdin is not a tty, we're getting piped input
     if not sys.stdin.isatty():
         # fetch prompt from stdin
@@ -292,10 +302,6 @@ def main(
             # Attempt to switch to interactive mode
             sys.stdin.close()
             sys.stdin = open("/dev/tty")
-
-    logfile = get_logfile(name, interactive=not prompts and interactive)
-    print(f"Using logdir {logfile.parent}")
-    log = LogManager.load(logfile, initial_msgs=promptmsgs, show_hidden=show_hidden)
 
     # print log
     log.print()
@@ -318,15 +324,35 @@ def main(
         # if prompts given on cli, insert next prompt into log
         if prompts:
             prompt = prompts.pop(0)
-            log.append(Message("user", prompt))
-
-        for msg in loop(log, no_confirm, model, llm, stream=stream):
+            msg = Message("user", prompt)
             log.append(msg)
-
-        # if non-interactive and prompts have been exhausted, exit
-        if not interactive and not prompts:
+            # if prompt is a user-command, execute it
+            if execute_cmd(msg, log):
+                continue
+        # if prompts exhausted and non-interactive, exit
+        elif not interactive:
             logger.info("Non-interactive and exhausted prompts, exiting")
             exit(0)
+
+        # ask for input if no prompt, generate reply, and run tools
+        for msg in loop(log, no_confirm, model, llm, stream=stream):
+            log.append(msg)
+            # run any user-commands, if msg is from user
+            if msg.role == "user" and execute_cmd(msg, log):
+                break
+
+
+def execute_cmd(msg, log):
+    """Executes any user-command, returns True if command was executed."""
+    assert msg.role == "user"
+
+    # if message starts with ., treat as command
+    # when command has been run,
+    if msg.content[:1] in [".", "$", "/"]:
+        for resp in handle_cmd(msg.content, log, no_confirm=True):
+            log.append(resp)
+        return True
+    return False
 
 
 def loop(
@@ -341,18 +367,6 @@ def loop(
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
         yield from execute_msg(log[-1], ask=not no_confirm)
-
-    # execute user command
-    if log[-1].role == "user":
-        inquiry = log[-1].content
-        # if message starts with ., treat as command
-        # when command has been run,
-        if inquiry.startswith(".") or inquiry.startswith("$"):
-            yield from handle_cmd(inquiry, log, no_confirm=no_confirm)
-            # we need to re-assign `log` here since it may be replaced by `handle_cmd`
-            # FIXME: this is pretty bad hack to get things working, needs to be refactored
-            if inquiry != ".continue":
-                return
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),

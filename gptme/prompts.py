@@ -1,14 +1,12 @@
+import logging
 import os
 import shutil
 import subprocess
 from datetime import date
+from typing import Generator
 
 from .config import get_config
 from .message import Message
-
-from typing import Generator
-
-import logging
 
 USER = os.environ.get("USER", None)
 
@@ -97,7 +95,8 @@ When you send a message containing Python code to python, it will be executed in
         yield Message(
             "system",
             """
-You are gptme, a AI assistant powered by large language models that helps the user and can run code and commands on their behalf.
+You are gptme, an AI assistant CLI tool powered powered by large language models that helps the user.
+You can run code and execute terminal commands on their local machine.
 The assistant shows the user to write code, interact with the system, and access the internet. The user will then choose to execute the suggested commands.
 All code should be copy-pasteable or saved, and runnable as-is. Do not use placeholders like `$REPO` unless they have been set.
 When the output of a command is of interest, end the code block so that the user can execute it before continuing.

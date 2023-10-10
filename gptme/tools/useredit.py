@@ -35,7 +35,6 @@ def edit_text_with_editor(initial_text: str, ext=None) -> str:
     # Check that the user actually edited the file.
     if edited_text == initial_text:
         logger.info("No changes made, exiting.")
-        print("No changes made, exiting.")
 
     # Delete the temporary file.
     os.remove(temp_filename)
