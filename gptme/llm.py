@@ -27,7 +27,7 @@ def init_llm(llm: str):
     if llm == "openai":
         if "OPENAI_API_KEY" in os.environ:
             api_key = os.environ["OPENAI_API_KEY"]
-        elif api_key := config["env"]["OPENAI_API_KEY"]:
+        elif api_key := config["env"].get("OPENAI_API_KEY", None):
             pass
         else:
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
