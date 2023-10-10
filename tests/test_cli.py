@@ -25,9 +25,7 @@ def test_help():
 def test_shell(name: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = runner.invoke(
-            gptme.cli.main, ["-y", "--name", name, '.shell echo "yes"']
-        )
+        result = runner.invoke(gptme.cli.main, ["--name", name, '.shell echo "yes"'])
         output = result.output.split("System")[-1]
         # check for two 'yes' in output (both command and stdout)
         assert output.count("yes") == 2
@@ -37,9 +35,7 @@ def test_shell(name: str):
 def test_python(name: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
-        result = runner.invoke(
-            gptme.cli.main, ["-y", "--name", name, '.python print("yes")']
-        )
+        result = runner.invoke(gptme.cli.main, ["--name", name, '.python print("yes")'])
         assert "yes\n" in result.output
         assert result.exit_code == 0
 
@@ -48,7 +44,8 @@ def test_python_error(name: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
         result = runner.invoke(
-            gptme.cli.main, ["-y", "--name", name, '.python raise Exception("yes")']
+            gptme.cli.main,
+            ["--name", name, '.python raise Exception("yes")'],
         )
         assert "Exception: yes" in result.output
         assert result.exit_code == 0
@@ -78,7 +75,6 @@ def test_block(name: str, lang: str):
     runner = CliRunner()
     with runner.isolated_filesystem():
         args = [
-            "-y",
             "--name",
             name,
             f".impersonate {code}",
@@ -100,7 +96,6 @@ def test_generate_primes(name: str):
         result = runner.invoke(
             gptme.cli.main,
             [
-                "-y",
                 "--name",
                 name,
                 "print the first 10 prime numbers",

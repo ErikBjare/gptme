@@ -226,6 +226,12 @@ The chat offers some commands that can be used to interact with the system:
     "-y", "--no-confirm", is_flag=True, help="Skips all confirmation prompts."
 )
 @click.option(
+    "--interactive/--non-interactive",
+    "-i/-n",
+    default=True,
+    help="Choose interactive mode, or not. Non-interactive implies --no-confirm, and is used in testing.",
+)
+@click.option(
     "--show-hidden",
     is_flag=True,
     help="Show hidden system messages.",
@@ -240,6 +246,7 @@ def main(
     verbose: bool,
     no_confirm: bool,
     show_hidden: bool,
+    interactive: bool,
 ):
     # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
@@ -250,6 +257,12 @@ def main(
     _load_readline_history()
     init_llm(llm)  # set up API_KEY and API_BASE
 
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        interactive = False
+
+    if not interactive:
+        no_confirm = True
+
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
 
@@ -258,8 +271,8 @@ def main(
     else:
         promptmsgs = [Message("system", prompt_system)]
 
-    is_interactive = not prompts and sys.stdin.isatty()
-    if not is_interactive:
+    # if stdin is not a tty, we're getting piped input
+    if not sys.stdin.isatty():
         # fetch prompt from stdin
         prompt_stdin = _read_stdin()
         if prompt_stdin:
@@ -269,7 +282,7 @@ def main(
             sys.stdin.close()
             sys.stdin = open("/dev/tty")
 
-    logfile = get_logfile(name, interactive=is_interactive)
+    logfile = get_logfile(name, interactive=not prompts and interactive)
     print(f"Using logdir {logfile.parent}")
     logmanager = LogManager.load(
         logfile, initial_msgs=promptmsgs, show_hidden=show_hidden
@@ -279,72 +292,78 @@ def main(
     logmanager.print()
     print("--- ^^^ past messages ^^^ ---")
 
+    # check if any prompt is a full path, if so, replace it with the contents of that file
+    prompts = [
+        f"```{p}\n{Path(p).expanduser().read_text()}\n```"
+        if Path(p).expanduser().exists()
+        else p
+        for p in prompts
+    ]
+    cli_prompted = bool(prompts)
+
     # main loop
-    for msg in loop(prompts, logmanager, no_confirm, model, llm):
+    ctx = loop(logmanager, no_confirm, model, llm)
+    while True:
+        # if prompts given on cli:
+        # - insert prompt into logmanager
+        # - if a prompt is `-`, wait for reply before sending next prompt
+        # - set cli_prompted
+        while prompts:
+            if prompts[0] == "-":
+                prompts.pop(0)
+                break
+            logmanager.append(Message("user", prompts.pop(0)))
+
+        msg = next(ctx)
         logmanager.append(msg)
+
+        # if prompts have been ran and is non-interactive, exit
+        # this is used in testing
+        if cli_prompted and not prompts and not interactive:
+            logger.info("Command triggered and not in TTY, exiting")
+            exit(0)
 
 
 def loop(
-    prompts: list[str],
-    logmanager: LogManager,
+    log: LogManager,
     no_confirm: bool,
     model: ModelChoice,
     llm: LLMChoice,
     stream: bool = True,
 ) -> Generator[Message, None, None]:
-    log = logmanager.log
-
     # if last message was from assistant, try to run tools again
     if log[-1].role == "assistant":
         yield from execute_msg(log[-1], ask=not no_confirm)
 
-    command_triggered = False
     while True:
-        prompt = None
-        if prompts:
-            prompt = prompts[0]
-            prompts = prompts[1:]
-
-        # if prompts have been ran and is non-interactive, exit
-        if command_triggered and not sys.stdin.isatty():
-            logger.info("Command triggered and not in TTY, exiting")
-            break
-
-        # If last message was a response, ask for input.
-        # If last message was from the user (such as from crash/edited log),
-        # then skip asking for input and generate response
-        last_msg = log[-1] if log else None
-        if not last_msg or (
-            (last_msg.role in ["system", "assistant"])
-            or (log[-1].role == "user" and log[-1].content.startswith("."))
-        ):
-            inquiry = prompt_user(prompt)
-            if not inquiry:
-                # Empty command, ask for input again
-                print()
-                continue
-            # we will exit when last cli-provided prompt is done (if we're non-interactive, see above)
-            if prompt and len(prompts) == 0:
-                command_triggered = True
-                prompt = None
-            yield Message("user", inquiry, quiet=True)
-
         # execute user command
         if log[-1].role == "user":
             inquiry = log[-1].content
             # if message starts with ., treat as command
             # when command has been run,
             if inquiry.startswith(".") or inquiry.startswith("$"):
-                yield from handle_cmd(inquiry, logmanager, no_confirm=no_confirm)
+                yield from handle_cmd(inquiry, log, no_confirm=no_confirm)
                 # we need to re-assign `log` here since it may be replaced by `handle_cmd`
-                log = logmanager.log
+                # FIXME: this is pretty bad hack to get things working, needs to be refactored
                 if inquiry != ".continue":
                     continue
+
+        # If last message was a response, ask for input.
+        # If last message was from the user (such as from crash/edited log),
+        # then skip asking for input and generate response
+        last_msg = log[-1] if log else None
+        if not last_msg or ((last_msg.role in ["system", "assistant"])):
+            inquiry = prompt_user()
+            if not inquiry:
+                # Empty command, ask for input again
+                print()
+                continue
+            yield Message("user", inquiry, quiet=True)
 
         # print response
         try:
             # performs reduction/context trimming, if necessary
-            msgs = logmanager.prepare_messages()
+            msgs = log.prepare_messages()
 
             # append temporary message with current context, right before user message
             # NOTE: in my experience, this confused the model more than it helped

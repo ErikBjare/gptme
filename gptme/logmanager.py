@@ -1,6 +1,6 @@
 import json
-import textwrap
 import logging
+import textwrap
 from pathlib import Path
 from typing import TypeAlias
 
@@ -29,12 +29,27 @@ class LogManager:
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
+    def __getitem__(self, key):
+        return self.log[key]
+
+    def __len__(self):
+        return len(self.log)
+
+    def __iter__(self):
+        return iter(self.log)
+
+    def __bool__(self):
+        return bool(self.log)
+
     def append(self, msg: Message) -> None:
         """Appends a message to the log, writes the log, prints the message."""
         self.log.append(msg)
         self.write()
         if not msg.quiet:
             print_msg(msg, oneline=False)
+
+    def pop(self, index: int = -1) -> Message:
+        return self.log.pop(index)
 
     def write(self) -> None:
         """Writes the log to the logfile."""
@@ -45,13 +60,13 @@ class LogManager:
 
     def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
-        undid = self.log[-1] if self.log else None
+        undid = self[-1] if self.log else None
         if undid and undid.content.startswith(".undo"):
-            self.log.pop()
+            self.pop()
 
         # Doesn't work for multiple undos in a row, but useful in testing
         # assert undid.content == ".undo"  # assert that the last message is an undo
-        peek = self.log[-1] if self.log else None
+        peek = self[-1] if self.log else None
         if not peek:
             print("[yellow]Nothing to undo.[/]")
             return
@@ -59,12 +74,12 @@ class LogManager:
         if not quiet:
             print("[yellow]Undoing messages:[/yellow]")
         for _ in range(n):
-            undid = self.log.pop()
+            undid = self.pop()
             if not quiet:
                 print(
                     f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
                 )
-            peek = self.log[-1] if self.log else None
+            peek = self[-1] if self.log else None
 
     def prepare_messages(self) -> list[Message]:
         """Prepares the log into messages before sending it to the LLM."""
