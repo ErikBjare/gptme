@@ -6,7 +6,7 @@ test:
 	poetry run pytest tests scripts -v --cov=gptme --cov-report=term-missing --cov-report=html $(if $(SLOW),, -m "not slow") $(if $(PROFILE),--profile-svg)
 
 typecheck:
-	poetry run mypy --ignore-missing-imports gptme
+	poetry run mypy --ignore-missing-imports gptme tests scripts
 
 lint:
 	poetry run ruff gptme/* tests/*
