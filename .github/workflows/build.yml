@@ -19,6 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python_version: ['3.10']
+        extras: ['browser']
     steps:
     - uses: actions/checkout@v3
       with:
@@ -34,7 +35,12 @@ jobs:
     - name: Install dependencies
       run: |
         make build
-        poetry run playwright install
+        poetry install -E "${{ matrix.extras }}"
+    - name: Install dependencies for extras
+      run: |
+        if [ "${{ matrix.extras }}" = "browser" ]; then
+          poetry run playwright install
+        fi
     - name: Run tests
       env:
         TERM: xterm

@@ -1,5 +1,13 @@
 import pytest
-from gptme.tools.browser import load_page, search
+
+try:
+    # noreorder
+    import playwright  # fmt: skip # noqa: F401
+except ImportError:
+    pytest.skip("playwright not installed", allow_module_level=True)
+
+# noreorder
+from gptme.tools.browser import load_page, search  # fmt: skip
 
 
 @pytest.mark.slow
