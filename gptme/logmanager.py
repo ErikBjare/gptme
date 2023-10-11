@@ -30,7 +30,7 @@ class LogManager:
             fpath = NamedTemporaryFile(delete=False).name
             print(f"[yellow]No logfile specified, using tmpfile {fpath}.[/]")
             logfile = Path(fpath)
-        self.logfile = logfile
+        self.logfile = logfile if isinstance(logfile, Path) else Path(logfile)
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
@@ -121,6 +121,17 @@ class LogManager:
             if backtick_count >= 2:
                 return msg.content.split("```")[-2].split("\n", 1)[-1]
         return None
+
+    def rename(self, name: str) -> None:
+        # rename the conversation and log file
+        # if you want to keep the old log, use fork()
+        self.logfile.rename(self.logfile.parent / f"{name}.log")
+        self.logfile = self.logfile.parent / f"{name}.log"
+
+    def fork(self, name: str) -> None:
+        # save and switch to a new log file without renaming the old one
+        self.write()
+        self.logfile = self.logfile.parent / f"{name}.log"
 
 
 def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:

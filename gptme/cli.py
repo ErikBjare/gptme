@@ -20,7 +20,6 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
-
 import atexit
 import importlib.metadata
 import io
@@ -29,7 +28,6 @@ import os
 import readline  # noqa: F401
 import sys
 from datetime import datetime
-from functools import lru_cache
 from pathlib import Path
 from time import sleep
 from typing import Generator, Literal
@@ -40,6 +38,7 @@ from pick import pick
 from rich import print  # noqa: F401
 from rich.console import Console
 
+from .commands import CMDFIX, action_descriptions
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
 from .logmanager import LogManager
@@ -50,6 +49,7 @@ from .message import (
     toml_to_msgs,
 )
 from .prompts import initial_prompt_single_message
+from .tabcomplete import register_tabcomplete
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.shell import get_shell
 from .tools.summarize import summarize
@@ -61,43 +61,6 @@ print_builtin = __builtins__["print"]  # type: ignore
 
 LLMChoice = Literal["openai", "llama"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
-
-CMDFIX = "/"  # prefix for commands, e.g. /help
-
-Actions = Literal[
-    "continue",
-    "summarize",
-    "log",
-    "edit",
-    "summarize",
-    "context",
-    "load",
-    "save",
-    "shell",
-    "python",
-    "replay",
-    "undo",
-    "impersonate",
-    "help",
-    "exit",
-]
-
-action_descriptions: dict[Actions, str] = {
-    "continue": "Continue response",
-    "undo": "Undo the last action",
-    "log": "Show the conversation log",
-    "edit": "Edit previous messages",
-    "summarize": "Summarize the conversation so far",
-    "load": "Load a file",
-    "save": "Save the most recent code block to a file",
-    "shell": "Execute a shell command",
-    "python": "Execute a Python command",
-    "replay": "Re-execute past commands in the conversation (does not store output in log)",
-    "impersonate": "Impersonate the assistant",
-    "help": "Show this help message",
-    "exit": "Exit the program",
-}
-COMMANDS = list(action_descriptions.keys())
 
 
 def handle_cmd(
@@ -118,6 +81,14 @@ def handle_cmd(
         case "log":
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
+        case "rename":
+            # rename the conversation
+            new_name = args[0] if args else input("New name: ")
+            log.rename(new_name)
+        case "fork":
+            # fork the conversation
+            new_name = args[0] if args else input("New name: ")
+            log.fork(new_name)
         case "summarize":
             msgs = log.prepare_messages()
             msgs = [m for m in msgs if not m.hide]
@@ -293,6 +264,7 @@ def main(
     # init
     logger.debug("Started")
     load_dotenv()
+    register_tabcomplete()
     _load_readline_history()
     init_llm(llm)  # set up API_KEY and API_BASE
 
@@ -486,58 +458,6 @@ history_examples = [
 ]
 
 
-def _completer(text: str, state: int) -> str | None:
-    """
-    Tab completion for readline.
-
-    Completes /commands and paths in arguments.
-
-    The completer function is called as function(text, state), for state in 0, 1, 2, …, until it returns a non-string value.
-    It should return the next possible completion starting with text.
-    """
-    return _matches(text)[state]
-
-
-@lru_cache(maxsize=1)
-def _matches(text: str) -> list[str]:
-    """Returns a list of matches for text to complete."""
-
-    # if text starts with /, complete with commands or files as absolute paths
-    if text.startswith("/"):
-        # if no text, list all commands
-        all_commands = [f"{CMDFIX}{cmd}" for cmd in COMMANDS if cmd != "help"]
-        if not text[1:]:
-            return all_commands
-        # else, filter commands with text
-        else:
-            matching_files = [str(p) for p in Path("/").glob(text[1:] + "*")]
-            return [
-                cmd for cmd in all_commands if cmd.startswith(text)
-            ] + matching_files
-
-    # if text starts with ., complete with current dir
-    elif text.startswith("."):
-        if not text[1:]:
-            return [str(Path.cwd())]
-        else:
-            all_files = [str(p) for p in Path.cwd().glob("*")]
-            return [f for f in all_files if f.startswith(text)]
-
-    # if text starts with ../, complete with parent dir
-    elif text.startswith(".."):
-        if not text[2:]:
-            return [str(Path.cwd().parent)]
-        else:
-            return [str(p) for p in Path.cwd().parent.glob(text[2:] + "*")]
-
-    # else, complete with files in current dir
-    else:
-        if not text:
-            return [str(Path.cwd())]
-        else:
-            return [str(p) for p in Path.cwd().glob(text + "*")]
-
-
 def _load_readline_history() -> None:
     logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
@@ -549,20 +469,6 @@ def _load_readline_history() -> None:
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
-
-    # set up tab completion
-    print("Setting up tab completion")
-    readline.set_completer(_completer)
-    readline.set_completer_delims(" ")
-    readline.parse_and_bind("tab: complete")
-
-    # https://github.com/python/cpython/issues/102130#issuecomment-1439242363
-    if "libedit" in readline.__doc__:  # type: ignore
-        print("Found libedit readline")
-        readline.parse_and_bind("bind ^I rl_complete")
-    else:
-        print("Found gnu readline")
-        readline.parse_and_bind("tab: complete")
 
     atexit.register(readline.write_history_file, HISTORY_FILE)
 
