@@ -1,29 +1,11 @@
 import logging
 from functools import lru_cache
 
-import openai
-
+from ..llm import summarize as _summarize
 from ..message import Message, format_msgs
 from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
-
-
-@lru_cache(maxsize=100)
-def _llm_summarize(content: str) -> str:
-    """Summarizes a long text using a LLM algorithm."""
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt="Please summarize the following:\n" + content + "\n\nSummary:",
-        temperature=0,
-        max_tokens=256,
-    )
-    summary = response.choices[0].text
-    logger.debug(
-        f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
-        + summary
-    )
-    return summary
 
 
 def summarize(msg: Message | list[Message]) -> Message:
@@ -31,7 +13,7 @@ def summarize(msg: Message | list[Message]) -> Message:
     # construct plaintext from message(s)
     msgs = msg if isinstance(msg, list) else [msg]
     content = "\n".join(format_msgs(msgs))
-    summary = _summarize(content)
+    summary = _summarize_helper(content)
     # construct message from summary
     summary_msg = Message(
         role="system", content=f"Summary of the conversation:\n{summary})"
@@ -39,13 +21,17 @@ def summarize(msg: Message | list[Message]) -> Message:
     return summary_msg
 
 
-def _summarize(s: str) -> str:
-    if len_tokens(s) > 200:
-        # first 100 tokens
-        beginning = " ".join(s.split()[:150])
-        # last 100 tokens
-        end = " ".join(s.split()[-100:])
-        summary = _llm_summarize(beginning + "\n...\n" + end)
+@lru_cache(maxsize=128)
+def _summarize_helper(s: str, tok_max_start=500, tok_max_end=500) -> str:
+    """
+    Helper function for summarizing long outputs.
+
+    Trims long outputs to 200 tokens, then summarizes.
+    """
+    if len_tokens(s) > tok_max_start + tok_max_end:
+        beginning = " ".join(s.split()[:tok_max_start])
+        end = " ".join(s.split()[-tok_max_end:])
+        summary = _summarize(beginning + "\n...\n" + end)
     else:
-        summary = _llm_summarize(s)
+        summary = _summarize(s)
     return summary

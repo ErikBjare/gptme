@@ -72,6 +72,7 @@ Actions = Literal[
     "summarize",
     "context",
     "load",
+    "save",
     "shell",
     "python",
     "replay",
@@ -88,6 +89,7 @@ action_descriptions: dict[Actions, str] = {
     "edit": "Edit previous messages",
     "summarize": "Summarize the conversation so far",
     "load": "Load a file",
+    "save": "Save the most recent code block to a file",
     "shell": "Execute a shell command",
     "python": "Execute a Python command",
     "replay": "Re-execute past commands in the conversation (does not store output in log)",
@@ -151,6 +153,8 @@ def handle_cmd(
             # print context msg
             print(_gen_context_msg())
         case "undo":
+            # undo the '/undo' command itself
+            log.undo(1, quiet=True)
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
             log.undo(n)
@@ -159,6 +163,23 @@ def handle_cmd(
             with open(filename) as f:
                 contents = f.read()
             yield Message("system", f"# filename: {filename}\n\n{contents}")
+        case "save":
+            # undo
+            log.undo(1, quiet=True)
+
+            # save the most recent code block to a file
+            code = log.get_last_code_block()
+            if not code:
+                print("No code block found")
+                return
+            filename = args[0] if args else input("Filename: ")
+            if Path(filename).exists():
+                ans = input("File already exists, overwrite? [y/N] ")
+                if ans.lower() != "y":
+                    return
+            with open(filename, "w") as f:
+                f.write(code)
+            print(f"Saved code block to {filename}")
         case "exit":
             sys.exit(0)
         case "replay":
@@ -220,8 +241,7 @@ The chat offers some commands that can be used to interact with the system:
 @click.option(
     "--model",
     default="gpt-4",
-    help="Model to use (gpt-3.5 not recommended)",
-    type=click.Choice(["gpt-4", "gpt-3.5-turbo", "wizardcoder-..."]),
+    help="Model to use (gpt-3.5 not recommended). Can be: gpt-4, gpt-3.5-turbo, wizardcoder-..., etc.",
 )
 @click.option(
     "--stream/--no-stream",

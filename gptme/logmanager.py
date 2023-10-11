@@ -2,6 +2,7 @@ import json
 import logging
 import textwrap
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import TypeAlias
 
 from rich import print
@@ -24,7 +25,11 @@ class LogManager:
         show_hidden=False,
     ):
         self.log = log or []
-        assert logfile is not None, "logfile must be specified"
+        if logfile is None:
+            # generate tmpfile
+            fpath = NamedTemporaryFile(delete=False).name
+            print(f"[yellow]No logfile specified, using tmpfile {fpath}.[/]")
+            logfile = Path(fpath)
         self.logfile = logfile
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
@@ -107,6 +112,15 @@ class LogManager:
         if not msgs:
             msgs = initial_msgs
         return cls(msgs, logfile=logfile, **kwargs)
+
+    def get_last_code_block(self) -> str | None:
+        """Returns the last code block in the log, if any."""
+        for msg in self.log[::-1]:
+            # check if message contains a code block
+            backtick_count = msg.content.count("```")
+            if backtick_count >= 2:
+                return msg.content.split("```")[-2].split("\n", 1)[-1]
+        return None
 
 
 def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:

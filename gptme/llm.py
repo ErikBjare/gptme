@@ -9,7 +9,7 @@ from rich import print
 from .config import get_config
 from .constants import PROMPT_ASSISTANT
 from .message import Message
-from .util import msgs2dicts
+from .util import len_tokens, msgs2dicts
 
 # Optimized for code
 # Discussion here: https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683
@@ -24,6 +24,7 @@ def init_llm(llm: str):
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
 
+    # TODO: use llm/model from config if specified and not passed as args
     if llm == "openai":
         if "OPENAI_API_KEY" in os.environ:
             api_key = os.environ["OPENAI_API_KEY"]
@@ -105,3 +106,28 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         print_clear()
     logger.debug(f"Stop reason: {stop_reason}")
     return Message("assistant", deltas_to_str(deltas))
+
+
+def summarize(content: str) -> str:
+    """
+    Summarizes a long text using a LLM.
+
+    To summarize messages or the conversation log,
+    use `gptme.tools.summarize` instead (which wraps this).
+    """
+    try:
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt="Please summarize the following:\n" + content + "\n\nSummary:",
+            temperature=0,
+            max_tokens=256,
+        )
+    except openai.APIError:
+        logger.error("OpenAI API error, returning empty summary: ", exc_info=True)
+        return "error"
+    summary = response.choices[0].text
+    logger.debug(
+        f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
+        + summary
+    )
+    return summary
