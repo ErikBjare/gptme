@@ -32,7 +32,7 @@ def test_shell(name: str):
         )
         output = result.output.split("System")[-1]
         # check for two 'yes' in output (both command and stdout)
-        assert output.count("yes") == 2
+        assert output.count("yes") == 2, result.output
         assert result.exit_code == 0
 
 

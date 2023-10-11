@@ -264,12 +264,14 @@ def main(
     # init
     logger.debug("Started")
     load_dotenv()
-    register_tabcomplete()
     _load_readline_history()
     init_llm(llm)  # set up API_KEY and API_BASE
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
+    else:
+        # for some reason it bugs out shell tests in CI
+        register_tabcomplete()
 
     if not interactive:
         no_confirm = True
