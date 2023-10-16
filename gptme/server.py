@@ -39,7 +39,7 @@ def static_proxy(path):
 # serve index.html from the root
 @api.route("/")
 def root():
-    return flask.send_from_directory("static", "index.html")
+    return flask.send_from_directory("../static", "index.html")
 
 
 def create_app():
