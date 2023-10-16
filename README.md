@@ -31,16 +31,15 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 
 - 💻 Directly execute suggested shell commands on the local machine.
   - 🛠 Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
-  - 🐍 Also spins up a Python REPL to run Python code interactively.
-  - 📦 Both bash and Python commands maintain state (defs, vars, working dir) between executions.
+  - 🐍 Python REPL to run Python code interactively.
+  - 📦 Shell and Python commands maintain state between executions.
 - 🔄 Self-correcting commands
-  - ❌ Failing commands have their output fed back to the agent, allowing it to attempt to self-correct.
+  - ❌ Commands have their output fed back to the agent, allowing it to self-correct.
 - 🤖 Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
   - 🙏 Thanks to llama-cpp-python server!
 - 🚰 Pipe in context via stdin or as arguments.
-  - 📝 Lets you quickly pass needed context.
-- 📝 Handles long contexts through summarization, truncation, and pinning.
-  - 🚧 (wip, not very well developed)
+- 📝 Handles long contexts through summarization, truncation, and pinning. (🚧 WIP)
+- 💬 Offers a web UI and API for conversations. (🚧 WIP)
 
 ## 🛠 Use Cases
 
@@ -65,7 +64,7 @@ git clone https://github.com/ErikBjare/gptme
 poetry install  # or: pip install .
 ```
 
-🔑 [Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable:
+🔑 [Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable, or in the config file `~/.config/gptme/config.toml`:
 ```sh
 OPENAI_API_KEY=...
 ```
@@ -74,6 +73,22 @@ Now, to get started with your first conversation, run:
 ```sh
 gptme
 ```
+
+## 🌐 Web UI
+
+NOTE: The web UI is very early in development, but can be used to browse conversations with pretty formatting.
+
+To serve the web UI, you need to install gptme with server extras:
+```sh
+pip install gptme-python[server]
+```
+
+Then, you can run it with:
+```sh
+gptme --server
+```
+
+And browse to http://localhost:5000/ to see the web UI.
 
 ### 🖥 Local Models
 
