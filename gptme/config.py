@@ -22,7 +22,10 @@ default_config: Config = {
             "gptme": ABOUT_GPTME,
         },
     },
-    "env": {"OPENAI_API_KEY": None},
+    "env": {
+        # toml doesn't support None
+        # "OPENAI_API_KEY": None
+    },
 }
 
 _config: Config | None = None
