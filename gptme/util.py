@@ -1,14 +1,13 @@
-import random
 import logging
+import random
 from datetime import datetime, timedelta
 
+import tiktoken
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
 
 from .message import Message
-
-import tiktoken
 
 EMOJI_WARN = "⚠️"
 
@@ -50,7 +49,8 @@ def msgs2text(msgs: list[Message]) -> str:
 
 
 def msgs2dicts(msgs: list[Message]) -> list[dict]:
-    return [msg.to_dict() for msg in msgs]
+    """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
+    return [msg.to_dict(keys=["role", "content"]) for msg in msgs]
 
 
 def generate_unique_name():

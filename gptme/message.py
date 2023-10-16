@@ -24,12 +24,15 @@ class Message:
         pinned: bool = False,
         hide: bool = False,
         quiet: bool = False,
-        timestamp: datetime | None = None,
+        timestamp: datetime | str | None = None,
     ):
         assert role in ["system", "user", "assistant"]
         self.role = role
         self.content = content.strip()
-        self.timestamp = timestamp or datetime.now()
+        if isinstance(timestamp, str):
+            self.timestamp = datetime.fromisoformat(timestamp)
+        else:
+            self.timestamp = timestamp or datetime.now()
         if user:
             self.user = user
         else:
@@ -43,12 +46,16 @@ class Message:
         # Wether this message should be printed on execution (will still print on resume, unlike hide)
         self.quiet = quiet
 
-    def to_dict(self):
+    def to_dict(self, keys=None):
         """Return a dict representation of the message, serializable to JSON."""
-        return {
+        d = {
             "role": self.role,
             "content": self.content,
+            "timestamp": self.timestamp.isoformat(),
         }
+        if keys:
+            return {k: d[k] for k in keys}
+        return d
 
     def format(self, oneline: bool = False, highlight: bool = False) -> str:
         return format_msgs([self], oneline=oneline, highlight=highlight)[0]

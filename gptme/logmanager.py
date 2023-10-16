@@ -178,10 +178,11 @@ def _conversations() -> list[Path]:
 def get_conversations() -> Generator[dict, None, None]:
     for c in _conversations():
         msgs = [Message(**json.loads(line)) for line in open(c)]
+        first_timestamp = msgs[0].timestamp.timestamp() if msgs else c.stat().st_mtime
         yield {
             "name": f"{c.parent.name}",
             "path": str(c),
-            "ctime": c.stat().st_ctime,
-            "mtime": c.stat().st_mtime,
+            "created": first_timestamp,
+            "modified": c.stat().st_mtime,
             "messages": len(msgs),
         }

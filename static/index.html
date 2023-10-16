@@ -30,8 +30,8 @@
           <tr>
             <th class="text-left">Name</th>
             <th class="text-right" @click="changeSort('messages')"># msgs</th>
-            <th class="text-right hidden md:table-cell" @click="changeSort('mtime')">Edited</th>
-            <th class="text-right hidden md:table-cell" @click="changeSort('ctime')">Created</th>
+            <th class="text-right hidden md:table-cell" @click="changeSort('modified')">Edited</th>
+            <th class="text-right hidden md:table-cell" @click="changeSort('created')">Created</th>
           </tr>
         </thead>
         <tbody>
@@ -39,13 +39,13 @@
             <td><a @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
             <td class="text-right">{{ conversation.messages }}</td>
             <td class="text-right hidden md:table-cell">
-              <time :datetime="new Date(1000 * conversation.mtime).toISOString()">
-                {{ fromNow(1000 * conversation.mtime) }}
+              <time :datetime="new Date(1000 * conversation.modified).toISOString()">
+                {{ fromNow(1000 * conversation.modified) }}
               </time>
             </td>
             <td class="text-right hidden md:table-cell">
-              <time :datetime="new Date(1000 * conversation.ctime).toISOString()">
-                {{ fromNow(1000 * conversation.ctime) }}
+              <time :datetime="new Date(1000 * conversation.created).toISOString()">
+                {{ fromNow(1000 * conversation.created) }}
               </time>
             </td>
           </tr>
@@ -111,7 +111,7 @@ new Vue({
     chatLog: [],
 
     // Options
-    sortBy: "mtime",
+    sortBy: "modified",
     hideSystemMessages: true,  // hide initial system messages
 
     // Inputs
