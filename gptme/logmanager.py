@@ -111,7 +111,7 @@ class LogManager:
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
-        if not Path(logfile).exists():
+        if str(LOGSDIR) not in str(logfile):
             # if the path was not fully specified, assume its a dir in LOGSDIR
             logfile = LOGSDIR / logfile / "conversation.jsonl"
         if not Path(logfile).exists():
@@ -135,13 +135,14 @@ class LogManager:
     def rename(self, name: str) -> None:
         # rename the conversation and log file
         # if you want to keep the old log, use fork()
-        self.logfile.rename(self.logfile.parent / f"{name}.log")
-        self.logfile = self.logfile.parent / f"{name}.log"
+        self.logfile.rename(LOGSDIR / name / "conversation.jsonl")
+        self.logfile = LOGSDIR / name / "conversation.jsonl"
 
     def fork(self, name: str) -> None:
         # save and switch to a new log file without renaming the old one
         self.write()
-        self.logfile = self.logfile.parent / f"{name}.log"
+        self.logfile = LOGSDIR / name / "conversation.jsonl"
+        self.write()
 
     def to_dict(self) -> dict:
         return {
@@ -156,6 +157,9 @@ def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
     If a single message given, append.
     If a list of messages given, overwrite.
     """
+    # create directory if it doesn't exist
+    Path(logfile).parent.mkdir(parents=True, exist_ok=True)
+
     if isinstance(msg_or_log, Message):
         msg = msg_or_log
         with open(logfile, "a") as file:

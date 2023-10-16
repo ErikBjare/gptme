@@ -16,16 +16,24 @@
 <body>
 
 <div id="app">
-  <div v-if="error" class="rounded">
-    <h1>Error</h1>
-    <pre>{{ error }}</pre>
+  <div v-if="error" class="rounded container m-auto my-2 p-3 bg-red-100">
+    <b class="text-red-600">Error</b>
+    <button class="float-right text-red-400 font-bold" @click="error = null">X</button>
+    <pre class="text-red-800">{{ error }}</pre>
   </div>
 
   <div class="container m-auto p-3" v-if="selectedConversation === null">
     <h1 class="text-3xl font-bold mb-4">gptme</h1>
     <div class="border rounded p-2">
-      <h2 class="text-lg font-bold">Conversations</h1>
-      <table class="table-auto w-full">
+      <div class="flex">
+        <span class="my-1 text-2xl font-bold flex-1">Conversations</span>
+        <a class="rounded-lg border p-2 cursor-pointer hover:bg-gray-200 text-sm mb-2 bg-gray-100" @click="createConversation()">
+          <b class="text-xl m-0 p-0" style="line-height: 0">+</b>
+          <span>New conversation</span>
+        </a>
+      </div>
+      <hr>
+      <table class="mt-4 table-auto w-full">
         <thead>
           <tr>
             <th class="text-left">Name</th>
@@ -72,6 +80,16 @@
       <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg rounded border mb-4 p-2">
         <div class="font-bold mb-1">{{ capitalize(message.role) }}</div>
         <div class="text-sm" v-html="message.html"></div>
+      </div>
+      <div v-if="cmdout" class="chat-msg rounded border mb-4 p-2">
+        <div class="mb-1">
+          <span class="font-bold">System</span> (not stored)
+          <!-- clear button to the right -->
+          <button class="rounded text-sm border p-1 bg-white shadow float-right" @click="cmdout = ''">Clear</button>
+        </div>
+        <div>
+          <pre class="text-sm">{{cmdout}}</pre>
+        </div>
       </div>
       <!-- generate button -->
       <button
@@ -122,12 +140,12 @@ new Vue({
     newMessage: "",
 
     // Status
+    cmdout: "",
     error: "",
     generating: false,
   },
   async mounted() {
-    const res = await fetch(apiRoot);
-    this.conversations = await res.json();
+    this.getConversations();
     // if the hash is set, select that conversation
     if (window.location.hash) {
       this.selectConversation(window.location.hash.slice(1));
@@ -154,6 +172,10 @@ new Vue({
     },
   },
   methods: {
+    async getConversations() {
+      const res = await fetch(apiRoot);
+      this.conversations = await res.json();
+    },
     async selectConversation(path) {
       // set the hash to the conversation name
       window.location.hash = path;
@@ -180,6 +202,21 @@ new Vue({
       this.$nextTick(() => {
         this.scrollToBottom();
       });
+    },
+    async createConversation() {
+      const name = prompt("Conversation name");
+      if (!name) return;
+      const res = await fetch(`${apiRoot}/${name}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify([]),
+      });
+      if (!res.ok) {
+        this.error = res.statusText;
+        return;
+      }
+      await this.getConversations();
+      this.selectConversation(name);
     },
     async sendMessage() {
       const payload = JSON.stringify({role: "user", content: this.newMessage});
@@ -215,10 +252,18 @@ new Vue({
         this.error = req.statusText;
         return;
       }
+      // req.json() can contain (not stored) responses to /commands,
+      // or the result of the generation.
+      // if it's unsaved results of a command, we need to display it
+      const data = await req.json();
+      if (data.length == 1 && data[0].stored === false) {
+        this.cmdout = data[0].content;
+      }
       // reload conversation
       await this.selectConversation(this.selectedConversation);
     },
     backToConversations() {
+      this.getConversations();  // refresh conversations
       this.selectedConversation = null;
       this.chatLog = [];
       window.location.hash = "";

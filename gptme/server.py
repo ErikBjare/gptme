@@ -5,9 +5,13 @@ See here for instructions how to serve matplotlib figures:
  - https://matplotlib.org/stable/gallery/user_interfaces/web_application_server_sgskip.html
 """
 
+import io
+from contextlib import redirect_stdout
+
 import flask
 
 from .commands import execute_cmd
+from .constants import LOGSDIR
 from .llm import reply
 from .logmanager import LogManager, get_conversations
 from .message import Message
@@ -29,8 +33,29 @@ def api_conversations():
 
 @api.route("/api/conversations/<path:logfile>")
 def api_conversation(logfile: str):
+    """Get a conversation."""
     log = LogManager.load(logfile)
     return flask.jsonify(log.to_dict())
+
+
+@api.route("/api/conversations/<path:logfile>", methods=["PUT"])
+def api_conversation_put(logfile: str):
+    """Create or update a conversation."""
+    msgs = []
+    req_json = flask.request.json
+    if req_json and "messages" in req_json:
+        for msg in req_json["messages"]:
+            msgs.append(
+                Message(msg["role"], msg["content"], timestamp=msg["timestamp"])
+            )
+
+    logpath = LOGSDIR / logfile / "conversation.jsonl"
+    if logpath.exists():
+        raise ValueError(f"Conversation already exists: {logpath}")
+    logpath.parent.mkdir(parents=True)
+    log = LogManager(msgs, logfile=logpath)
+    log.write()
+    return {"status": "ok"}
 
 
 @api.route(
@@ -38,6 +63,7 @@ def api_conversation(logfile: str):
     methods=["POST"],
 )
 def api_conversation_post(logfile: str):
+    """Post a message to the conversation."""
     log = LogManager.load(logfile)
     req_json = flask.request.json
     assert req_json
@@ -51,15 +77,23 @@ def api_conversation_post(logfile: str):
 # generate response
 @api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
 def api_conversation_generate(logfile: str):
-    # Lots copied from cli.py
     log = LogManager.load(logfile)
 
     # if prompt is a user-command, execute it
     if log[-1].role == "user":
-        resp = execute_cmd(log[-1], log)
+        # TODO: capture output of command and return it
+
+        f = io.StringIO()
+        print("Begin capturing stdout, to pass along command output.")
+        with redirect_stdout(f):
+            resp = execute_cmd(log[-1], log)
+        print("Done capturing stdout.")
         if resp:
             log.write()
-            return flask.jsonify({"response": resp})
+            output = f.getvalue()
+            return flask.jsonify(
+                [{"role": "system", "content": output, "stored": False}]
+            )
 
     # performs reduction/context trimming, if necessary
     msgs = log.prepare_messages()
@@ -83,7 +117,6 @@ def api_conversation_generate(logfile: str):
 # serve the static assets in the static folder
 @api.route("/static/<path:path>")
 def static_proxy(path):
-    print("serving static", path)
     return flask.send_from_directory("static", path)
 
 
