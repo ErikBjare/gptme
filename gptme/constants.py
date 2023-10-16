@@ -1,5 +1,7 @@
 from pathlib import Path
 
+CMDFIX = "/"  # prefix for commands, e.g. /help
+
 # Prompts
 ROLE_COLOR = {
     "user": "bright_green",

@@ -76,7 +76,8 @@ gptme
 
 ## 🌐 Web UI
 
-NOTE: The web UI is very early in development, but can be used to browse conversations with pretty formatting.
+> [!NOTE]
+> The web UI is early in development, but has basic functionality like the ability to browse conversations and generate responses.
 
 To serve the web UI, you need to install gptme with server extras:
 ```sh
@@ -107,6 +108,7 @@ MODEL=~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
 poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--n_gpu_layer 1` if you have a M1/M2 chip
 
 # Now, to use it:
+export OPENAI_API_BASE="http://localhost:8000/v1"
 gptme --llm llama
 ```
 

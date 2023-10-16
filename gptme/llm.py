@@ -35,7 +35,14 @@ def init_llm(llm: str):
             sys.exit(1)
         openai.api_key = api_key
     elif llm in ["local", "llama"]:
-        openai.api_base = "http://localhost:8000/v1"
+        if "OPENAI_API_BASE" in os.environ:
+            api_base = os.environ["OPENAI_API_BASE"]
+        elif api_base := config["env"].get("OPENAI_API_BASE", None):
+            pass
+        else:
+            print("Error: OPENAI_API_BASE not set in env or config, see README.")
+            sys.exit(1)
+        openai.api_base = api_base
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)

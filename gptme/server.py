@@ -7,7 +7,11 @@ See here for instructions how to serve matplotlib figures:
 
 import flask
 
+from .commands import execute_cmd
+from .llm import reply
 from .logmanager import LogManager, get_conversations
+from .message import Message
+from .tools import execute_msg
 
 api = flask.Blueprint("api", __name__)
 
@@ -27,6 +31,53 @@ def api_conversations():
 def api_conversation(logfile: str):
     log = LogManager.load(logfile)
     return flask.jsonify(log.to_dict())
+
+
+@api.route(
+    "/api/conversations/<path:logfile>",
+    methods=["POST"],
+)
+def api_conversation_post(logfile: str):
+    log = LogManager.load(logfile)
+    req_json = flask.request.json
+    assert req_json
+    assert "role" in req_json
+    assert "content" in req_json
+    msg = Message(req_json["role"], req_json["content"])
+    log.append(msg)
+    return {"status": "ok"}
+
+
+# generate response
+@api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
+def api_conversation_generate(logfile: str):
+    # Lots copied from cli.py
+    log = LogManager.load(logfile)
+
+    # if prompt is a user-command, execute it
+    if log[-1].role == "user":
+        resp = execute_cmd(log[-1], log)
+        if resp:
+            log.write()
+            return flask.jsonify({"response": resp})
+
+    # performs reduction/context trimming, if necessary
+    msgs = log.prepare_messages()
+
+    # generate response
+    # TODO: add support for streaming
+    msg = reply(msgs, model="gpt-4", stream=True)
+    msg.quiet = True
+
+    # log response and run tools
+    resp = [msg]
+    print(msg)
+    log.append(msg)
+    for msg in execute_msg(msg, ask=False):
+        print(msg)
+        log.append(msg)
+
+    return flask.jsonify([{"role": msg.role, "content": msg.content} for msg in resp])
 
 
 # serve the static assets in the static folder

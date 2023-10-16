@@ -7,7 +7,7 @@ from typing import Generator, TypeAlias
 
 from rich import print
 
-from .constants import LOGSDIR
+from .constants import CMDFIX, LOGSDIR
 from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools.reduce import limit_log, reduce_log
@@ -67,7 +67,7 @@ class LogManager:
     def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
         undid = self[-1] if self.log else None
-        if undid and undid.content.startswith(".undo"):
+        if undid and undid.content.startswith(f"{CMDFIX}undo"):
             self.pop()
 
         # Doesn't work for multiple undos in a row, but useful in testing

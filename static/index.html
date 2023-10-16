@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vue Chat App</title>
+  <title>gptme</title>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
@@ -58,17 +58,28 @@
     </div>
 
     <div class="chat-log shadow-inner" ref="chatContainer">
-      <div v-for="message in chatLog" class="chat-msg rounded border mb-4 p-2">
+      <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg rounded border mb-4 p-2">
         <strong>{{ message.role }}:</strong>
-        <div class="text-sm" v-html="mdToHtml(message.content)"></div>
+        <div class="text-sm" v-html="message.html"></div>
       </div>
+      <!-- generate button -->
+      <button
+        class="rounded border p-2 bg-white shadow"
+        :disabled="generating"
+        @click="generate"
+        :class="{'cursor-not-allowed opacity-50': generating}"
+        >{{ generating ? "Generating..." : "Generate" }}</button>
     </div>
 
     <div class="chat-footer shadow">
       <div class="chat-input">
         <form @submit.prevent="sendMessage" style="display: flex">
           <textarea class="border rounded shadow p-1" v-model="newMessage" placeholder="Type your message" style="flex: 1"></textarea>
-          <button type="submit" class="border rounded shadow p-2 px-4 ml-2 bg-white">Send</button>
+          <button type="submit"
+                  :disabled="generating" class="border rounded shadow p-2 px-4 ml-2 bg-white"
+                  :class="{'cursor-not-allowed opacity-50': generating}">
+            Send
+          </button>
         </form>
       </div>
     </div>
@@ -92,10 +103,16 @@ new Vue({
     // List of messages in the selected conversation
     chatLog: [],
 
+    // Options
     sortBy: "mtime",
+    hideSystemMessages: true,  // hide initial system messages
 
+    // Inputs
     newMessage: "",
+
+    // Status
     error: "",
+    generating: false,
   },
   async mounted() {
     const res = await fetch(apiRoot);
@@ -107,16 +124,31 @@ new Vue({
       const sortBy = reverse ? this.sortBy.slice(1) : this.sortBy;
       return this.conversations.sort((a, b) => b[sortBy] - a[sortBy] * (reverse ? -1 : 1));
     },
+    preparedChatLog: function() {
+      // Set hide flag on initial system messages
+      for (const msg of this.chatLog) {
+        if (msg.role !== "system") break;
+        msg.hide = this.hideSystemMessages;
+      }
+
+      // Convert markdown to HTML
+      return this.chatLog.map(msg => {
+        msg.html = this.mdToHtml(msg.content);
+        return msg;
+      });
+    },
   },
   methods: {
     async selectConversation(path) {
       this.selectedConversation = path;
       const res = await fetch(`${apiRoot}/${path}`);
+
       // check for errors
       if (!res.ok) {
         this.error = res.statusText;
         return;
       }
+
       try {
         const data = await res.json();
         this.chatLog = data.log;
@@ -125,6 +157,7 @@ new Vue({
         console.log(e);
         return
       }
+
       // TODO: Only scroll to bottom on conversation load and new messages
       this.$nextTick(() => {
         this.scrollToBottom();
@@ -132,14 +165,39 @@ new Vue({
     },
     async sendMessage() {
       const payload = JSON.stringify({role: "user", content: this.newMessage});
-      await fetch(`${apiRoot}/${this.selectedConversation}`, {
+      const req = await fetch(`${apiRoot}/${this.selectedConversation}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: payload,
       });
+      if(!req.ok) {
+        this.error = req.statusText;
+        return;
+      }
+      console.log(req);
+      console.log(await req.json());
       this.newMessage = "";
+      // reload conversation
+      await this.selectConversation(this.selectedConversation);
+      // generate
+      this.generate();
+    },
+    async generate() {
+      this.generating = true;
+      const req = await fetch(`${apiRoot}/${this.selectedConversation}/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      this.generating = false;
+      if(!req.ok) {
+        this.error = req.statusText;
+        return;
+      }
+      // reload conversation
       await this.selectConversation(this.selectedConversation);
     },
     backToConversations() {
