@@ -196,7 +196,7 @@ For extensive testing, it'd be good to run it in a simple sandbox to prevent it 
 
 ## 🔀 Alternatives
 
-Looking for other similar projects? Check out [Are Copilots Local Yet?](https://github.com/ErikBjare/are-co-pilots-local-yet)
+Looking for other similar projects? Check out [Are Copilots Local Yet?](https://github.com/ErikBjare/are-copilots-local-yet)
 
 ## 🔗 Links
 
