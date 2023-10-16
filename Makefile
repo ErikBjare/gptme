@@ -9,7 +9,7 @@ typecheck:
 	poetry run mypy --ignore-missing-imports gptme tests scripts
 
 lint:
-	poetry run ruff gptme/* tests/*
+	poetry run ruff -v gptme tests scripts
 
 format:
 	poetry run black gptme tests

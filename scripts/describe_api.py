@@ -11,7 +11,7 @@ from jedi.api.classes import Name
 def main(filenames: list[str]) -> None:
     """Adds prompt and puts API in codeblock."""
 
-    print(f"Here are API descriptions of the files:")
+    print("Here are API descriptions of the files:")
     for filename in filenames:
         code = open(filename).read()
         print(f"\n```{filename}\n{describe_api(code).strip()}\n```")
