@@ -21,34 +21,37 @@
     <pre>{{ error }}</pre>
   </div>
 
-  <div class="container m-auto p-2" v-if="selectedConversation === null">
-    <h1 class="text-lg font-bold">Conversations</h1>
-    <table class="table-auto w-full">
-      <thead>
-        <tr>
-          <th class="text-left">Name</th>
-          <th class="text-right" @click="changeSort('messages')">Messages</th>
-          <th class="text-right" @click="changeSort('mtime')">Edited</th>
-          <th class="text-right" @click="changeSort('ctime')">Created</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="conversation in sortedConversations">
-          <td><a @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
-          <td class="text-right">{{ conversation.messages }}</td>
-          <td class="text-right">
-            <time :datetime="new Date(1000 * conversation.mtime).toISOString()">
-              {{ fromNow(1000 * conversation.mtime) }}
-            </time>
-          </td>
-          <td class="text-right">
-            <time :datetime="new Date(1000 * conversation.ctime).toISOString()">
-              {{ fromNow(1000 * conversation.ctime) }}
-            </time>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="container m-auto p-3" v-if="selectedConversation === null">
+    <h1 class="text-3xl font-bold mb-4">gptme</h1>
+    <div class="border rounded p-2">
+      <h2 class="text-lg font-bold">Conversations</h1>
+      <table class="table-auto w-full">
+        <thead>
+          <tr>
+            <th class="text-left">Name</th>
+            <th class="text-right" @click="changeSort('messages')"># msgs</th>
+            <th class="text-right hidden md:table-cell" @click="changeSort('mtime')">Edited</th>
+            <th class="text-right hidden md:table-cell" @click="changeSort('ctime')">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="conversation in sortedConversations">
+            <td><a @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
+            <td class="text-right">{{ conversation.messages }}</td>
+            <td class="text-right hidden md:table-cell">
+              <time :datetime="new Date(1000 * conversation.mtime).toISOString()">
+                {{ fromNow(1000 * conversation.mtime) }}
+              </time>
+            </td>
+            <td class="text-right hidden md:table-cell">
+              <time :datetime="new Date(1000 * conversation.ctime).toISOString()">
+                {{ fromNow(1000 * conversation.ctime) }}
+              </time>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div v-else class="chat">
@@ -58,6 +61,10 @@
     </div>
 
     <div class="chat-log shadow-inner" ref="chatContainer">
+      <div class="p-2">
+        <input type="checkbox" id="hide-system-messages" v-model="hideSystemMessages">
+        <label for="hide-system-messages">Hide initial system messages</label>
+      </div>
       <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg rounded border mb-4 p-2">
         <strong>{{ message.role }}:</strong>
         <div class="text-sm" v-html="message.html"></div>
