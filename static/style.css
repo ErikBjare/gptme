@@ -1,0 +1,51 @@
+#app {
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 1rem;
+  background-color: #ddd;
+}
+
+.chat-header,
+.chat-footer {
+  flex: 0 1 auto;
+  padding: 10px;
+  background-color: #f4f4f4;
+}
+
+.chat-footer {
+  display: flex;
+  flex-direction: row;
+}
+
+.chat-input {
+  flex: 1;
+}
+
+.chat-msg {
+  background-color: #FFF;
+}
+
+.chat-msg p {
+  margin-bottom: 0.4rem;
+}
+
+.chat-msg h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+  margin-top: 1rem;
+}
+
+.chat-msg h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.4rem;
+  margin-top: 1rem;
+}

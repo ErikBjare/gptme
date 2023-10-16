@@ -3,10 +3,11 @@ import logging
 import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import TypeAlias
+from typing import Generator, TypeAlias
 
 from rich import print
 
+from .constants import LOGSDIR
 from .message import Message, print_msg
 from .prompts import initial_prompt
 from .tools.reduce import limit_log, reduce_log
@@ -104,9 +105,18 @@ class LogManager:
 
     @classmethod
     def load(
-        cls, logfile=None, initial_msgs=initial_prompt(), **kwargs
+        cls,
+        logfile: PathLike,
+        initial_msgs: list[Message] = list(initial_prompt()),
+        **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
+        if not Path(logfile).exists():
+            # if the path was not fully specified, assume its a dir in LOGSDIR
+            logfile = LOGSDIR / logfile / "conversation.jsonl"
+        if not Path(logfile).exists():
+            raise FileNotFoundError(f"Could not find logfile {logfile}")
+
         with open(logfile, "r") as file:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
         if not msgs:
@@ -133,6 +143,12 @@ class LogManager:
         self.write()
         self.logfile = self.logfile.parent / f"{name}.log"
 
+    def to_dict(self) -> dict:
+        return {
+            "log": [msg.to_dict() for msg in self.log],
+            "logfile": str(self.logfile),
+        }
+
 
 def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
     """
@@ -153,3 +169,19 @@ def write_log(msg_or_log: Message | list[Message], logfile: PathLike) -> None:
         raise TypeError(
             "Expected Message or list of Messages, got " + str(type(msg_or_log))
         )
+
+
+def _conversations() -> list[Path]:
+    return list(sorted(LOGSDIR.glob("*/*.jsonl"), key=lambda f: f.stat().st_mtime))
+
+
+def get_conversations() -> Generator[dict, None, None]:
+    for c in _conversations():
+        msgs = [Message(**json.loads(line)) for line in open(c)]
+        yield {
+            "name": f"{c.parent.name}",
+            "path": str(c),
+            "ctime": c.stat().st_ctime,
+            "mtime": c.stat().st_mtime,
+            "messages": len(msgs),
+        }

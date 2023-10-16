@@ -42,7 +42,7 @@ from rich.console import Console
 from .commands import CMDFIX, action_descriptions
 from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
-from .logmanager import LogManager
+from .logmanager import LogManager, _conversations
 from .message import (
     Message,
     msgs_to_toml,
@@ -246,6 +246,7 @@ The chat offers some commands that can be used to interact with the system:
     is_flag=True,
     help="Show version.",
 )
+@click.option("--server", is_flag=True, help="Run as server.")
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -258,6 +259,7 @@ def main(
     show_hidden: bool,
     interactive: bool,
     version: bool,
+    server: bool,
 ):
     if version:
         # print version and exit
@@ -273,6 +275,12 @@ def main(
     _load_readline_history()
     init_llm(llm)  # set up API_KEY and API_BASE
     init_tools()
+
+    # Check if subcommand is passed,
+    # if not, continue with main
+    if server:
+        click.echo("Initialization complete, starting server")
+        return start_server()
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
@@ -346,6 +354,22 @@ def main(
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
                 break
+
+
+def start_server():
+    """Starts a server and web UI."""
+    # if flask not installed, ask the user to install `server` extras
+    try:
+        __import__("flask")
+    except ImportError:
+        logger.error(
+            "gptme installed without needed extras for server. "
+            "Please install gptme with `pip install gptme[server]`"
+        )
+        exit(1)
+    # noreorder
+    from gptme.server import main as server_main  # fmt: skip
+    server_main()
 
 
 def execute_cmd(msg, log):
@@ -487,11 +511,7 @@ def get_logfile(name: str, interactive=True) -> Path:
     # using the library
     title = "New conversation or load previous? "
     NEW_CONV = "New conversation"
-    prev_conv_files = sorted(
-        list(LOGSDIR.glob("*/*.jsonl")),
-        key=lambda f: f.stat().st_mtime,
-        reverse=True,
-    )
+    prev_conv_files = list(reversed(_conversations()))
 
     NEWLINE = "\n"
     prev_convs = [
@@ -504,7 +524,8 @@ def get_logfile(name: str, interactive=True) -> Path:
         options = [
             NEW_CONV,
         ] + prev_convs
-        option, index = pick(options, title)
+        index: int
+        option, index = pick(options, title)  # type: ignore
         if index == 0:
             logdir = get_name(name)
         else:

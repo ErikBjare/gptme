@@ -23,7 +23,7 @@ tiktoken = "^0.5.1"
 tomlkit = "^0.12.1"
 
 # optionals
-llama-cpp-python = {extras = ["server"], version = "^0.1.57", optional=true}
+llama-cpp-python = {version = "^0.1.57", optional=true}
 playwright = {version = "^1.37.0", optional=true}
 jedi = {version = "^0.19.0", optional=true}
 
@@ -31,6 +31,9 @@ jedi = {version = "^0.19.0", optional=true}
 matplotlib = {version = "*", optional=true}
 pandas = {version = "*", optional=true}
 numpy = {version = "*", optional=true}
+
+# server
+flask = {version = "^2.3", optional=true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
@@ -41,7 +44,7 @@ ruff = "*"
 black = "*"
 
 [tool.poetry.extras]
-server = ["llama-cpp-python"]
+server = ["llama-cpp-python", "flask"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy"]
 

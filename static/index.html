@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vue Chat App</title>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+
+  <!-- Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="app">
+  <div v-if="error" class="rounded">
+    <h1>Error</h1>
+    <pre>{{ error }}</pre>
+  </div>
+
+  <div class="container m-auto p-2" v-if="selectedConversation === null">
+    <h1 class="text-lg font-bold">Conversations</h1>
+    <table class="table-auto w-full">
+      <thead>
+        <tr>
+          <th class="text-left">Name</th>
+          <th class="text-right" @click="changeSort('messages')">Messages</th>
+          <th class="text-right" @click="changeSort('mtime')">Edited</th>
+          <th class="text-right" @click="changeSort('ctime')">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="conversation in sortedConversations">
+          <td><a @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
+          <td class="text-right">{{ conversation.messages }}</td>
+          <td class="text-right">
+            <time :datetime="new Date(1000 * conversation.mtime).toISOString()">
+              {{ fromNow(1000 * conversation.mtime) }}
+            </time>
+          </td>
+          <td class="text-right">
+            <time :datetime="new Date(1000 * conversation.ctime).toISOString()">
+              {{ fromNow(1000 * conversation.ctime) }}
+            </time>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div v-else class="chat">
+    <div class="chat-header border">
+      <h1 class="text-lg font-bold">{{ selectedConversation }}</h1>
+      <button class="underline" @click="backToConversations">Back to conversations</button>
+    </div>
+
+    <div class="chat-log shadow-inner" ref="chatContainer">
+      <div v-for="message in chatLog" class="chat-msg rounded border mb-4 p-2">
+        <strong>{{ message.role }}:</strong>
+        <div class="text-sm" v-html="mdToHtml(message.content)"></div>
+      </div>
+    </div>
+
+    <div class="chat-footer shadow">
+      <div class="chat-input">
+        <form @submit.prevent="sendMessage" style="display: flex">
+          <textarea class="border rounded shadow p-1" v-model="newMessage" placeholder="Type your message" style="flex: 1"></textarea>
+          <button type="submit" class="border rounded shadow p-2 px-4 ml-2 bg-white">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import showdownHighlight from 'https://cdn.jsdelivr.net/npm/showdown-highlight@3.1.0/+esm'
+
+const apiRoot = "/api/conversations";
+
+new Vue({
+  el: "#app",
+  data: {
+    // List of conversations
+    conversations: [],
+
+    // Name/ID of the selected conversation
+    selectedConversation: null,
+
+    // List of messages in the selected conversation
+    chatLog: [],
+
+    sortBy: "mtime",
+
+    newMessage: "",
+    error: "",
+  },
+  async mounted() {
+    const res = await fetch(apiRoot);
+    this.conversations = await res.json();
+  },
+  computed: {
+    sortedConversations: function() {
+      const reverse = this.sortBy[0] === "-";
+      const sortBy = reverse ? this.sortBy.slice(1) : this.sortBy;
+      return this.conversations.sort((a, b) => b[sortBy] - a[sortBy] * (reverse ? -1 : 1));
+    },
+  },
+  methods: {
+    async selectConversation(path) {
+      this.selectedConversation = path;
+      const res = await fetch(`${apiRoot}/${path}`);
+      // check for errors
+      if (!res.ok) {
+        this.error = res.statusText;
+        return;
+      }
+      try {
+        const data = await res.json();
+        this.chatLog = data.log;
+      } catch (e) {
+        this.error = e;
+        console.log(e);
+        return
+      }
+      // TODO: Only scroll to bottom on conversation load and new messages
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
+    },
+    async sendMessage() {
+      const payload = JSON.stringify({role: "user", content: this.newMessage});
+      await fetch(`${apiRoot}/${this.selectedConversation}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: payload,
+      });
+      this.newMessage = "";
+      await this.selectConversation(this.selectedConversation);
+    },
+    backToConversations() {
+      this.selectedConversation = null;
+      this.chatLog = [];
+    },
+    scrollToBottom() {
+      const container = this.$refs.chatContainer;
+      container.scrollTop = container.scrollHeight;
+    },
+    fromNow(timestamp) {
+      return moment(new Date(timestamp)).fromNow();
+    },
+    mdToHtml(md) {
+      const converter = new showdown.Converter({extensions: [showdownHighlight], pre: true});
+      return converter.makeHtml(md);
+    },
+    changeSort(sortBy) {
+      // if already sorted by this field, reverse the order
+      if (this.sortBy === sortBy) {
+        this.sortBy = `-${sortBy}`;
+      } else {
+        this.sortBy = sortBy;
+      }
+    },
+  },
+});
+</script>
+
+</body>
+</html>
