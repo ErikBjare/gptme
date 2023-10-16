@@ -36,7 +36,7 @@
         </thead>
         <tbody>
           <tr v-for="conversation in sortedConversations">
-            <td><a @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
+            <td><a class="cursor-pointer hover:underline" @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
             <td class="text-right">{{ conversation.messages }}</td>
             <td class="text-right hidden md:table-cell">
               <time :datetime="new Date(1000 * conversation.modified).toISOString()">
@@ -57,7 +57,11 @@
   <div v-else class="chat">
     <div class="chat-header border">
       <h1 class="text-lg font-bold">{{ selectedConversation }}</h1>
-      <button class="underline" @click="backToConversations">Back to conversations</button>
+      <span class="text-sm pr-3">Messages: {{ chatLog.length }}</span>
+      <span class="text-sm pr-3">Modified: {{ fromNow(new Date(chatLog[chatLog.length - 1]?.timestamp)) }}</span>
+      <span class="text-sm pr-3">Created: {{ fromNow(new Date(chatLog[0]?.timestamp)) }}</span>
+      <br>
+      <button class="text-sm underline" @click="backToConversations">Back to conversations</button>
     </div>
 
     <div class="chat-log shadow-inner" ref="chatContainer">
@@ -66,7 +70,7 @@
         <label for="hide-system-messages">Hide initial system messages</label>
       </div>
       <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg rounded border mb-4 p-2">
-        <strong>{{ message.role }}:</strong>
+        <div class="font-bold mb-1">{{ capitalize(message.role) }}</div>
         <div class="text-sm" v-html="message.html"></div>
       </div>
       <!-- generate button -->
@@ -124,6 +128,10 @@ new Vue({
   async mounted() {
     const res = await fetch(apiRoot);
     this.conversations = await res.json();
+    // if the hash is set, select that conversation
+    if (window.location.hash) {
+      this.selectConversation(window.location.hash.slice(1));
+    }
   },
   computed: {
     sortedConversations: function() {
@@ -147,6 +155,9 @@ new Vue({
   },
   methods: {
     async selectConversation(path) {
+      // set the hash to the conversation name
+      window.location.hash = path;
+
       this.selectedConversation = path;
       const res = await fetch(`${apiRoot}/${path}`);
 
@@ -210,6 +221,7 @@ new Vue({
     backToConversations() {
       this.selectedConversation = null;
       this.chatLog = [];
+      window.location.hash = "";
     },
     scrollToBottom() {
       const container = this.$refs.chatContainer;
@@ -230,6 +242,9 @@ new Vue({
         this.sortBy = sortBy;
       }
     },
+    capitalize(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
   },
 });
 </script>
