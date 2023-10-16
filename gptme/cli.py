@@ -20,6 +20,7 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
+
 import atexit
 import importlib.metadata
 import io
@@ -50,7 +51,12 @@ from .message import (
 )
 from .prompts import initial_prompt_single_message
 from .tabcomplete import register_tabcomplete
-from .tools import execute_msg, execute_python, execute_shell
+from .tools import (
+    execute_msg,
+    execute_python,
+    execute_shell,
+    init_tools,
+)
 from .tools.shell import get_shell
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
@@ -266,6 +272,7 @@ def main(
     load_dotenv()
     _load_readline_history()
     init_llm(llm)  # set up API_KEY and API_BASE
+    init_tools()
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False

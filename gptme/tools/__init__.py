@@ -2,9 +2,9 @@ import logging
 from typing import Generator
 
 from ..message import Message
-from .python import execute_python
-from .shell import execute_shell
+from .python import execute_python, init_python
 from .save import execute_save
+from .shell import execute_shell
 from .summarize import summarize
 
 logger = logging.getLogger(__name__)
@@ -46,3 +46,8 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
         logger.warning(
             f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
         )
+
+
+def init_tools() -> None:
+    """Runs initialization logic for tools."""
+    init_python()

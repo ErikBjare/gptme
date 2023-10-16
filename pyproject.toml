@@ -27,6 +27,11 @@ llama-cpp-python = {extras = ["server"], version = "^0.1.57", optional=true}
 playwright = {version = "^1.37.0", optional=true}
 jedi = {version = "^0.19.0", optional=true}
 
+# datascience essentials
+matplotlib = {version = "*", optional=true}
+pandas = {version = "*", optional=true}
+numpy = {version = "*", optional=true}
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2"
 pytest-cov = "*"
@@ -38,6 +43,7 @@ black = "*"
 [tool.poetry.extras]
 server = ["llama-cpp-python"]
 browser = ["playwright"]
+datascience = ["matplotlib", "pandas", "numpy"]
 
 [tool.ruff]
 ignore = ["E402", "E501"]
