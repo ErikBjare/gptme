@@ -222,7 +222,7 @@ def main(
             exit(0)
 
         # ask for input if no prompt, generate reply, and run tools
-        for msg in loop(log, no_confirm, model, llm, stream=stream):
+        for msg in loop(log, no_confirm, model, stream=stream):
             log.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
@@ -249,7 +249,6 @@ def loop(
     log: LogManager,
     no_confirm: bool,
     model: ModelChoice,
-    llm: LLMChoice,
     stream: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
@@ -368,7 +367,7 @@ def get_logfile(name: str, interactive=True) -> Path:
             NEW_CONV,
         ] + prev_convs
         index: int
-        option, index = pick(options, title)  # type: ignore
+        _, index = pick(options, title)  # type: ignore
         if index == 0:
             logdir = get_name(name)
         else:

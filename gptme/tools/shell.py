@@ -38,10 +38,11 @@ class ShellSession:
         while True:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
             for fd in rlist:
-                if fd == self.stdout_fd:
-                    data = os.read(fd, 4096).decode("utf-8")
-                elif fd == self.stderr_fd:
-                    data = os.read(fd, 4096).decode("utf-8")
+                assert fd in [self.stdout_fd, self.stderr_fd]
+                # We use a higher value, because there is a bug which leads to spaces at the boundary
+                # 2**12 = 4096
+                # 2**16 = 65536
+                data = os.read(fd, 2**16).decode("utf-8")
                 for line in data.split("\n"):
                     if "ReturnCode:" in line:
                         return_code_str = (
