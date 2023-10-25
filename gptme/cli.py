@@ -262,7 +262,7 @@ def loop(
     # If last message was from the user (such as from crash/edited log),
     # then skip asking for input and generate response
     last_msg = log[-1] if log else None
-    if not last_msg or (last_msg.role in ["system", "assistant"]):
+    if not last_msg or (last_msg.role in ["assistant"]):
         inquiry = prompt_user()
         if not inquiry:
             # Empty command, ask for input again
@@ -274,6 +274,9 @@ def loop(
     try:
         # performs reduction/context trimming, if necessary
         msgs = log.prepare_messages()
+
+        for m in msgs:
+            logger.debug(f"Prepared message: {m}")
 
         # generate response
         msg_response = reply(msgs, model, stream)

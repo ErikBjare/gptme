@@ -17,19 +17,23 @@ def reduce_log(
     log: list[Message], limit=TOKEN_LIMIT_SOFT
 ) -> Generator[Message, None, None]:
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
-    # filter out pinned messages
+    tokens_total = len_tokens("".join(m.content for m in log))
+    if tokens_total <= limit:
+        yield from log
+        return
+
+    # filter out pinned messages, skip the latest 2 messages
     i, longest_msg = max(
-        [(i, m) for i, m in enumerate(log) if not m.pinned],
+        [(i, m) for i, m in enumerate(log) if not m.pinned and i < len(log) - 2],
         key=lambda t: len_tokens(t[1].content),
     )
     longest_msg = summarize(longest_msg)
+    logger.info("Reducing log: %s", longest_msg.content)
     log = log[:i] + [longest_msg] + log[i + 1 :]
     tokens_total = len_tokens("".join(m.content for m in log))
-    if tokens_total > limit:
-        # recurse until we are below the limit
-        yield from reduce_log(log, limit)
-    else:
-        yield from log
+
+    # recurse until we are below the limit
+    yield from reduce_log(log, limit)
 
 
 def limit_log(log: list[Message]) -> list[Message]:
