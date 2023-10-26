@@ -4,6 +4,7 @@ from pathlib import Path
 from time import sleep
 from typing import Generator, Literal
 
+from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
     Message,
@@ -15,7 +16,6 @@ from .tools import execute_msg, execute_python, execute_shell
 from .tools.context import _gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
-from .constants import CMDFIX
 
 logger = logging.getLogger(__name__)
 
@@ -91,9 +91,11 @@ def handle_cmd(
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
         case "rename":
+            log.undo(1, quiet=True)
             # rename the conversation
             new_name = args[0] if args else input("New name: ")
             log.rename(new_name)
+            print(f"Renamed conversation to {new_name}")
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")
@@ -105,9 +107,7 @@ def handle_cmd(
             print(f"Summary: {summary}")
         case "edit":
             # edit previous messages
-
             # first undo the '/edit' command itself
-            assert log.log[-1].content == f"{CMDFIX}edit"
             log.undo(1, quiet=True)
 
             # generate editable toml of all messages
@@ -128,10 +128,10 @@ def handle_cmd(
             log.write()
             # now we need to redraw the log so the user isn't seeing stale messages in their buffer
             # log.print()
-            logger.info("Applied edited messages")
+            print("Applied edited messages, write /log to see the result")
         case "context":
             # print context msg
-            print(_gen_context_msg())
+            yield _gen_context_msg()
         case "undo":
             # undo the '/undo' command itself
             log.undo(1, quiet=True)
@@ -179,6 +179,7 @@ def handle_cmd(
                 print("Unknown command")
             # undo the '/help' command itself
             log.undo(1, quiet=True)
+            log.write()
 
             print("Available commands:")
             for cmd, desc in action_descriptions.items():

@@ -135,6 +135,7 @@ class LogManager:
     def rename(self, name: str) -> None:
         # rename the conversation and log file
         # if you want to keep the old log, use fork()
+        (LOGSDIR / name).mkdir(parents=True, exist_ok=True)
         self.logfile.rename(LOGSDIR / name / "conversation.jsonl")
         self.logfile = LOGSDIR / name / "conversation.jsonl"
 

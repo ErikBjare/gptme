@@ -1,6 +1,7 @@
 """
 Tool that lets the user edit something in a temporary file using their $EDITOR.
 """
+
 import logging
 import os
 import subprocess
@@ -20,7 +21,7 @@ def edit_text_with_editor(initial_text: str, ext=None) -> str:
     editor = os.environ.get("EDITOR", "nano")
 
     # Open the file in the user's editor.
-    print("Running editor:", [editor, temp_filename])
+    logger.debug("Running editor:", [editor, temp_filename])
     p = subprocess.run([editor, temp_filename])
     # now, we wait
 

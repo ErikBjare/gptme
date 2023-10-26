@@ -262,7 +262,11 @@ def loop(
     # If last message was from the user (such as from crash/edited log),
     # then skip asking for input and generate response
     last_msg = log[-1] if log else None
-    if not last_msg or (last_msg.role in ["assistant"]):
+    if (
+        not last_msg
+        or (last_msg.role in ["assistant"])
+        or last_msg.content == "Interrupted"
+    ):
         inquiry = prompt_user()
         if not inquiry:
             # Empty command, ask for input again
