@@ -195,6 +195,8 @@ def handle_cmd(
             log.undo(1, quiet=True)
             log.write()
 
+            longest_cmd = max(len(cmd) for cmd in COMMANDS)
             print("Available commands:")
             for cmd, desc in action_descriptions.items():
-                print(f"  {cmd}: {desc}")
+                cmd = cmd.ljust(longest_cmd)
+                print(f"  /{cmd}  {desc}")
