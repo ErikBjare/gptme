@@ -175,6 +175,4 @@ The name should be 2-5 words describing the conversation, separated by dashes. E
         + [Message("user", "Now, generate a name for this conversation.")]
     )
     name = _chat_complete(msgs, model="gpt-3.5-turbo").strip()
-    print(name)
-    print(f"Generated name for conversation: " + name)
     return name
