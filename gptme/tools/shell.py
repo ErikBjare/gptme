@@ -52,11 +52,10 @@ class ShellSession:
                     if self.delimiter in line:
                         read_delimiter = True
                         continue
-                    if line:
-                        if fd == self.stdout_fd:
-                            stdout.append(line)
-                        elif fd == self.stderr_fd:
-                            stderr.append(line)
+                    if fd == self.stdout_fd:
+                        stdout.append(line)
+                    elif fd == self.stderr_fd:
+                        stderr.append(line)
             if read_delimiter:
                 break
         return (
@@ -94,6 +93,8 @@ def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
     cmd = cmd.strip()
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
+
+    confirm = True
     if ask:
         print_preview(f"$ {cmd}", "bash")
         confirm = ask_execute()
@@ -136,21 +137,23 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
     ]
     # strip dates like "2017-08-02 08:48:43 +0000 UTC"
     lines = [
-        re.sub(
-            r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line
-        ).strip()
+        re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line)
         for line in lines
     ]
 
     # strip common prefixes, useful for things like `gh runs view`
-    if len(lines) > 5:
-        prefix = os.path.commonprefix(lines)
+    if len(lines) >= 5:
+        prefix = os.path.commonprefix([line.rstrip() for line in lines])
         if prefix:
             lines = [line[len(prefix) :] for line in lines]
 
     # check that if pre_lines is set, so is post_lines, and vice versa
     assert (pre_lines is None) == (post_lines is None)
-    if pre_lines is not None and len(lines) > pre_lines + post_lines:
+    if (
+        pre_lines is not None
+        and post_lines is not None
+        and len(lines) > pre_lines + post_lines
+    ):
         lines = (
             lines[:pre_lines]
             + [f"... ({len(lines) - pre_lines - post_lines} truncated) ..."]

@@ -28,9 +28,6 @@ def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
     else:
         print("Skipping confirmation")
 
-    # remove blank lines
-    code = "\n".join([line for line in code.split("\n") if line.strip()])
-
     exc = None
     with redirect_stdout(io.StringIO()) as out, redirect_stderr(io.StringIO()) as err:
         try:
