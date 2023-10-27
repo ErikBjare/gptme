@@ -115,22 +115,20 @@ def epoch_to_age(epoch):
         return f"{age.days} days ago ({datetime.fromtimestamp(epoch).strftime('%Y-%m-%d')})"
 
 
-def print_preview(code=None, lang=None):
-    # print a preview section header
+def print_preview(code: str, lang: str):
     print()
     print("[bold white]Preview[/bold white]")
-    if code:
-        print(Syntax(code.strip(), lang))
-        print()
+    print(Syntax(code.strip(), lang))
+    print()
 
 
-def ask_execute(default=True) -> bool:
+def ask_execute(question="Execute code?", default=True) -> bool:
     # TODO: add a way to outsource ask_execute decision to another agent/LLM
     console = Console()
     choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
     # answer = None
     # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
     answer = console.input(
-        f"[bold yellow on red] {EMOJI_WARN} Execute code? {choicestr} [/] ",
+        f"[bold yellow on red] {EMOJI_WARN} {question} {choicestr} [/] ",
     )
     return answer.lower() in (["y", "yes"] + [""] if default else [])

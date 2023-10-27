@@ -89,7 +89,7 @@ def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None
     Executes the patch.
     """
     if ask:
-        confirm = ask_execute()
+        confirm = ask_execute("Apply patch?")
         if not confirm:
             print("Patch not applied")
             return
