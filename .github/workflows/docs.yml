@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: documentation
-          path: ./docs/_build
+          path: ./docs/_build/html
 
   deploy:
     name: deploy
@@ -55,6 +55,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
           publish_dir: ./docs/_build
           publish_branch: gh-pages
           destination_dir: docs
