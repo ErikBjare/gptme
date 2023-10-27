@@ -1,3 +1,5 @@
+.PHONY: docs
+
 build:
 	poetry install
 
@@ -18,3 +20,6 @@ precommit:
 	make test
 	make typecheck
 	make lint
+
+docs:
+	make -C docs html

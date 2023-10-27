@@ -11,3 +11,4 @@ dist
 *.png
 prof
 tests/output
+docs/_build

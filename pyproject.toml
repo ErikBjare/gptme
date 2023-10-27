@@ -42,6 +42,7 @@ pytest-profiling = "^1.7.0"
 mypy = "*"
 ruff = "*"
 black = "*"
+sphinx = "^7.2.6"
 
 [tool.poetry.extras]
 server = ["llama-cpp-python", "flask"]
