@@ -164,6 +164,7 @@ def handle_cmd(
             sys.exit(0)
         case "replay":
             log.undo(1, quiet=True)
+            log.write()
             print("Replaying conversation...")
             for msg in log.log:
                 if msg.role == "assistant":

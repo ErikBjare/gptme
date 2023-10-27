@@ -7,6 +7,7 @@ from typing import Generator
 
 from .config import get_config
 from .message import Message
+from .tools import patch
 
 USER = os.environ.get("USER", None)
 
@@ -160,29 +161,9 @@ cat hello.py
 python hello.py
 ```
 > stdout: `Hello world!`
-
-## Producing and applying patches
-Use `diff` and `patch` to produce and apply patches.
-
-> User: add a name input to hello.py
-First we create the patch:
-```hello.patch
-@@ -1,1 +1,2 @@
--print("Hello world!")
-+name = input("What is your name? ")
-+print(f"Hello {name}!")
-```
-
-Now, we apply it:
-```bash
-patch hello.py < hello.patch
-```
-
-Now, we can run it:
-```bash
-echo "John" | python hello.py
-```
-""".strip(),
+""".strip()
+            + "\n\n"
+            + patch.instructions,
             hide=True,
             pinned=True,
         )

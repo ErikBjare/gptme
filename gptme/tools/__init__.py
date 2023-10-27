@@ -2,6 +2,7 @@ import logging
 from typing import Generator
 
 from ..message import Message
+from .patch import execute_patch
 from .python import execute_python, init_python
 from .save import execute_save
 from .shell import execute_shell
@@ -32,16 +33,19 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
 def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
     """Executes a codeblock and returns the output."""
     lang_or_fn = codeblock.splitlines()[0].strip()
-    codeblock = codeblock[len(lang_or_fn) :]
+    codeblock_content = codeblock[len(lang_or_fn) :]
 
     is_filename = lang_or_fn.count(".") >= 1
 
     if lang_or_fn in ["python", "py"]:
-        yield from execute_python(codeblock, ask=ask)
+        yield from execute_python(codeblock_content, ask=ask)
     elif lang_or_fn in ["terminal", "bash", "sh"]:
-        yield from execute_shell(codeblock, ask=ask)
+        yield from execute_shell(codeblock_content, ask=ask)
+    elif lang_or_fn.startswith("patch "):
+        fn = lang_or_fn[len("patch ") :]
+        yield from execute_patch(f"```{codeblock}```", fn, ask=ask)
     elif is_filename:
-        yield from execute_save(lang_or_fn, codeblock, ask=ask)
+        yield from execute_save(lang_or_fn, codeblock_content, ask=ask)
     else:
         logger.warning(
             f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
