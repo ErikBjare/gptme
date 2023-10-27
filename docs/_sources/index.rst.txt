@@ -6,6 +6,13 @@
 Welcome to gptme's documentation!
 =================================
 
+This is the documentation for gptme.
+
+.. note::
+    This documentation site is still under construction.
+
+    In the meantime, see the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ file for more information.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
