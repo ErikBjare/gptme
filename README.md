@@ -42,10 +42,11 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 - 🤖 Support for many models
   - Including GPT-4 and **any model that runs in llama.cpp**
 
-In progress:
+🚧 In progress:
 
-- 📝 Handles long contexts through summarization, truncation, and pinning. (🚧 WIP)
-- 💬 Optional web UI and API for conversations. (🚧 WIP)
+- 📝 Handle long contexts intelligently through summarization, truncation, and pinning.
+- 💬 Web UI and API for conversations.
+- 🌐 Browse, interact, and automate the web from the terminal.
 
 ## 🛠 Use Cases
 
@@ -95,26 +96,10 @@ gptme --server
 
 And browse to http://localhost:5000/ to see the web UI.
 
-### 🖥 Local Models
+## 📚 Documentation
 
-To run local models, you need to install and run the [llama-cpp-python][llama-cpp-python] server. To ensure you get the most out of your hardware, make sure you build it with [the appropriate hardware acceleration][hwaccel].
+For more information, see the [documentation](https://erikbjare.github.io/gptme/docs/).
 
-For macOS, you can find detailed instructions [here][metal].
-
-I recommend the WizardCoder-Python models.
-
-[llama-cpp-python]: https://github.com/abetlen/llama-cpp-python
-[hwaccel]: https://github.com/abetlen/llama-cpp-python#installation-with-hardware-acceleration
-[metal]: https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md
-
-```sh
-MODEL=~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
-poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--n_gpu_layer 1` if you have a M1/M2 chip
-
-# Now, to use it:
-export OPENAI_API_BASE="http://localhost:8000/v1"
-gptme --llm llama
-```
 
 ## 🛠 Usage
 

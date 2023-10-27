@@ -22,4 +22,4 @@ precommit:
 	make lint
 
 docs:
-	make -C docs html
+	poetry run make -C docs html

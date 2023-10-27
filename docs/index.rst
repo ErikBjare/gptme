@@ -10,6 +10,8 @@ Welcome to gptme's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   local-models
+
 
 
 Indices and tables

@@ -43,6 +43,7 @@ mypy = "*"
 ruff = "*"
 black = "*"
 sphinx = "^7.2.6"
+myst-parser = "^2.0.0"
 
 [tool.poetry.extras]
 server = ["llama-cpp-python", "flask"]
