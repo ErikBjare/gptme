@@ -266,6 +266,7 @@ def loop(
         not last_msg
         or (last_msg.role in ["assistant"])
         or last_msg.content == "Interrupted"
+        or last_msg.pinned
     ):
         inquiry = prompt_user()
         if not inquiry:
