@@ -130,8 +130,11 @@ Usage: gptme [OPTIONS] [PROMPTS]...
     /undo        Undo the last action.
     /log         Show the conversation log.
     /edit        Edit previous messages.
+    /rename      Rename the conversation.
+    /fork        Create a copy of the conversation with a new name.
     /summarize   Summarize the conversation so far.
     /load        Load a file.
+    /save        Save the most recent code block to a file.
     /shell       Execute a shell command.
     /python      Execute a Python command.
     /replay      Re-execute past commands in the conversation (does not store output in log).
@@ -145,9 +148,8 @@ Options:
   --name TEXT                     Name of conversation. Defaults to generating
                                   a random name. Pass 'ask' to be prompted for
                                   a name.
-  --llm [openai|llama]            LLM to use.
-  --model [gpt-4|gpt-3.5-turbo|wizardcoder-...]
-                                  Model to use (gpt-3.5 not recommended)
+  --llm [openai|local]            LLM to use.
+  --model TEXT                    Model to use.
   --stream / --no-stream          Stream responses
   -v, --verbose                   Verbose output.
   -y, --no-confirm                Skips all confirmation prompts.
@@ -157,6 +159,7 @@ Options:
                                   used in testing.
   --show-hidden                   Show hidden system messages.
   --version                       Show version.
+  --server                        Run as server.
   --help                          Show this message and exit.
 ```
 

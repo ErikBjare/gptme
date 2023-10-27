@@ -51,7 +51,7 @@ from .util import epoch_to_age, generate_unique_name
 logger = logging.getLogger(__name__)
 print_builtin = __builtins__["print"]  # type: ignore
 
-LLMChoice = Literal["openai", "llama"]
+LLMChoice = Literal["openai", "local"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
 
 
@@ -86,12 +86,12 @@ The chat offers some commands that can be used to interact with the system:
     "--llm",
     default="openai",
     help="LLM to use.",
-    type=click.Choice(["openai", "llama"]),
+    type=click.Choice(["openai", "local"]),
 )
 @click.option(
     "--model",
     default="gpt-4",
-    help="Model to use (gpt-3.5 not recommended). Can be: gpt-4, gpt-3.5-turbo, wizardcoder-..., etc.",
+    help="Model to use.",
 )
 @click.option(
     "--stream/--no-stream",

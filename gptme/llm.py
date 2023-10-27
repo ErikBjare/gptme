@@ -34,7 +34,7 @@ def init_llm(llm: str):
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)
         openai.api_key = api_key
-    elif llm in ["local", "llama"]:
+    elif llm == "local":
         if "OPENAI_API_BASE" in os.environ:
             api_base = os.environ["OPENAI_API_BASE"]
         elif api_base := config["env"].get("OPENAI_API_BASE", None):
@@ -56,17 +56,6 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
         response = _chat_complete(messages, model)
         print(" " * shutil.get_terminal_size().columns, end="\r")
         return Message("assistant", response)
-
-
-def _complete(prompt: str, model: str) -> str:
-    print(prompt)
-    response = openai.Completion.create(  # type: ignore
-        model=model,
-        prompt=prompt,
-        temperature=temperature,
-        top_p=top_p,
-    )
-    return response.choices[0].text
 
 
 def _chat_complete(messages: list[Message], model: str) -> str:
