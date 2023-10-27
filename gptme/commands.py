@@ -4,6 +4,7 @@ from pathlib import Path
 from time import sleep
 from typing import Generator, Literal
 
+from . import llm
 from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
@@ -92,10 +93,22 @@ def handle_cmd(
             log.print(show_hidden="--hidden" in args)
         case "rename":
             log.undo(1, quiet=True)
+            log.write()
             # rename the conversation
+            print("Renaming conversation (enter 'auto' to generate a name)")
             new_name = args[0] if args else input("New name: ")
-            log.rename(new_name)
-            print(f"Renamed conversation to {new_name}")
+            if new_name == "auto":
+                new_name = llm.generate_name(log.prepare_messages())
+                assert " " not in new_name
+                print(f"Generated name: {new_name}")
+                confirm = input("Confirm? [y/N] ")
+                if confirm.lower() not in ["y", "yes"]:
+                    print("Aborting")
+                    return
+                log.rename(new_name, keep_date=True)
+            else:
+                log.rename(new_name, keep_date=False)
+            print(f"Renamed conversation to {log.logfile.parent}")
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")

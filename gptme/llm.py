@@ -58,6 +58,17 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
         return Message("assistant", response)
 
 
+def _complete(prompt: str, model: str) -> str:
+    print(prompt)
+    response = openai.Completion.create(  # type: ignore
+        model=model,
+        prompt=prompt,
+        temperature=temperature,
+        top_p=top_p,
+    )
+    return response.choices[0].text
+
+
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
@@ -138,3 +149,32 @@ def summarize(content: str) -> str:
         + summary
     )
     return summary
+
+
+def generate_name(msgs: list[Message]) -> str:
+    """
+    Generates a name for a given text/conversation using a LLM.
+    """
+    # filter out system messages
+    msgs = [m for m in msgs if m.role != "system"]
+    msgs = (
+        [
+            Message(
+                "system",
+                """
+The following is a conversation between a user and an assistant. Which we will generate a name for.
+
+The name should be 2-5 words describing the conversation, separated by dashes. Examples:
+ - install-llama
+ - implement-game-of-life
+ - capitalize-words-in-python
+""",
+            )
+        ]
+        + msgs
+        + [Message("user", "Now, generate a name for this conversation.")]
+    )
+    name = _chat_complete(msgs, model="gpt-3.5-turbo").strip()
+    print(name)
+    print(f"Generated name for conversation: " + name)
+    return name

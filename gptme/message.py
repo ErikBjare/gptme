@@ -20,7 +20,6 @@ class Message:
         self,
         role: Literal["system", "user", "assistant"],
         content: str,
-        user: str | None = None,
         pinned: bool = False,
         hide: bool = False,
         quiet: bool = False,
@@ -33,11 +32,6 @@ class Message:
             self.timestamp = datetime.fromisoformat(timestamp)
         else:
             self.timestamp = timestamp or datetime.now()
-        if user:
-            self.user = user
-        else:
-            role_names = {"system": "System", "user": "User", "assistant": "Assistant"}
-            self.user = role_names[role]
 
         # Wether this message should be pinned to the top of the chat, and never context-trimmed.
         self.pinned = pinned
@@ -74,7 +68,7 @@ def format_msgs(
     outputs = []
     for msg in msgs:
         color = ROLE_COLOR[msg.role]
-        userprefix = f"[bold {color}]{msg.user}[/bold {color}]"
+        userprefix = f"[bold {color}]{msg.role.capitalize()}[/bold {color}]"
         # get terminal width
         max_len = shutil.get_terminal_size().columns - len(userprefix)
         output = ""
@@ -174,7 +168,6 @@ def toml_to_msg(toml: str) -> Message:
     return Message(
         msg["role"],
         msg["content"],
-        user=msg.get("user"),
         pinned=msg.get("pinned", False),
         hide=msg.get("hide", False),
         quiet=msg.get("quiet", False),
@@ -196,7 +189,6 @@ def toml_to_msgs(toml: str) -> list[Message]:
         Message(
             msg["role"],
             msg["content"],
-            user=msg.get("user"),
             pinned=msg.get("pinned", False),
             hide=msg.get("hide", False),
             quiet=msg.get("quiet", False),

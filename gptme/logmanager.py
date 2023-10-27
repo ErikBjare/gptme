@@ -132,9 +132,14 @@ class LogManager:
                 return msg.content.split("```")[-2].split("\n", 1)[-1]
         return None
 
-    def rename(self, name: str) -> None:
-        # rename the conversation and log file
-        # if you want to keep the old log, use fork()
+    def rename(self, name: str, keep_date=False) -> None:
+        """
+        rename the conversation and log file
+        if keep_date is True, we will keep the date part of the log file name ("2021-08-01-some-name")
+        if you want to keep the old log, use fork()
+        """
+        if keep_date:
+            name = f"{self.logfile.parent.name[:10]}-{name}"
         (LOGSDIR / name).mkdir(parents=True, exist_ok=True)
         self.logfile.rename(LOGSDIR / name / "conversation.jsonl")
         self.logfile = LOGSDIR / name / "conversation.jsonl"

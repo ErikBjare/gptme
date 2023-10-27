@@ -44,7 +44,7 @@ def len_tokens_approx(content: str | list[Message]) -> int:
 def msgs2text(msgs: list[Message]) -> str:
     output = ""
     for msg in msgs:
-        output += f"{msg.user}: {msg.content}\n"
+        output += f"{msg.role.capitalize()}: {msg.content}\n\n"
     return output
 
 
