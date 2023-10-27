@@ -8,7 +8,7 @@ GPTMe 👨‍💻🤝🤖🤝💻
 [![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
 [![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
 
-📜 A fancy CLI to interact with LLMs in a Chat-style interface, enabling them to execute commands and code, making them able to assist in all kinds of development and terminal-based work.
+📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
 
 A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Interpreter") that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local model is used).
 
@@ -29,26 +29,30 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 
 ## 🌟 Features
 
-- 💻 Directly execute suggested shell commands on the local machine.
-  - 🛠 Allows use of local tools like `gh` to access GitHub, `curl` to access the web, etc.
-  - 🐍 Python REPL to run Python code interactively.
-  - 📦 Shell and Python commands maintain state between executions.
-- 🔄 Self-correcting commands
-  - ❌ Commands have their output fed back to the agent, allowing it to self-correct.
-- 🤖 Support for OpenAI's GPT-4 and **any model that runs in llama.cpp**
-  - 🙏 Thanks to llama-cpp-python server!
+- 💻 Code execution
+  - Directly execute code (shell and Python) in your local environment.
+  - Allows use of cli tools like `gh` to access GitHub, `curl` to access the web, etc.
+  - Executed code maintains state in a REPL-like manner.
+- 🧩 Read, write, and change files
+  - Supports making incremental changes with a patch mechanism.
 - 🚰 Pipe in context via stdin or as arguments.
+  - Passing a filename as an argument will read the file and include it as context.
+- 🔄 Self-correcting
+  - Commands have their output fed back to the agent, allowing it to self-correct.
+- 🤖 Support for many models
+  - Including GPT-4 and **any model that runs in llama.cpp**
+
+In progress:
+
 - 📝 Handles long contexts through summarization, truncation, and pinning. (🚧 WIP)
-- 💬 Offers a web UI and API for conversations. (🚧 WIP)
+- 💬 Optional web UI and API for conversations. (🚧 WIP)
 
 ## 🛠 Use Cases
 
-- 🎯 **Shell Copilot:** Use GPTMe to execute shell commands on your local machine, using natural language (no more memorizing flags!).
-- 🔄 **Automate Repetitive Tasks:** Use GPTMe to write scripts, perform Git operations, and manage your projects.
-- 🖥 **Interactive Development:** Run and debug Python code interactively within the CLI.
-- 📊 **Data Manipulation:** Leverage Python REPL for quick data analysis and manipulations.
-- 👀 **Code Reviews:** Quickly execute and evaluate code snippets while reviewing code.
-- 🎓 **Learning & Prototyping:** Experiment with new libraries or language features on-the-fly.
+- 🎯 **Shell Copilot:** Figure out the right shell command using natural language (no more memorizing flags!).
+- 🖥 **Development:** Write, test, and run code with AI assistance.
+- 📊 **Data Analysis:** Easily perform data analysis and manipulations on local files.
+- 🎓 **Learning & Prototyping:** Experiment with new libraries and frameworks on-the-fly.
 
 ## 🚀 Getting Started
 
