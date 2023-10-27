@@ -47,6 +47,10 @@ gptme 'plot up to the 5rd degree taylor expansion of sin(x), save to sin.png'
 gptme 'write a hello world program in c to hello.c, then patch it to ask for your name and print it'
 # works!
 
+# write outline for a class that implements a linked list, then fill in the implementation
+gptme 'write class that implements a linked list, then fill in the implementation with patch, then test it'
+# works!
+
 if [ "$interactive" = "1" ]; then
     # interactive matplotlib
     gptme 'plot an x^2 graph'
