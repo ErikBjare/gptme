@@ -43,6 +43,7 @@ def init_llm(llm: str):
             print("Error: OPENAI_API_BASE not set in env or config, see README.")
             sys.exit(1)
         openai.api_base = api_base
+        openai.api_key = "local"
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
@@ -97,7 +98,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             delta = chunk["choices"][0]["delta"]
             deltas.append(delta)
             delta_str = deltas_to_str(deltas)
-            stop_reason = chunk["choices"][0]["finish_reason"]
+            stop_reason = chunk["choices"][0].get("finish_reason", None)
             print(deltas_to_str([delta]), end="")
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
