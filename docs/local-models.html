@@ -32,17 +32,40 @@
             
   <section id="local-models">
 <h1>🖥 Local Models<a class="headerlink" href="#local-models" title="Link to this heading">¶</a></h1>
-<p>To run gptme with local models, you need to install and run the <a class="reference external" href="https://github.com/abetlen/llama-cpp-python">llama-cpp-python</a> server. To ensure you get the most out of your hardware, make sure you build it with <a class="reference external" href="https://github.com/abetlen/llama-cpp-python#installation-with-hardware-acceleration">the appropriate hardware acceleration</a>.</p>
-<p>For macOS, you can find detailed instructions <a class="reference external" href="https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md">here</a>.</p>
-<p>I recommend the WizardCoder-Python models.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL</span><span class="o">=</span>~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
-poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>llama_cpp.server<span class="w"> </span>--model<span class="w"> </span><span class="nv">$MODEL</span><span class="w"> </span>--n_gpu_layers<span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="c1"># Use `--n_gpu_layer 1` if you have a M1/M2 chip</span>
-
-<span class="c1"># Now, to use it:</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/v1&quot;</span>
-gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span>
+<p>This is a guide to setting up a local model for use with gptme.</p>
+<p>There are a few options, here we will cover two:</p>
+<section id="ollama-litellm">
+<h2>ollama + litellm<a class="headerlink" href="#ollama-litellm" title="Link to this heading">¶</a></h2>
+<p>Here’s how to use ollama with the litellm proxy to get a OpenAI API-compatible server:</p>
+<p>You first need to install ollama and litellm.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>pull<span class="w"> </span>mistral
+ollama<span class="w"> </span>serve
+litellm<span class="w"> </span>--model<span class="w"> </span>ollama/mistral
+<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000&quot;</span>
 </pre></div>
 </div>
+</section>
+<section id="llama-cpp-server">
+<h2>llama_cpp.server<a class="headerlink" href="#llama-cpp-server" title="Link to this heading">¶</a></h2>
+<p>Here’s how to use the llama_cpp.server to get a OpenAI API-compatible server.</p>
+<p>You first need to install and run the <a class="reference external" href="https://github.com/abetlen/llama-cpp-python">llama-cpp-python</a> server. To ensure you get the most out of your hardware, make sure you build it with <a class="reference external" href="https://github.com/abetlen/llama-cpp-python#installation-with-hardware-acceleration">the appropriate hardware acceleration</a>. For macOS, you can find detailed instructions <a class="reference external" href="https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md">here</a>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL</span><span class="o">=</span>~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
+poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>llama_cpp.server<span class="w"> </span>--model<span class="w"> </span><span class="nv">$MODEL</span><span class="w"> </span>--n_gpu_layers<span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="c1"># Use `--n_gpu_layer 1` if you have a M1/M2 chip</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/v1&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="now-to-use-it">
+<h2>Now, to use it:<a class="headerlink" href="#now-to-use-it" title="Link to this heading">¶</a></h2>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="s2">&quot;say hello!&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="so-how-well-does-it-work">
+<h2>So, how well does it work?<a class="headerlink" href="#so-how-well-does-it-work" title="Link to this heading">¶</a></h2>
+<p>I’ve had mixed results. They are not nearly as good as GPT-4, and often struggles with the tools laid out in the system prompt. However I haven’t tested with models larger than 7B/13B.</p>
+<p>I’m hoping future models, trained better for tool-use and interactive coding (where outputs are fed back), can remedy this, even at 7B/13B model sizes. Perhaps we can fine-tune a model on (GPT-4) conversation logs to create a purpose-fit model that knows how to use the tools.</p>
+</section>
 </section>
 
 
@@ -64,7 +87,13 @@ gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local
 <h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">🖥 Local Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">🖥 Local Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ollama-litellm">ollama + litellm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#llama-cpp-server">llama_cpp.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#now-to-use-it">Now, to use it:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#so-how-well-does-it-work">So, how well does it work?</a></li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
