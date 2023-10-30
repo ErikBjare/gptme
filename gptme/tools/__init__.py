@@ -36,10 +36,11 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
     codeblock_content = codeblock[len(lang_or_fn) :]
 
     is_filename = lang_or_fn.count(".") >= 1
+    assert is_supported_codeblock(codeblock), "Codeblock is not supported"
 
     if lang_or_fn in ["python", "py"]:
         yield from execute_python(codeblock_content, ask=ask)
-    elif lang_or_fn in ["terminal", "bash", "sh"]:
+    elif lang_or_fn in ["bash", "sh"]:
         yield from execute_shell(codeblock_content, ask=ask)
     elif lang_or_fn.startswith("patch "):
         fn = lang_or_fn[len("patch ") :]
@@ -50,6 +51,23 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
         logger.warning(
             f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
         )
+
+
+def is_supported_codeblock(codeblock: str) -> bool:
+    """Returns whether a codeblock is supported by tools."""
+    lang_or_fn = codeblock.splitlines()[0].strip()
+    is_filename = lang_or_fn.count(".") >= 1
+
+    if lang_or_fn in ["python", "py"]:
+        return True
+    elif lang_or_fn in ["bash", "sh"]:
+        return True
+    elif lang_or_fn.startswith("patch "):
+        return True
+    elif is_filename:
+        return True
+    else:
+        return False
 
 
 def init_tools() -> None:

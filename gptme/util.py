@@ -15,10 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 # FIXME: model assumption
-def len_tokens(content: str | list[Message], model: str = "gpt-4") -> int:
-    """Get the number of tokens in a string."""
+def len_tokens(content: str | Message | list[Message], model: str = "gpt-4") -> int:
+    """Get the number of tokens in a string, message, or list of messages."""
     if isinstance(content, list):
         return sum(len_tokens(msg.content, model) for msg in content)
+    if isinstance(content, Message):
+        return len_tokens(content.content, model)
     return len(get_tokenizer(model).encode(content))
 
 

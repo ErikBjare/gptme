@@ -43,6 +43,14 @@ gptme 'write a implementation of wireworld with curses to wireworld.py'
 gptme 'plot up to the 5rd degree taylor expansion of sin(x), save to sin.png'
 # works!
 
+# ask it to manipulate sin.png with imagemagick
+gptme 'rotate sin.png 90 degrees clockwise with imagemagick'
+# works!
+
+# ask it to manipulate sin.png with PIL
+gptme 'rotate sin.png 90 degrees clockwise with PIL'
+# needs PIL to be installed
+
 # write C code and apply patch
 gptme 'write a hello world program in c to hello.c, then patch it to ask for your name and print it'
 # works!

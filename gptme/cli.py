@@ -22,6 +22,7 @@ to do so, it needs to be able to store and query past conversations in a databas
 # The above may be used as a prompt for the agent.
 
 import atexit
+import errno
 import importlib.metadata
 import io
 import logging
@@ -194,15 +195,25 @@ def main(
     log.print()
     print("--- ^^^ past messages ^^^ ---")
 
+    def parse_prompt(prompt: str) -> str:
+        try:
+            f = Path(prompt).expanduser()
+            if f.exists() and f.is_file():
+                return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
+        except OSError as oserr:
+            # some prompts are too long to be a path, so we can't read them
+            if oserr.errno != errno.ENAMETOOLONG:
+                pass
+        except UnicodeDecodeError:
+            # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
+            # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
+            pass
+        return prompt
+
     # check if any prompt is a full path, if so, replace it with the contents of that file
     # TODO: add support for directories
     # TODO: maybe do this for all prompts, not just those passed on cli
-    prompts = [
-        f"```{p}\n{Path(p).expanduser().read_text()}\n```"
-        if Path(p).expanduser().exists() and Path(p).expanduser().is_file()
-        else p
-        for p in prompts
-    ]
+    prompts = [parse_prompt(p) for p in prompts]
     # join prompts, grouped by `-` if present, since that's the separator for multiple-round prompts
     prompts = [p.strip() for p in "\n\n".join(prompts).split("\n\n-") if p]
 

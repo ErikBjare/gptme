@@ -92,7 +92,7 @@ class LogManager:
         msgs = self.log
         msgs_reduced = list(reduce_log(msgs))
 
-        if len(msgs) != len(msgs_reduced):
+        if len_tokens(msgs) != len_tokens(msgs_reduced):
             logger.info(
                 f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
             )

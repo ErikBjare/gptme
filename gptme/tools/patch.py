@@ -41,6 +41,7 @@ def apply(codeblock: str, content: str) -> str:
     """
     Applies the patch to the file.
     """
+    # TODO: support multiple patches in one file, or make it clear that this is not supported (one patch per codeblock)
     codeblock = codeblock.strip()
 
     # get the original chunk

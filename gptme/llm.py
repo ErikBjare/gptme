@@ -106,8 +106,13 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             codeblock_started = "```" in delta_str[:-3]
             codeblock_finished = "```" in delta_str[-5:]
             if codeblock_started and codeblock_finished:
-                # if closing a code block, wait for user to run command
-                break
+                # noreorder
+                from .tools import is_supported_codeblock  # fmt: skip
+
+                # if closing a code block supported by tools, abort generation to let them run
+                if is_supported_codeblock(delta_str):
+                    print("\n")
+                    break
     except KeyboardInterrupt:
         return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
     finally:
