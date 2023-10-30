@@ -4,8 +4,8 @@ CMDFIX = "/"  # prefix for commands, e.g. /help
 
 # Prompts
 ROLE_COLOR = {
-    "user": "bright_green",
-    "assistant": "bright_cyan",
+    "user": "green",
+    "assistant": "green",
     "system": "grey42",
 }
 
@@ -13,7 +13,9 @@ ROLE_COLOR = {
 PROMPT_USER = (
     f"\001[bold {ROLE_COLOR['user']}]\002User\001[/bold {ROLE_COLOR['user']}]\002"
 )
-PROMPT_ASSISTANT = f"[bold {ROLE_COLOR['user']}]Assistant[/bold {ROLE_COLOR['user']}]"
+PROMPT_ASSISTANT = (
+    f"[bold {ROLE_COLOR['assistant']}]Assistant[/bold {ROLE_COLOR['assistant']}]"
+)
 
 # Config
 CONFIG_PATH = Path("~/.config/gptme").expanduser()

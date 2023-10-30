@@ -131,6 +131,6 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     # answer = None
     # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
     answer = console.input(
-        f"[bold yellow on red] {EMOJI_WARN} {question} {choicestr} [/] ",
+        f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
     )
     return answer.lower() in (["y", "yes"] + [""] if default else [])
