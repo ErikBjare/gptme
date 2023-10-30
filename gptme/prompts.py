@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import shutil
@@ -92,10 +93,16 @@ When you send a message containing Python code to python, it will be executed in
             hide=True,
         )
 
+    python_libraries = get_installed_python_libraries()
+    python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+
+    shell_programs = get_installed_programs()
+    shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
+
     if include_tools:
         yield Message(
             "system",
-            """
+            f"""
 You are gptme, an AI assistant CLI tool powered powered by large language models that helps the user.
 You can run code and execute terminal commands on their local machine.
 The assistant shows the user to write code, interact with the system, and access the internet. The user will then choose to execute the suggested commands.
@@ -111,9 +118,15 @@ If clarification is needed, ask the user.
 
 When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment. Python will respond with the output of the execution.
 
+The following libraries are available:
+{python_libraries_str}
+
 ## bash
 
 When you send a message containing bash code, it will be executed in a stateful bash shell. The shell will respond with the output of the execution.
+
+These programs are available, among others:
+{shell_programs_str}
 
 ## saving files
 
@@ -208,3 +221,36 @@ gh run view $RUN --repo $REPO --log
             hide=True,
             pinned=True,
         )
+
+
+@functools.lru_cache
+def get_installed_python_libraries() -> set[str]:
+    """Check if a select list of Python libraries are installed."""
+    candidates = [
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "seaborn",
+        "scipy",
+        "scikit-learn",
+        "statsmodels",
+        "pillow",
+    ]
+    installed = set()
+    for candidate in candidates:
+        try:
+            __import__(candidate)
+            installed.add(candidate)
+        except ImportError:
+            pass
+    return installed
+
+
+@functools.lru_cache
+def get_installed_programs() -> set[str]:
+    candidates = ["ffmpeg", "convert", "pandoc"]
+    installed = set()
+    for candidate in candidates:
+        if shutil.which(candidate) is not None:
+            installed.add(candidate)
+    return installed
