@@ -23,3 +23,8 @@ precommit:
 
 docs:
 	poetry run make -C docs html
+
+clean-test:
+	echo $$HOME/.local/share/gptme/logs/*test-*-test_*
+	rm -I $$HOME/.local/share/gptme/logs/*test-*-test_*/*.jsonl || true
+	rm --dir $$HOME/.local/share/gptme/logs/*test-*-test_*/ || true
