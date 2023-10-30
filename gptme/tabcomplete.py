@@ -1,25 +1,28 @@
+import logging
 import readline
 from functools import lru_cache
 from pathlib import Path
 
 from .commands import CMDFIX, COMMANDS
 
+logger = logging.getLogger(__name__)
+
 
 def register_tabcomplete() -> None:
     """Register tab completion for readline."""
 
     # set up tab completion
-    print("Setting up tab completion")
+    logger.debug("Setting up tab completion")
     readline.set_completer(_completer)
     readline.set_completer_delims(" ")
     readline.parse_and_bind("tab: complete")
 
     # https://github.com/python/cpython/issues/102130#issuecomment-1439242363
     if "libedit" in readline.__doc__:  # type: ignore
-        print("Found libedit readline")
+        logger.debug("Found libedit readline")
         readline.parse_and_bind("bind ^I rl_complete")
     else:
-        print("Found gnu readline")
+        logger.debug("Found gnu readline")
         readline.parse_and_bind("tab: complete")
 
 
