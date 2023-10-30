@@ -98,3 +98,6 @@ if [ "$interactive" = "1" ]; then
 fi
 
 gptme 'render mandelbrot set to mandelbrot.png'
+
+# very heavy! run by hand
+# gptme 'render a zooming mandelbrot video to mandelbrot.mp4, use a colorful gradient, write scripts to file'

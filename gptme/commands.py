@@ -152,10 +152,11 @@ def handle_cmd(
             n = int(args[0]) if args and args[0].isdigit() else 1
             log.undo(n)
         case "load":
+            # TODO: replace with automatic loading of any paths in prompt?
             filename = args[0] if args else input("Filename: ")
             with open(filename) as f:
                 contents = f.read()
-            yield Message("system", f"# filename: {filename}\n\n{contents}")
+            yield Message("system", f"```{filename}\n{contents}\n```")
         case "save":
             # undo
             log.undo(1, quiet=True)
