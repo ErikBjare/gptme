@@ -36,7 +36,6 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
     codeblock_content = codeblock[len(lang_or_fn) :]
 
     is_filename = lang_or_fn.count(".") >= 1
-    assert is_supported_codeblock(codeblock), "Codeblock is not supported"
 
     if lang_or_fn in ["python", "py"]:
         yield from execute_python(codeblock_content, ask=ask)
@@ -48,15 +47,30 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
     elif is_filename:
         yield from execute_save(lang_or_fn, codeblock_content, ask=ask)
     else:
-        logger.warning(
+        assert not is_supported_codeblock(codeblock)
+        logger.debug(
             f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
         )
 
 
 def is_supported_codeblock(codeblock: str) -> bool:
     """Returns whether a codeblock is supported by tools."""
-    lang_or_fn = codeblock.splitlines()[0].strip()
+    # TODO: refactor to share code with `LogManager.get_last_code_block()`
+    # passed argument might not be a clean string, could have leading text and even leading codeblocks
+    # strip everything but the last occurring codeblock
+
+    # extract contents of codeblock, including the lang/filename
+    contents = codeblock.split("```")[-2]
+
+    # extract lang/filename
+    lang_or_fn = contents.splitlines()[0].strip()
     is_filename = lang_or_fn.count(".") >= 1
+
+    # remove lang/filename from contents
+    contents = contents.split("\n", 1)[-1]
+
+    # reconstruct clean codeblock
+    codeblock = f"```{lang_or_fn}\n{contents}```"
 
     if lang_or_fn in ["python", "py"]:
         return True

@@ -106,6 +106,8 @@ def test_generate_primes(name: str):
                 "--name",
                 name,
                 "print the first 10 prime numbers",
+                "--model",
+                "gpt-3.5-turbo",
             ],
         )
         # check that the 9th and 10th prime is present

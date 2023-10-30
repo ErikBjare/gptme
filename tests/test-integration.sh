@@ -1,7 +1,36 @@
 #!/bin/bash
 
-set -e
-set -x
+# We test with gpt-4 and gpt-3.5-turbo.
+# gpt-3.5-turbo is a lot faster, so makes running the tests faster,
+# but gpt-4 is more accurate, so passes more complex tests where gpt-3.5-turbo stumbles.
+# there is also gpt-3.5-turbo-16k, which handles contexts up to 16k tokens (vs gpt-4's 8k and gpt-3.5-turbo's 4k).
+MODEL="gpt-3.5-turbo"   
+ARGS="--model $MODEL"
+
+
+# if one of the args to this script was --ask, ask if test passed/failed/idk after each test
+if [ "$1" = "--ask" ]; then
+    ASK="1"
+fi
+
+# overwrite gptme using a function that adds the arguments and calls the original, supporting several arguments
+function gptme() {
+    echo "$ gptme $ARGS $@"
+    /usr/bin/env gptme $ARGS "$@" </dev/null
+    if [ "$ASK" = "1" ]; then
+        echo -n "Did the test pass? (y/n/I) "
+        read -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Test passed"
+        elif [[ $REPLY =~ ^[Nn]$ ]]; then
+            echo "Test failed"
+            exit 1
+        else
+            echo "I don't know"
+        fi
+    fi
+}
 
 # set pwd to the output directory under this script
 cd "$(dirname "$0")"
@@ -14,8 +43,12 @@ interactive=${GITHUB_ACTIONS:-1}
 # set this to indicate tests are run (non-interactive)
 export PYTEST_CURRENT_TEST=1
 
+set -e
+
 # test stdin and cli-provided prompt
-echo "The project mascot is a flying pig" | gptme "What is the project mascot?"
+# NOTE: we do not do this as part of the suite, because our gptme function wrapper above does not support stdin
+#       if you want to run it, copy the line into your terminal
+# echo "The project mascot is a flying pig" | gptme "What is the project mascot?"
 
 # test load context from file
 echo "The project mascot is a flying pig" > mascot.txt
@@ -63,3 +96,5 @@ if [ "$interactive" = "1" ]; then
     # interactive matplotlib
     gptme 'plot an x^2 graph'
 fi
+
+gptme 'render mandelbrot set to mandelbrot.png'

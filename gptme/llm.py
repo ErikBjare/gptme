@@ -80,7 +80,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         top_p=top_p,
         stream=True,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
-        max_tokens=1000 if model not in ["gpt-3.5-turbo", "gpt-4"] else None,
+        max_tokens=1000 if not model.startswith("gpt-") else None,
     )
 
     def deltas_to_str(deltas: list[dict]):
