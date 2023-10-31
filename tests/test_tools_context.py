@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 from gptme.tools.context import _ctags, _gen_context_msg
 from gptme.tools.shell import ShellSession, set_shell
@@ -17,5 +19,9 @@ def test_gen_context_msg(shell):
 
 
 def test_ctags(shell):
+    # if ctags not installed, skip
+    if not shutil.which("ctags"):
+        pytest.skip("ctags not installed")
+
     output = _ctags()
     assert "function" in output, f"Expected 'def' in output: {output}"
