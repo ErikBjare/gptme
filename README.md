@@ -4,6 +4,7 @@ GPTMe 👨‍💻🤝🤖🤝💻
 */ʤiː piː tiː miː/*
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
+[![Docs](https://github.com/ErikBjare/gptme/actions/workflows/docs.yml/badge.svg)](https://erik.bjareholt.com/gptme/docs/)
 [![codecov](https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41)](https://codecov.io/gh/ErikBjare/gptme)
 [![PyPI version](https://badge.fury.io/py/gptme-python.svg)](https://pypi.org/project/gptme-python/)
 [![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
@@ -17,7 +18,7 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 
 > [!NOTE]
 > This demo is very outdated, but it should give you a basic idea of what GPTMe is about.
-> I hope to make a new one soon, showing off all the new features.
+> I hope to make a new demo soon, to show off all the new amazing features.
 
 [![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
 
