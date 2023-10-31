@@ -12,3 +12,4 @@ dist
 prof
 tests/output
 docs/_build
+coverage.xml

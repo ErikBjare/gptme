@@ -8,7 +8,9 @@ build:
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
-	poetry run pytest ${SRCDIRS} -v --cov=gptme --cov-report=term-missing --cov-report=html $(if $(SLOW),, -m "not slow") $(if $(PROFILE),--profile-svg)
+	poetry run pytest ${SRCDIRS} -v \
+		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html \
+		$(if $(SLOW),, -m "not slow") $(if $(PROFILE),--profile-svg)
 
 typecheck:
 	poetry run mypy --ignore-missing-imports ${SRCDIRS} --exclude ${EXCLUDES}
