@@ -55,7 +55,8 @@ class Message:
         return format_msgs([self], oneline=oneline, highlight=highlight)[0]
 
     def __repr__(self):
-        return f"<Message role={self.role} content={self.content}>"
+        content = textwrap.shorten(self.content, 20, placeholder="...")
+        return f"<Message role={self.role} content={content}>"
 
 
 def format_msgs(

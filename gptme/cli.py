@@ -135,6 +135,8 @@ def main(
     version: bool,
     server: bool,
 ):
+    """Main entrypoint for the CLI."""
+
     if version:
         # print version and exit
         print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")

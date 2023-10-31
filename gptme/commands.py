@@ -14,7 +14,7 @@ from .message import (
     toml_to_msgs,
 )
 from .tools import execute_msg, execute_python, execute_shell
-from .tools.context import _gen_context_msg
+from .tools.context import gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
 
@@ -144,7 +144,7 @@ def handle_cmd(
             print("Applied edited messages, write /log to see the result")
         case "context":
             # print context msg
-            yield _gen_context_msg()
+            yield gen_context_msg()
         case "undo":
             # undo the '/undo' command itself
             log.undo(1, quiet=True)

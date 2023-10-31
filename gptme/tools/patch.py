@@ -39,7 +39,7 @@ def hello():
 
 def apply(codeblock: str, content: str) -> str:
     """
-    Applies the patch to the file.
+    Applies the patch in ``codeblock`` to ``content``.
     """
     # TODO: support multiple patches in one file, or make it clear that this is not supported (one patch per codeblock)
     codeblock = codeblock.strip()
@@ -79,7 +79,7 @@ def apply_file(codeblock, filename):
 
 def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None, None]:
     """
-    Executes the patch.
+    Applies the patch.
     """
     if ask:
         confirm = ask_execute("Apply patch?")

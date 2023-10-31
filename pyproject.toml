@@ -49,6 +49,7 @@ ruff = "*"
 black = "*"
 sphinx = "^7.2.6"
 myst-parser = "^2.0.0"
+sphinx-click = "^5.0.1"
 
 [tool.poetry.extras]
 server = ["llama-cpp-python", "flask"]

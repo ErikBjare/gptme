@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 class LogManager:
+    """Manages a conversation log."""
+
     def __init__(
         self,
         log: list[Message] | None = None,

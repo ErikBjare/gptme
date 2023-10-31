@@ -1,11 +1,13 @@
 import json
+import shutil
 from pathlib import Path
 
 from ..message import Message
 from ..tools.shell import get_shell
 
 
-def _gen_context_msg() -> Message:
+def gen_context_msg() -> Message:
+    """Generate a message with context information from output of `pwd` and `git status`."""
     shell = get_shell()
     msgstr = ""
 
@@ -37,8 +39,9 @@ def _gitignore():
     return ignored
 
 
-def _ctags() -> str:
-    """Generate ctags for current project."""
+def ctags() -> str:
+    """Generate ctags output for project in working dir."""
+    assert shutil.which("ctags"), "ctags not found"
 
     ignored = _gitignore()
     ignored_str = " ".join([f"--exclude='{i}'" for i in ignored])
@@ -84,5 +87,5 @@ def _ctags() -> str:
 
 
 if __name__ == "__main__":
-    output = _ctags()
+    output = ctags()
     print(output)
