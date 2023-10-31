@@ -1,25 +1,25 @@
 .PHONY: docs
 
+SRCDIRS = gptme tests scripts train
+EXCLUDES = tests/output
+
 build:
 	poetry install
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
-	poetry run pytest tests scripts -v --cov=gptme --cov-report=term-missing --cov-report=html $(if $(SLOW),, -m "not slow") $(if $(PROFILE),--profile-svg)
+	poetry run pytest ${SRCDIRS} -v --cov=gptme --cov-report=term-missing --cov-report=html $(if $(SLOW),, -m "not slow") $(if $(PROFILE),--profile-svg)
 
 typecheck:
-	poetry run mypy --ignore-missing-imports gptme tests scripts --exclude tests/output
+	poetry run mypy --ignore-missing-imports ${SRCDIRS} --exclude ${EXCLUDES}
 
 lint:
-	poetry run ruff gptme tests scripts
+	poetry run ruff ${SRCDIRS}
 
 format:
-	poetry run black gptme tests
+	poetry run black ${SRCDIRS}
 
-precommit:
-	make test
-	make typecheck
-	make lint
+precommit: format lint typecheck test
 
 docs:
 	poetry run make -C docs html
