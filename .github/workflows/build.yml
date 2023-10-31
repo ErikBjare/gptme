@@ -46,13 +46,48 @@ jobs:
         TERM: xterm
       run: |
         make test SLOW=true
-    - name: Typecheck
-      run: |
-        make typecheck
-    - name: Check for lint
-      run: |
-        make lint
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'poetry'
+    - name: Install poetry
+      run: |
+        pip install poetry
+    - name: Install dependencies
+      run: |
+        make build
+        poetry install
+    - name: Check for lint
+      run: |
+        make lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'poetry'
+    - name: Install poetry
+      run: |
+        pip install poetry
+    - name: Install dependencies
+      run: |
+        make build
+        poetry install
+    - name: Typecheck
+      run: |
+        make typecheck
