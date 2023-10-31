@@ -8,7 +8,7 @@ from .commands import CMDFIX, COMMANDS
 logger = logging.getLogger(__name__)
 
 
-def register_tabcomplete() -> None:
+def register_tabcomplete() -> None:  # pragma: no cover
     """Register tab completion for readline."""
 
     # set up tab completion
@@ -26,7 +26,7 @@ def register_tabcomplete() -> None:
         readline.parse_and_bind("tab: complete")
 
 
-def _completer(text: str, state: int) -> str | None:
+def _completer(text: str, state: int) -> str | None:  # pragma: no cover
     """
     Tab completion for readline.
 
@@ -38,6 +38,17 @@ def _completer(text: str, state: int) -> str | None:
     return _matches(text)[state]
 
 
+def _process_completion(p: Path) -> str:
+    # Strip cwd from path
+    p = Path(str(p).replace(str(Path.cwd()) + "/", ""))
+
+    # If path is a directory, add trailing slash
+    if p.exists() and p.is_dir():
+        return str(p) + "/"
+    else:
+        return str(p)
+
+
 @lru_cache(maxsize=1)
 def _matches(text: str) -> list[str]:
     """Returns a list of matches for text to complete."""
@@ -45,34 +56,22 @@ def _matches(text: str) -> list[str]:
     # if text starts with /, complete with commands or files as absolute paths
     if text.startswith("/"):
         # if no text, list all commands
-        all_commands = [f"{CMDFIX}{cmd}" for cmd in COMMANDS if cmd != "help"]
+        all_commands = [f"{CMDFIX}{cmd}" for cmd in COMMANDS]
         if not text[1:]:
             return all_commands
         # else, filter commands with text
         else:
-            matching_files = [str(p) for p in Path("/").glob(text[1:] + "*")]
+            matching_files = [
+                _process_completion(p) for p in Path("/").glob(text[1:] + "*")
+            ]
             return [
                 cmd for cmd in all_commands if cmd.startswith(text)
             ] + matching_files
 
-    # if text starts with ., complete with current dir
-    elif text.startswith("."):
-        if not text[1:]:
-            return [str(Path.cwd())]
-        else:
-            all_files = [str(p) for p in Path.cwd().glob("*")]
-            return [f for f in all_files if f.startswith(text)]
-
     # if text starts with ../, complete with parent dir
     elif text.startswith(".."):
-        if not text[2:]:
-            return [str(Path.cwd().parent)]
-        else:
-            return [str(p) for p in Path.cwd().parent.glob(text[2:] + "*")]
+        return [_process_completion(p) for p in Path("..").glob(text[3:] + "*")]
 
     # else, complete with files in current dir
     else:
-        if not text:
-            return [str(Path.cwd())]
-        else:
-            return [str(p) for p in Path.cwd().glob(text + "*")]
+        return [_process_completion(p) for p in Path.cwd().glob(text + "*")]
