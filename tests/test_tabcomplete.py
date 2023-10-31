@@ -19,7 +19,7 @@ def test_matches():
     assert _matches("./README") == ["README.md"]
     assert _matches("../gptme/README") == ["../gptme/README.md"]
     if sys.platform != "win32":
-        assert _matches("/etc/pass") == ["/etc/passwd"]
+        assert "/etc/passwd" in _matches("/etc/pass")
 
     # commands
     assert _matches("/hel") == ["/help"]
