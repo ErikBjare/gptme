@@ -33,6 +33,10 @@ pandas = {version = "*", optional=true}
 numpy = {version = "*", optional=true}
 pillow = {version = "*", optional=true}
 
+# training
+torch = {version = "*", optional=true}
+transformers = {version = "*", optional=true}
+
 # server
 flask = {version = "^2.3", optional=true}
 
@@ -50,6 +54,7 @@ myst-parser = "^2.0.0"
 server = ["llama-cpp-python", "flask"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
+training = ["torch", "transformers"]
 
 [tool.ruff]
 ignore = ["E402", "E501"]
