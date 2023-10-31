@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; gptme  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="🖥 Local Models" href="local-models.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<p>Here is the API reference for <code class="docutils literal notranslate"><span class="pre">gptme</span></code>.</p>
+<section id="module-gptme.message">
+<span id="gptme-message"></span><h2>gptme.message<a class="headerlink" href="#module-gptme.message" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gptme.message.Message">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'system'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'user'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'assistant'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinned</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gptme.message.Message" title="Link to this definition">¶</a></dt>
+<dd><p>A message in the assistant conversation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.message.Message.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gptme.message.Message.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Return a dict representation of the message, serializable to JSON.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.format_msgs">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">format_msgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oneline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.message.format_msgs" title="Link to this definition">¶</a></dt>
+<dd><p>Formats messages for printing to the console. Stores the result in msg.output</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.msg_to_toml">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">msg_to_toml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.message.msg_to_toml" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a message to a TOML string, for easy editing by hand in editor to then be parsed back.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.msgs_to_toml">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">msgs_to_toml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.message.msgs_to_toml" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a list of messages to a TOML string, for easy editing by hand in editor to then be parsed back.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.print_msg">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">print_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oneline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_hidden</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.message.print_msg" title="Link to this definition">¶</a></dt>
+<dd><p>Prints the log to the console.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.toml_to_msg">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">toml_to_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.message.toml_to_msg" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a TOML string to a message.</p>
+<p>The string can be a single [[message]].</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.message.toml_to_msgs">
+<span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">toml_to_msgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.message.toml_to_msgs" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a TOML string to a list of messages.</p>
+<p>The string can be a whole file with multiple [[messages]].</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.logmanager">
+<span id="gptme-logmanager"></span><h2>gptme.logmanager<a class="headerlink" href="#module-gptme.logmanager" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">LogManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gptme.logmanager.LogManager" title="Link to this definition">¶</a></dt>
+<dd><p>Manages a conversation log.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.append" title="Link to this definition">¶</a></dt>
+<dd><p>Appends a message to the log, writes the log, prints the message.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.get_last_code_block">
+<span class="sig-name descname"><span class="pre">get_last_code_block</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.get_last_code_block" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the last code block in the log, if any.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">logfile:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~pathlib.Path,</span> <span class="pre">initial_msgs:</span> <span class="pre">list[~gptme.message.Message]</span> <span class="pre">=</span> <span class="pre">[&lt;Message</span> <span class="pre">role=system</span> <span class="pre">content=#</span> <span class="pre">About</span> <span class="pre">user</span> <span class="pre">I</span> <span class="pre">am...&gt;,</span> <span class="pre">&lt;Message</span> <span class="pre">role=system</span> <span class="pre">content=Here</span> <span class="pre">is...&gt;,</span> <span class="pre">&lt;Message</span> <span class="pre">role=system</span> <span class="pre">content=You</span> <span class="pre">are</span> <span class="pre">gptme,</span> <span class="pre">an...&gt;,</span> <span class="pre">&lt;Message</span> <span class="pre">role=system</span> <span class="pre">content=##</span> <span class="pre">gh</span> <span class="pre">Here</span> <span class="pre">are...&gt;],</span> <span class="pre">**kwargs</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.logmanager.LogManager" title="gptme.logmanager.LogManager"><span class="pre">LogManager</span></a></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.load" title="Link to this definition">¶</a></dt>
+<dd><p>Loads a conversation log.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.prepare_messages">
+<span class="sig-name descname"><span class="pre">prepare_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.prepare_messages" title="Link to this definition">¶</a></dt>
+<dd><p>Prepares the log into messages before sending it to the LLM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.rename">
+<span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.rename" title="Link to this definition">¶</a></dt>
+<dd><p>rename the conversation and log file
+if keep_date is True, we will keep the date part of the log file name (“2021-08-01-some-name”)
+if you want to keep the old log, use fork()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.undo">
+<span class="sig-name descname"><span class="pre">undo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.undo" title="Link to this definition">¶</a></dt>
+<dd><p>Removes the last message from the log.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.write" title="Link to this definition">¶</a></dt>
+<dd><p>Writes the log to the logfile.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.logmanager.write_log">
+<span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">write_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg_or_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.write_log" title="Link to this definition">¶</a></dt>
+<dd><p>Writes to the conversation log.
+If a single message given, append.
+If a list of messages given, overwrite.</p>
+</dd></dl>
+
+</section>
+<section id="gptme-server">
+<h2>gptme.server<a class="headerlink" href="#gptme-server" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-gptme.tools">
+<span id="gptme-tools"></span><h2>gptme.tools<a class="headerlink" href="#module-gptme.tools" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.execute_codeblock">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_codeblock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codeblock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_codeblock" title="Link to this definition">¶</a></dt>
+<dd><p>Executes a codeblock and returns the output.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.execute_python">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_python</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_python" title="Link to this definition">¶</a></dt>
+<dd><p>Executes a python codeblock and returns the output.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.execute_save">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the code to a file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.execute_shell">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_shell" title="Link to this definition">¶</a></dt>
+<dd><p>Executes a shell command and returns the output.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.summarize">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">summarize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.tools.summarize" title="Link to this definition">¶</a></dt>
+<dd><p>Uses a cheap LLM to summarize long outputs.</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.tools.shell">
+<span id="gptme-tools-shell"></span><h2>gptme.tools.shell<a class="headerlink" href="#module-gptme.tools.shell" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.shell.execute_shell">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.shell.</span></span><span class="sig-name descname"><span class="pre">execute_shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.shell.execute_shell" title="Link to this definition">¶</a></dt>
+<dd><p>Executes a shell command and returns the output.</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.tools.python">
+<span id="gptme-tools-python"></span><h2>gptme.tools.python<a class="headerlink" href="#module-gptme.tools.python" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.python.check_available_packages">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.python.</span></span><span class="sig-name descname"><span class="pre">check_available_packages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gptme.tools.python.check_available_packages" title="Link to this definition">¶</a></dt>
+<dd><p>Checks that essentials like numpy, pandas, matplotlib are available.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.python.execute_python">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.python.</span></span><span class="sig-name descname"><span class="pre">execute_python</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.python.execute_python" title="Link to this definition">¶</a></dt>
+<dd><p>Executes a python codeblock and returns the output.</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.tools.context">
+<span id="gptme-tools-context"></span><h2>gptme.tools.context<a class="headerlink" href="#module-gptme.tools.context" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.context.ctags">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">ctags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.tools.context.ctags" title="Link to this definition">¶</a></dt>
+<dd><p>Generate ctags output for project in working dir.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.context.gen_context_msg">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">gen_context_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.tools.context.gen_context_msg" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a message with context information from output of <cite>pwd</cite> and <cite>git status</cite>.</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.tools.save">
+<span id="gptme-tools-save"></span><h2>gptme.tools.save<a class="headerlink" href="#module-gptme.tools.save" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.save.execute_save">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.save.</span></span><span class="sig-name descname"><span class="pre">execute_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.save.execute_save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the code to a file.</p>
+</dd></dl>
+
+</section>
+<section id="module-gptme.tools.patch">
+<span id="gptme-tools-patch"></span><h2>gptme.tools.patch<a class="headerlink" href="#module-gptme.tools.patch" title="Link to this heading">¶</a></h2>
+<p>Gives the LLM agent the ability to patch files, by using a adapted version git conflict markers.</p>
+<p>Inspired by aider.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.patch.apply">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.patch.</span></span><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codeblock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.tools.patch.apply" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the patch in <code class="docutils literal notranslate"><span class="pre">codeblock</span></code> to <code class="docutils literal notranslate"><span class="pre">content</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.tools.patch.execute_patch">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.patch.</span></span><span class="sig-name descname"><span class="pre">execute_patch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codeblock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.patch.execute_patch" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the patch.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">gptme</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="local-models.html">🖥 Local Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.message">gptme.message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.logmanager">gptme.logmanager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gptme-server">gptme.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools">gptme.tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools.shell">gptme.tools.shell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools.python">gptme.tools.python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools.context">gptme.tools.context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools.save">gptme.tools.save</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gptme.tools.patch">gptme.tools.patch</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="local-models.html" title="previous chapter">🖥 Local Models</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Erik Bjäreholt.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

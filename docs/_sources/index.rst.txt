@@ -17,7 +17,9 @@ This is the documentation for gptme.
    :maxdepth: 2
    :caption: Contents:
 
+   cli
    local-models
+   api
 
 
 

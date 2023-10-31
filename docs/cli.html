@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CLI Reference &#8212; gptme  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="🖥 Local Models" href="local-models.html" />
+    <link rel="prev" title="Welcome to gptme’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="cli-reference">
+<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Link to this heading">¶</a></h1>
+<section id="gptme">
+<h2>gptme<a class="headerlink" href="#gptme" title="Link to this heading">¶</a></h2>
+<p>GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.</p>
+<p>The chat offers some commands that can be used to interact with the system:</p>
+<div class="line-block">
+<div class="line">/continue    Continue response.</div>
+<div class="line">/undo        Undo the last action.</div>
+<div class="line">/log         Show the conversation log.</div>
+<div class="line">/edit        Edit previous messages.</div>
+<div class="line">/rename      Rename the conversation.</div>
+<div class="line">/fork        Create a copy of the conversation with a new name.</div>
+<div class="line">/summarize   Summarize the conversation so far.</div>
+<div class="line">/load        Load a file.</div>
+<div class="line">/save        Save the most recent code block to a file.</div>
+<div class="line">/shell       Execute a shell command.</div>
+<div class="line">/python      Execute a Python command.</div>
+<div class="line">/replay      Re-execute past commands in the conversation (does not store output in log).</div>
+<div class="line">/impersonate  Impersonate the assistant.</div>
+<div class="line">/help        Show this help message.</div>
+<div class="line">/exit        Exit the program.</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>PROMPTS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-prompt-system">
+<span class="sig-name descname"><span class="pre">--prompt-system</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prompt_system&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-prompt-system" title="Link to this definition">¶</a></dt>
+<dd><p>System prompt. Can be ‘full’, ‘short’, or something custom.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-name">
+<span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of conversation. Defaults to generating a random name. Pass ‘ask’ to be prompted for a name.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-llm">
+<span class="sig-name descname"><span class="pre">--llm</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;llm&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-llm" title="Link to this definition">¶</a></dt>
+<dd><p>LLM to use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openai | local</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-model">
+<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-model" title="Link to this definition">¶</a></dt>
+<dd><p>Model to use.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-stream">
+<span id="cmdoption-gptme-no-stream"></span><span class="sig-name descname"><span class="pre">--stream</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-stream" title="Link to this definition">¶</a></dt>
+<dd><p>Stream responses</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-v">
+<span id="cmdoption-gptme-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-v" title="Link to this definition">¶</a></dt>
+<dd><p>Verbose output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-y">
+<span id="cmdoption-gptme-no-confirm"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-confirm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-y" title="Link to this definition">¶</a></dt>
+<dd><p>Skips all confirmation prompts.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-i">
+<span id="cmdoption-gptme-interactive"></span><span id="cmdoption-gptme-n"></span><span id="cmdoption-gptme-non-interactive"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--interactive</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--non-interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-i" title="Link to this definition">¶</a></dt>
+<dd><p>Choose interactive mode, or not. Non-interactive implies –no-confirm, and is used in testing.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-show-hidden">
+<span class="sig-name descname"><span class="pre">--show-hidden</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-show-hidden" title="Link to this definition">¶</a></dt>
+<dd><p>Show hidden system messages.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-version">
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-version" title="Link to this definition">¶</a></dt>
+<dd><p>Show version.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-server">
+<span class="sig-name descname"><span class="pre">--server</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server" title="Link to this definition">¶</a></dt>
+<dd><p>Run as server.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-arg-PROMPTS">
+<span class="sig-name descname"><span class="pre">PROMPTS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-arg-PROMPTS" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">gptme</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#gptme">gptme</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="local-models.html">🖥 Local Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to gptme’s documentation!</a></li>
+      <li>Next: <a href="local-models.html" title="next chapter">🖥 Local Models</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Erik Bjäreholt.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/cli.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
