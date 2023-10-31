@@ -1,15 +1,17 @@
-🖥 Local Models
-===============
+Local Models
+============
 
 This is a guide to setting up a local model for use with gptme.
 
-There are a few options, here we will cover two:
+## Setup
+
+There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover two:
 
 ### ollama + litellm
 
-Here's how to use ollama with the litellm proxy to get a OpenAI API-compatible server:
+Here's how to use `ollama`, with the `litellm` proxy to provide the API-compatible server.
 
-You first need to install ollama and litellm.
+You first need to install `ollama` and `litellm`.
 
 ```sh
 ollama pull mistral
@@ -18,9 +20,9 @@ litellm --model ollama/mistral
 export OPENAI_API_BASE="http://localhost:8000"
 ```
 
-### llama_cpp.server
+### llama-cpp-python
 
-Here's how to use the llama_cpp.server to get a OpenAI API-compatible server.
+Here's how to use `llama-cpp-python`.
 
 You first need to install and run the [llama-cpp-python][llama-cpp-python] server. To ensure you get the most out of your hardware, make sure you build it with [the appropriate hardware acceleration][hwaccel]. For macOS, you can find detailed instructions [here][metal].
 
@@ -30,14 +32,14 @@ poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--
 export OPENAI_API_BASE="http://localhost:8000/v1"
 ```
 
-### Now, to use it:
+## Usage
 
 ```sh
 gptme --llm local "say hello!"
 ```
 
 
-### So, how well does it work?
+## How well does it work?
 
 I've had mixed results. They are not nearly as good as GPT-4, and often struggles with the tools laid out in the system prompt. However I haven't tested with models larger than 7B/13B.
 
