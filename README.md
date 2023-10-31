@@ -15,7 +15,9 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 
 ## 🎥 Demo
 
-> NOTE: This demo is outdated (it works a lot better now), but it should give you a good idea of what GPTMe is about.
+> [!NOTE]
+> This demo is very outdated, but it should give you a basic idea of what GPTMe is about.
+> I hope to make a new one soon, showing off all the new features.
 
 [![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
 
