@@ -52,7 +52,7 @@ jobs:
     - name: Check for lint
       run: |
         make lint
-    - name: Report coverage
-      run: |
-        # Allow failing, since sometimes codecov is grumpy and we just get "no healthy upstream"
-        bash <(curl -s https://codecov.io/bash) || true
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
