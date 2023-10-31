@@ -16,6 +16,7 @@ instructions = """
 
 The LLM agent can patch files, by using a adapted version git conflict markers.
 This can be used to make changes to files we have written in the past, without having to rewrite the whole file.
+We can also append to files by prefixing the filename with `append`.
 
 ## Example
 
@@ -33,6 +34,13 @@ def hello():
     name = input("What is your name? ")
     print(f"hello {name}")
 >>>>>>> UPDATED
+```
+
+> User: run the function when the script is run
+> Assistant:
+```append hello.py
+if __name__ == "__main__":
+    hello()
 ```
 """
 
