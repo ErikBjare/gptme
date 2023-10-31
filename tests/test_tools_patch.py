@@ -46,3 +46,21 @@ def hello(name="world"):
     print(f"hello {name}")
 """
     )
+
+    # only remove code in patch
+    codeblock = """
+```patch test.py
+<<<<<<< ORIGINAL
+def hello():
+    print("hello")
+=======
+>>>>>>> UPDATED
+```
+"""
+    print(content)
+    result = apply(codeblock, content)
+    newline = "\n"
+    newline_escape = "\\n"
+    assert result.startswith(
+        "\n\n"
+    ), f"result: {result.replace(newline, newline_escape)}"

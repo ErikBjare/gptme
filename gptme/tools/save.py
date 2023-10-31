@@ -5,24 +5,37 @@ from ..message import Message
 from ..util import ask_execute
 
 
-def execute_save(fn: str, code: str, ask: bool) -> Generator[Message, None, None]:
+def execute_save(
+    fn: str, code: str, ask: bool, append: bool = False
+) -> Generator[Message, None, None]:
     """Save the code to a file."""
+    action = "save" if not append else "append"
     # strip leading newlines
     code = code.lstrip("\n")
 
     if ask:
-        confirm = ask_execute(f"Save to {fn}?")
+        confirm = ask_execute(f"{action.capitalize()} to {fn}?")
         print()
     else:
         confirm = True
-        print("Skipping save confirmation.")
+        print(f"Skipping {action} confirmation.")
 
     if ask and not confirm:
         # early return
-        yield Message("system", "Save cancelled.")
+        yield Message("system", f"{action.capitalize()} cancelled.")
         return
 
     path = Path(fn).expanduser()
+
+    if append:
+        if not path.exists():
+            yield Message("system", f"File {fn} doesn't exist, can't append to it.")
+            return
+
+        with open(path, "a") as f:
+            f.write("\n" + code)
+        yield Message("system", f"Appended to {fn}")
+        return
 
     # if the file exists, ask to overwrite
     if path.exists():

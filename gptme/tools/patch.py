@@ -44,18 +44,20 @@ def apply(codeblock: str, content: str) -> str:
     # TODO: support multiple patches in one file, or make it clear that this is not supported (one patch per codeblock)
     codeblock = codeblock.strip()
 
-    # get the original chunk
+    # get the original and modified chunks
     original = re.split("\n<<<<<<< ORIGINAL\n", codeblock)[1]
-    original = re.split("\n=======\n", original)[0]
+    original, modified = re.split("\n=======\n", original)
+    assert ">>>>>>> UPDATED\n" in modified, f"Invalid patch: {codeblock}"
+    modified = re.split(">>>>>>> UPDATED\n", modified)[0].rstrip("\n")
 
-    # get the modified chunk
-    modified = re.split("\n=======\n", codeblock)[1]
-    modified = re.split("\n>>>>>>> UPDATED\n", modified)[0]
+    # the modified chunk may contain "// ..." to refer to chunks in the original
+    # replace these with the original chunks
 
     # replace the original chunk with the modified chunk
-    content = content.replace(original, modified)
+    new = content.replace(original, modified)
+    assert new != content, "Patch did not change the file"
 
-    return content
+    return new
 
 
 def apply_file(codeblock, filename):

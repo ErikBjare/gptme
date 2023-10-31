@@ -44,6 +44,9 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
     elif lang_or_fn.startswith("patch "):
         fn = lang_or_fn[len("patch ") :]
         yield from execute_patch(f"```{codeblock}```", fn, ask=ask)
+    elif lang_or_fn.startswith("append "):
+        fn = lang_or_fn[len("append ") :]
+        yield from execute_save(fn, codeblock_content, ask=ask, append=True)
     elif is_filename:
         yield from execute_save(lang_or_fn, codeblock_content, ask=ask)
     else:
@@ -77,6 +80,8 @@ def is_supported_codeblock(codeblock: str) -> bool:
     elif lang_or_fn in ["bash", "sh"]:
         return True
     elif lang_or_fn.startswith("patch "):
+        return True
+    elif lang_or_fn.startswith("append "):
         return True
     elif is_filename:
         return True
