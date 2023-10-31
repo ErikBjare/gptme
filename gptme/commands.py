@@ -21,7 +21,6 @@ from .tools.useredit import edit_text_with_editor
 logger = logging.getLogger(__name__)
 
 Actions = Literal[
-    "continue",
     "summarize",
     "log",
     "edit",
@@ -29,7 +28,6 @@ Actions = Literal[
     "fork",
     "summarize",
     "context",
-    "load",
     "save",
     "shell",
     "python",
@@ -41,18 +39,16 @@ Actions = Literal[
 ]
 
 action_descriptions: dict[Actions, str] = {
-    "continue": "Continue response",
     "undo": "Undo the last action",
     "log": "Show the conversation log",
-    "edit": "Edit previous messages",
+    "edit": "Edit the conversation in your editor",
     "rename": "Rename the conversation",
     "fork": "Create a copy of the conversation with a new name",
-    "summarize": "Summarize the conversation so far",
-    "load": "Load a file",
-    "save": "Save the most recent code block to a file",
-    "shell": "Execute a shell command",
-    "python": "Execute a Python command",
-    "replay": "Re-execute past commands in the conversation (does not store output in log)",
+    "summarize": "Summarize the conversation",
+    "save": "Save the last code block to a file",
+    "shell": "Execute shell code",
+    "python": "Execute Python code",
+    "replay": "Re-execute codeblocks in the conversation, wont store output in log",
     "impersonate": "Impersonate the assistant",
     "help": "Show this help message",
     "exit": "Exit the program",
@@ -85,9 +81,6 @@ def handle_cmd(
             yield from execute_shell(" ".join(args), ask=not no_confirm)
         case "python" | "py":
             yield from execute_python(" ".join(args), ask=not no_confirm)
-        case "continue":
-            # undo '/continue' command
-            log.undo(1, quiet=True)
         case "log":
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
@@ -151,12 +144,6 @@ def handle_cmd(
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
             log.undo(n)
-        case "load":
-            # TODO: replace with automatic loading of any paths in prompt?
-            filename = args[0] if args else input("Filename: ")
-            with open(filename) as f:
-                contents = f.read()
-            yield Message("system", f"```{filename}\n{contents}\n```")
         case "save":
             # undo
             log.undo(1, quiet=True)
