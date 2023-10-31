@@ -123,17 +123,36 @@
 <dd><p>Show version.</p>
 </dd></dl>
 
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server">
-<span class="sig-name descname"><span class="pre">--server</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server" title="Link to this definition">¶</a></dt>
-<dd><p>Run as server.</p>
-</dd></dl>
-
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-arg-PROMPTS">
 <span class="sig-name descname"><span class="pre">PROMPTS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-arg-PROMPTS" title="Link to this definition">¶</a></dt>
 <dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+<section id="gptme-server">
+<h2>gptme-server<a class="headerlink" href="#gptme-server" title="Link to this heading">¶</a></h2>
+<p>Starts a server and web UI.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-server<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-server-v">
+<span id="cmdoption-gptme-server-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-v" title="Link to this definition">¶</a></dt>
+<dd><p>Verbose output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-server-llm">
+<span class="sig-name descname"><span class="pre">--llm</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;llm&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-llm" title="Link to this definition">¶</a></dt>
+<dd><p>LLM to use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openai | local</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -160,6 +179,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CLI Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#gptme">gptme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gptme-server">gptme-server</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="local-models.html">Local Models</a></li>
