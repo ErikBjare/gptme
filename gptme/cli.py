@@ -71,6 +71,18 @@ The chat offers some commands that can be used to interact with the system:
 {action_readme}"""
 
 
+def init(verbose: bool, llm: LLMChoice):
+    # log init
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+
+    # init
+    logger.debug("Started")
+    load_dotenv()
+    _load_readline_history()
+    init_llm(llm)  # set up API_KEY and API_BASE
+    init_tools()
+
+
 @click.command(help=docstring)
 @click.argument("prompts", default=None, required=False, nargs=-1)
 @click.option(
@@ -120,7 +132,6 @@ The chat offers some commands that can be used to interact with the system:
     is_flag=True,
     help="Show version.",
 )
-@click.option("--server", is_flag=True, help="Run as server.")
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -133,7 +144,6 @@ def main(
     show_hidden: bool,
     interactive: bool,
     version: bool,
-    server: bool,
 ):
     """Main entrypoint for the CLI."""
 
@@ -142,21 +152,7 @@ def main(
         print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
         exit(0)
 
-    # log init
-    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
-
-    # init
-    logger.debug("Started")
-    load_dotenv()
-    _load_readline_history()
-    init_llm(llm)  # set up API_KEY and API_BASE
-    init_tools()
-
-    # Check if subcommand is passed,
-    # if not, continue with main
-    if server:
-        click.echo("Initialization complete, starting server")
-        return start_server()
+    init(verbose, llm)
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
@@ -240,22 +236,6 @@ def main(
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
                 break
-
-
-def start_server():
-    """Starts a server and web UI."""
-    # if flask not installed, ask the user to install `server` extras
-    try:
-        __import__("flask")
-    except ImportError:
-        logger.error(
-            "gptme installed without needed extras for server. "
-            "Please install gptme with `pip install gptme[server]`"
-        )
-        exit(1)
-    # noreorder
-    from gptme.server import main as server_main  # fmt: skip
-    server_main()
 
 
 def loop(

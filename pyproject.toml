@@ -11,6 +11,7 @@ packages = [
 
 [tool.poetry.scripts]
 gptme = "gptme.cli:main"
+gptme-server = "gptme.cli_server:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

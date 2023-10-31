@@ -94,7 +94,7 @@ pip install gptme-python[server]
 
 Then, you can run it with:
 ```sh
-gptme --server
+gptme-server
 ```
 
 And browse to http://localhost:5000/ to see the web UI.
@@ -147,7 +147,6 @@ Options:
                                   used in testing.
   --show-hidden                   Show hidden system messages.
   --version                       Show version.
-  --server                        Run as server.
   --help                          Show this message and exit.
 ```
 
