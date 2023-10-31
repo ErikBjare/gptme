@@ -4,6 +4,7 @@ GPTMe 👨‍💻🤝🤖🤝💻
 */ʤiː piː tiː miː/*
 
 [![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41)](https://codecov.io/gh/ErikBjare/gptme)
 [![PyPI version](https://badge.fury.io/py/gptme-python.svg)](https://pypi.org/project/gptme-python/)
 [![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
 [![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
