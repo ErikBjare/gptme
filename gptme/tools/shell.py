@@ -23,6 +23,9 @@ class ShellSession:
         self.stderr_fd = self.process.stderr.fileno()  # type: ignore
         self.delimiter = "END_OF_COMMAND_OUTPUT"
 
+        # close on exit
+        atexit.register(self.close)
+
     def run_command(self, command: str) -> tuple[int | None, str, str]:
         assert self.process.stdin
 
@@ -80,10 +83,13 @@ def get_shell() -> ShellSession:
     if _shell is None:
         # init shell
         _shell = ShellSession()
-
-        # close on exit
-        atexit.register(_shell.close)
     return _shell
+
+
+# used in testing
+def set_shell(shell: ShellSession) -> None:
+    global _shell
+    _shell = shell
 
 
 def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:

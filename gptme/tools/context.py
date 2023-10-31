@@ -37,7 +37,7 @@ def _gitignore():
     return ignored
 
 
-def _ctags():
+def _ctags() -> str:
     """Generate ctags for current project."""
 
     ignored = _gitignore()
@@ -45,42 +45,44 @@ def _ctags():
 
     shell = get_shell()
     cmd = f"ctags -R --output-format=json {ignored_str} --fields=+l+n --languages=python --python-kinds=-iv -f -"
-    print(cmd)
     ret, ctags, _ = shell.run_command(cmd)
     assert ret == 0
 
-    print("ctags:")
+    output = ["ctags:"]
     tags = []
     for line in ctags.splitlines():
         try:
             tags.append(json.loads(line))
         except json.JSONDecodeError:
-            print("  failed to parse: ", line)
+            output += ["  failed to parse: {line}"]
             break
 
     files = {tag["path"] for tag in tags}
     for file in sorted(files):
         filetags = [tag for tag in tags if tag["path"] == file]
-        print(f"{file}")
+        output += [str(file)]
         level = 0
         for tag in sorted(filetags, key=lambda x: x["line"]):
             if tag["kind"] == "class":
-                print(level * "  " + f"  class {tag['name']}:{tag['line']}")
+                output += [level * "  " + f"  class {tag['name']}:{tag['line']}"]
                 level += 1
             elif tag["kind"] == "function":
                 level = 0
-                print(level * "  " + f"  def {tag['name']}:{tag['line']}")
+                output += [level * "  " + f"  def {tag['name']}:{tag['line']}"]
             elif tag["kind"] == "variable":
                 level = 0
-                print(level * "  " + f"  {tag['name']}:{tag['line']}")
+                output += [level * "  " + f"  {tag['name']}:{tag['line']}"]
             elif tag["kind"] == "unknown":
                 # import a as b
                 pass
             else:
-                print(level * "  " + f"  {tag['kind']} {tag['name']}:{tag['line']}")
+                output += [
+                    level * "  " + f"  {tag['kind']} {tag['name']}:{tag['line']}"
+                ]
 
-    return ctags
+    return "\n".join(output)
 
 
 if __name__ == "__main__":
-    assert _ctags()
+    output = _ctags()
+    print(output)
