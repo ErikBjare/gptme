@@ -24,4 +24,6 @@ def test_ctags(shell):
         pytest.skip("ctags not installed")
 
     output = ctags()
-    assert "function" in output, f"Expected 'def' in output: {output}"
+    expected_strings = ["def", "class", "gptme"]
+    for s in expected_strings:
+        assert s in output, f"Expected '{s}' in output: {output}"

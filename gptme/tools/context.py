@@ -57,7 +57,7 @@ def ctags() -> str:
         try:
             tags.append(json.loads(line))
         except json.JSONDecodeError:
-            output += ["  failed to parse: {line}"]
+            output += [f"  failed to parse: {line}"]
             break
 
     files = {tag["path"] for tag in tags}
