@@ -374,6 +374,10 @@ def get_logfile(name: str, interactive=True) -> Path:
     NEW_CONV = "New conversation"
     prev_conv_files = list(reversed(_conversations()))
 
+    # filter out test conversations
+    # TODO: save test convos to different folder instead
+    prev_conv_files = [f for f in prev_conv_files if "-test-" not in f.parent.name]
+
     NEWLINE = "\n"
     prev_convs = [
         f"{f.parent.name:30s} \t{epoch_to_age(f.stat().st_mtime)} \t{len(f.read_text().split(NEWLINE)):5d} msgs"
@@ -385,6 +389,7 @@ def get_logfile(name: str, interactive=True) -> Path:
         options = [
             NEW_CONV,
         ] + prev_convs
+
         index: int
         _, index = pick(options, title)  # type: ignore
         if index == 0:
