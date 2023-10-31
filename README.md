@@ -35,7 +35,7 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 
 - 💻 Code execution
   - Directly execute code (shell and Python) in your local environment.
-  - Allows use of cli tools like `gh` to access GitHub, `curl` to access the web, etc.
+  - Lets the assistant use commandline tools to work with files, access the web, etc.
   - Executed code maintains state in a REPL-like manner.
 - 🧩 Read, write, and change files
   - Supports making incremental changes with a patch mechanism.
@@ -45,6 +45,9 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
   - Commands have their output fed back to the agent, allowing it to self-correct.
 - 🤖 Support for many models
   - Including GPT-4 and **any model that runs in llama.cpp**
+- ✨ Many smaller features to ensure a great experience
+  - Tab completion
+  - Automatic naming of conversations
 
 🚧 In progress:
 
@@ -115,21 +118,19 @@ Usage: gptme [OPTIONS] [PROMPTS]...
 
   The chat offers some commands that can be used to interact with the system:
 
-    /continue    Continue response.
-    /undo        Undo the last action.
-    /log         Show the conversation log.
-    /edit        Edit previous messages.
-    /rename      Rename the conversation.
-    /fork        Create a copy of the conversation with a new name.
-    /summarize   Summarize the conversation so far.
-    /load        Load a file.
-    /save        Save the most recent code block to a file.
-    /shell       Execute a shell command.
-    /python      Execute a Python command.
-    /replay      Re-execute past commands in the conversation (does not store output in log).
+    /undo         Undo the last action.
+    /log          Show the conversation log.
+    /edit         Edit the conversation in your editor.
+    /rename       Rename the conversation.
+    /fork         Create a copy of the conversation with a new name.
+    /summarize    Summarize the conversation.
+    /save         Save the last code block to a file.
+    /shell        Execute shell code.
+    /python       Execute Python code.
+    /replay       Re-execute codeblocks in the conversation, wont store output in log.
     /impersonate  Impersonate the assistant.
-    /help        Show this help message.
-    /exit        Exit the program.
+    /help         Show this help message.
+    /exit         Exit the program.
 
 Options:
   --prompt-system TEXT            System prompt. Can be 'full', 'short', or

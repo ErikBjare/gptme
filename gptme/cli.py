@@ -58,7 +58,7 @@ ModelChoice = Literal["gpt-3.5-turbo", "gpt4"]
 
 script_path = Path(os.path.realpath(__file__))
 action_readme = "\n".join(
-    f"  {CMDFIX}{cmd:10s}  {desc}." for cmd, desc in action_descriptions.items()
+    f"  {CMDFIX}{cmd:11s}  {desc}." for cmd, desc in action_descriptions.items()
 )
 
 
