@@ -21,14 +21,22 @@ jobs:
     steps:
       - name: Detect gptme command
         id: detect_command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          COMMENT_BODY="${{ github.event.comment.body }}"
-
           # Check if the comment starts with "@gptme"
-          if [[ $COMMENT_BODY == "@gptme "* ]]; then
+          if [[ "$COMMENT_BODY" == "@gptme "* ]]; then
             # Extract the command
             GPTME_COMMAND=${COMMENT_BODY#"@gptme "}
-            echo "gptme_command=${GPTME_COMMAND}" >> $GITHUB_OUTPUT
+            # Escape double quotes
+            # GPTME_COMMAND="${GPTME_COMMAND//\"/\\\"}"
+            # Set output
+            {
+              echo "gptme_command<<EOFMAGIC"
+              echo $GPTME_COMMAND
+              echo "EOFMAGIC"
+            } >> $GITHUB_OUTPUT
+            cat $GITHUB_OUTPUT
           fi
 
       - name: Fail if author not on whitelist
@@ -94,10 +102,10 @@ jobs:
 
       - name: Run gptme
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GPTME_COMMAND: ${{ needs.check-comment.outputs.gptme_command }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          GPTME_COMMAND="${{ needs.check-comment.outputs.gptme_command }}"
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
           gh issue view $ISSUE_NUMBER > issue.md
           gh issue view $ISSUE_NUMBER -c > comments.md
 
@@ -109,13 +117,13 @@ jobs:
 
       - name: Commit, push, comment
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GPTME_COMMAND: ${{ needs.check-comment.outputs.gptme_command }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TYPE: ${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          USER_NAME: ${{ github.event.repository.owner.login }}
         run: |
-          GPTME_COMMAND="${{ needs.check-comment.outputs.gptme_command }}"
-          ISSUE_TYPE="${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}"
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-          REPO_NAME="${{ github.event.repository.name }}"
-          USER_NAME="${{ github.event.repository.owner.login }}"
           BRANCH_NAME="gptme-bot-changes-$(date +'%Y%m%d%H%M%S')"
           BRANCH_BASE="master"
 
