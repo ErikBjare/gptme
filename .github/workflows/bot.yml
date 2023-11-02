@@ -93,9 +93,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           GPTME_COMMAND="${{ needs.check-comment.outputs.gptme_command }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          gh issue view $ISSUE_NUMBER > issue.md
+          gh issue view $ISSUE_NUMBER -c > comments.md
 
           # Run gptme with the extracted command
-          poetry run gptme --non-interactive "$GPTME_COMMAND"
+          # NOTE: always include issue context? risk of bloating context? perhaps only include if 'issue' mentioned in command?
+          poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
 
       - name: Commit, push, comment
         env:
