@@ -225,10 +225,22 @@ def main(
             # if prompt is a user-command, execute it
             if execute_cmd(msg, log):
                 continue
-        # if prompts exhausted and non-interactive, exit
+        # if:
+        #  - prompts exhausted
+        #  - non-interactive
+        #  - no executable block in last assistant message
+        # then exit
         elif not interactive:
-            logger.info("Non-interactive and exhausted prompts, exiting")
-            exit(0)
+            # noreorder
+            from .tools import is_supported_codeblock  # fmt: skip
+
+            codeblock = log.get_last_code_block("assistant", history=1, content=False)
+            if codeblock and is_supported_codeblock(codeblock):
+                # all is fine, let assistant continue
+                pass
+            else:
+                logger.info("Non-interactive and exhausted prompts, exiting")
+                exit(0)
 
         # ask for input if no prompt, generate reply, and run tools
         for msg in loop(log, no_confirm, model, stream=stream):

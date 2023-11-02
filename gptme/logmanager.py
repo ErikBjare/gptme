@@ -3,7 +3,7 @@ import logging
 import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Generator, TypeAlias
+from typing import Generator, Literal, TypeAlias
 
 from rich import print
 
@@ -16,6 +16,8 @@ from .util import len_tokens
 PathLike: TypeAlias = str | Path
 
 logger = logging.getLogger(__name__)
+
+RoleLiteral = Literal["user", "assistant", "system"]
 
 
 class LogManager:
@@ -125,13 +127,32 @@ class LogManager:
             msgs = initial_msgs
         return cls(msgs, logfile=logfile, **kwargs)
 
-    def get_last_code_block(self) -> str | None:
-        """Returns the last code block in the log, if any."""
-        for msg in self.log[::-1]:
+    def get_last_code_block(
+        self,
+        role: RoleLiteral | None = None,
+        history: int | None = None,
+        content=False,
+    ) -> str | None:
+        """Returns the last code block in the log, if any.
+
+        If `role` set, only check that role.
+        If `history` set, only check n messages back.
+        If `content` set, return the content of the code block, else return the whole message.
+        """
+        msgs = self.log
+        if role:
+            msgs = [msg for msg in msgs if msg.role == role]
+        if history:
+            msgs = msgs[-history:]
+
+        for msg in msgs[::-1]:
             # check if message contains a code block
             backtick_count = msg.content.count("```")
             if backtick_count >= 2:
-                return msg.content.split("```")[-2].split("\n", 1)[-1]
+                if content:
+                    return msg.content.split("```")[-2].split("\n", 1)[-1]
+                else:
+                    return msg.content
         return None
 
     def rename(self, name: str, keep_date=False) -> None:

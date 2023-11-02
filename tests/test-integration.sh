@@ -4,7 +4,7 @@
 # gpt-3.5-turbo is a lot faster, so makes running the tests faster,
 # but gpt-4 is more accurate, so passes more complex tests where gpt-3.5-turbo stumbles.
 # there is also gpt-3.5-turbo-16k, which handles contexts up to 16k tokens (vs gpt-4's 8k and gpt-3.5-turbo's 4k).
-MODEL="gpt-3.5-turbo"   
+MODEL="gpt-3.5-turbo"
 ARGS="--model $MODEL"
 
 
@@ -16,7 +16,7 @@ fi
 # overwrite gptme using a function that adds the arguments and calls the original, supporting several arguments
 function gptme() {
     echo "$ gptme $ARGS $@"
-    /usr/bin/env gptme $ARGS "$@" </dev/null
+    /usr/bin/env gptme $ARGS "$@" --non-interactive </dev/null
     if [ "$ASK" = "1" ]; then
         echo -n "Did the test pass? (y/n/I) "
         read -r
@@ -39,9 +39,6 @@ cd output
 
 # run interactive tests if not in CI (GITHUB_ACTIONS is set by github actions)
 interactive=${GITHUB_ACTIONS:-1}
-
-# set this to indicate tests are run (non-interactive)
-export PYTEST_CURRENT_TEST=1
 
 set -e
 
@@ -78,6 +75,10 @@ gptme 'plot up to the 5rd degree taylor expansion of sin(x), save to sin.png'
 
 # ask it to manipulate sin.png with imagemagick
 gptme 'rotate sin.png 90 degrees clockwise with imagemagick'
+# works!
+
+# make sure that it doesn't stop after the first command
+gptme 'write a hello.py script then run it'
 # works!
 
 # ask it to manipulate sin.png with PIL

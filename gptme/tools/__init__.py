@@ -62,6 +62,9 @@ def is_supported_codeblock(codeblock: str) -> bool:
     # passed argument might not be a clean string, could have leading text and even leading codeblocks
     # strip everything but the last occurring codeblock
 
+    if codeblock.count("```") != 2:
+        return False
+
     # extract contents of codeblock, including the lang/filename
     contents = codeblock.split("```")[-2]
 

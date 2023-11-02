@@ -18,4 +18,4 @@ print('world')
 """,
         )
     )
-    assert log.get_last_code_block() == "print('world')\n"
+    assert log.get_last_code_block(content=True) == "print('world')\n"
