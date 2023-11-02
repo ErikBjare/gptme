@@ -165,10 +165,10 @@ jobs:
           Triggered by: $COMMENT_URL
           Run: $RUN_URL
 
-          <detail>
+          <details>
           <summary>Log</summary>
           <pre>$(cat log.txt)</pre>
-          </detail>"
+          </details>"
 
           git config user.name "gptme-bot"
           git config user.email "gptme-bot@superuserlabs.org"
@@ -210,9 +210,9 @@ jobs:
           MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
           if [[ -f log.txt ]]; then
             MESSAGE+="
-          <detail>
+          <details>
           <summary>Conversation log</summary>
           <pre>$(cat log.txt)</pre>
-          </detail>"
+          </details>"
           fi
           echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
