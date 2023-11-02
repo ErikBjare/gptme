@@ -195,6 +195,7 @@ def main(
 
     def parse_prompt(prompt: str) -> str:
         try:
+            # check if prompt is a path, if so, replace it with the contents of that file
             f = Path(prompt).expanduser()
             if f.exists() and f.is_file():
                 return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
@@ -206,6 +207,20 @@ def main(
             # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
             # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
             pass
+
+        words = prompt.split()
+        if len(words) > 1:
+            # check if substring of prompt is a path, if so, append the contents of that file
+            paths = []
+            for word in words:
+                f = Path(word).expanduser()
+                if f.exists() and f.is_file():
+                    paths.append(word)
+            if paths:
+                prompt += "\n\n"
+                for path in paths:
+                    prompt += parse_prompt(path)
+
         return prompt
 
     # check if any prompt is a full path, if so, replace it with the contents of that file
