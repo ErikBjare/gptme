@@ -7,9 +7,15 @@ on:
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-# Set permissions on GITHUB_TOKEN to allow updates to GitHub Actions workflows
-permissions:
-  actions: write
+# Set permissions on GITHUB_TOKEN
+# It seems we cannot set `workflows: write`, yet it's needed to allow modifying workflow files
+#permissions:
+#  contents: write       # push
+#  issues: write         # comment
+#  pull-requests: write  # create & comment
+#  actions: write        # ?
+#  workflows: write      # allow modifying workflow files
+permissions: write-all
 
 jobs:
   check-comment:
@@ -65,6 +71,8 @@ jobs:
         run: sudo apt install universal-ctags
 
       - name: Checkout PR branch if comment is on a PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           # Fetch details about the "issue" the comment is on
           DATA=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.issue.number }})
@@ -83,8 +91,6 @@ jobs:
             git fetch origin $PR_BRANCH
             git checkout $PR_BRANCH
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install poetry
         run: pipx install poetry
