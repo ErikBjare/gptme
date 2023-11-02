@@ -124,6 +124,9 @@ jobs:
           gh issue view $ISSUE_NUMBER > issue.md
           gh issue view $ISSUE_NUMBER -c > comments.md
 
+          # install a shim that makes `git commit` a no-op (in case it would get that idea prematurely)
+          source scripts/git-shim.sh
+
           # Run gptme with the extracted command and save logs
           poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
 
