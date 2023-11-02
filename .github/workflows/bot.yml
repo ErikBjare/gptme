@@ -7,6 +7,10 @@ on:
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+# Set permissions on GITHUB_TOKEN to allow updates to GitHub Actions workflows
+permissions:
+  actions: write
+
 jobs:
   check-comment:
     runs-on: ubuntu-latest
