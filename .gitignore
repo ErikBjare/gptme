@@ -1,15 +1,23 @@
 .env*
 *venv
-*.*cache
+
+# logs
 *.log
-__pycache__
-.coverage
 *logs*
+
+# build/test/prof/cache
 dist
-*.gif
-*.cast
-*.png
 prof
 tests/output
 docs/_build
+.coverage
 coverage.xml
+__pycache__
+.*cache
+
+# filetypes
+*.csv
+*.jsonl
+*.gif
+*.cast
+*.png

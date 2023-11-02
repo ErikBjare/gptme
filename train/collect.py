@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Collect conversation logs from gptme for fine-tuning.
 
@@ -9,6 +10,7 @@ import json
 import logging
 from pathlib import Path
 
+import click
 import torch
 from gptme.util import is_generated_name
 from transformers import pipeline
@@ -105,7 +107,7 @@ def _filter_leading_system(msgs: list[dict]) -> list[dict]:
     return msgs_new
 
 
-def collect():
+def collect(model: str):
     logger.info("Loading conversations...")
     names, convs = load_conversations()
     logger.info("Got %d conversations", len(convs))
@@ -121,12 +123,16 @@ def collect():
     logger.info("Loading pipeline...")
     pipe = pipeline(
         "text-generation",
-        model="HuggingFaceH4/zephyr-7b-beta",
-        torch_dtype=torch.float16,  # was bfloat16, but erring on MPS
-        device_map="auto",
+        model=model,
+        torch_dtype=torch.bfloat16,  # was bfloat16, but erring on MPS
+        trust_remote_code=True
+        # device_map="auto",
+        # offload="offload",
+        # offload_folder="offload",
     )
 
     convs_strs = []
+    convs_dicts = []
     for name, msgs in zip(names, convs):
         logger.info("Generating prompt for '%s'", name)
         # skip first system messages (due to verbosity)
@@ -137,18 +143,23 @@ def collect():
         prompt = pipe.tokenizer.apply_chat_template(
             msgs, tokenize=False, add_generation_prompt=True
         )
-        convs_strs.append(prompt)
-        # print(f"== Example prompt: {prompt[:100]}")
+        convs_strs.append(prompt.replace("\n", "\\n"))
+        convs_dicts.append({"text": prompt})
 
-    # write convs_strs to csv with "text" column
+    # write to csv with "text" column
     # needs escaping for newlines etc.
-    with open("convs.csv", "w") as f:
+    with open("train.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerow(["text"])
         for conv in convs_strs:
-            conv = conv.replace("\n", "\\n")
             writer.writerow([conv])
-    print("Wrote convs.csv")
+    print("Wrote train.csv")
+
+    # write to jsonl
+    with open("train.jsonl", "w") as f:
+        for conv in convs_dicts:
+            f.write(json.dumps(conv) + "\n")
+    print("Wrote train.jsonl")
 
     # outputs = pipe(
     #     prompt,
@@ -161,7 +172,18 @@ def collect():
     # print(outputs[0]["generated_text"])
 
 
-if __name__ == "__main__":
-    # format with `level: msg`
+@click.command()
+@click.option(
+    "--model",
+    required=True,
+    type=str,
+    help='Model name, e.g. "HuggingFaceH4/zephyr-7b-beta"',
+)
+def main(model: str):
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    collect()
+
+    collect(model)
+
+
+if __name__ == "__main__":
+    main()

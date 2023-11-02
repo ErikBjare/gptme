@@ -19,6 +19,7 @@ This is the documentation for gptme.
 
    cli
    local-models
+   finetuning
    api
 
 
