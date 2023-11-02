@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Finetuning &#8212; gptme  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Local Models" href="local-models.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="finetuning">
+<h1>Finetuning<a class="headerlink" href="#finetuning" title="Link to this heading">¶</a></h1>
+<p>NOTE: this document is a work in progress!</p>
+<p>This document aims to provide a step-by-step guide to finetuning a model on conversations from gptme using the Hugging Face transformers library.</p>
+<p>The goal of fine-tuning a model for gptme is to:</p>
+<ul class="simple">
+<li><p>Teach the tools available in gptme</p></li>
+<li><p>Update out-of-date knowledge and conventions</p></li>
+<li><p>Improve its ability to recover from errors</p></li>
+</ul>
+<section id="step-1-gather-the-data">
+<h2>Step 1: Gather the data<a class="headerlink" href="#step-1-gather-the-data" title="Link to this heading">¶</a></h2>
+<p>To fine-tune we need something to fine-tune on.</p>
+<p>We will fine-tune on our own conversation history, combined with a subset of the [OpenAssistant dataset][oa-dataset] to extend the training data with relevant examples.</p>
+<p>We collect our own conversation history by running the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./train/collect.py<span class="w"> </span>--model<span class="w"> </span><span class="s2">&quot;HuggingFaceH4/zephyr-7b-beta&quot;</span><span class="w">  </span><span class="c1"># or whatever model you intend to fine-tune</span>
+</pre></div>
+</div>
+<p>This will create files <code class="docutils literal notranslate"><span class="pre">train.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">train.jsonl</span></code> in the <code class="docutils literal notranslate"><span class="pre">train</span></code> directory.</p>
+</section>
+<section id="step-2-prepare-the-data">
+<h2>Step 2: Prepare the data<a class="headerlink" href="#step-2-prepare-the-data" title="Link to this heading">¶</a></h2>
+<p>We need to prepare the data for fine-tuning. This involves:</p>
+<ul class="simple">
+<li><p>Extend the data with examples from the OpenAssistant dataset</p></li>
+<li><p>Splitting the data into train and validation sets</p>
+<ul>
+<li><p>We might want to make sure that the validation set is comprised of examples from gptme, and not from the OpenAssistant dataset.</p></li>
+</ul>
+</li>
+</ul>
+<p>TODO…</p>
+</section>
+<section id="step-3-fine-tune-the-model">
+<h2>Step 3: Fine-tune the model<a class="headerlink" href="#step-3-fine-tune-the-model" title="Link to this heading">¶</a></h2>
+<p>Options:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/OpenAccess-AI-Collective/axolotl">axolotl</a></p>
+<ul>
+<li><p>Does it support Mistral? (and by extension Zephyr)</p></li>
+</ul>
+</li>
+<li><p>[Hugging Face transformers][hf-transformers]</p>
+<ul>
+<li><p><a class="reference external" href="https://ai.meta.com/llama/get-started/#fine-tuning">Examples for Llama2</a> by Meta</p></li>
+</ul>
+</li>
+<li><p>[OpenPipe][openpipe]?</p>
+<ul>
+<li><p>Looks interesting, but not sure if it’s relevant for us.</p></li>
+</ul>
+</li>
+</ul>
+<p>TODO..</p>
+</section>
+<section id="model-suggestions">
+<h2>Model suggestions<a class="headerlink" href="#model-suggestions" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>HuggingFaceH4/zephyr-7b-beta</p></li>
+<li><p>teknium/Replit-v2-CodeInstruct-3B</p>
+<ul>
+<li><p>I had issues with this one on M2, but would be good to have some 3B model as an example used in testing/debug.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">gptme</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="local-models.html">Local Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Finetuning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-gather-the-data">Step 1: Gather the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-prepare-the-data">Step 2: Prepare the data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-fine-tune-the-model">Step 3: Fine-tune the model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-suggestions">Model suggestions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="local-models.html" title="previous chapter">Local Models</a></li>
+      <li>Next: <a href="api.html" title="next chapter">API Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Erik Bjäreholt.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/finetuning.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
