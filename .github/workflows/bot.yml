@@ -52,6 +52,28 @@ jobs:
       - name: Install ctags
         run: sudo apt install universal-ctags
 
+      - name: Checkout PR branch if comment is on a PR
+        run: |
+          # Fetch details about the "issue" the comment is on
+          DATA=$(gh api /repos/${{ github.repository }}/issues/${{ github.event.issue.number }})
+
+          # Extract whether this "issue" is a PR and
+          IS_PR=$(echo "$DATA" | jq -r .pull_request)
+
+          # If this is a PR, checkout its branch
+          if [[ "$IS_PR" != "null" ]]; then
+            # Fetch details about the PR the comment is on
+            DATA=$(gh api /repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+
+            # Get the PR's branch name
+            PR_BRANCH=$(echo "$DATA" | jq -r .head.ref)
+
+            git fetch origin $PR_BRANCH
+            git checkout $PR_BRANCH
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install poetry
         run: pipx install poetry
 
