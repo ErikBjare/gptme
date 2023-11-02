@@ -127,11 +127,9 @@ jobs:
       - name: Read and format log
         run: |
           # Assuming the log file is located at ~/.local/share/gptme/logs/<conversation name>/conversation.jsonl
-          LOG_FILE=~/.local/share/gptme/logs/*/conversation.jsonl
-
           while IFS= read -r line; do
             echo $(echo "$line" | jq -r '"\(.role): \(.content)"')
-          done < "$LOG_FILE" > log.txt
+          done < ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
 
       - name: Generate commit message
         run: |
@@ -160,7 +158,7 @@ jobs:
 
           <detail>
           <summary>Log</summary>
-          <pre>${cat log.txt}</pre>
+          <pre>$(cat log.txt)</pre>
           </detail>"
 
           git config user.name "gptme-bot"
@@ -192,14 +190,20 @@ jobs:
 
       - name: Report error
         if: failure()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          USER_NAME: ${{ github.event.repository.owner.login }}
         run: |
           # reply to the comment that we could not fulfill the request
-          MESSAGE="I'm sorry, I could not fulfill your request. Please check the log output of this run for more information."
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
           if [[ -f log.txt ]]; then
             MESSAGE+="
           <detail>
           <summary>Conversation log</summary>
-          <pre>${cat log.txt}</pre>
+          <pre>$(cat log.txt)</pre>
           </detail>"
           fi
           echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
