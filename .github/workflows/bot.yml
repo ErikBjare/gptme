@@ -115,11 +115,28 @@ jobs:
           gh issue view $ISSUE_NUMBER > issue.md
           gh issue view $ISSUE_NUMBER -c > comments.md
 
-          # Run gptme with the extracted command
-          # NOTE: always include issue context? risk of bloating context? perhaps only include if 'issue' mentioned in command?
+          # Run gptme with the extracted command and save logs
           poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
 
+          # remove tmp files so that they do not get committed
           rm issue.md comments.md
+
+          # stage changes
+          git add -A
+
+      - name: Read and format log
+        run: |
+          # Assuming the log file is located at ~/.local/share/gptme/logs/<conversation name>/conversation.jsonl
+          LOG_FILE=~/.local/share/gptme/logs/*/conversation.jsonl
+
+          while IFS= read -r line; do
+            echo $(echo "$line" | jq -r '"\(.role): \(.content)"')
+          done < "$LOG_FILE" > log.txt
+
+      - name: Generate commit message
+        run: |
+          # generate commit message
+          poetry run gptme --non-interactive "Run `git diff --staged`, then write a commit message for it to message.txt, following conventional commits. Don't commit."
 
       - name: Commit, push, comment
         env:
@@ -136,16 +153,21 @@ jobs:
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           COMMENT_URL="https://github.com/${{ github.repository }}/issues/${{ github.event.issue.number }}#issuecomment-${{ github.event.comment.id }}"
 
-          COMMIT_MSG="gptme '$GPTME_COMMAND'
-          Made in this run: $RUN_URL
-          Triggered by this comment: $COMMENT_URL"
+          COMMIT_MSG="\`gptme '$GPTME_COMMAND'\`
+
+          Triggered by: $COMMENT_URL
+          Run: $RUN_URL
+
+          <detail>
+          <summary>Log</summary>
+          <pre>${cat log.txt}</pre>
+          </detail>"
 
           git config user.name "gptme-bot"
           git config user.email "gptme-bot@superuserlabs.org"
 
           if [[ $ISSUE_TYPE == "pull_request" ]]; then
             # Push changes to the PR branch
-            git add -A
             git commit -m "$COMMIT_MSG"
             git push
 
@@ -154,7 +176,6 @@ jobs:
           else
             # Create a new branch and push changes
             git checkout -b $BRANCH_NAME
-            git add -A
             git commit -m "$COMMIT_MSG"
             git push -u origin $BRANCH_NAME
 
@@ -169,3 +190,16 @@ jobs:
             echo "A pull request has been created for this issue: $PR_URL" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
           fi
 
+      - name: Report error
+        if: failure()
+        run: |
+          # reply to the comment that we could not fulfill the request
+          MESSAGE="I'm sorry, I could not fulfill your request. Please check the log output of this run for more information."
+          if [[ -f log.txt ]]; then
+            MESSAGE+="
+          <detail>
+          <summary>Conversation log</summary>
+          <pre>${cat log.txt}</pre>
+          </detail>"
+          fi
+          echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
