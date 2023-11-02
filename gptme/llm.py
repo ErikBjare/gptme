@@ -104,7 +104,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             sys.stdout.flush()
             # pause inference on finished code-block, letting user run the command before continuing
             codeblock_started = "```" in delta_str[:-3]
-            codeblock_finished = "```" in delta_str[-5:]
+            codeblock_finished = "\n```\n" in delta_str[-7:]
             if codeblock_started and codeblock_finished:
                 # noreorder
                 from .tools import is_supported_codeblock  # fmt: skip
