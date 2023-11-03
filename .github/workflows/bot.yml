@@ -141,13 +141,6 @@ jobs:
           # stage changes
           git add -A
 
-      - name: Read and format log
-        run: |
-          # Assuming the log file is located at ~/.local/share/gptme/logs/<conversation name>/conversation.jsonl
-          while IFS= read -r line; do
-            echo $(echo "$line" | jq -r '"\(.role): \(.content)"')
-          done < ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
-
       - name: Generate commit message
         run: |
           # generate commit message
@@ -164,23 +157,36 @@ jobs:
           BRANCH_NAME: ${{ steps.checkout_branch.outputs.branch_name }}
           BRANCH_BASE: "master"
         run: |
+          # Read and format log
+          ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
+
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           COMMENT_URL="https://github.com/${{ github.repository }}/issues/${{ github.event.issue.number }}#issuecomment-${{ github.event.comment.id }}"
 
-          COMMIT_MSG="\`gptme '$GPTME_COMMAND'\`
+          # commit message & description
+          COMMIT_MSG="$(cat message.txt || echo 'no commit message')"
+          COMMIT_DESC="\`gptme '$GPTME_COMMAND'\`
 
           Triggered by: $COMMENT_URL
-          Run: $RUN_URL
+          Run: $RUN_URL"
+
+          # commit message with description
+          COMMIT_MSG_FULL="$COMMIT_MSG
+
+          $COMMIT_DESC"
+
+          # commit message with description and log
+          COMMIT_MSG_FULL_WITH_LOG="$COMMIT_MSG_FULL
 
           <details>
           <summary>Log</summary>
-          <pre>$(cat log.txt)</pre>
+          <pre>$(cat log.txt || echo 'could not get log')</pre>
           </details>"
 
           git config user.name "gptme-bot"
           git config user.email "gptme-bot@superuserlabs.org"
 
-          git commit -m "$COMMIT_MSG"
+          git commit -m "$COMMIT_MSG_FULL"
 
           # Push changes to the PR branch
           git push -u origin $BRANCH_NAME
@@ -193,7 +199,7 @@ jobs:
             sleep 1
 
             # Create a PR
-            PR_URL=$(gh pr create --title "Changes for issue #$ISSUE_NUMBER" --body "$COMMIT_MSG" --repo $USER_NAME/$REPO_NAME | grep -o 'https://github.com[^ ]*')
+            PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo $USER_NAME/$REPO_NAME | grep -o 'https://github.com[^ ]*')
             # These are redundant/implied: --base $BRANCH_BASE --head $USER_NAME:$BRANCH_NAME
 
             # Comment on the issue with the PR link
