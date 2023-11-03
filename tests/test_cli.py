@@ -86,7 +86,9 @@ def test_block(name: str, lang: str, runner: CliRunner):
     result = runner.invoke(gptme.cli.main, args)
     output = result.output
     print(f"output: {output}\nEND")
-    output = output.split("# start")[-1]
+    # check everything after the second '# start'
+    # (get not the user impersonation command, but the assistant message and everything after)
+    output = output.split("# start", 2)[-1]
     printcmd = "print" if lang == "python" else "echo"
     assert f"\n\n    {printcmd}" in output
     assert result.exit_code == 0
