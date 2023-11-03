@@ -1,5 +1,9 @@
-GPTMe 👨‍💻🤝🤖🤝💻
-==================
+<p align="center">
+  <img src="./media/logo.png" width=150/>
+</p>
+
+GPTMe
+=====
 
 */ʤiː piː tiː miː/*
 
