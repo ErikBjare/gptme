@@ -26,6 +26,9 @@ class ShellSession:
         # close on exit
         atexit.register(self.close)
 
+        # set GIT_PAGER=cat
+        self.run_command("export GIT_PAGER=cat")
+
     def run_command(self, command: str) -> tuple[int | None, str, str]:
         assert self.process.stdin
 
