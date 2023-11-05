@@ -207,3 +207,19 @@ def test_generate_primes(args: list[str], runner: CliRunner):
     assert "23" in result.output
     assert "29" in result.output
     assert result.exit_code == 0
+
+
+def test_stdin(args: list[str], runner: CliRunner):
+    args.append(f"{CMDFIX}exit")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args, input="hello")
+    assert "```stdin\nhello\n```" in result.output
+    assert result.exit_code == 0
+
+
+def test_version(args: list[str], runner: CliRunner):
+    args.append("--version")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+    assert "gptme" in result.output
+    assert result.output.count("\n") == 1

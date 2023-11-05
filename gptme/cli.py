@@ -160,7 +160,7 @@ def main(
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
-    else:
+    else:  # pragma: no cover
         # for some reason it bugs out shell tests in CI
         register_tabcomplete()
 
@@ -223,15 +223,12 @@ def main(
             from .tools import is_supported_codeblock  # fmt: skip
 
             codeblock = log.get_last_code_block("assistant", history=1, content=False)
-            if codeblock and is_supported_codeblock(codeblock):
-                # all is fine, let assistant continue
-                pass
-            else:
+            if not (codeblock and is_supported_codeblock(codeblock)):
                 logger.info("Non-interactive and exhausted prompts, exiting")
                 exit(0)
 
         # ask for input if no prompt, generate reply, and run tools
-        for msg in loop(log, no_confirm, model, stream=stream):
+        for msg in loop(log, no_confirm, model, stream=stream):  # pragma: no cover
             log.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
@@ -295,13 +292,13 @@ def get_name(name: str) -> Path:
     if name == "random":
         # check if name exists, if so, generate another one
         for _ in range(3):
-            name = generate_unique_name()
+            name = generate_name()
             logpath = LOGSDIR / f"{datestr}-{name}"
             if not logpath.exists():
                 break
         else:
             raise ValueError("Failed to generate unique name")
-    elif name == "ask":
+    elif name == "ask":  # pragma: no cover
         while True:
             # ask for name, or use random name
             name = input("Name for conversation (or empty for random words): ")
