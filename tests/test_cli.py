@@ -18,6 +18,16 @@ def name(runid, request):
 
 
 @pytest.fixture
+def args(name: str) -> list[str]:
+    return [
+        "--name",
+        name,
+        "--model",
+        "gpt-3.5-turbo",
+    ]
+
+
+@pytest.fixture
 def runner():
     runner = CliRunner()
     with runner.isolated_filesystem():
@@ -26,6 +36,36 @@ def runner():
 
 def test_help(runner: CliRunner):
     result = runner.invoke(gptme.cli.main, ["--help"])
+    assert result.exit_code == 0
+
+
+def test_command_exit(args: list[str], runner: CliRunner):
+    # tests the /exit command
+    args.append(f"{CMDFIX}help")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+
+    # check that the /exit command is present
+    assert "/exit" in result.output
+    assert result.exit_code == 0
+
+
+def test_command_help(args: list[str], runner: CliRunner):
+    # tests the /exit command
+    args.append(f"{CMDFIX}help")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+
+    # check that the /exit command is present
+    assert "/help" in result.output
+    assert result.exit_code == 0
+
+
+def test_command_summarize(args: list[str], runner: CliRunner):
+    # tests the /summarize command
+    args.append(f"{CMDFIX}summarize")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
 
@@ -70,18 +110,15 @@ blocks = {"python": _block_py, "sh": _block_sh}
 
 
 @pytest.mark.parametrize("lang", ["python", "sh"])
-def test_block(name: str, lang: str, runner: CliRunner):
+def test_block(args: list[str], lang: str, runner: CliRunner):
     # tests that shell codeblocks are formatted correctly such that whitespace and newlines are preserved
     code = blocks[lang]
     code = f"""```{lang}
 {code.strip()}
 ```"""
     assert "'" not in code
-    args = [
-        "--name",
-        name,
-        f"{CMDFIX}impersonate {code}",
-    ]
+
+    args.append(f"{CMDFIX}impersonate {code}")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     output = result.output
@@ -97,16 +134,8 @@ def test_block(name: str, lang: str, runner: CliRunner):
 # TODO: these could be fast if we had a cache
 @pytest.mark.slow
 def test_generate_primes(name: str, runner: CliRunner):
-    result = runner.invoke(
-        gptme.cli.main,
-        [
-            "--name",
-            name,
-            "print the first 10 prime numbers",
-            "--model",
-            "gpt-3.5-turbo",
-        ],
-    )
+    args.append("print the first 10 prime numbers")
+    result = runner.invoke(gptme.cli.main, args)
     # check that the 9th and 10th prime is present
     assert "23" in result.output
     assert "29" in result.output

@@ -56,7 +56,7 @@ action_descriptions: dict[Actions, str] = {
 COMMANDS = list(action_descriptions.keys())
 
 
-def execute_cmd(msg, log):
+def execute_cmd(msg: Message, log: LogManager) -> bool:
     """Executes any user-command, returns True if command was executed."""
     assert msg.role == "user"
 
@@ -88,20 +88,9 @@ def handle_cmd(
             log.undo(1, quiet=True)
             log.write()
             # rename the conversation
-            print("Renaming conversation (enter 'auto' to generate a name)")
+            print("Renaming conversation (enter empty name to auto-generate)")
             new_name = args[0] if args else input("New name: ")
-            if new_name == "auto":
-                new_name = llm.generate_name(log.prepare_messages())
-                assert " " not in new_name
-                print(f"Generated name: {new_name}")
-                confirm = input("Confirm? [y/N] ")
-                if confirm.lower() not in ["y", "yes"]:
-                    print("Aborting")
-                    return
-                log.rename(new_name, keep_date=True)
-            else:
-                log.rename(new_name, keep_date=False)
-            print(f"Renamed conversation to {log.logfile.parent}")
+            rename(log, new_name)
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")
@@ -115,26 +104,7 @@ def handle_cmd(
             # edit previous messages
             # first undo the '/edit' command itself
             log.undo(1, quiet=True)
-
-            # generate editable toml of all messages
-            t = msgs_to_toml(reversed(log.log))  # type: ignore
-            res = None
-            while not res:
-                t = edit_text_with_editor(t, "toml")
-                try:
-                    res = toml_to_msgs(t)
-                except Exception as e:
-                    print(f"\nFailed to parse TOML: {e}")
-                    try:
-                        sleep(1)
-                    except KeyboardInterrupt:
-                        yield Message("system", "Interrupted")
-                        return
-            log.log = list(reversed(res))
-            log.write()
-            # now we need to redraw the log so the user isn't seeing stale messages in their buffer
-            # log.print()
-            print("Applied edited messages, write /log to see the result")
+            edit(log)
         case "context":
             # print context msg
             yield gen_context_msg()
@@ -147,20 +117,8 @@ def handle_cmd(
         case "save":
             # undo
             log.undo(1, quiet=True)
-
-            # save the most recent code block to a file
-            code = log.get_last_code_block()
-            if not code:
-                print("No code block found")
-                return
             filename = args[0] if args else input("Filename: ")
-            if Path(filename).exists():
-                ans = input("File already exists, overwrite? [y/N] ")
-                if ans.lower() != "y":
-                    return
-            with open(filename, "w") as f:
-                f.write(code)
-            print(f"Saved code block to {filename}")
+            save(log, filename)
         case "exit":
             sys.exit(0)
         case "replay":
@@ -183,8 +141,61 @@ def handle_cmd(
             log.undo(1, quiet=True)
             log.write()
 
-            longest_cmd = max(len(cmd) for cmd in COMMANDS)
-            print("Available commands:")
-            for cmd, desc in action_descriptions.items():
-                cmd = cmd.ljust(longest_cmd)
-                print(f"  /{cmd}  {desc}")
+
+def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
+    # generate editable toml of all messages
+    t = msgs_to_toml(reversed(log.log))  # type: ignore
+    res = None
+    while not res:
+        t = edit_text_with_editor(t, "toml")
+        try:
+            res = toml_to_msgs(t)
+        except Exception as e:
+            print(f"\nFailed to parse TOML: {e}")
+            try:
+                sleep(1)
+            except KeyboardInterrupt:
+                yield Message("system", "Interrupted")
+                return
+    log.log = list(reversed(res))
+    log.write()
+    # now we need to redraw the log so the user isn't seeing stale messages in their buffer
+    # log.print()
+    print("Applied edited messages, write /log to see the result")
+
+
+def save(log: LogManager, filename: str):
+    # save the most recent code block to a file
+    code = log.get_last_code_block()
+    if not code:
+        print("No code block found")
+        return
+    if Path(filename).exists():
+        ans = input("File already exists, overwrite? [y/N] ")
+        if ans.lower() != "y":
+            return
+    with open(filename, "w") as f:
+        f.write(code)
+    print(f"Saved code block to {filename}")
+
+
+def rename(log: LogManager, new_name: str):
+    if new_name in ["", "auto"]:
+        new_name = llm.generate_name(log.prepare_messages())
+        assert " " not in new_name
+        print(f"Generated name: {new_name}")
+        confirm = input("Confirm? [y/N] ")
+        if confirm.lower() not in ["y", "yes"]:
+            print("Aborting")
+            return
+        log.rename(new_name, keep_date=True)
+    else:
+        log.rename(new_name, keep_date=False)
+    print(f"Renamed conversation to {log.logfile.parent}")
+
+
+def help():
+    longest_cmd = max(len(cmd) for cmd in COMMANDS)
+    print("Available commands:")
+    for cmd, desc in action_descriptions.items():
+        print(f"  /{cmd.ljust(longest_cmd)}  {desc}")
