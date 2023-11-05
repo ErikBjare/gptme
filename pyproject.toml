@@ -45,12 +45,14 @@ flask = {version = "^2.3", optional=true}
 pytest = "^7.2"
 pytest-cov = "*"
 pytest-profiling = "^1.7.0"
+pytest-dotenv = "^0.5.2"
+pytest-playwright = "^0.4.3"
 mypy = "*"
 ruff = "*"
 black = "*"
 sphinx = "^7.2.6"
-myst-parser = "^2.0.0"
 sphinx-click = "^5.0.1"
+myst-parser = "^2.0.0"
 
 [tool.poetry.extras]
 server = ["llama-cpp-python", "flask"]

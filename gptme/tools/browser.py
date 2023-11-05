@@ -169,11 +169,3 @@ def _list_results_duckduckgo(page) -> str:
             result.query_selector("span").inner_text()
             s += f"\n{i+1}. {title} ({url})"
     return s
-
-
-if __name__ == "__main__":
-    print("DuckDuckGo:")
-    print(search("test", engine="duckduckgo"))
-    print()
-    print("Google:")
-    print(search("test", engine="google"))
