@@ -1,4 +1,19 @@
+from datetime import datetime
+
 from gptme.tools import is_supported_codeblock
+from gptme.util import epoch_to_age, generate_name, is_generated_name
+
+
+def test_generate_name():
+    name = generate_name()
+    assert is_generated_name(name)
+
+
+def test_epoch_to_age():
+    epoch_today = datetime.now().timestamp()
+    assert epoch_to_age(epoch_today) == "just now"
+    epoch_yesterday = epoch_today - 24 * 60 * 60
+    assert epoch_to_age(epoch_yesterday) == "yesterday"
 
 
 def test_is_supported_codeblock():

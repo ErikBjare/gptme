@@ -51,7 +51,7 @@ from .message import Message
 from .prompts import get_prompt
 from .tabcomplete import register_tabcomplete
 from .tools import execute_msg, init_tools
-from .util import epoch_to_age, generate_unique_name
+from .util import epoch_to_age, generate_name
 
 logger = logging.getLogger(__name__)
 print_builtin = __builtins__["print"]  # type: ignore
