@@ -93,6 +93,18 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
     assert result.exit_code == 0
 
 
+def test_fileblock(args: list[str], runner: CliRunner):
+    # tests saving with a ```filename.txt block
+    args.append(f"{CMDFIX}impersonate ```hello.py\nprint('hello')\n```")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+    # read the file
+    with open("hello.py", "r") as f:
+        content = f.read()
+    assert content == "print('hello')\n"
+
+
 def test_shell(args: list[str], runner: CliRunner):
     args.append(f"{CMDFIX}shell echo 'yes'")
     result = runner.invoke(gptme.cli.main, args)
