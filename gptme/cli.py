@@ -359,9 +359,12 @@ def get_logfile(name: str, interactive=True) -> Path:
     NEW_CONV = "New conversation"
     prev_conv_files = list(reversed(_conversations()))
 
+    def is_test(name: str) -> bool:
+        return "-test-" in name or name.startswith("test-")
+
     # filter out test conversations
     # TODO: save test convos to different folder instead
-    prev_conv_files = [f for f in prev_conv_files if "-test-" not in f.parent.name]
+    prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
     NEWLINE = "\n"
     prev_convs = [
