@@ -21,6 +21,7 @@ lint:
 	poetry run ruff ${SRCDIRS}
 
 format:
+	poetry run ruff --fix-only ${SRCDIRS}
 	poetry run pyupgrade --py310-plus ${SRCFILES}
 	poetry run black ${SRCDIRS}
 
