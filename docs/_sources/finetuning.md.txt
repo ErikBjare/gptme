@@ -3,7 +3,7 @@ Finetuning
 
 NOTE: this document is a work in progress!
 
-This document aims to provide a step-by-step guide to finetuning a model on conversations from gptme using the Hugging Face transformers library.
+This document aims to provide a step-by-step guide to finetuning a model on conversations from gptme.
 
 The goal of fine-tuning a model for gptme is to:
 
@@ -26,6 +26,8 @@ We collect our own conversation history by running the following command:
 
 This will create files `train.csv` and `train.jsonl` in the `train` directory.
 
+TODO: describe how to get the OpenAssistant dataset
+TODO: describe how to use exported ChatGPT conversations
 
 ## Step 2: Prepare the data
 
@@ -37,9 +39,7 @@ We need to prepare the data for fine-tuning. This involves:
 
 TODO...
 
-
 ## Step 3: Fine-tune the model
-
 
 Options:
 
@@ -50,7 +50,7 @@ Options:
  - [OpenPipe][openpipe]?
    - Looks interesting, but not sure if it's relevant for us.
 
-TODO..
+TODO...
 
 ## Model suggestions
 
