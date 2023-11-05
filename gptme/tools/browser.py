@@ -29,6 +29,12 @@ def get_browser():
     return browser
 
 
+def read_url(url: str) -> str:
+    """Read the text of a webpage."""
+    page = load_page(url)
+    return page.inner_text("body")
+
+
 def load_page(url: str) -> Page:
     browser = get_browser()
 

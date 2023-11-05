@@ -104,7 +104,7 @@ def handle_cmd(
             # edit previous messages
             # first undo the '/edit' command itself
             log.undo(1, quiet=True)
-            edit(log)
+            yield from edit(log)
         case "context":
             # print context msg
             yield gen_context_msg()

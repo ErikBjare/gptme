@@ -28,6 +28,7 @@ import logging
 import os
 import readline  # noqa: F401
 import sys
+import urllib.parse
 from datetime import datetime
 from pathlib import Path
 from typing import Generator, Literal
@@ -458,18 +459,41 @@ def _parse_prompt(prompt: str) -> str:
         # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
         pass
 
+    # check if any word in prompt is a path or URL,
+    # if so, append the contents as a code block
     words = prompt.split()
-    if len(words) > 1:
-        # check if substring of prompt is a path, if so, append the contents of that file
-        paths = []
-        for word in words:
-            f = Path(word).expanduser()
-            if f.exists() and f.is_file():
-                paths.append(word)
-        if paths:
-            prompt += "\n\n"
-            for path in paths:
-                prompt += _parse_prompt(path)
+    paths = []
+    urls = []
+    for word in words:
+        f = Path(word).expanduser()
+        if f.exists() and f.is_file():
+            paths.append(word)
+            continue
+        try:
+            p = urllib.parse.urlparse(word)
+            if p.scheme and p.netloc:
+                urls.append(word)
+        except ValueError:
+            pass
+    if paths or urls:
+        prompt += "\n\n"
+    for path in paths:
+        prompt += _parse_prompt(path)
+    for url in urls:
+        try:
+            # noreorder
+            from .tools.browser import read_url  # fmt: skip
+        except ImportError:
+            logger.warning(
+                "Failed to import browser tool, skipping URL expansion."
+                "You might have to install browser extras."
+            )
+
+        try:
+            content = read_url(url)
+            prompt += f"```{url}\n{content}\n```"
+        except Exception as e:
+            logger.warning(f"Failed to read URL {url}: {e}")
 
     return prompt
 
