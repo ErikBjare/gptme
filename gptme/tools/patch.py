@@ -42,21 +42,24 @@ def apply(codeblock: str, content: str) -> str:
     """
     Applies the patch in ``codeblock`` to ``content``.
     """
-    # TODO: support multiple patches in one file, or make it clear that this is not supported (one patch per codeblock)
+    # TODO: support multiple patches in one codeblock,
+    #       or make it clear that only one patch per codeblock is supported
     codeblock = codeblock.strip()
 
     # get the original and modified chunks
     original = re.split("\n<<<<<<< ORIGINAL\n", codeblock)[1]
     original, modified = re.split("\n=======\n", original)
-    assert ">>>>>>> UPDATED\n" in modified, f"Invalid patch: {codeblock}"
+    if ">>>>>>> UPDATED\n" not in modified:  # pragma: no cover
+        raise ValueError("invalid patch", codeblock)
     modified = re.split(">>>>>>> UPDATED\n", modified)[0].rstrip("\n")
 
-    # the modified chunk may contain "// ..." to refer to chunks in the original
-    # replace these with the original chunks
+    # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
+    #       and then replace these with the original chunks?
 
     # replace the original chunk with the modified chunk
     new = content.replace(original, modified)
-    assert new != content, "Patch did not change the file"
+    if new == content:  # pragma: no cover
+        raise ValueError("patch did not change the file")
 
     return new
 
@@ -88,5 +91,8 @@ def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None
             print("Patch not applied")
             return
 
-    apply_file(codeblock, fn)
-    yield Message("system", "Patch applied")
+    try:
+        apply_file(codeblock, fn)
+        yield Message("system", "Patch applied")
+    except ValueError as e:
+        yield Message("system", f"Patch failed: {e.args[0]}")
