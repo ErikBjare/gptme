@@ -1,6 +1,14 @@
+import random
+
 import pytest
 from flask.testing import FlaskClient
+from gptme.cli import init
 from gptme.server import create_app
+
+
+@pytest.fixture(autouse=True)
+def _init():
+    init(verbose=False, llm="openai")
 
 
 @pytest.fixture
@@ -10,51 +18,57 @@ def client():
         yield client
 
 
+@pytest.fixture
+def conv(client: FlaskClient):
+    convname = f"test-server-{random.randint(0, 1000000)}"
+    response = client.put(f"/api/conversations/{convname}", json={})
+    assert response.status_code == 200
+    return convname
+
+
+def test_root(client: FlaskClient):
+    response = client.get("/")
+    assert response.status_code == 200
+
+
 def test_api_root(client: FlaskClient):
     response = client.get("/api")
     assert response.status_code == 200
     assert response.get_json() == {"message": "Hello World!"}
 
 
-def test_api_conversations(client: FlaskClient):
-    # TODO: Add setup for conversations
+def test_api_conversation_list(client: FlaskClient):
     response = client.get("/api/conversations")
     assert response.status_code == 200
-    # TODO: Add assertions for the response
 
 
-# def test_api_conversation(client: FlaskClient):
-#     # TODO: Add setup for a conversation
-#     response = client.get("/api/conversations/<path:logfile>")
-#     assert response.status_code == 200
-#     # TODO: Add assertions for the response
-
-# def test_api_conversation_put(client: FlaskClient):
-#     # TODO: Add setup for a conversation
-#     response = client.put("/api/conversations/<path:logfile>", json={})
-#     assert response.status_code == 200
-#     # TODO: Add assertions for the response
-
-# def test_api_conversation_post(client: FlaskClient):
-#     # TODO: Add setup for a conversation
-#     response = client.post("/api/conversations/<path:logfile>", json={})
-#     assert response.status_code == 200
-#     # TODO: Add assertions for the response
-
-# def test_api_conversation_generate(client: FlaskClient):
-#     # TODO: Add setup for a conversation
-#     response = client.post("/api/conversations/<path:logfile>/generate", json={})
-#     assert response.status_code == 200
-#     # TODO: Add assertions for the response
-
-# def test_static_proxy(client: FlaskClient):
-#     # TODO: Add setup for static files
-#     response = client.get("/static/<path:path>")
-#     assert response.status_code == 200
-#     # TODO: Add assertions for the response
-
-
-def test_root(client: FlaskClient):
-    response = client.get("/")
+def test_api_conversation_get(conv, client: FlaskClient):
+    response = client.get(f"/api/conversations/{conv}")
     assert response.status_code == 200
-    # TODO: Add assertions for the response
+
+
+def test_api_conversation_post(conv, client: FlaskClient):
+    response = client.post(
+        f"/api/conversations/{conv}",
+        json={"role": "user", "content": "hello"},
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.slow
+def test_api_conversation_generate(conv: str, client: FlaskClient):
+    # Ask the assistant to generate a test response
+    response = client.post(
+        f"/api/conversations/{conv}",
+        json={"role": "user", "content": "hello"},
+    )
+    assert response.status_code == 200
+
+    response = client.post(
+        f"/api/conversations/{conv}/generate",
+        json={"model": "gpt-3.5-turbo"},
+    )
+    assert response.status_code == 200
+    msgs = response.get_json()
+    assert len(msgs) == 1
+    assert msgs[0]["role"] == "assistant"

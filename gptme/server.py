@@ -4,7 +4,6 @@ Serve web UI and API for the application.
 See here for instructions how to serve matplotlib figures:
  - https://matplotlib.org/stable/gallery/user_interfaces/web_application_server_sgskip.html
 """
-
 import io
 from contextlib import redirect_stdout
 
@@ -79,6 +78,10 @@ def api_conversation_post(logfile: str):
 def api_conversation_generate(logfile: str):
     log = LogManager.load(logfile)
 
+    # TODO: add support for starting server with a default model
+    req_json = flask.request.json or {}
+    model = req_json.get("model", "gpt-4")
+
     # if prompt is a user-command, execute it
     if log[-1].role == "user":
         # TODO: capture output of command and return it
@@ -100,18 +103,20 @@ def api_conversation_generate(logfile: str):
 
     # generate response
     # TODO: add support for streaming
-    msg = reply(msgs, model="gpt-4", stream=True)
+    msg = reply(msgs, model=model, stream=True)
     msg.quiet = True
 
     # log response and run tools
-    resp = [msg]
-    print(msg)
+    resp_msgs = []
     log.append(msg)
+    resp_msgs.append(msg)
     for msg in execute_msg(msg, ask=False):
-        print(msg)
         log.append(msg)
+        resp_msgs.append(msg)
 
-    return flask.jsonify([{"role": msg.role, "content": msg.content} for msg in resp])
+    return flask.jsonify(
+        [{"role": msg.role, "content": msg.content} for msg in resp_msgs]
+    )
 
 
 # serve the static assets in the static folder
