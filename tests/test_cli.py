@@ -94,6 +94,21 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
     assert result.exit_code == 0
 
 
+def test_command_rename(args: list[str], runner: CliRunner, name: str):
+    # tests the /rename command
+    name += "-rename"
+    args.append(f"{CMDFIX}rename {name}")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+    # test with "auto" name
+    args.append(f"{CMDFIX}rename auto")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+
 @pytest.mark.slow
 def test_fileblock(args: list[str], runner: CliRunner):
     args_orig = args.copy()
