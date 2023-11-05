@@ -13,20 +13,20 @@ def summarize(msg: Message | list[Message]) -> Message:
     # construct plaintext from message(s)
     msgs = msg if isinstance(msg, list) else [msg]
     content = "\n".join(format_msgs(msgs))
+    logger.info(f"{content[:200]=}")
     summary = _summarize_helper(content)
+    logger.info(f"{summary[:200]=}")
+
     # construct message from summary
-    summary_msg = Message(
-        role="system", content=f"Summary of the conversation:\n{summary})"
-    )
-    return summary_msg
+    content = f"Here's a summary of the conversation so far:\n{summary}"
+    return Message(role="system", content=content)
 
 
 @lru_cache(maxsize=128)
-def _summarize_helper(s: str, tok_max_start=500, tok_max_end=500) -> str:
+def _summarize_helper(s: str, tok_max_start=400, tok_max_end=400) -> str:
     """
     Helper function for summarizing long outputs.
-
-    Trims long outputs to 200 tokens, then summarizes.
+    Truncates long outputs, then summarizes.
     """
     if len_tokens(s) > tok_max_start + tok_max_end:
         beginning = " ".join(s.split()[:tok_max_start])

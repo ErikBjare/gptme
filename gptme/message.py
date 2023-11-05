@@ -94,11 +94,13 @@ def format_msgs(
     highlight: bool = False,
     indent: int = 0,
 ) -> list[str]:
-    """Formats messages for printing to the console. Stores the result in msg.output"""
+    """Formats messages for printing to the console."""
     outputs = []
     for msg in msgs:
-        color = ROLE_COLOR[msg.role]
-        userprefix = f"[bold {color}]{msg.role.capitalize()}[/bold {color}]"
+        userprefix = msg.role.capitalize()
+        if highlight:
+            color = ROLE_COLOR[msg.role]
+            userprefix = f"[bold {color}]{userprefix}[/bold {color}]"
         # get terminal width
         max_len = shutil.get_terminal_size().columns - len(userprefix)
         output = ""
@@ -114,6 +116,7 @@ def format_msgs(
             for i, block in enumerate(msg.content.split("```")):
                 if i % 2 == 0:
                     output += textwrap.indent(block, prefix=indent * " ")
+                    continue
                 elif highlight:
                     lang = block.split("\n")[0]
                     console = Console(
@@ -121,10 +124,8 @@ def format_msgs(
                     )
                     console.print(Syntax(block.rstrip(), lang))
                     block = console.file.getvalue()  # type: ignore
-                    output += f"```{block.rstrip()}\n```"
-                else:
-                    output += "```" + block.rstrip() + "\n```"
-        outputs.append(f"\n{userprefix}: {output.rstrip()}")
+                output += f"```{block.rstrip()}\n```"
+        outputs.append(f"{userprefix}: {output.rstrip()}")
     return outputs
 
 

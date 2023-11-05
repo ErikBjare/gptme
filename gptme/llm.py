@@ -128,17 +128,34 @@ def summarize(content: str) -> str:
     To summarize messages or the conversation log,
     use `gptme.tools.summarize` instead (which wraps this).
     """
+    messages = [
+        Message(
+            "system",
+            content="You are ChatGPT, a large language model by OpenAI. You summarize messages.",
+        ),
+        Message("user", content=f"Summarize this:\n{content}"),
+    ]
+
+    # model selection
+    model = "gpt-3.5-turbo"
+    if len_tokens(messages) > 4097:
+        model = "gpt-3.5-turbo-16k"
+    if len_tokens(messages) > 16385:
+        raise ValueError(
+            f"Cannot summarize more than 16385 tokens, got {len_tokens(messages)}"
+        )
+
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt="Please summarize the following:\n" + content + "\n\nSummary:",
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=msgs2dicts(messages),
             temperature=0,
             max_tokens=256,
         )
     except openai.APIError:
         logger.error("OpenAI API error, returning empty summary: ", exc_info=True)
         return "error"
-    summary = response.choices[0].text
+    summary = response.choices[0].message.content
     logger.debug(
         f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
         + summary
