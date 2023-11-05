@@ -3,8 +3,7 @@ import random
 import gptme.cli
 import pytest
 from click.testing import CliRunner
-
-CMDFIX = gptme.cli.CMDFIX
+from gptme.constants import CMDFIX, MULTIPROMPT_SEPARATOR
 
 
 @pytest.fixture(scope="session")
@@ -41,7 +40,7 @@ def test_help(runner: CliRunner):
 
 def test_command_exit(args: list[str], runner: CliRunner):
     # tests the /exit command
-    args.append(f"{CMDFIX}help")
+    args.append(f"{CMDFIX}exit")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
 
@@ -61,6 +60,7 @@ def test_command_help(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
+@pytest.mark.slow
 def test_command_summarize(args: list[str], runner: CliRunner):
     # tests the /summarize command
     args.append(f"{CMDFIX}summarize")
@@ -69,29 +69,49 @@ def test_command_summarize(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
-def test_shell(name: str, runner: CliRunner):
-    result = runner.invoke(
-        gptme.cli.main, ["--name", name, f'{CMDFIX}shell echo "yes"']
-    )
+def test_command_save(args: list[str], runner: CliRunner):
+    # tests the /save command
+    args.append(f"{CMDFIX}impersonate ```python\nprint('hello')\n```")
+    args.append(MULTIPROMPT_SEPARATOR)
+    args.append(f"{CMDFIX}save output.txt")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+    # read the file
+    with open("output.txt", "r") as f:
+        content = f.read()
+    assert content == "hello"
+
+
+def test_command_fork(args: list[str], runner: CliRunner, name: str):
+    # tests the /fork command
+    name += "-fork"
+    args.append(f"{CMDFIX}fork {name}")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+
+def test_shell(args: list[str], runner: CliRunner):
+    args.append(f"{CMDFIX}shell echo 'yes'")
+    result = runner.invoke(gptme.cli.main, args)
     output = result.output.split("System")[-1]
     # check for two 'yes' in output (both command and stdout)
     assert output.count("yes") == 2, result.output
     assert result.exit_code == 0
 
 
-def test_python(name: str, runner: CliRunner):
-    result = runner.invoke(
-        gptme.cli.main, ["--name", name, f'{CMDFIX}python print("yes")']
-    )
+def test_python(args: list[str], runner: CliRunner):
+    args.append(f"{CMDFIX}python print('yes')")
+    result = runner.invoke(gptme.cli.main, args)
     assert "yes\n" in result.output
     assert result.exit_code == 0
 
 
-def test_python_error(name: str, runner: CliRunner):
-    result = runner.invoke(
-        gptme.cli.main,
-        ["--name", name, f'{CMDFIX}python raise Exception("yes")'],
-    )
+def test_python_error(args: list[str], runner: CliRunner):
+    args.append(f"{CMDFIX}python raise Exception('yes')")
+    result = runner.invoke(gptme.cli.main, args)
     assert "Exception: yes" in result.output
     assert result.exit_code == 0
 
@@ -133,7 +153,7 @@ def test_block(args: list[str], lang: str, runner: CliRunner):
 
 # TODO: these could be fast if we had a cache
 @pytest.mark.slow
-def test_generate_primes(name: str, runner: CliRunner):
+def test_generate_primes(args: list[str], runner: CliRunner):
     args.append("print the first 10 prime numbers")
     result = runner.invoke(gptme.cli.main, args)
     # check that the 9th and 10th prime is present

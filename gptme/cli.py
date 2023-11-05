@@ -39,7 +39,12 @@ from rich import print  # noqa: F401
 from rich.console import Console
 
 from .commands import CMDFIX, action_descriptions, execute_cmd
-from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
+from .constants import (
+    HISTORY_FILE,
+    LOGSDIR,
+    MULTIPROMPT_SEPARATOR,
+    PROMPT_USER,
+)
 from .llm import init_llm, reply
 from .logmanager import LogManager, _conversations
 from .message import Message
@@ -190,42 +195,13 @@ def main(
     log.print()
     print("--- ^^^ past messages ^^^ ---")
 
-    def parse_prompt(prompt: str) -> str:
-        try:
-            # check if prompt is a path, if so, replace it with the contents of that file
-            f = Path(prompt).expanduser()
-            if f.exists() and f.is_file():
-                return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
-        except OSError as oserr:
-            # some prompts are too long to be a path, so we can't read them
-            if oserr.errno != errno.ENAMETOOLONG:
-                pass
-        except UnicodeDecodeError:
-            # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
-            # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
-            pass
-
-        words = prompt.split()
-        if len(words) > 1:
-            # check if substring of prompt is a path, if so, append the contents of that file
-            paths = []
-            for word in words:
-                f = Path(word).expanduser()
-                if f.exists() and f.is_file():
-                    paths.append(word)
-            if paths:
-                prompt += "\n\n"
-                for path in paths:
-                    prompt += parse_prompt(path)
-
-        return prompt
-
     # check if any prompt is a full path, if so, replace it with the contents of that file
     # TODO: add support for directories
     # TODO: maybe do this for all prompts, not just those passed on cli
-    prompts = [parse_prompt(p) for p in prompts]
+    prompts = [_parse_prompt(p) for p in prompts]
     # join prompts, grouped by `-` if present, since that's the separator for multiple-round prompts
-    prompts = [p.strip() for p in "\n\n".join(prompts).split("\n\n-") if p]
+    sep = "\n\n" + MULTIPROMPT_SEPARATOR
+    prompts = [p.strip() for p in "\n\n".join(prompts).split(sep) if p]
 
     # main loop
     while True:
@@ -452,6 +428,44 @@ def _read_stdin() -> str:
         all_data += chunk
 
     return all_data
+
+
+def _parse_prompt(prompt: str) -> str:
+    # if prompt is a command, exit early (as commands might take paths as arguments)
+    if any(
+        prompt.startswith(command)
+        for command in [f"{CMDFIX}{cmd}" for cmd in action_descriptions.keys()]
+    ):
+        return prompt
+
+    try:
+        # check if prompt is a path, if so, replace it with the contents of that file
+        f = Path(prompt).expanduser()
+        if f.exists() and f.is_file():
+            return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
+    except OSError as oserr:
+        # some prompts are too long to be a path, so we can't read them
+        if oserr.errno != errno.ENAMETOOLONG:
+            pass
+    except UnicodeDecodeError:
+        # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
+        # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
+        pass
+
+    words = prompt.split()
+    if len(words) > 1:
+        # check if substring of prompt is a path, if so, append the contents of that file
+        paths = []
+        for word in words:
+            f = Path(word).expanduser()
+            if f.exists() and f.is_file():
+                paths.append(word)
+        if paths:
+            prompt += "\n\n"
+            for path in paths:
+                prompt += _parse_prompt(path)
+
+    return prompt
 
 
 if __name__ == "__main__":

@@ -140,6 +140,7 @@ def handle_cmd(
             # undo the '/help' command itself
             log.undo(1, quiet=True)
             log.write()
+            help()
 
 
 def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
@@ -166,7 +167,7 @@ def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
 
 def save(log: LogManager, filename: str):
     # save the most recent code block to a file
-    code = log.get_last_code_block()
+    code = log.get_last_code_block(content=True)
     if not code:
         print("No code block found")
         return
