@@ -96,6 +96,8 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
 
 @pytest.mark.slow
 def test_fileblock(args: list[str], runner: CliRunner):
+    args_orig = args.copy()
+
     # tests saving with a ```filename.txt block
     args.append(f"{CMDFIX}impersonate ```hello.py\nprint('hello')\n```")
     result = runner.invoke(gptme.cli.main, args)
@@ -105,6 +107,23 @@ def test_fileblock(args: list[str], runner: CliRunner):
     with open("hello.py", "r") as f:
         content = f.read()
     assert content == "print('hello')\n"
+
+    # test append
+    args = args_orig.copy()
+    args.append(f"{CMDFIX}impersonate ```append hello.py\nprint('world')\n```")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+    # read the file
+    with open("hello.py", "r") as f:
+        content = f.read()
+    assert content == "print('hello')\nprint('world')\n"
+
+    # test write file to directory that doesn't exist
+    args = args_orig.copy()
+    args.append(f"{CMDFIX}impersonate ```hello/hello.py\nprint('hello')\n```")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
 
 
 def test_shell(args: list[str], runner: CliRunner):

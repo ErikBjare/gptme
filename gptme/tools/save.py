@@ -33,14 +33,18 @@ def execute_save(
             return
 
         with open(path, "a") as f:
-            f.write("\n" + code)
+            f.write(code)
         yield Message("system", f"Appended to {fn}")
         return
 
     # if the file exists, ask to overwrite
     if path.exists():
-        overwrite = ask_execute("File exists, overwrite?")
-        print()
+        if ask:
+            overwrite = ask_execute("File exists, overwrite?")
+            print()
+        else:
+            overwrite = True
+            print("Skipping overwrite confirmation.")
         if not overwrite:
             # early return
             yield Message("system", "Save cancelled.")
@@ -48,8 +52,12 @@ def execute_save(
 
     # if the folder doesn't exist, ask to create it
     if not path.parent.exists():
-        create = ask_execute("Folder doesn't exist, create it?")
-        print()
+        if ask:
+            create = ask_execute("Folder doesn't exist, create it?")
+            print()
+        else:
+            create = True
+            print("Skipping folder creation confirmation.")
         if create:
             path.parent.mkdir(parents=True)
         else:
