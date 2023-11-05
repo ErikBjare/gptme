@@ -13,7 +13,7 @@ from .cli import init
     help="LLM to use.",
     type=click.Choice(["openai", "local"]),
 )
-def main(verbose, llm):
+def main(verbose, llm):  # pragma: no cover
     """Starts a server and web UI."""
     init(verbose, llm)
 
