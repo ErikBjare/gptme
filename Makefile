@@ -1,6 +1,7 @@
 .PHONY: docs
 
 SRCDIRS = gptme tests scripts train
+SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 EXCLUDES = tests/output
 
 build:
@@ -20,6 +21,7 @@ lint:
 	poetry run ruff ${SRCDIRS}
 
 format:
+	poetry run pyupgrade --py310-plus ${SRCFILES}
 	poetry run black ${SRCDIRS}
 
 precommit: format lint typecheck test
