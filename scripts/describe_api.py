@@ -1,5 +1,7 @@
 """
 Describes the API of a given Python file such that a LLM can easily get a summary of the API in a codefile (and later an entire project).
+
+NOTE: this is easier to do with ctags
 """
 import click
 import jedi
