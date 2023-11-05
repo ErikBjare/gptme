@@ -69,6 +69,7 @@ def test_command_summarize(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
+@pytest.mark.slow
 def test_command_save(args: list[str], runner: CliRunner):
     # tests the /save command
     args.append(f"{CMDFIX}impersonate ```python\nprint('hello')\n```")
@@ -93,6 +94,7 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
     assert result.exit_code == 0
 
 
+@pytest.mark.slow
 def test_fileblock(args: list[str], runner: CliRunner):
     # tests saving with a ```filename.txt block
     args.append(f"{CMDFIX}impersonate ```hello.py\nprint('hello')\n```")
@@ -141,6 +143,7 @@ _block_py = """def test():
 blocks = {"python": _block_py, "sh": _block_sh}
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("lang", ["python", "sh"])
 def test_block(args: list[str], lang: str, runner: CliRunner):
     # tests that shell codeblocks are formatted correctly such that whitespace and newlines are preserved
