@@ -125,6 +125,19 @@ def test_fileblock(args: list[str], runner: CliRunner):
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
+    # test patch on file in directory
+    args = args_orig.copy()
+    args.append(
+        f"{CMDFIX}impersonate ```patch hello/hello.py\n<<<<<<< ORIGINAL\nprint('hello')\n=======\nprint('hello world')\n>>>>>>> UPDATED\n```"
+    )
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+
+    # read the file
+    with open("hello/hello.py", "r") as f:
+        content = f.read()
+    assert content == "print('hello world')\n"
+
 
 def test_shell(args: list[str], runner: CliRunner):
     args.append(f"{CMDFIX}shell echo 'yes'")
