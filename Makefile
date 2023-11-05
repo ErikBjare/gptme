@@ -8,7 +8,7 @@ build:
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
-	poetry run pytest ${SRCDIRS} -v --durations=5 \
+	poetry run pytest ${SRCDIRS} -v --log-level INFO --durations=5 \
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html \
 		$(if $(SLOW),, -m "not slow") \
 		$(if $(PROFILE), --profile-svg)

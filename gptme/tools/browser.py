@@ -21,6 +21,7 @@ def get_browser():
     """
     global _p
     if _p is None:
+        logger.info("Starting browser")
         _p = sync_playwright().start()
 
         atexit.register(_p.stop)
@@ -40,6 +41,7 @@ def load_page(url: str) -> Page:
     )
 
     # create a new page
+    logger.info(f"Loading page: {url}")
     page = context.new_page()
     page.goto(url)
 
@@ -48,6 +50,7 @@ def load_page(url: str) -> Page:
 
 def search(query: str, engine: EngineType = "google") -> str:
     """Search for a query on a search engine."""
+    logger.info(f"Searching for '{query}' on {engine}")
     if engine == "google":
         return _search_google(query)
     elif engine == "duckduckgo":
