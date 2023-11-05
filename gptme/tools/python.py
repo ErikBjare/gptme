@@ -1,7 +1,7 @@
 import io
 from contextlib import redirect_stderr, redirect_stdout
 from logging import getLogger
-from typing import Generator
+from collections.abc import Generator
 
 from ..message import Message
 from ..util import ask_execute, print_preview

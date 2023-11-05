@@ -5,7 +5,7 @@ Inspired by aider.
 """
 import re
 from pathlib import Path
-from typing import Generator
+from collections.abc import Generator
 
 from ..message import Message
 from ..util import ask_execute
@@ -70,7 +70,7 @@ def apply_file(codeblock, filename):
     assert _patch == "```patch"
     assert Path(filename).exists()
 
-    with open(filename, "r") as f:
+    with open(filename) as f:
         content = f.read()
 
     result = apply(codeblock, content)

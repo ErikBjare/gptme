@@ -1,5 +1,5 @@
 import logging
-from typing import Generator
+from collections.abc import Generator
 
 from ..message import Message
 from .patch import execute_patch

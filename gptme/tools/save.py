@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generator
+from collections.abc import Generator
 
 from ..message import Message
 from ..util import ask_execute

@@ -5,7 +5,7 @@ import atexit
 import logging
 import urllib.parse
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal
 
 from playwright.sync_api import ElementHandle, Page, sync_playwright
 
@@ -96,7 +96,7 @@ class Element:
     type: str
     text: str
     name: str
-    href: Optional[str]
+    href: str | None
     element: ElementHandle
     selector: str
 

@@ -80,7 +80,7 @@ def test_command_save(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
     # read the file
-    with open("output.txt", "r") as f:
+    with open("output.txt") as f:
         content = f.read()
     assert content == "hello"
 
@@ -119,7 +119,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
     # read the file
-    with open("hello.py", "r") as f:
+    with open("hello.py") as f:
         content = f.read()
     assert content == "print('hello')\n"
 
@@ -130,7 +130,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
     # read the file
-    with open("hello.py", "r") as f:
+    with open("hello.py") as f:
         content = f.read()
     assert content == "print('hello')\nprint('world')\n"
 
@@ -149,7 +149,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
     # read the file
-    with open("hello/hello.py", "r") as f:
+    with open("hello/hello.py") as f:
         content = f.read()
     assert content == "print('hello world')\n"
 

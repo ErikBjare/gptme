@@ -31,7 +31,8 @@ import sys
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
-from typing import Generator, Literal
+from typing import Literal
+from collections.abc import Generator
 
 import click
 from dotenv import load_dotenv

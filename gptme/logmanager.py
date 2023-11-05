@@ -3,7 +3,8 @@ import logging
 import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Generator, Literal, TypeAlias
+from typing import Literal, TypeAlias
+from collections.abc import Generator
 
 from rich import print
 
@@ -121,7 +122,7 @@ class LogManager:
         if not Path(logfile).exists():
             raise FileNotFoundError(f"Could not find logfile {logfile}")
 
-        with open(logfile, "r") as file:
+        with open(logfile) as file:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
         if not msgs:
             msgs = initial_msgs

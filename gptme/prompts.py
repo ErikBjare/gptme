@@ -4,7 +4,8 @@ import os
 import shutil
 import subprocess
 from datetime import date
-from typing import Generator, Iterable, Literal
+from typing import Literal
+from collections.abc import Generator, Iterable
 
 from .config import get_config
 from .message import Message

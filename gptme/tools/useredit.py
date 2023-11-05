@@ -30,7 +30,7 @@ def edit_text_with_editor(initial_text: str, ext=None) -> str:
         raise RuntimeError(f"Editor exited with non-zero exit code: {p.returncode}")
 
     # Read the edited text back in.
-    with open(temp_filename, "r") as f:
+    with open(temp_filename) as f:
         edited_text = f.read()
 
     # Check that the user actually edited the file.

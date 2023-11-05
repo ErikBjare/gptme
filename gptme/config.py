@@ -51,7 +51,7 @@ def _load_config() -> Config:
         print(f"Created config file at {config_path}")
 
     # Now you can read the settings from the config file like this:
-    with open(config_path, "r") as config_file:
+    with open(config_path) as config_file:
         config: dict = tomlkit.load(config_file)
 
         # TODO: validate

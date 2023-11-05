@@ -80,7 +80,7 @@ confusion_indicators = [
 def quality_check_convo(msgs: list[dict], name: str) -> bool:
     """Check if a conversation is high-quality"""
     # check for duplicate messages (where msg["content"] is the same)
-    if len(msgs) != len(set(msg["content"] for msg in msgs)):
+    if len(msgs) != len({msg["content"] for msg in msgs}):
         logger.info(f"Found duplicate messages, filtering '{name}'")
         return False
     # check for messages including "confusion", "repetition", etc.
