@@ -182,7 +182,13 @@ def main(
 
             # Attempt to switch to interactive mode
             sys.stdin.close()
-            sys.stdin = open("/dev/tty")
+            try:
+                sys.stdin = open("/dev/tty")
+            except OSError:
+                # if we can't open /dev/tty, we're probably in a CI environment, so we should just continue
+                logger.warning(
+                    "Failed to switch to interactive mode, continuing in non-interactive mode"
+                )
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
