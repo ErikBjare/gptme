@@ -20,7 +20,6 @@ Since the agent is long-living, it should be able to remember things that the us
 to do so, it needs to be able to store and query past conversations in a database.
 """
 # The above may be used as a prompt for the agent.
-
 import atexit
 import errno
 import importlib.metadata
@@ -44,7 +43,7 @@ from .constants import HISTORY_FILE, LOGSDIR, PROMPT_USER
 from .llm import init_llm, reply
 from .logmanager import LogManager, _conversations
 from .message import Message
-from .prompts import initial_prompt_single_message
+from .prompts import get_prompt
 from .tabcomplete import register_tabcomplete
 from .tools import execute_msg, init_tools
 from .util import epoch_to_age, generate_unique_name
@@ -166,28 +165,26 @@ def main(
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
 
-    if prompt_system in ["full", "short"]:
-        promptmsgs = [initial_prompt_single_message(short=prompt_system == "short")]
-    else:
-        promptmsgs = [Message("system", prompt_system)]
+    # get initial system prompt
+    prompt_msgs = [get_prompt(prompt_system)]
+
+    # if stdin is not a tty, we're getting piped input, which we should include in the prompt
+    if not sys.stdin.isatty():
+        # fetch prompt from stdin
+        prompt_stdin = _read_stdin()
+        if prompt_stdin:
+            prompt_msgs += [Message("system", f"```stdin\n{prompt_stdin}\n```")]
+
+            # Attempt to switch to interactive mode
+            sys.stdin.close()
+            sys.stdin = open("/dev/tty")
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
         name, interactive=(not prompts and interactive) and sys.stdin.isatty()
     )
     print(f"Using logdir {logfile.parent}")
-    log = LogManager.load(logfile, initial_msgs=promptmsgs, show_hidden=show_hidden)
-
-    # if stdin is not a tty, we're getting piped input
-    if not sys.stdin.isatty():
-        # fetch prompt from stdin
-        prompt_stdin = _read_stdin()
-        if prompt_stdin:
-            promptmsgs += [Message("system", prompt_stdin)]
-
-            # Attempt to switch to interactive mode
-            sys.stdin.close()
-            sys.stdin = open("/dev/tty")
+    log = LogManager.load(logfile, initial_msgs=prompt_msgs, show_hidden=show_hidden)
 
     # print log
     log.print()

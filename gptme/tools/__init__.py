@@ -58,25 +58,17 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
 
 def is_supported_codeblock(codeblock: str) -> bool:
     """Returns whether a codeblock is supported by tools."""
-    # TODO: refactor to share code with `LogManager.get_last_code_block()`
     # passed argument might not be a clean string, could have leading text and even leading codeblocks
-    # strip everything but the last occurring codeblock
+    # only check the last occurring codeblock
 
-    if codeblock.count("```") != 2:
+    msg = Message("system", content=codeblock)
+    codeblocks = msg.get_codeblocks()
+    if not codeblocks:
         return False
 
-    # extract contents of codeblock, including the lang/filename
-    contents = codeblock.split("```")[-2]
-
-    # extract lang/filename
-    lang_or_fn = contents.splitlines()[0].strip()
-    is_filename = lang_or_fn.count(".") >= 1
-
-    # remove lang/filename from contents
-    contents = contents.split("\n", 1)[-1]
-
-    # reconstruct clean codeblock
-    codeblock = f"```{lang_or_fn}\n{contents}```"
+    codeblock = codeblocks[-1]
+    lang_or_fn = codeblock.splitlines()[0].split("```")[1].strip()
+    is_filename = "." in lang_or_fn or "/" in lang_or_fn
 
     if lang_or_fn in ["python", "py"]:
         return True

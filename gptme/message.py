@@ -58,6 +58,35 @@ class Message:
         content = textwrap.shorten(self.content, 20, placeholder="...")
         return f"<Message role={self.role} content={content}>"
 
+    def get_codeblocks(self, content=False) -> list[str]:
+        """
+        Get all codeblocks.
+        If `content` set, return the content of the code block, else return the whole message.
+        """
+        codeblocks = []
+        content_str = self.content
+        # prepend newline to make sure we get the first codeblock
+        if not content_str.startswith("\n"):
+            content_str = "\n" + content_str
+
+        # check if message contains a code block
+        backtick_count = content_str.count("\n```")
+        if backtick_count < 2:
+            return []
+        for i in range(1, backtick_count, 2):
+            codeblock_str = content_str.split("\n```")[i]
+            # get codeblock language or filename from first line
+            lang_or_fn = codeblock_str.split("\n")[0]
+            codeblock_str = "\n".join(codeblock_str.split("\n")[1:])
+
+            if content:
+                codeblocks.append(codeblock_str)
+            else:
+                full_codeblock = f"```{lang_or_fn}\n{codeblock_str}\n```"
+                codeblocks.append(full_codeblock)
+
+        return codeblocks
+
 
 def format_msgs(
     msgs: list[Message],

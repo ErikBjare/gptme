@@ -9,7 +9,7 @@ from rich import print
 
 from .constants import CMDFIX, LOGSDIR
 from .message import Message, print_msg
-from .prompts import initial_prompt
+from .prompts import get_prompt
 from .tools.reduce import limit_log, reduce_log
 from .util import len_tokens
 
@@ -111,7 +111,7 @@ class LogManager:
     def load(
         cls,
         logfile: PathLike,
-        initial_msgs: list[Message] = list(initial_prompt()),
+        initial_msgs: list[Message] = [get_prompt()],
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
@@ -146,13 +146,9 @@ class LogManager:
             msgs = msgs[-history:]
 
         for msg in msgs[::-1]:
-            # check if message contains a code block
-            backtick_count = msg.content.count("```")
-            if backtick_count >= 2:
-                if content:
-                    return msg.content.split("```")[-2].split("\n", 1)[-1]
-                else:
-                    return msg.content
+            codeblocks = msg.get_codeblocks(content=content)
+            if codeblocks:
+                return codeblocks[-1]
         return None
 
     def rename(self, name: str, keep_date=False) -> None:

@@ -3,7 +3,6 @@ Gives the LLM agent the ability to patch files, by using a adapted version git c
 
 Inspired by aider.
 """
-
 import re
 from pathlib import Path
 from typing import Generator
@@ -12,24 +11,19 @@ from ..message import Message
 from ..util import ask_execute
 
 instructions = """
-# Patching files
+To patch/modify files, we can use an adapted version of git conflict markers.
 
-The LLM agent can patch files, by using a adapted version git conflict markers.
 This can be used to make changes to files we have written in the past, without having to rewrite the whole file.
-We can also append to files by prefixing the filename with `append`.
+Only one Patches should written one per codeblock. Do not continue the codeblock after the UPDATED marker.
+Try to keep the patch as small as possible.
 
-## Example
+We can also append to files by prefixing the filename with `append`."""
 
-> User: Patch the file `hello.py` to ask for the name of the user.
-```hello.py
-def hello():
-    print("hello world")
-```
-
-> Assistant:
+examples = """
+> User: patch the file `hello.py` to ask for the name of the user
 ```patch hello.py
 <<<<<<< ORIGINAL
-    print("hello world")
+    print("Hello world")
 =======
     name = input("What is your name? ")
     print(f"hello {name}")
@@ -37,12 +31,11 @@ def hello():
 ```
 
 > User: run the function when the script is run
-> Assistant:
 ```append hello.py
 if __name__ == "__main__":
     hello()
 ```
-"""
+""".strip()
 
 
 def apply(codeblock: str, content: str) -> str:

@@ -21,5 +21,5 @@ print("hello world")
     assert is_supported_codeblock(s)
 
     # last block is plain/unsupported
-    s = f"""bla bla\n{block_python}\nbla bla{block_plain}"""
+    s = f"""{block_python}\n{block_plain}"""
     assert not is_supported_codeblock(s)
