@@ -1,15 +1,18 @@
 """
 Tools to let LLMs control a browser.
 """
-
 import atexit
+import logging
 import urllib.parse
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal, Optional
 
 from playwright.sync_api import ElementHandle, Page, sync_playwright
 
 _p = None
+logger = logging.getLogger(__name__)
+
+EngineType = Literal["google", "duckduckgo"]
 
 
 def get_browser():
@@ -43,10 +46,8 @@ def load_page(url: str) -> Page:
     return page
 
 
-def search(query: str, engine: str = "google") -> str:
-    """
-    Search for a query on a search engine.
-    """
+def search(query: str, engine: EngineType = "google") -> str:
+    """Search for a query on a search engine."""
     if engine == "google":
         return _search_google(query)
     elif engine == "duckduckgo":
@@ -56,19 +57,16 @@ def search(query: str, engine: str = "google") -> str:
 
 
 def _search_google(query: str) -> str:
-    """
-    Search for a query on Google.
-    """
     query = urllib.parse.quote(query)
     url = f"https://www.google.com/search?q={query}&hl=en"
     page = load_page(url)
 
     els = _list_clickable_elements(page)
     for el in els:
-        print(f"{el['type']}: {el['text']}")
-        if "Accept all" in el["text"]:
-            el["element"].click()
-            print("Accepted terms")
+        # print(f"{el['type']}: {el['text']}")
+        if "Accept all" in el.text:
+            el.element.click()
+            logger.debug("Accepted Google terms")
             break
 
     # list results
@@ -81,11 +79,7 @@ def _search_duckduckgo(query: str) -> str:
     url = f"https://duckduckgo.com/?q={query}"
     page = load_page(url)
 
-    el = page.query_selector(".react-results--main")
-    if el:
-        return el.inner_text()
-    else:
-        return "Error: no results found"
+    return _list_results_duckduckgo(page)
 
 
 @dataclass
@@ -105,21 +99,21 @@ class Element:
             name=element.evaluate("el => el.name"),
             href=element.evaluate("el => el.href"),
             element=element,
+            # FIXME: is this correct?
             selector=element.evaluate("el => el.selector"),
         )
 
 
-def _list_input_elements(page):
-    elements = []
-
+def _list_input_elements(page) -> list[Element]:
     # List all input elements
+    elements = []
     inputs = page.query_selector_all("input")
-    print("Input Elements:")
     for i, input_element in enumerate(inputs):
         elements.append(Element.from_element(input_element))
+    return elements
 
 
-def _list_clickable_elements(page, selector=None) -> list[dict]:
+def _list_clickable_elements(page, selector=None) -> list[Element]:
     elements = []
 
     # filter by selector
@@ -131,25 +125,17 @@ def _list_clickable_elements(page, selector=None) -> list[dict]:
     # List all clickable buttons
     clickable = page.query_selector_all(selector)
     for i, el in enumerate(clickable):
-        tag_name = el.evaluate("el => el.tagName")
-        text = el.evaluate("el => el.innerText")
-        href = el.evaluate("el => el.href")
-        elements.append(
-            {
-                "type": tag_name,
-                "text": text,
-                "href": href,
-                "element": el,
-                "selector": f"{tag_name}:has-text('{text}')",
-            }
-        )
+        # "selector": f"{tag_name}:has-text('{text}')",
+        elements.append(Element.from_element(el))
 
     return elements
 
 
-def _list_results_google(page):
+def _list_results_google(page) -> str:
     # fetch the results (elements with .g class)
     results = page.query_selector_all(".g")
+    if not results:
+        return "Error: something went wrong with the search."
 
     # list results
     s = "Results:"
@@ -160,5 +146,31 @@ def _list_results_google(page):
             title = h3.inner_text()
             result.query_selector("span").inner_text()
             s += f"\n{i+1}. {title} ({url})"
-
     return s
+
+
+def _list_results_duckduckgo(page) -> str:
+    # fetch the results
+    results = page.query_selector(".react-results--main")
+    results = results.query_selector_all("article")
+    if not results:
+        return "Error: something went wrong with the search."
+
+    # list results
+    s = "Results:"
+    for i, result in enumerate(results):
+        url = result.query_selector("a").evaluate("el => el.href")
+        h2 = result.query_selector("h2")
+        if h2:
+            title = h2.inner_text()
+            result.query_selector("span").inner_text()
+            s += f"\n{i+1}. {title} ({url})"
+    return s
+
+
+if __name__ == "__main__":
+    print("DuckDuckGo:")
+    print(search("test", engine="duckduckgo"))
+    print()
+    print("Google:")
+    print(search("test", engine="google"))

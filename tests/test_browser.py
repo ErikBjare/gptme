@@ -1,10 +1,6 @@
 import pytest
 
-try:
-    # noreorder
-    import playwright  # fmt: skip # noqa: F401
-except ImportError:
-    pytest.skip("playwright not installed", allow_module_level=True)
+playwright = pytest.importorskip("playwright")
 
 # noreorder
 from gptme.tools.browser import load_page, search  # fmt: skip
@@ -12,11 +8,19 @@ from gptme.tools.browser import load_page, search  # fmt: skip
 
 @pytest.mark.slow
 def test_browser():
-    content = load_page("https://www.google.com/ncr?hl=en")
+    content = load_page("https://superuserlabs.org")
     print(content)
 
 
 @pytest.mark.slow
-def test_search():
-    content = search("test")
+def test_search_duckduckgo():
+    content = search("test", "duckduckgo")
     print(content)
+    assert "Results:" in content
+
+
+@pytest.mark.slow
+def test_search_google():
+    content = search("test", "google")
+    print(content)
+    assert "Results:" in content
