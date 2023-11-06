@@ -3,7 +3,7 @@ import shutil
 import sys
 import textwrap
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Self
 
 import tomlkit
 from rich import print
@@ -40,6 +40,10 @@ class Message:
         # Wether this message should be printed on execution (will still print on resume, unlike hide)
         self.quiet = quiet
 
+    def __repr__(self):
+        content = textwrap.shorten(self.content, 20, placeholder="...")
+        return f"<Message role={self.role} content={content}>"
+
     def to_dict(self, keys=None):
         """Return a dict representation of the message, serializable to JSON."""
         d = {
@@ -54,9 +58,48 @@ class Message:
     def format(self, oneline: bool = False, highlight: bool = False) -> str:
         return format_msgs([self], oneline=oneline, highlight=highlight)[0]
 
-    def __repr__(self):
-        content = textwrap.shorten(self.content, 20, placeholder="...")
-        return f"<Message role={self.role} content={content}>"
+    def to_toml(self) -> str:
+        """Converts a message to a TOML string, for easy editing by hand in editor to then be parsed back."""
+        flags = []
+        if self.pinned:
+            flags.append("pinned")
+        if self.hide:
+            flags.append("hide")
+        if self.quiet:
+            flags.append("quiet")
+        flags_toml = "\n".join(f"{flag} = true" for flag in flags)
+
+        # doublequotes need to be escaped
+        content = self.content.replace('"', '\\"')
+        return f'''[message]
+role = "{self.role}"
+content = """
+{content}
+"""
+timestamp = "{self.timestamp.isoformat()}"
+{flags_toml}
+'''
+
+    @classmethod
+    def from_toml(cls, toml: str) -> Self:
+        """
+        Converts a TOML string to a message.
+
+        The string can be a single [[message]].
+        """
+
+        t = tomlkit.parse(toml)
+        assert "message" in t and isinstance(t["message"], dict)
+        msg: dict = t["message"]  # type: ignore
+
+        return cls(
+            msg["role"],
+            msg["content"],
+            pinned=msg.get("pinned", False),
+            hide=msg.get("hide", False),
+            quiet=msg.get("quiet", False),
+            timestamp=datetime.fromisoformat(msg["timestamp"]),
+        )
 
     def get_codeblocks(self, content=False) -> list[str]:
         """
@@ -154,56 +197,13 @@ def print_msg(
         )
 
 
-def msg_to_toml(msg: Message) -> str:
-    """Converts a message to a TOML string, for easy editing by hand in editor to then be parsed back."""
-    # TODO: escape msg.content
-    flags = []
-    if msg.pinned:
-        flags.append("pinned")
-    if msg.hide:
-        flags.append("hide")
-    if msg.quiet:
-        flags.append("quiet")
-
-    # doublequotes need to be escaped
-    content = msg.content.replace('"', '\\"')
-    return f'''[message]
-role = "{msg.role}"
-content = """
-{content}
-"""
-timestamp = "{msg.timestamp.isoformat()}"
-'''
-
-
 def msgs_to_toml(msgs: list[Message]) -> str:
     """Converts a list of messages to a TOML string, for easy editing by hand in editor to then be parsed back."""
     t = ""
     for msg in msgs:
-        t += msg_to_toml(msg).replace("[message]", "[[messages]]") + "\n\n"
+        t += msg.to_toml().replace("[message]", "[[messages]]") + "\n\n"
 
     return t
-
-
-def toml_to_msg(toml: str) -> Message:
-    """
-    Converts a TOML string to a message.
-
-    The string can be a single [[message]].
-    """
-
-    t = tomlkit.parse(toml)
-    assert "message" in t and isinstance(t["message"], dict)
-    msg: dict = t["message"]  # type: ignore
-
-    return Message(
-        msg["role"],
-        msg["content"],
-        pinned=msg.get("pinned", False),
-        hide=msg.get("hide", False),
-        quiet=msg.get("quiet", False),
-        timestamp=datetime.fromisoformat(msg["timestamp"]),
-    )
 
 
 def toml_to_msgs(toml: str) -> list[Message]:

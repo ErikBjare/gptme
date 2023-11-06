@@ -1,29 +1,25 @@
-from gptme.message import (
-    Message,
-    msg_to_toml,
-    msgs_to_toml,
-    toml_to_msg,
-    toml_to_msgs,
-)
+from gptme.message import Message, msgs_to_toml, toml_to_msgs
 
 
 def test_toml():
+    # single message, check escaping
     msg = Message(
         "system",
         '''Hello world!
 """Difficult to handle string"""
 ''',
     )
-    t = msg_to_toml(msg)
+    t = msg.to_toml()
     print(t)
-    m = toml_to_msg(t)
+    m = Message.from_toml(t)
     print(m)
     assert msg.content == m.content
     assert msg.role == m.role
     assert msg.timestamp.date() == m.timestamp.date()
     assert msg.timestamp.timetuple() == m.timestamp.timetuple()
 
-    msg2 = Message("user", "Hello computer!")
+    # multiple messages
+    msg2 = Message("user", "Hello computer!", pinned=True, hide=True, quiet=True)
     ts = msgs_to_toml([msg, msg2])
     print(ts)
     ms = toml_to_msgs(ts)
@@ -33,6 +29,11 @@ def test_toml():
     assert ms[0].timestamp.timetuple() == msg.timestamp.timetuple()
     assert ms[0].content == msg.content
     assert ms[1].content == msg2.content
+
+    # check flags
+    assert ms[1].pinned == msg2.pinned
+    assert ms[1].hide == msg2.hide
+    assert ms[1].quiet == msg2.quiet
 
 
 def test_get_codeblocks():
