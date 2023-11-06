@@ -84,15 +84,16 @@ git clone https://github.com/ErikBjare/gptme
 poetry install  # or: pip install .
 ```
 
-🔑 [Get an API key from OpenAI](https://platform.openai.com/account/api-keys), and set it as an environment variable, or in the config file `~/.config/gptme/config.toml`:
-```sh
-OPENAI_API_KEY=...
-```
+Now, to get started, run:
 
-Now, to get started with your first conversation, run:
 ```sh
 gptme
 ```
+
+> [!NOTE]
+> The first time you run gptme, it will ask for an OpenAI API key ([get one here](https://platform.openai.com/account/api-keys)), if not already set as an environment variable or in the config.
+
+For more, see the [Getting Started guide](https://erik.bjareholt.com/gptme/docs/getting-started.html) in the documentation.
 
 ## 🌐 Web UI
 
