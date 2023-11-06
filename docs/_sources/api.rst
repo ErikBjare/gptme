@@ -3,6 +3,11 @@ API Reference
 
 Here is the API reference for ``gptme``.
 
+Classes
+^^^^^^^
+
+Some of the main classes in ``gptme``.
+
 gptme.message
 -------------
 
@@ -15,44 +20,52 @@ gptme.logmanager
 .. automodule:: gptme.logmanager
    :members:
 
+Server
+^^^^^^
+
+Endpoint functions for the server.
+
 gptme.server
 ------------
 
 .. automodule:: gptme.server
    :members:
+   :undoc-members:
 
-gptme.tools
------------
+Tools
+^^^^^
+
+Tools available to gptme.
 
 .. automodule:: gptme.tools
    :members:
 
-gptme.tools.shell
------------------
+Shell
+-----
 
 .. automodule:: gptme.tools.shell
    :members:
 
-gptme.tools.python
-------------------
+Python
+------
 
 .. automodule:: gptme.tools.python
    :members:
 
-gptme.tools.context
--------------------
+Context
+-------
 
 .. automodule:: gptme.tools.context
    :members:
 
-gptme.tools.save
-----------------
+Save
+----
 
 .. automodule:: gptme.tools.save
    :members:
 
-gptme.tools.patch
------------------
+Patch
+-----
 
 .. automodule:: gptme.tools.patch
    :members:
