@@ -19,7 +19,7 @@ def test_toml():
     assert msg.timestamp.timetuple() == m.timestamp.timetuple()
 
     # multiple messages
-    msg2 = Message("user", "Hello computer!", pinned=True, hide=True, quiet=True)
+    msg2 = Message("user", "Hello computer!", pinned=True, hide=True)
     ts = msgs_to_toml([msg, msg2])
     print(ts)
     ms = toml_to_msgs(ts)
@@ -33,7 +33,6 @@ def test_toml():
     # check flags
     assert ms[1].pinned == msg2.pinned
     assert ms[1].hide == msg2.hide
-    assert ms[1].quiet == msg2.quiet
 
 
 def test_get_codeblocks():

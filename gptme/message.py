@@ -38,6 +38,7 @@ class Message:
         # Wether this message should be hidden from the chat output (but still be sent to the assistant)
         self.hide = hide
         # Wether this message should be printed on execution (will still print on resume, unlike hide)
+        # This is not persisted to the log file.
         self.quiet = quiet
 
     def __repr__(self):
@@ -65,8 +66,6 @@ class Message:
             flags.append("pinned")
         if self.hide:
             flags.append("hide")
-        if self.quiet:
-            flags.append("quiet")
         flags_toml = "\n".join(f"{flag} = true" for flag in flags)
 
         # doublequotes need to be escaped
@@ -97,7 +96,6 @@ timestamp = "{self.timestamp.isoformat()}"
             msg["content"],
             pinned=msg.get("pinned", False),
             hide=msg.get("hide", False),
-            quiet=msg.get("quiet", False),
             timestamp=datetime.fromisoformat(msg["timestamp"]),
         )
 
@@ -222,7 +220,6 @@ def toml_to_msgs(toml: str) -> list[Message]:
             msg["content"],
             pinned=msg.get("pinned", False),
             hide=msg.get("hide", False),
-            quiet=msg.get("quiet", False),
             timestamp=datetime.fromisoformat(msg["timestamp"]),
         )
         for msg in msgs
