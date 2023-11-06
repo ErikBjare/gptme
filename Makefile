@@ -4,6 +4,9 @@ SRCDIRS = gptme tests scripts train
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 EXCLUDES = tests/output
 
+# Check if playwright is installed (for browser tests)
+HAS_PLAYWRIGHT := $(shell poetry run command -v playwright 2> /dev/null)
+
 build:
 	poetry install
 
@@ -12,7 +15,8 @@ test:
 	poetry run pytest ${SRCDIRS} -v --log-level INFO --durations=5 \
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html \
 		$(if $(SLOW),, -m "not slow") \
-		$(if $(PROFILE), --profile-svg)
+		$(if $(PROFILE), --profile-svg) \
+		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
 
 typecheck:
 	poetry run mypy --ignore-missing-imports ${SRCDIRS} --exclude ${EXCLUDES}

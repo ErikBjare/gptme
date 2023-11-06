@@ -1,10 +1,12 @@
 import pytest
 
 playwright = pytest.importorskip("playwright")
-expect = playwright.sync_api.expect
 
 # noreorder
 from gptme.tools.browser import load_page, search  # fmt: skip
+
+# noreorder
+from playwright.sync_api import expect  # fmt: skip
 
 
 @pytest.mark.slow
