@@ -1,9 +1,15 @@
 import random
 
 import pytest
-from flask.testing import FlaskClient
-from gptme.cli import init
-from gptme.server import create_app
+
+flask = pytest.importorskip(
+    "flask", reason="flask not installed, install server extras (-E server)"
+)
+
+# noreorder
+from flask.testing import FlaskClient  # fmt: skip
+from gptme.cli import init  # fmt: skip
+from gptme.server import create_app  # fmt: skip
 
 
 @pytest.fixture(autouse=True)

@@ -11,14 +11,16 @@ env:
 
 jobs:
   build:
-    name: Test on ${{ matrix.os }}, py-${{ matrix.python_version }}
+    name: Test on ${{ matrix.os }}, py-${{ matrix.python_version }}, extras-${{ matrix.extras }}
     runs-on: ${{ matrix.os }}
     env:
       RELEASE: false
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python_version: ['3.10']
+        extras: ['-E server', '-E browser', '-E all']
     steps:
     - uses: actions/checkout@v3
       with:
@@ -26,18 +28,27 @@ jobs:
     - name: Install ctags
       run: sudo apt install universal-ctags
     - name: Install poetry
-      run: pipx install poetry
+      run: |
+        pipx install poetry
+        echo "${{ matrix.extras }}" > .extras-cache
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python_version }}
         cache: 'poetry'
+        cache-dependency-path: |
+          poetry.lock
+          .extras-cache
+
     - name: Install dependencies
       run: |
         make build
-        poetry install -E server -E browser
+        poetry install ${{ matrix.extras }}
+
     - name: Install playwright
+      if: contains(matrix.extras, 'browser') || contains(matrix.extras, 'all')
       run: poetry run playwright install
+
     - name: Run tests
       env:
         TERM: xterm
