@@ -22,7 +22,7 @@ lint:
 
 format:
 	poetry run ruff --fix-only ${SRCDIRS}
-	poetry run pyupgrade --py310-plus ${SRCFILES}
+	poetry run pyupgrade --py310-plus --exit-zero-even-if-changed ${SRCFILES}
 	poetry run black ${SRCDIRS}
 
 precommit: format lint typecheck test
