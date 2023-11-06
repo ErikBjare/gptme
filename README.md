@@ -49,7 +49,7 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
   - Commands have their output fed back to the agent, allowing it to self-correct.
 - 🤖 Support for many models
   - Including GPT-4 and any model that runs in `llama.cpp`
-- 🤖 GitHub Bot to request changes from comments! (see #16)
+- 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
   - Operates in this repo! (see #18 for example)
   - Runs entirely in GitHub Actions.
 - ✨ Many smaller features to ensure a great experience
@@ -61,7 +61,7 @@ A local alternative to ChatGPT's "Advanced Data Analysis" (previously "Code Inte
 - 📝 Handle long contexts intelligently through summarization, truncation, and pinning.
 - 💬 Web UI and API for conversations.
 - 🌐 Browse, interact, and automate the web from the terminal.
-- 🌳 Tree-based conversation structure (see #17)
+- 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 
 ## 🛠 Use Cases
 
