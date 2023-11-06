@@ -6,7 +6,7 @@ import sys
 import openai
 from rich import print
 
-from .config import get_config
+from .config import config_path, get_config, set_config_value
 from .constants import PROMPT_ASSISTANT
 from .message import Message
 from .util import len_tokens, msgs2dicts
@@ -20,7 +20,7 @@ top_p = 0.1
 logger = logging.getLogger(__name__)
 
 
-def init_llm(llm: str):
+def init_llm(llm: str, interactive: bool):
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
 
@@ -30,6 +30,19 @@ def init_llm(llm: str):
             api_key = os.environ["OPENAI_API_KEY"]
         elif api_key := config["env"].get("OPENAI_API_KEY", None):
             pass
+        elif interactive:
+            # Ask for API key
+            print("No API key set for OpenAI.")
+            print("You can get one at https://platform.openai.com/account/api-keys\n")
+            api_key = input("Your OpenAI API key: ").strip()
+
+            # TODO: test API key
+            # Save to config
+            set_config_value("env.OPENAI_API_KEY", api_key)
+            print(f"API key saved to config at {config_path}")
+
+            # Reload config
+            config = get_config()
         else:
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)

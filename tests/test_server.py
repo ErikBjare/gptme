@@ -8,7 +8,7 @@ from gptme.server import create_app
 
 @pytest.fixture(autouse=True)
 def _init():
-    init(verbose=False, llm="openai")
+    init(verbose=False, llm="openai", interactive=False)
 
 
 @pytest.fixture

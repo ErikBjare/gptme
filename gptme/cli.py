@@ -29,10 +29,10 @@ import os
 import readline  # noqa: F401
 import sys
 import urllib.parse
+from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
-from collections.abc import Generator
 
 import click
 from dotenv import load_dotenv
@@ -77,15 +77,23 @@ The chat offers some commands that can be used to interact with the system:
 {action_readme}"""
 
 
-def init(verbose: bool, llm: LLMChoice):
+def init(verbose: bool, llm: LLMChoice, interactive: bool):
     # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
     # init
     logger.debug("Started")
     load_dotenv()
-    _load_readline_history()
-    init_llm(llm)  # set up API_KEY and API_BASE
+
+    # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
+    init_llm(llm, interactive)
+
+    if interactive:  # pragma: no cover
+        _load_readline_history()
+
+        # for some reason it bugs out shell tests in CI
+        register_tabcomplete()
+
     init_tools()
 
 
@@ -158,13 +166,10 @@ def main(
         print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
         exit(0)
 
-    init(verbose, llm)
-
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
-    else:  # pragma: no cover
-        # for some reason it bugs out shell tests in CI
-        register_tabcomplete()
+
+    init(verbose, llm, interactive)
 
     if not interactive:
         no_confirm = True

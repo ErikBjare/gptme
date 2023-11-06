@@ -15,7 +15,7 @@ from .cli import init
 )
 def main(verbose, llm):  # pragma: no cover
     """Starts a server and web UI."""
-    init(verbose, llm)
+    init(verbose, llm, interactive=False)
 
     # if flask not installed, ask the user to install `server` extras
     try:
