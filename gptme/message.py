@@ -3,7 +3,8 @@ import shutil
 import sys
 import textwrap
 from datetime import datetime
-from typing import Literal, Self
+from typing import Literal
+from typing_extensions import Self
 
 import tomlkit
 from rich import print
