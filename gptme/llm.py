@@ -102,6 +102,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             print(deltas_to_str([delta]), end="")
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
+
             # pause inference on finished code-block, letting user run the command before continuing
             codeblock_started = "```" in delta_str[:-3]
             codeblock_finished = "\n```\n" in delta_str[-7:]
@@ -113,6 +114,16 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
                 if is_supported_codeblock(delta_str):
                     print("\n")
                     break
+
+            # pause inference in finished patch
+            patch_started = "```patch" in delta_str[:-3]
+            patch_finished = "\n>>>>>>> UPDATED" in delta_str[-30:]
+            if patch_started and patch_finished:
+                if "```" not in delta_str[-10:]:
+                    print("\n```", end="")
+                    deltas.append({"content": "\n```"})
+                print("\n")
+                break
     except KeyboardInterrupt:
         return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
     finally:
