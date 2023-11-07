@@ -9,6 +9,7 @@ from rich import print
 from .config import config_path, get_config, set_config_value
 from .constants import PROMPT_ASSISTANT
 from .message import Message
+from .models import MODELS
 from .util import len_tokens, msgs2dicts
 
 # Optimized for code
@@ -162,9 +163,9 @@ def summarize(content: str) -> str:
 
     # model selection
     model = "gpt-3.5-turbo"
-    if len_tokens(messages) > 4097:
+    if len_tokens(messages) > MODELS["openai"][model]["context"]:
         model = "gpt-3.5-turbo-16k"
-    if len_tokens(messages) > 16385:
+    if len_tokens(messages) > MODELS["openai"][model]["context"]:
         raise ValueError(
             f"Cannot summarize more than 16385 tokens, got {len_tokens(messages)}"
         )
