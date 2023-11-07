@@ -1,8 +1,15 @@
 .PHONY: docs
 
+# set default shell
+SHELL := $(shell which bash)
+
+# src dirs and files
 SRCDIRS = gptme tests scripts train
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
-EXCLUDES = tests/output
+
+# exclude files
+EXCLUDES = tests/output scripts/build_changelog.py
+SRCFILES = $(shell find ${SRCDIRS} -name '*.py' -not -path ${EXCLUDES})
 
 # Check if playwright is installed (for browser tests)
 HAS_PLAYWRIGHT := $(shell poetry run command -v playwright 2> /dev/null)
@@ -19,7 +26,7 @@ test:
 		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
 
 typecheck:
-	poetry run mypy --ignore-missing-imports ${SRCDIRS} --exclude ${EXCLUDES}
+	poetry run mypy --ignore-missing-imports ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
 lint:
 	poetry run ruff ${SRCDIRS}
