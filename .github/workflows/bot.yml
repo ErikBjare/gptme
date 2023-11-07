@@ -59,6 +59,7 @@ jobs:
           fi
 
       - name: React to comment
+        if: steps.detect_command.outputs.gptme_command
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPO_NAME: ${{ github.event.repository.name }}
