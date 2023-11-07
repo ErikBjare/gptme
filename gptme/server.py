@@ -4,6 +4,7 @@ Serve web UI and API for the application.
 See here for instructions how to serve matplotlib figures:
  - https://matplotlib.org/stable/gallery/user_interfaces/web_application_server_sgskip.html
 """
+
 import io
 from contextlib import redirect_stdout
 
@@ -14,6 +15,7 @@ from .constants import LOGSDIR
 from .llm import reply
 from .logmanager import LogManager, get_conversations
 from .message import Message
+from .models import get_model
 from .tools import execute_msg
 
 api = flask.Blueprint("api", __name__)
@@ -78,9 +80,9 @@ def api_conversation_post(logfile: str):
 def api_conversation_generate(logfile: str):
     log = LogManager.load(logfile)
 
-    # TODO: add support for starting server with a default model
+    # get model or use server default
     req_json = flask.request.json or {}
-    model = req_json.get("model", "gpt-4")
+    model = req_json.get("model", get_model()["model"])
 
     # if prompt is a user-command, execute it
     if log[-1].role == "user":

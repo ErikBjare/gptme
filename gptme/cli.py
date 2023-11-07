@@ -28,6 +28,7 @@ from .constants import (
 from .llm import init_llm, reply
 from .logmanager import LogManager, _conversations
 from .message import Message
+from .models import set_default_model
 from .prompts import get_prompt
 from .tabcomplete import register_tabcomplete
 from .tools import execute_msg, init_tools
@@ -55,7 +56,7 @@ The chat offers some commands that can be used to interact with the system:
 {action_readme}"""
 
 
-def init(verbose: bool, llm: LLMChoice, interactive: bool):
+def init(verbose: bool, llm: LLMChoice, model: str, interactive: bool):
     # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
@@ -65,6 +66,7 @@ def init(verbose: bool, llm: LLMChoice, interactive: bool):
 
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
     init_llm(llm, interactive)
+    set_default_model(model)
 
     if interactive:  # pragma: no cover
         _load_readline_history()
@@ -147,7 +149,7 @@ def main(
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
 
-    init(verbose, llm, interactive)
+    init(verbose, llm, model, interactive)
 
     if not interactive:
         no_confirm = True

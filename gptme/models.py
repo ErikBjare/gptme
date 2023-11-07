@@ -2,10 +2,21 @@ from typing import TypedDict
 
 
 class ModelDict(TypedDict):
+    provider: str
+    model: str
     context: int
 
 
-MODELS: dict[str, dict[str, ModelDict]] = {
+class _ModelDictMeta(TypedDict):
+    context: int
+
+
+# default model
+DEFAULT_MODEL: str | None = None
+
+# known models metadata
+# TODO: can we get this from the API?
+MODELS: dict[str, dict[str, _ModelDictMeta]] = {
     "openai": {
         "gpt-4": {
             "context": 8193,
@@ -30,9 +41,27 @@ MODELS: dict[str, dict[str, ModelDict]] = {
 }
 
 
-def get_model(model: str) -> ModelDict:
-    if "/" in MODELS:
+def set_default_model(model: str) -> None:
+    assert get_model(model)
+    global DEFAULT_MODEL
+    DEFAULT_MODEL = model
+
+
+def get_model(model: str | None = None) -> ModelDict:
+    if model is None:
+        assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
+        model = DEFAULT_MODEL
+
+    if "/" in model:
         provider, model = model.split("/")
+        if provider not in MODELS or model not in MODELS[provider]:
+            raise ValueError(f"Model {provider}/{model} not found")
     else:
-        provider = "openai"
-    return MODELS[provider][model]
+        # try to find model in all providers
+        for provider in MODELS:
+            if model in MODELS[provider]:
+                break
+        else:
+            raise ValueError(f"Model {model} not found")
+
+    return ModelDict(provider=provider, model=model, **MODELS[provider][model])

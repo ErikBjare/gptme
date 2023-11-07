@@ -1,23 +1,24 @@
 import logging
 from collections.abc import Generator
+from copy import copy
 
 from ..message import Message
+from ..models import get_model
 from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
 
 
-# GPT-4 has a 8k token limit
-TOKEN_LIMIT_SOFT = 6000
-TOKEN_LIMIT_HARD = 7000
-
-
 def reduce_log(
     log: list[Message],
-    limit=TOKEN_LIMIT_SOFT,
+    limit=None,
     prev_len=None,
 ) -> Generator[Message, None, None]:
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
+    # get the token limit
+    if limit is None:
+        limit = 0.9 * get_model()["context"]
+
     # if we are below the limit, return the log as-is
     tokens = len_tokens(log)
     if tokens <= limit:
@@ -87,20 +88,21 @@ def truncate_msg(msg: Message, lines_pre=10, lines_post=10) -> Message | None:
         assert codeblock not in content_staged
 
     if content_staged != msg.content:
-        return Message(
-            role=msg.role,
-            content=content_staged,
-        )
+        msg_new = copy(msg)
+        msg_new.content = content_staged
+        return msg_new
     else:
         return None
 
 
 def limit_log(log: list[Message]) -> list[Message]:
     """
-    Picks messages until the total number of tokens exceeds TOKEN_LIMIT_SOFT,
+    Picks messages until the total number of tokens exceeds limit,
     then removes the last message to get below the limit.
     Will always pick the first few system messages.
     """
+    limit = get_model()["context"]
+
     # Always pick the first system messages
     initial_system_msgs = []
     for msg in log:
@@ -112,11 +114,11 @@ def limit_log(log: list[Message]) -> list[Message]:
     msgs = []
     for msg in reversed(log[len(initial_system_msgs) :]):
         msgs.append(msg)
-        if len_tokens(msgs) > TOKEN_LIMIT_SOFT:
+        if len_tokens(msgs) > limit:
             break
 
     # Remove the message that put us over the limit
-    if len_tokens(msgs) > TOKEN_LIMIT_SOFT:
+    if len_tokens(msgs) > limit:
         # skip the last message
         msgs.pop()
 

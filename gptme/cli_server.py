@@ -13,9 +13,14 @@ from .cli import init
     help="LLM to use.",
     type=click.Choice(["openai", "local"]),
 )
-def main(verbose, llm):  # pragma: no cover
+@click.option(
+    "--model",
+    default="gpt-4",
+    help="Model to use by default, can be overridden in each request.",
+)
+def main(verbose, llm, model):  # pragma: no cover
     """Starts a server and web UI."""
-    init(verbose, llm, interactive=False)
+    init(verbose, llm, model, interactive=False)
 
     # if flask not installed, ask the user to install `server` extras
     try:
