@@ -107,7 +107,7 @@ def prompt_project() -> Generator[Message, None, None]:
 
 
 def prompt_code_interpreter() -> Generator[Message, None, None]:  # pragma: no cover
-    # The message used by ChatGPT "Code Interpreter" / "Advanced Data Analysis"
+    # The message used by ChatGPT "Code Interpreter"
     # From: https://www.reddit.com/r/ChatGPTPro/comments/14ufzmh/this_is_code_interpreters_system_prompt_exactly/
     #       https://chat.openai.com/share/84e7fd9a-ad47-4397-b08f-4c89603596c0
     # NOTE: most of these have been adopted into the "Tools" section below.
