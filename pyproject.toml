@@ -61,7 +61,17 @@ server = ["llama-cpp-python", "flask"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 training = ["torch", "transformers"]
-all = ["llama-cpp-python", "playwright", "matplotlib", "pandas", "numpy", "pillow", "torch", "transformers"]
+all = [
+    # server
+    "llama-cpp-python", "flask",
+    # browser
+    "playwright",
+    # datascience
+    "matplotlib", "pandas", "numpy", "pillow",
+    # training
+    "torch", "transformers",
+]
+
 
 [tool.ruff]
 ignore = ["E402", "E501"]

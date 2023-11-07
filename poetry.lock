@@ -3185,7 +3185,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [extras]
-all = ["llama-cpp-python", "matplotlib", "numpy", "pandas", "pillow", "playwright", "torch", "transformers"]
+all = ["flask", "llama-cpp-python", "matplotlib", "numpy", "pandas", "pillow", "playwright", "torch", "transformers"]
 browser = ["playwright"]
 datascience = ["matplotlib", "numpy", "pandas", "pillow"]
 server = ["flask", "llama-cpp-python"]
@@ -3194,4 +3194,4 @@ training = ["torch", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "802561b24ecf14f8c5b6b8ff3eb76512cd2571105f507bb82038c5dd8ec56279"
+content-hash = "1d49658503d1c5ee632a8b911ba768548c9a1e3372ccf088f922d3abf245947d"
