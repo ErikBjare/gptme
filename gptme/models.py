@@ -1,4 +1,7 @@
+import logging
 from typing import TypedDict
+
+logger = logging.getLogger(__name__)
 
 
 class ModelDict(TypedDict):
@@ -55,13 +58,17 @@ def get_model(model: str | None = None) -> ModelDict:
     if "/" in model:
         provider, model = model.split("/")
         if provider not in MODELS or model not in MODELS[provider]:
-            raise ValueError(f"Model {provider}/{model} not found")
+            logger.warning(
+                f"Model {provider}/{model} not found, using fallback model metadata"
+            )
+            return ModelDict(provider=provider, model=model, context=4000)
     else:
         # try to find model in all providers
         for provider in MODELS:
             if model in MODELS[provider]:
                 break
         else:
-            raise ValueError(f"Model {model} not found")
+            logger.warning(f"Model {model} not found, using fallback model metadata")
+            return ModelDict(provider="unknown", model=model, context=4000)
 
     return ModelDict(provider=provider, model=model, **MODELS[provider][model])
