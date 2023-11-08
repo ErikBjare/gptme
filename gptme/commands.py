@@ -1,9 +1,9 @@
 import logging
 import sys
+from collections.abc import Generator
 from pathlib import Path
 from time import sleep
 from typing import Literal
-from collections.abc import Generator
 
 from . import llm
 from .constants import CMDFIX
@@ -18,6 +18,7 @@ from .tools import execute_msg, execute_python, execute_shell
 from .tools.context import gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
+from .util import len_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ Actions = Literal[
     "replay",
     "undo",
     "impersonate",
+    "tokens",
     "help",
     "exit",
 ]
@@ -51,6 +53,7 @@ action_descriptions: dict[Actions, str] = {
     "python": "Execute Python code",
     "replay": "Re-execute codeblocks in the conversation, wont store output in log",
     "impersonate": "Impersonate the assistant",
+    "tokens": "Show the number of tokens used",
     "help": "Show this help message",
     "exit": "Exit the program",
 }
@@ -135,6 +138,9 @@ def handle_cmd(
             msg = Message("assistant", content)
             yield msg
             yield from execute_msg(msg, ask=not no_confirm)
+        case "tokens":
+            log.undo(1, quiet=True)
+            print(f"Tokens used: {len_tokens(log.log)}")
         case _:
             if log.log[-1].content != f"{CMDFIX}help":
                 print("Unknown command")
