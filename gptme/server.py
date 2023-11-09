@@ -65,8 +65,9 @@ def api_conversation_put(logfile: str):
 )
 def api_conversation_post(logfile: str):
     """Post a message to the conversation."""
-    log = LogManager.load(logfile)
     req_json = flask.request.json
+    branch = (req_json or {}).get("branch", "main")
+    log = LogManager.load(logfile, branch=branch)
     assert req_json
     assert "role" in req_json
     assert "content" in req_json

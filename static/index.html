@@ -88,7 +88,8 @@
               :disabled="message.branches.indexOf(branch) == 0">
               &lt;
             </button>
-            {{ message.branches.indexOf(branch) + 1 }}/{{ message.branches.length }}  <!-- ({{message.branches}}) -->
+            {{ message.branches.indexOf(branch) + 1 }}/{{ message.branches.length }}
+            <!-- ({{message.branches}}) -->
             <button class="text-sm p-1"
               @click="changeBranch(message.branches[message.branches.indexOf(branch) + 1])">
               &gt;
@@ -193,6 +194,8 @@ new Vue({
           // Check if the next message in current branch diverges from next message on other branch
           const next_msg = this.branches[this.branch][i + 1];
           const branch_msg = this.branches[branch][i + 1];
+
+          // FIXME: there is a bug here in more complex cases
           if (next_msg && branch_msg && branch_msg.timestamp !== next_msg.timestamp) {
             // We found a fork, so annotate the message
             msg.branches.push(branch);
@@ -226,7 +229,7 @@ new Vue({
       const res = await fetch(apiRoot);
       this.conversations = await res.json();
     },
-    async selectConversation(path) {
+    async selectConversation(path, branch) {
       // set the hash to the conversation name
       window.location.hash = path;
 
@@ -241,9 +244,10 @@ new Vue({
 
       try {
         const data = await res.json();
-        this.chatLog = data.log;
         this.branches = data.branches;
-        this.branches["main"] = this.chatLog.slice();
+        this.branches["main"] = data.log;
+        this.branch = branch || "main";
+        this.chatLog = this.branches[this.branch];
       } catch (e) {
         this.error = e;
         console.log(e);
@@ -271,7 +275,7 @@ new Vue({
       this.selectConversation(name);
     },
     async sendMessage() {
-      const payload = JSON.stringify({role: "user", content: this.newMessage});
+      const payload = JSON.stringify({role: "user", content: this.newMessage, branch: this.branch});
       const req = await fetch(`${apiRoot}/${this.selectedConversation}`, {
         method: "POST",
         headers: {
@@ -287,7 +291,7 @@ new Vue({
       console.log(await req.json());
       this.newMessage = "";
       // reload conversation
-      await this.selectConversation(this.selectedConversation);
+      await this.selectConversation(this.selectedConversation, this.branch);
       // generate
       this.generate();
     },
@@ -298,6 +302,7 @@ new Vue({
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({branch: this.branch}),
       });
       this.generating = false;
       if(!req.ok) {
@@ -312,7 +317,7 @@ new Vue({
         this.cmdout = data[0].content;
       }
       // reload conversation
-      await this.selectConversation(this.selectedConversation);
+      await this.selectConversation(this.selectedConversation, this.branch);
     },
     changeBranch(branch) {
       this.branch = branch;
