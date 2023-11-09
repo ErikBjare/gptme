@@ -81,11 +81,12 @@ def handle_cmd(
     cmd = cmd.lstrip(CMDFIX)
     logger.debug(f"Executing command: {cmd}")
     name, *args = re.split(r"[\n\s]", cmd)
+    full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
     match name:
         case "bash" | "sh" | "shell":
-            yield from execute_shell(" ".join(args), ask=not no_confirm)
+            yield from execute_shell(full_args, ask=not no_confirm)
         case "python" | "py":
-            yield from execute_python(" ".join(args), ask=not no_confirm)
+            yield from execute_python(full_args, ask=not no_confirm)
         case "log":
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
@@ -135,7 +136,7 @@ def handle_cmd(
                     for msg in execute_msg(msg, ask=True):
                         print_msg(msg, oneline=False)
         case "impersonate":
-            content = " ".join(args) if args else input("[impersonate] Assistant: ")
+            content = full_args if full_args else input("[impersonate] Assistant: ")
             msg = Message("assistant", content)
             yield msg
             yield from execute_msg(msg, ask=not no_confirm)
@@ -179,8 +180,8 @@ def save(log: LogManager, filename: str):
         print("No code block found")
         return
     if Path(filename).exists():
-        ans = input("File already exists, overwrite? [y/N] ")
-        if ans.lower() != "y":
+        confirm = ask_execute("File already exists, overwrite?", default=False)
+        if not confirm:
             return
     with open(filename, "w") as f:
         f.write(code)

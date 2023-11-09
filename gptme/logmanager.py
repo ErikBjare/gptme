@@ -104,12 +104,15 @@ class LogManager:
         # create directory if it doesn't exist
         Path(self.logfile).parent.mkdir(parents=True, exist_ok=True)
 
+        # write current branch
         with open(self.logfile, "w") as file:
             for msg in self.log:
                 file.write(json.dumps(msg.to_dict()) + "\n")
 
+        # write other branches
+        # FIXME: wont write main branch if on a different branch
         if branches:
-            branches_dir = self.logfile.parent / "branches"
+            branches_dir = self.logdir / "branches"
             branches_dir.mkdir(parents=True, exist_ok=True)
             for branch, msgs in self._branches.items():
                 if branch == "main":
