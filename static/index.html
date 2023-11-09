@@ -38,6 +38,7 @@
           <tr>
             <th class="text-left">Name</th>
             <th class="text-right" @click="changeSort('messages')"># msgs</th>
+            <th class="text-right hidden md:table-cell" @click="changeSort('branches')">Branches</th>
             <th class="text-right hidden md:table-cell" @click="changeSort('modified')">Edited</th>
             <th class="text-right hidden md:table-cell" @click="changeSort('created')">Created</th>
           </tr>
@@ -46,6 +47,7 @@
           <tr v-for="conversation in sortedConversations">
             <td><a class="cursor-pointer hover:underline" @click="selectConversation(conversation.name)">{{ conversation.name }}</a></td>
             <td class="text-right">{{ conversation.messages }}</td>
+            <td class="text-right hidden md:table-cell">{{ conversation.branches }}</td>
             <td class="text-right hidden md:table-cell">
               <time :datetime="new Date(1000 * conversation.modified).toISOString()">
                 {{ fromNow(1000 * conversation.modified) }}
@@ -78,7 +80,21 @@
         <label for="hide-system-messages">Hide initial system messages</label>
       </div>
       <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg rounded border mb-4 p-2">
-        <div class="font-bold mb-1">{{ capitalize(message.role) }}</div>
+        <div class="flex">
+          <div class="font-bold mb-1">{{ capitalize(message.role) }}</div>
+          <div v-if="message.branches.length > 1" class="text-sm ml-auto">
+            <button class="text-sm p-1"
+              @click="changeBranch(message.branches[message.branches.indexOf(branch) - 1])"
+              :disabled="message.branches.indexOf(branch) == 0">
+              &lt;
+            </button>
+            {{ message.branches.indexOf(branch) + 1 }}/{{ message.branches.length }}  <!-- ({{message.branches}}) -->
+            <button class="text-sm p-1"
+              @click="changeBranch(message.branches[message.branches.indexOf(branch) + 1])">
+              &gt;
+            </button>
+          </div>
+        </div>
         <div class="text-sm" v-html="message.html"></div>
       </div>
       <div v-if="cmdout" class="chat-msg rounded border mb-4 p-2">
@@ -130,6 +146,7 @@ new Vue({
     selectedConversation: null,
 
     // List of messages in the selected conversation
+    branch: "main",
     chatLog: [],
 
     // Options
@@ -164,6 +181,39 @@ new Vue({
         msg.hide = this.hideSystemMessages;
       }
 
+      // Find branch points and annotate messages where branches occur,
+      // so that we can show them in the UI, and let the user jump to them.
+      this.chatLog.forEach((msg, i) => {
+        msg.branches = [this.branch];
+
+        // Check each branch if the fork at the current message
+        for (const branch of Object.keys(this.branches)) {
+          if (branch === this.branch) continue;  // skip main branch
+
+          // Check if the next message in current branch diverges from next message on other branch
+          const next_msg = this.branches[this.branch][i + 1];
+          const branch_msg = this.branches[branch][i + 1];
+          if (next_msg && branch_msg && branch_msg.timestamp !== next_msg.timestamp) {
+            // We found a fork, so annotate the message
+            msg.branches.push(branch);
+            break;
+          }
+        }
+
+        // Sort the branches by timestamp
+        msg.branches.sort((a, b) => {
+          const a_msg = this.branches[a][i + 1];
+          const b_msg = this.branches[b][i + 1];
+          if (!a_msg) return 1;
+          if (!b_msg) return -1;
+          const diff = new Date(a_msg.timestamp) - new Date(b_msg.timestamp);
+          if(Number.isNaN(diff)) {
+            console.error("diff was NaN");
+          }
+          return diff;
+        });
+      });
+
       // Convert markdown to HTML
       return this.chatLog.map(msg => {
         msg.html = this.mdToHtml(msg.content);
@@ -192,6 +242,8 @@ new Vue({
       try {
         const data = await res.json();
         this.chatLog = data.log;
+        this.branches = data.branches;
+        this.branches["main"] = this.chatLog.slice();
       } catch (e) {
         this.error = e;
         console.log(e);
@@ -261,6 +313,10 @@ new Vue({
       }
       // reload conversation
       await this.selectConversation(this.selectedConversation);
+    },
+    changeBranch(branch) {
+      this.branch = branch;
+      this.chatLog = this.branches[branch];
     },
     backToConversations() {
       this.getConversations();  // refresh conversations

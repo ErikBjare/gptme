@@ -36,7 +36,7 @@ def api_conversations():
 def api_conversation(logfile: str):
     """Get a conversation."""
     log = LogManager.load(logfile)
-    return flask.jsonify(log.to_dict())
+    return flask.jsonify(log.to_dict(branches=True))
 
 
 @api.route("/api/conversations/<path:logfile>", methods=["PUT"])
@@ -78,11 +78,12 @@ def api_conversation_post(logfile: str):
 # generate response
 @api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
 def api_conversation_generate(logfile: str):
-    log = LogManager.load(logfile)
-
     # get model or use server default
     req_json = flask.request.json or {}
     model = req_json.get("model", get_model()["model"])
+
+    # load conversation
+    log = LogManager.load(logfile, branch=req_json.get("branch", "main"))
 
     # if prompt is a user-command, execute it
     if log[-1].role == "user":

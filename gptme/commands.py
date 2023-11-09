@@ -165,8 +165,7 @@ def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
             except KeyboardInterrupt:
                 yield Message("system", "Interrupted")
                 return
-    log.log = list(reversed(res))
-    log.write()
+    log.edit(list(reversed(res)))
     # now we need to redraw the log so the user isn't seeing stale messages in their buffer
     # log.print()
     print("Applied edited messages, write /log to see the result")

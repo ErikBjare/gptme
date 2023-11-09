@@ -45,3 +45,7 @@ def test_branch():
     # undo and check no diff
     log.undo()
     assert log.diff("dev") == "- Assistant: hello\n- Assistant: world"
+
+    d = log.to_dict(branches=True)
+    assert "main" in d["branches"]
+    assert "dev" in d["branches"]

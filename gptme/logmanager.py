@@ -6,8 +6,8 @@ from collections.abc import Generator
 from copy import copy
 from itertools import zip_longest
 from pathlib import Path
-from tempfile import NamedTemporaryFile
-from typing import Literal, TypeAlias
+from tempfile import TemporaryDirectory
+from typing import Any, Literal, TypeAlias
 
 from rich import print
 
@@ -78,9 +78,6 @@ class LogManager:
         if not msg.quiet:
             print_msg(msg, oneline=False)
 
-    def pop(self, index: int = -1) -> Message:
-        return self.log.pop(index)
-
     def write(self, branches=True) -> None:
         """
         Writes to the conversation log.
@@ -106,11 +103,28 @@ class LogManager:
     def print(self, show_hidden: bool | None = None):
         print_msg(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
 
+    def _save_backup_branch(self, type="edit") -> None:
+        """backup the current log to a new branch, usually before editing/undoing"""
+        branch_prefix = f"{self.current_branch}-{type}-"
+        n = len([b for b in self._branches.keys() if b.startswith(branch_prefix)])
+        self._branches[f"{branch_prefix}{n}"] = copy(self.log)
+        self.write()
+
+    def edit(self, new_log: list[Message]) -> None:
+        """Edits the log."""
+        self._save_backup_branch(type="edit")
+        self._branches[self.current_branch] = new_log
+        self.write()
+
     def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
         undid = self[-1] if self.log else None
         if undid and undid.content.startswith(f"{CMDFIX}undo"):
-            self.pop()
+            self.log.pop()
+
+        # don't save backup branch if undoing a command
+        if not self[-1].content.startswith(CMDFIX):
+            self._save_backup_branch(type="undo")
 
         # Doesn't work for multiple undos in a row, but useful in testing
         # assert undid.content == ".undo"  # assert that the last message is an undo
@@ -122,7 +136,7 @@ class LogManager:
         if not quiet:
             print("[yellow]Undoing messages:[/yellow]")
         for _ in range(n):
-            undid = self.pop()
+            undid = self.log.pop()
             if not quiet:
                 print(
                     f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
@@ -202,6 +216,7 @@ class LogManager:
         """Switches to a branch."""
         self.write()
         if name not in self._branches:
+            logger.info(f"Creating a new branch '{name}'")
             self._branches[name] = copy(self.log)
         self.current_branch = name
 
@@ -230,13 +245,6 @@ class LogManager:
         for msg in self._branches[branch][diff_i:]:
             diff.append(f"- {msg.format()}")
 
-        # diff = list(
-        #     difflib.unified_diff(
-        #         [msg.format() for msg in self.log],
-        #         [msg.format() for msg in self.branches[branch]],
-        #     )
-        # )
-        # pprint(diff)
         if diff:
             return "\n".join(diff)
         else:
@@ -265,11 +273,18 @@ class LogManager:
         self.logfile = LOGSDIR / name / self.logfile.name
         self.write()
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, branches=False) -> dict:
+        """Returns a dict representation of the log."""
+        d: dict[str, Any] = {
             "log": [msg.to_dict() for msg in self.log],
             "logfile": str(self.logfile),
         }
+        if branches:
+            d["branches"] = {
+                branch: [msg.to_dict() for msg in msgs]
+                for branch, msgs in self._branches.items()
+            }
+        return d
 
 
 def _conversations() -> list[Path]:
@@ -280,15 +295,16 @@ def _conversations() -> list[Path]:
 
 
 def get_conversations() -> Generator[dict, None, None]:
-    for c in _conversations():
-        with open(c) as file:
+    for conv_fn in _conversations():
+        with open(conv_fn) as file:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
-        first_timestamp = msgs[0].timestamp.timestamp() if msgs else c.stat().st_mtime
+        modified = conv_fn.stat().st_mtime
+        first_timestamp = msgs[0].timestamp.timestamp() if msgs else modified
         yield {
-            "name": f"{c.parent.name}",
-            "path": str(c),
+            "name": f"{conv_fn.parent.name}",
+            "path": str(conv_fn),
             "created": first_timestamp,
-            "modified": c.stat().st_mtime,
+            "modified": modified,
             "messages": len(msgs),
-            "branches": len(list(c.parent.glob("*.jsonl"))),
+            "branches": 1 + len(list(conv_fn.parent.glob("branches/*.jsonl"))),
         }
