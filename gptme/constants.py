@@ -1,5 +1,3 @@
-from pathlib import Path
-
 # prefix for commands, e.g. /help
 CMDFIX = "/"
 
@@ -23,15 +21,3 @@ PROMPT_USER = (
 PROMPT_ASSISTANT = (
     f"[bold {ROLE_COLOR['assistant']}]Assistant[/bold {ROLE_COLOR['assistant']}]"
 )
-
-# Config
-CONFIG_PATH = Path("~/.config/gptme").expanduser()
-HISTORY_FILE = CONFIG_PATH / "history"
-
-# Data
-DATADIR = Path("~/.local/share/gptme").expanduser()
-LOGSDIR = DATADIR / "logs"
-
-# create all paths
-for path in [CONFIG_PATH, DATADIR, LOGSDIR]:
-    path.mkdir(parents=True, exist_ok=True)

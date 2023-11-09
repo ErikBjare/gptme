@@ -14,12 +14,15 @@ def gen_context_msg() -> Message:
     cmd = "pwd"
     ret, pwd, _ = shell.run_command(cmd)
     assert ret == 0
-    msgstr += f"$ {cmd}\n{pwd.strip()}\n"
+    msgstr += f"$ {cmd}\n{pwd.rstrip()}\n\n"
 
     cmd = "git status -s --porcelain"
     ret, git, _ = shell.run_command(cmd)
     if ret == 0 and git:
-        msgstr += f"$ {cmd}\n{git}\n"
+        msgstr += f"$ {cmd}\n{git}\n\n"
+
+    if shutil.which("ctags"):
+        msgstr += f"$ ctags\n{ctags()}\n\n"
 
     return Message("system", msgstr.strip(), hide=True)
 
@@ -39,15 +42,19 @@ def _gitignore():
     return ignored
 
 
+def _get_ctags_cmd():
+    ignored = _gitignore()
+    ignored_str = " ".join([f"--exclude='{i}'" for i in ignored])
+
+    return f"ctags -R --output-format=json {ignored_str} --fields=+l+n --languages=python --python-kinds=-iv -f -"
+
+
 def ctags() -> str:
     """Generate ctags output for project in working dir."""
     assert shutil.which("ctags"), "ctags not found"
 
-    ignored = _gitignore()
-    ignored_str = " ".join([f"--exclude='{i}'" for i in ignored])
-
     shell = get_shell()
-    cmd = f"ctags -R --output-format=json {ignored_str} --fields=+l+n --languages=python --python-kinds=-iv -f -"
+    cmd = _get_ctags_cmd()
     ret, ctags, _ = shell.run_command(cmd)
     assert ret == 0
 

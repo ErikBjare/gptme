@@ -4,12 +4,12 @@ import sys
 import textwrap
 from datetime import datetime
 from typing import Literal
-from typing_extensions import Self
 
 import tomlkit
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
+from typing_extensions import Self
 
 from .constants import ROLE_COLOR
 
@@ -45,6 +45,16 @@ class Message:
     def __repr__(self):
         content = textwrap.shorten(self.content, 20, placeholder="...")
         return f"<Message role={self.role} content={content}>"
+
+    def __eq__(self, other):
+        # FIXME: really include timestamp?
+        if not isinstance(other, Message):
+            return False
+        return (
+            self.role == other.role
+            and self.content == other.content
+            and self.timestamp == other.timestamp
+        )
 
     def to_dict(self, keys=None):
         """Return a dict representation of the message, serializable to JSON."""

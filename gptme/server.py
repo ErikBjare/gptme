@@ -11,7 +11,7 @@ from contextlib import redirect_stdout
 import flask
 
 from .commands import execute_cmd
-from .constants import LOGSDIR
+from .dirs import get_logs_dir
 from .llm import reply
 from .logmanager import LogManager, get_conversations
 from .message import Message
@@ -36,7 +36,7 @@ def api_conversations():
 def api_conversation(logfile: str):
     """Get a conversation."""
     log = LogManager.load(logfile)
-    return flask.jsonify(log.to_dict())
+    return flask.jsonify(log.to_dict(branches=True))
 
 
 @api.route("/api/conversations/<path:logfile>", methods=["PUT"])
@@ -50,11 +50,11 @@ def api_conversation_put(logfile: str):
                 Message(msg["role"], msg["content"], timestamp=msg["timestamp"])
             )
 
-    logpath = LOGSDIR / logfile / "conversation.jsonl"
-    if logpath.exists():
-        raise ValueError(f"Conversation already exists: {logpath}")
-    logpath.parent.mkdir(parents=True)
-    log = LogManager(msgs, logfile=logpath)
+    logdir = get_logs_dir() / logfile
+    if logdir.exists():
+        raise ValueError(f"Conversation already exists: {logdir.name}")
+    logdir.mkdir(parents=True)
+    log = LogManager(msgs, logdir=logdir)
     log.write()
     return {"status": "ok"}
 
@@ -65,8 +65,9 @@ def api_conversation_put(logfile: str):
 )
 def api_conversation_post(logfile: str):
     """Post a message to the conversation."""
-    log = LogManager.load(logfile)
     req_json = flask.request.json
+    branch = (req_json or {}).get("branch", "main")
+    log = LogManager.load(logfile, branch=branch)
     assert req_json
     assert "role" in req_json
     assert "content" in req_json
@@ -78,11 +79,12 @@ def api_conversation_post(logfile: str):
 # generate response
 @api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
 def api_conversation_generate(logfile: str):
-    log = LogManager.load(logfile)
-
     # get model or use server default
     req_json = flask.request.json or {}
     model = req_json.get("model", get_model()["model"])
+
+    # load conversation
+    log = LogManager.load(logfile, branch=req_json.get("branch", "main"))
 
     # if prompt is a user-command, execute it
     if log[-1].role == "user":
