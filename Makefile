@@ -9,7 +9,7 @@ SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 
 # exclude files
 EXCLUDES = tests/output scripts/build_changelog.py
-SRCFILES = $(shell find ${SRCDIRS} -name '*.py' -not -path ${EXCLUDES})
+SRCFILES = $(shell find ${SRCDIRS} -name '*.py' $(foreach EXCLUDE,$(EXCLUDES),-not -path $(EXCLUDE)))
 
 # Check if playwright is installed (for browser tests)
 HAS_PLAYWRIGHT := $(shell poetry run command -v playwright 2> /dev/null)
