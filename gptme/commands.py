@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 from collections.abc import Generator
 from pathlib import Path
@@ -18,7 +19,7 @@ from .tools import execute_msg, execute_python, execute_shell
 from .tools.context import gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
-from .util import len_tokens
+from .util import ask_execute, len_tokens
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ def handle_cmd(
     """Handles a command."""
     cmd = cmd.lstrip(CMDFIX)
     logger.debug(f"Executing command: {cmd}")
-    name, *args = cmd.split(" ")
+    name, *args = re.split(r"[\n\s]", cmd)
     match name:
         case "bash" | "sh" | "shell":
             yield from execute_shell(" ".join(args), ask=not no_confirm)
@@ -94,7 +95,7 @@ def handle_cmd(
             # rename the conversation
             print("Renaming conversation (enter empty name to auto-generate)")
             new_name = args[0] if args else input("New name: ")
-            rename(log, new_name)
+            rename(log, new_name, ask=not no_confirm)
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")
@@ -186,15 +187,16 @@ def save(log: LogManager, filename: str):
     print(f"Saved code block to {filename}")
 
 
-def rename(log: LogManager, new_name: str):
+def rename(log: LogManager, new_name: str, ask: bool = True):
     if new_name in ["", "auto"]:
         new_name = llm.generate_name(log.prepare_messages())
         assert " " not in new_name
         print(f"Generated name: {new_name}")
-        confirm = input("Confirm? [y/N] ")
-        if confirm.lower() not in ["y", "yes"]:
-            print("Aborting")
-            return
+        if ask:
+            confirm = ask_execute("Confirm?")
+            if not confirm:
+                print("Aborting")
+                return
         log.rename(new_name, keep_date=True)
     else:
         log.rename(new_name, keep_date=False)

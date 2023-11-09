@@ -11,7 +11,7 @@ from contextlib import redirect_stdout
 import flask
 
 from .commands import execute_cmd
-from .constants import LOGSDIR
+from .dirs import get_logs_dir
 from .llm import reply
 from .logmanager import LogManager, get_conversations
 from .message import Message
@@ -50,11 +50,11 @@ def api_conversation_put(logfile: str):
                 Message(msg["role"], msg["content"], timestamp=msg["timestamp"])
             )
 
-    logpath = LOGSDIR / logfile / "conversation.jsonl"
-    if logpath.exists():
-        raise ValueError(f"Conversation already exists: {logpath}")
-    logpath.parent.mkdir(parents=True)
-    log = LogManager(msgs, logfile=logpath)
+    logdir = get_logs_dir() / logfile
+    if logdir.exists():
+        raise ValueError(f"Conversation already exists: {logdir.name}")
+    logdir.mkdir(parents=True)
+    log = LogManager(msgs, logdir=logdir)
     log.write()
     return {"status": "ok"}
 

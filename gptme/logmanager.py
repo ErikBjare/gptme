@@ -11,7 +11,8 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
-from .constants import CMDFIX, LOGSDIR
+from .constants import CMDFIX
+from .dirs import get_logs_dir
 from .message import Message, print_msg
 from .prompts import get_prompt
 from .tools.reduce import limit_log, reduce_log
@@ -30,27 +31,39 @@ class LogManager:
     def __init__(
         self,
         log: list[Message] | None = None,
-        logfile: PathLike | None = None,
+        logdir: PathLike | None = None,
+        branch: str | None = None,
         show_hidden=False,
     ):
-        self._branches = {"main": log or []}
-        self.current_branch = "main"
+        self.current_branch = branch or "main"
 
-        if logfile is None:
+        if logdir:
+            self.logdir = Path(logdir)
+        else:
             # generate tmpfile
-            fpath = NamedTemporaryFile(delete=False).name
+            fpath = TemporaryDirectory().name
             logger.warning(f"No logfile specified, using tmpfile at {fpath}")
-            logfile = Path(fpath)
-        self.logfile = logfile if isinstance(logfile, Path) else Path(logfile)
+            self.logdir = Path(fpath)
+        self.name = self.logdir.name
 
         # load branches from adjacent files
-        if logfile:
-            for file in self.logfile.parent.glob("branches/*.jsonl"):
-                if file.name == self.logfile.name:
-                    continue
-                branch = file.stem
+        self._branches = {self.current_branch: log or []}
+        if self.logdir / "conversation.jsonl":
+            _branch = "main"
+            if _branch not in self._branches:
+                with open(self.logdir / "conversation.jsonl") as f:
+                    self._branches[_branch] = [
+                        Message(**json.loads(line)) for line in f
+                    ]
+        for file in self.logdir.glob("branches/*.jsonl"):
+            if file.name == self.logdir.name:
+                continue
+            _branch = file.stem
+            if _branch not in self._branches:
                 with open(file) as f:
-                    self._branches[branch] = [Message(**json.loads(line)) for line in f]
+                    self._branches[_branch] = [
+                        Message(**json.loads(line)) for line in f
+                    ]
 
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
@@ -58,6 +71,12 @@ class LogManager:
     @property
     def log(self) -> list[Message]:
         return self._branches[self.current_branch]
+
+    @property
+    def logfile(self) -> Path:
+        if self.current_branch == "main":
+            return get_logs_dir() / self.name / "conversation.jsonl"
+        return self.logdir / "branches" / f"{self.current_branch}.jsonl"
 
     def __getitem__(self, key):
         return self.log[key]
@@ -168,17 +187,21 @@ class LogManager:
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
-        if str(LOGSDIR) not in str(logfile):
-            # if the path was not fully specified, assume its a dir in LOGSDIR
-            logfile = (
-                LOGSDIR
-                / logfile
-                / (
-                    "conversation.jsonl"
-                    if branch == "main"
-                    else f"branches/{branch}.jsonl"
-                )
+        logsdir = get_logs_dir()
+        if str(logsdir) not in str(logfile):
+            # if the path was not fully specified, assume its a dir in logsdir
+            logdir = logsdir / logfile
+            logfile = logdir / (
+                "conversation.jsonl" if branch == "main" else f"branches/{branch}.jsonl"
             )
+        else:
+            logdir = Path(logfile).parent
+            if logdir.name == "branches":
+                logdir = logdir.parent
+
+        if branch != "main":
+            logfile = logdir / f"branches/{branch}.jsonl"
+
         if not Path(logfile).exists():
             raise FileNotFoundError(f"Could not find logfile {logfile}")
 
@@ -186,7 +209,7 @@ class LogManager:
             msgs = [Message(**json.loads(line)) for line in file.readlines()]
         if not msgs:
             msgs = initial_msgs
-        return cls(msgs, logfile=logfile, **kwargs)
+        return cls(msgs, logdir=logdir, branch=branch, **kwargs)
 
     def get_last_code_block(
         self,
@@ -260,17 +283,24 @@ class LogManager:
         """
         if keep_date:
             name = f"{self.logfile.parent.name[:10]}-{name}"
-        (LOGSDIR / name).mkdir(parents=True, exist_ok=True)
-        self.logfile.parent.rename(LOGSDIR / name)
-        self.logfile = LOGSDIR / name / self.logfile.name
+
+        logsdir = get_logs_dir()
+        new_logdir = logsdir / name
+        if new_logdir.exists():
+            raise FileExistsError(f"Conversation {name} already exists.")
+        self.name = name
+        self.logdir.mkdir(parents=True, exist_ok=True)
+        self.logdir.rename(logsdir / self.name)
+        self.logdir = logsdir / self.name
 
     def fork(self, name: str) -> None:
         """
         Copy the conversation folder to a new name.
         """
         self.write()
-        shutil.copytree(self.logfile.parent, LOGSDIR / name)
-        self.logfile = LOGSDIR / name / self.logfile.name
+        logsdir = get_logs_dir()
+        shutil.copytree(self.logfile.parent, logsdir / name)
+        self.logdir = logsdir / name
         self.write()
 
     def to_dict(self, branches=False) -> dict:
@@ -289,8 +319,9 @@ class LogManager:
 
 def _conversations() -> list[Path]:
     # NOTE: only returns the main conversation, not branches (to avoid duplicates)
+    logsdir = get_logs_dir()
     return list(
-        sorted(LOGSDIR.glob("*/conversation.jsonl"), key=lambda f: f.stat().st_mtime)
+        sorted(logsdir.glob("*/conversation.jsonl"), key=lambda f: f.stat().st_mtime)
     )
 
 

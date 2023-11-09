@@ -31,8 +31,8 @@ def test_branch():
     # switch branch
     log.branch("dev")
     log.append(Message("assistant", "world"))
-    assert log.log[-2].content == "hello"
     assert log.log[-1].content == "world"
+    assert log.log[-2].content == "hello"
     assert log.diff("main") == "+ Assistant: world"
 
     # switch back

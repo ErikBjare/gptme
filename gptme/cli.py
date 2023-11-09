@@ -19,12 +19,8 @@ from rich import print  # noqa: F401
 from rich.console import Console
 
 from .commands import CMDFIX, action_descriptions, execute_cmd
-from .constants import (
-    HISTORY_FILE,
-    LOGSDIR,
-    MULTIPROMPT_SEPARATOR,
-    PROMPT_USER,
-)
+from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
+from .dirs import get_logs_dir, get_readline_history_file
 from .llm import init_llm, reply
 from .logmanager import LogManager, _conversations
 from .message import Message
@@ -135,12 +131,11 @@ def main(
     stream: bool,
     verbose: bool,
     no_confirm: bool,
-    show_hidden: bool,
     interactive: bool,
+    show_hidden: bool,
     version: bool,
 ):
     """Main entrypoint for the CLI."""
-
     if version:
         # print version and exit
         print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
@@ -280,13 +275,14 @@ def loop(
 
 def get_name(name: str) -> Path:
     datestr = datetime.now().strftime("%Y-%m-%d")
+    logsdir = get_logs_dir()
 
     # returns a name for the new conversation
     if name == "random":
         # check if name exists, if so, generate another one
         for _ in range(3):
             name = generate_name()
-            logpath = LOGSDIR / f"{datestr}-{name}"
+            logpath = logsdir / f"{datestr}-{name}"
             if not logpath.exists():
                 break
         else:
@@ -296,7 +292,7 @@ def get_name(name: str) -> Path:
             # ask for name, or use random name
             name = input("Name for conversation (or empty for random words): ")
             name = f"{datestr}-{name}"
-            logpath = LOGSDIR / name
+            logpath = logsdir / name
 
             # check that name is unique/doesn't exist
             if not logpath.exists():
@@ -309,7 +305,7 @@ def get_name(name: str) -> Path:
             datetime.strptime(name[:10], "%Y-%m-%d")
         except ValueError:
             name = f"{datestr}-{name}"
-        logpath = LOGSDIR / name
+        logpath = logsdir / name
     return logpath
 
 
@@ -330,13 +326,14 @@ def _load_readline_history() -> None:
     readline.set_auto_history(True)
     # had some bugs where it grew to gigs, which should be fixed, but still good precaution
     readline.set_history_length(100)
+    history_file = get_readline_history_file()
     try:
-        readline.read_history_file(HISTORY_FILE)
+        readline.read_history_file(history_file)
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
 
-    atexit.register(readline.write_history_file, HISTORY_FILE)
+    atexit.register(readline.write_history_file, history_file)
 
 
 def get_logfile(name: str, interactive=True) -> Path:
@@ -351,7 +348,7 @@ def get_logfile(name: str, interactive=True) -> Path:
 
     # filter out test conversations
     # TODO: save test convos to different folder instead
-    prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
+    # prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
     NEWLINE = "\n"
     prev_convs = [
@@ -370,7 +367,7 @@ def get_logfile(name: str, interactive=True) -> Path:
         if index == 0:
             logdir = get_name(name)
         else:
-            logdir = LOGSDIR / prev_conv_files[index - 1].parent
+            logdir = get_logs_dir() / prev_conv_files[index - 1].parent
     else:
         logdir = get_name(name)
 
@@ -474,6 +471,7 @@ def _parse_prompt(prompt: str) -> str:
                 "Failed to import browser tool, skipping URL expansion."
                 "You might have to install browser extras."
             )
+            continue
 
         try:
             content = read_url(url)

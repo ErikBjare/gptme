@@ -1,9 +1,23 @@
+import os
 import random
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import gptme.cli
+import gptme.constants
 import pytest
 from click.testing import CliRunner
 from gptme.constants import CMDFIX, MULTIPROMPT_SEPARATOR
+
+
+@pytest.fixture(scope="session", autouse=True)
+def tmp_data_dir():
+    tmpdir = TemporaryDirectory().name
+    Path(tmpdir).mkdir(parents=True, exist_ok=True)
+
+    # set the environment variable
+    print(f"setting XDG_DATA_HOME to {tmpdir}")
+    os.environ["XDG_DATA_HOME"] = tmpdir
 
 
 @pytest.fixture(scope="session")
@@ -95,6 +109,8 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
 
 
 def test_command_rename(args: list[str], runner: CliRunner, name: str):
+    args_orig = args.copy()
+
     # tests the /rename command
     name += "-rename"
     args.append(f"{CMDFIX}rename {name}")
@@ -103,6 +119,7 @@ def test_command_rename(args: list[str], runner: CliRunner, name: str):
     assert result.exit_code == 0
 
     # test with "auto" name
+    args = args_orig.copy()
     args.append(f"{CMDFIX}rename auto")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
