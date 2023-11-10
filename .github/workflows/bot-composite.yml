@@ -1,0 +1,243 @@
+name: 'gptme-bot'
+description: 'A composite action for the gptme-bot workflow'
+inputs:
+  openai_api_key:
+    description: 'OpenAI API Key'
+    required: true
+  github_token:
+    description: 'GitHub Token'
+    required: true
+  issue_number:
+    description: 'Issue Number'
+    required: true
+  comment_body:
+    description: 'Comment Body'
+    required: true
+  comment_id:
+    description: 'Comment ID'
+    required: true
+  repo_name:
+    description: 'Repository Name'
+    required: true
+  user_name:
+    description: 'User Name'
+    required: true
+  branch_base:
+    description: 'Base Branch'
+    required: true
+  python_version:
+    description: 'Python Version'
+    required: true
+  is_pr:
+    description: 'Is Pull Request'
+    required: true
+  branch_name:
+    description: 'Branch Name'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Detect gptme command
+      id: detect_command
+      run: |
+        # Check if the comment starts with "@gptme"
+        if [[ "${{ inputs.comment_body }}" == "@gptme "* ]]; then
+          # Extract the command
+          GPTME_COMMAND=${{ inputs.comment_body }}#"@gptme "
+          # Escape double quotes
+          # GPTME_COMMAND="${GPTME_COMMAND//\"/\\\"}"
+          # Set output
+          {
+            echo "gptme_command<<EOFMAGIC"
+            echo $GPTME_COMMAND
+            echo "EOFMAGIC"
+          } >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Fail if author not on whitelist
+      if: steps.detect_command.outputs.gptme_command
+      run: |
+        WHITELIST=("ErikBjare")  # Add your allowed usernames here
+        COMMENT_AUTHOR="${{ inputs.user_name }}"
+
+        if [[ ! " ${WHITELIST[@]} " =~ " ${COMMENT_AUTHOR} " ]]; then
+          echo "Error: Author ${COMMENT_AUTHOR} is not on the whitelist."
+          exit 1
+        else
+          echo "Author ${COMMENT_AUTHOR} is on the whitelist."
+        fi
+      shell: bash
+
+    - name: React to comment
+      if: steps.detect_command.outputs.gptme_command
+      run: |
+        gh api /repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/issues/comments/${{ inputs.comment_id }}/reactions -X POST -f content='+1'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install ctags
+      run: sudo apt install universal-ctags
+      shell: bash
+
+    - name: Checkout PR branch if comment is on a PR
+      id: checkout_branch
+      run: |
+        # Fetch details about the "issue" the comment is on
+        DATA=$(gh api /repos/${{ github.repository }}/issues/${{ inputs.issue_number }})
+
+        # Extract whether this "issue" is a PR and
+        IS_PR=${{ inputs.is_pr }}
+
+        # If this is a PR, checkout its branch
+        if [[ "$IS_PR" != "null" ]]; then
+          # Fetch details about the PR the comment is on
+          DATA=$(gh api /repos/${{ github.repository }}/pulls/${{ inputs.issue_number }})
+
+          # Get the PR's branch name
+          BRANCH_NAME=${{ inputs.branch_name }}
+          git fetch origin $BRANCH_NAME
+          git checkout $BRANCH_NAME
+        else
+          # Create a new branch and push changes
+          BRANCH_NAME="gptme-bot-changes-$(date +'%Y%m%d%H%M%S')"
+          git checkout -b $BRANCH_NAME
+        fi
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - name: Install poetry
+      run: pipx install poetry
+      shell: bash
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python_version }}
+        cache: 'poetry'
+
+    - name: Install dependencies
+      run: |
+        make build
+        poetry install -E datascience
+      shell: bash
+
+    - name: Run gptme
+      run: |
+        gh issue view ${{ inputs.issue_number }} > issue.md
+        gh issue view ${{ inputs.issue_number }} -c > comments.md
+
+        # strip long <details>...</details> from issue.md and comments.md
+        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md
+        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
+
+        # install a shim that makes `git commit` a no-op (in case it would get that idea prematurely)
+        source scripts/git-shim.sh
+
+        # Run gptme with the extracted command and save logs
+        poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
+
+        # remove tmp files so that they do not get committed
+        rm issue.md comments.md
+
+        # stage changes
+        git add -A
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+
+    - name: Generate commit message
+      run: |
+        # generate commit message
+        poetry run gptme --non-interactive "Run `git diff --staged`, then write a commit message for it to message.txt, following conventional commits. Don't commit."
+      shell: bash
+
+    - name: Commit, push, comment
+      run: |
+        # Read and format log
+        ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
+
+        RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        COMMENT_URL="https://github.com/${{ github.repository }}/issues/${{ inputs.issue_number }}#issuecomment-${{ inputs.comment_id }}"
+
+        # commit message & description
+        COMMIT_MSG="$(cat message.txt || echo 'no commit message')"
+        COMMIT_DESC="\`gptme '$GPTME_COMMAND'\`
+
+        Triggered by: $COMMENT_URL
+        Run: $RUN_URL"
+
+        # commit message with description
+        COMMIT_MSG_FULL="$COMMIT_MSG
+
+        $COMMIT_DESC"
+
+        # commit message with description and log
+        COMMIT_MSG_FULL_WITH_LOG="$COMMIT_MSG_FULL
+
+        <details>
+        <summary>Log</summary>
+        <pre>$(cat log.txt || echo 'could not get log')</pre>
+        </details>"
+
+        git config user.name "gptme-bot"
+        git config user.email "gptme-bot@superuserlabs.org"
+
+        git commit -m "$COMMIT_MSG_FULL"
+
+        # Push changes to the PR branch
+        git push -u origin $BRANCH_NAME
+
+        if [[ $ISSUE_TYPE == "pull_request" ]]; then
+          # Comment on the PR
+          echo "Changes have been pushed to this pull request." | gh pr comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+        else
+          # Some say this helps! https://github.com/cli/cli/issues/2691#issuecomment-1289521962
+          sleep 1
+
+          # Create a PR
+          PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo $USER_NAME/$REPO_NAME | grep -o 'https://github.com[^ ]*')
+          # These are redundant/implied: --base $BRANCH_BASE --head $USER_NAME:$BRANCH_NAME
+
+          # Comment on the issue with the PR link
+          echo "A pull request has been created for this issue: $PR_URL" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+        fi
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        ISSUE_TYPE: ${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        USER_NAME: ${{ inputs.user_name }}
+        BRANCH_NAME: ${{ steps.checkout_branch.outputs.branch_name }}
+        BRANCH_BASE: ${{ inputs.branch_base }}
+
+    - name: Report error
+      if: failure()
+      run: |
+        # reply to the comment that we could not fulfill the request
+        RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
+        if [[ -f log.txt ]]; then
+          MESSAGE+="
+        <details>
+        <summary>Conversation log</summary>
+        <pre>$(cat log.txt)</pre>
+        </details>"
+        fi
+        echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        USER_NAME: ${{ inputs.user_name }}
