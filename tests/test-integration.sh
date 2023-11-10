@@ -4,7 +4,7 @@
 # gpt-3.5-turbo is a lot faster, so makes running the tests faster,
 # but gpt-4 is more accurate, so passes more complex tests where gpt-3.5-turbo stumbles.
 # there is also gpt-3.5-turbo-16k, which handles contexts up to 16k tokens (vs gpt-4's 8k and gpt-3.5-turbo's 4k).
-MODEL="gpt-3.5-turbo"
+MODEL="gpt-4-1106-preview"
 ARGS="--model $MODEL"
 
 
@@ -93,11 +93,15 @@ gptme 'write a hello world program in c to hello.c, then patch it to ask for you
 gptme 'write class that implements a linked list, then fill in the implementation with patch, then test it'
 # works!
 
+# 3 complex plots
+gptme 'make a figure with 3 plots: one timeseries plot with multiple series (upper), one 3d plot of a sphere (left-bottom), and one 2d plot of a circle (right-bottom). Make it colorful and fancy!'
+
 if [ "$interactive" = "1" ]; then
     # interactive matplotlib
     gptme 'plot an x^2 graph'
 fi
 
+# generate a mandelbrot set
 gptme 'render mandelbrot set to mandelbrot.png'
 
 # very heavy! run by hand
