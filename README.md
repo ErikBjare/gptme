@@ -50,7 +50,7 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
 - 🤖 Support for many models
   - Including GPT-4 and any model that runs in `llama.cpp`
 - 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
-  - Operates in this repo! (see #18 for example)
+  - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
 - ✨ Many smaller features to ensure a great experience
   - Tab completion
