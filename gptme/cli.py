@@ -4,6 +4,7 @@ import importlib.metadata
 import io
 import logging
 import os
+import re
 import readline  # noqa: F401
 import sys
 import urllib.parse
@@ -52,9 +53,15 @@ The chat offers some commands that can be used to interact with the system:
 {action_readme}"""
 
 
-def init(verbose: bool, llm: LLMChoice, model: str, interactive: bool):
-    # log init
-    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+_init_done = False
+
+
+def init(llm: LLMChoice, model: str, interactive: bool):
+    global _init_done
+    if _init_done:
+        logger.warning("init() called twice, ignoring")
+        return
+    _init_done = True
 
     # init
     logger.debug("Started")
@@ -71,6 +78,11 @@ def init(verbose: bool, llm: LLMChoice, model: str, interactive: bool):
         register_tabcomplete()
 
     init_tools()
+
+
+def init_logging(verbose):
+    # log init
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
 
 @click.command(help=docstring)
@@ -144,7 +156,8 @@ def main(
     if "PYTEST_CURRENT_TEST" in os.environ:
         interactive = False
 
-    init(verbose, llm, model, interactive)
+    # init logging
+    init_logging(verbose)
 
     if not interactive:
         no_confirm = True
@@ -153,14 +166,14 @@ def main(
         logger.warning("Skipping all confirmation prompts.")
 
     # get initial system prompt
-    prompt_msgs = [get_prompt(prompt_system)]
+    initial_msgs = [get_prompt(prompt_system)]
 
     # if stdin is not a tty, we're getting piped input, which we should include in the prompt
     if not sys.stdin.isatty():
         # fetch prompt from stdin
         prompt_stdin = _read_stdin()
         if prompt_stdin:
-            prompt_msgs += [Message("system", f"```stdin\n{prompt_stdin}\n```")]
+            initial_msgs += [Message("system", f"```stdin\n{prompt_stdin}\n```")]
 
             # Attempt to switch to interactive mode
             sys.stdin.close()
@@ -172,31 +185,60 @@ def main(
                     "Failed to switch to interactive mode, continuing in non-interactive mode"
                 )
 
+    # join prompts, grouped by `-` if present, since that's the separator for multiple-round prompts
+    sep = "\n\n" + MULTIPROMPT_SEPARATOR
+    prompts = [p.strip() for p in "\n\n".join(prompts).split(sep) if p]
+    prompt_msgs = [Message("user", p) for p in prompts]
+
+    chat(
+        prompt_msgs,
+        initial_msgs,
+        name,
+        llm,
+        model,
+        stream,
+        no_confirm,
+        interactive,
+        show_hidden,
+    )
+
+
+def chat(
+    prompt_msgs: list[Message],
+    initial_msgs: list[Message],
+    name: str,
+    llm: LLMChoice,
+    model: ModelChoice,
+    stream: bool = True,
+    no_confirm: bool = False,
+    interactive: bool = True,
+    show_hidden: bool = False,
+):
+    """
+    Run the chat loop.
+
+    Callable from other modules.
+    """
+    # init
+    init(llm, model, interactive)
+
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
-        name, interactive=(not prompts and interactive) and sys.stdin.isatty()
+        name, interactive=(not prompt_msgs and interactive) and sys.stdin.isatty()
     )
     print(f"Using logdir {logfile.parent}")
-    log = LogManager.load(logfile, initial_msgs=prompt_msgs, show_hidden=show_hidden)
+    log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
 
     # print log
     log.print()
     print("--- ^^^ past messages ^^^ ---")
 
-    # check if any prompt is a full path, if so, replace it with the contents of that file
-    # TODO: add support for directories
-    # TODO: maybe do this for all prompts, not just those passed on cli
-    prompts = [_parse_prompt(p) for p in prompts]
-    # join prompts, grouped by `-` if present, since that's the separator for multiple-round prompts
-    sep = "\n\n" + MULTIPROMPT_SEPARATOR
-    prompts = [p.strip() for p in "\n\n".join(prompts).split(sep) if p]
-
     # main loop
     while True:
-        # if prompts given on cli, insert next prompt into log
-        if prompts:
-            prompt = prompts.pop(0)
-            msg = Message("user", prompt)
+        # if prompt_msgs given, insert next prompt into log
+        if prompt_msgs:
+            msg = prompt_msgs.pop(0)
+            msg = _include_paths(msg)
             log.append(msg)
             # if prompt is a user-command, execute it
             if execute_cmd(msg, log):
@@ -251,7 +293,9 @@ def loop(
             # Empty command, ask for input again
             print()
             return
-        yield Message("user", inquiry, quiet=True)
+        msg = Message("user", inquiry, quiet=True)
+        msg = _include_paths(msg)
+        yield msg
 
     # print response
     try:
@@ -310,6 +354,7 @@ def get_name(name: str) -> Path:
 
 
 # default history if none found
+# NOTE: there are also good examples in the integration tests
 history_examples = [
     "What is love?",
     "Have you heard about an open-source app called ActivityWatch?",
@@ -420,7 +465,42 @@ def _read_stdin() -> str:
     return all_data
 
 
+def _include_paths(msg: Message) -> Message:
+    """Searches the message for any valid paths and appends the contents of such files as codeblocks."""
+    # TODO: add support for directories?
+    assert msg.role == "user"
+
+    # list the current directory
+    cwd = Path.cwd()
+    cwd_files = [f.name for f in cwd.iterdir()]
+
+    # regex to match absolute, home, and relative paths anywhere in the message, could be wrapped with spaces or carets
+    regex = re.compile(r"(\s|^|`)(/|~|\.|)([^`~\s\?]+)(?=(\s|$|`|\?))")
+
+    # find all matches
+    # NOTE: findall returns non-overlapping matches,
+    #       which is why we have the lookahead in the regex.
+    matches = regex.findall(msg.content)
+    append_msg = ""
+    for match in matches:
+        if match[1] in ["/", "~", "."] or any(match[2] in file for file in cwd_files):
+            p = _parse_prompt("".join(match[1:3]))
+            if p:
+                # if we found a valid path, replace it with the contents of the file
+                append_msg += "\n\n" + p
+
+    # append the message with the file contents
+    if append_msg:
+        msg.content += append_msg
+
+    return msg
+
+
 def _parse_prompt(prompt: str) -> str:
+    """
+    Takes a string that might be a path,
+    and if so, returns the contents of that file wrapped in a codeblock.
+    """
     # if prompt is a command, exit early (as commands might take paths as arguments)
     if any(
         prompt.startswith(command)

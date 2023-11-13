@@ -147,7 +147,7 @@ def prompt_tools() -> Generator[Message, None, None]:
 
 ## python
 
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment. 
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
 Python will respond with the output of the execution.
 
 The following libraries are available:
