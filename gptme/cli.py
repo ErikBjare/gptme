@@ -474,8 +474,9 @@ def _include_paths(msg: Message) -> Message:
     cwd = Path.cwd()
     cwd_files = [f.name for f in cwd.iterdir()]
 
-    # regex to match absolute, home, and relative paths anywhere in the message, could be wrapped with spaces or carets
-    regex = re.compile(r"(\s|^|`)(/|~|\.|)([^`~\s\?]+)(?=(\s|$|`|\?))")
+    # regex to match absolute, home, and relative paths anywhere in the message,
+    # could be wrapped with spaces or carets, possibly followed by a question mark
+    regex = re.compile(r"(\s|^|`)(/|~|\.|)([^`~\s]+)(?=(\s|$|`))")
 
     # find all matches
     # NOTE: findall returns non-overlapping matches,
@@ -483,7 +484,11 @@ def _include_paths(msg: Message) -> Message:
     matches = regex.findall(msg.content)
     append_msg = ""
     for match in matches:
-        if match[1] in ["/", "~", "."] or any(match[2] in file for file in cwd_files):
+        if (
+            match[1] in ["/", "~", "."]
+            or match[2].startswith("http")
+            or any(match[2] in file for file in cwd_files)
+        ):
             p = _parse_prompt("".join(match[1:3]))
             if p:
                 # if we found a valid path, replace it with the contents of the file
@@ -493,10 +498,16 @@ def _include_paths(msg: Message) -> Message:
     if append_msg:
         msg.content += append_msg
 
+    # check all words in the message if they are a URL
+    urls = []
+    for word in msg.content.split():
+        if word.startswith("http"):
+            urls.append(word)
+
     return msg
 
 
-def _parse_prompt(prompt: str) -> str:
+def _parse_prompt(prompt: str) -> str | None:
     """
     Takes a string that might be a path,
     and if so, returns the contents of that file wrapped in a codeblock.
@@ -506,7 +517,7 @@ def _parse_prompt(prompt: str) -> str:
         prompt.startswith(command)
         for command in [f"{CMDFIX}{cmd}" for cmd in action_descriptions.keys()]
     ):
-        return prompt
+        return None
 
     try:
         # check if prompt is a path, if so, replace it with the contents of that file
@@ -541,7 +552,7 @@ def _parse_prompt(prompt: str) -> str:
     if paths or urls:
         prompt += "\n\n"
     for path in paths:
-        prompt += _parse_prompt(path)
+        prompt += _parse_prompt(path) or ""
     for url in urls:
         try:
             # noreorder
