@@ -4,8 +4,8 @@ Gives the LLM agent the ability to patch files, by using a adapted version git c
 Inspired by aider.
 """
 import re
-from pathlib import Path
 from collections.abc import Generator
+from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute
@@ -67,8 +67,12 @@ def apply(codeblock: str, content: str) -> str:
 def apply_file(codeblock, filename):
     codeblock = codeblock.strip()
     _patch, filename = codeblock.splitlines()[0].split()
-    assert _patch == "```patch"
-    assert Path(filename).exists()
+    if not _patch == "```patch":
+        raise ValueError(
+            "invalid patch, codeblock is missing leading ```patch", codeblock
+        )
+    if not Path(filename).exists():
+        raise FileNotFoundError(filename)
 
     with open(filename) as f:
         content = f.read()
@@ -94,5 +98,5 @@ def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None
     try:
         apply_file(codeblock, fn)
         yield Message("system", "Patch applied")
-    except ValueError as e:
+    except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
