@@ -1,13 +1,16 @@
-import io
-from contextlib import redirect_stderr, redirect_stdout
-from logging import getLogger
 from collections.abc import Generator
+from logging import getLogger
+
+from IPython.terminal.embed import InteractiveShellEmbed
+from IPython.utils.io import capture_output
 
 from ..message import Message
 from ..util import ask_execute, print_preview
 
 logger = getLogger(__name__)
-locals_ = {}  # type: ignore
+
+# IPython instance
+_ipython = None
 
 
 def init_python():
@@ -28,26 +31,28 @@ def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
     else:
         print("Skipping confirmation")
 
-    exc = None
-    with redirect_stdout(io.StringIO()) as out, redirect_stderr(io.StringIO()) as err:
-        try:
-            exec(code, locals_, locals_)  # type: ignore
-        except Exception as e:
-            exc = e
-    stdout = out.getvalue().strip()
-    stderr = err.getvalue().strip()
-    # print(f"Completed execution: stdout={stdout}, stderr={stderr}, exc={exc}")
+    # Create an IPython instance if it doesn't exist yet
+    global _ipython
+    if _ipython is None:
+        _ipython = InteractiveShellEmbed()
+
+    # Capture the standard output and error streams
+    with capture_output() as captured:
+        # Execute the code
+        result = _ipython.run_cell(code)
 
     output = ""
-    if stdout:
-        output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
-    if stderr:
-        output += f"stderr:\n```\n{stderr.rstrip()}\n```\n\n"
-    if exc:
-        tb = exc.__traceback__
+    if captured.stdout:
+        output += f"stdout:\n```\n{captured.stdout.rstrip()}\n```\n\n"
+    if captured.stderr:
+        output += f"stderr:\n```\n{captured.stderr.rstrip()}\n```\n\n"
+    if result.error_in_exec:
+        tb = result.error_in_exec.__traceback__
         while tb.tb_next:  # type: ignore
             tb = tb.tb_next  # type: ignore
-        output += f"Exception during execution on line {tb.tb_lineno}:\n  {exc.__class__.__name__}: {exc}"  # type: ignore
+        output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"  # type: ignore
+    if result.result is not None:
+        output += f"Result:\n```\n{result.result}\n```\n\n"
     yield Message("system", "Executed code block.\n\n" + output)
 
 
