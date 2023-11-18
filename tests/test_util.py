@@ -51,7 +51,8 @@ print("hello world")
     assert (
         codeblocks[0]
         == """python
-print("hello world")"""
+print("hello world")
+"""
     )
 
     # test a codeblock which contains triple backticks
@@ -65,5 +66,6 @@ print("hello ``` world")
     assert (
         codeblocks[0]
         == """python
-print("hello ``` world")"""
+print("hello ``` world")
+"""
     )

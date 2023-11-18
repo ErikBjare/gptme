@@ -86,7 +86,7 @@ def is_supported_codeblock(codeblock: str) -> bool:
 def get_codeblocks(content: str) -> Generator[str, None, None]:
     """Returns all codeblocks in a message."""
     for codeblock in ("\n" + content).split("\n```")[1::2]:
-        yield codeblock
+        yield codeblock + "\n"
 
 
 def init_tools() -> None:
