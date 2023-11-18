@@ -3,6 +3,7 @@ import os
 import re
 import select
 import subprocess
+import sys
 from collections.abc import Generator
 
 from ..message import Message
@@ -29,7 +30,7 @@ class ShellSession:
         # set GIT_PAGER=cat
         self.run_command("export GIT_PAGER=cat")
 
-    def run_command(self, command: str) -> tuple[int | None, str, str]:
+    def run_command(self, command: str, output=True) -> tuple[int | None, str, str]:
         assert self.process.stdin
 
         full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
@@ -60,8 +61,10 @@ class ShellSession:
                         continue
                     if fd == self.stdout_fd:
                         stdout.append(line)
+                        print(line)
                     elif fd == self.stderr_fd:
                         stderr.append(line)
+                        print(line, file=sys.stderr)
             if read_delimiter:
                 break
         return (
