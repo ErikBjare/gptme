@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from gptme.tools import is_supported_codeblock
+from gptme.tools import get_codeblocks, is_supported_codeblock
 from gptme.util import epoch_to_age, generate_name, is_generated_name
 
 
@@ -38,3 +38,32 @@ print("hello world")
     # last block is plain/unsupported
     s = f"""{block_python}\n{block_plain}"""
     assert not is_supported_codeblock(s)
+
+
+def test_get_codeblocks():
+    s = """```python
+print("hello world")
+```
+"""
+
+    codeblocks = list(get_codeblocks(s))
+    assert len(codeblocks) == 1
+    assert (
+        codeblocks[0]
+        == """python
+print("hello world")"""
+    )
+
+    # test a codeblock which contains triple backticks
+    s = """```python
+print("hello ``` world")
+```
+"""
+
+    codeblocks = list(get_codeblocks(s))
+    assert len(codeblocks) == 1
+    assert (
+        codeblocks[0]
+        == """python
+print("hello ``` world")"""
+    )

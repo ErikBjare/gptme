@@ -25,8 +25,7 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     # get all markdown code blocks
-    codeblocks = [codeblock for codeblock in msg.content.split("```")[1::2]]
-    for codeblock in codeblocks:
+    for codeblock in get_codeblocks(msg.content):
         yield from execute_codeblock(codeblock, ask)
 
 
@@ -82,6 +81,12 @@ def is_supported_codeblock(codeblock: str) -> bool:
         return True
     else:
         return False
+
+
+def get_codeblocks(content: str) -> Generator[str, None, None]:
+    """Returns all codeblocks in a message."""
+    for codeblock in ("\n" + content).split("\n```")[1::2]:
+        yield codeblock
 
 
 def init_tools() -> None:
