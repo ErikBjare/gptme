@@ -1,3 +1,4 @@
+import importlib
 import os
 import random
 from pathlib import Path
@@ -246,6 +247,18 @@ def test_stdin(args: list[str], runner: CliRunner):
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args, input="hello")
     assert "```stdin\nhello\n```" in result.output
+    assert result.exit_code == 0
+
+
+@pytest.mark.slow
+@pytest.mark.skipif(
+    importlib.util.find_spec("playwright") is None,
+    reason="playwright not installed",
+)
+def test_url(args: list[str], runner: CliRunner):
+    args.append("Who is the CEO of https://superuserlabs.org?")
+    result = runner.invoke(gptme.cli.main, args)
+    assert "Erik Bjäreholt" in result.output
     assert result.exit_code == 0
 
 

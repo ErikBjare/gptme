@@ -2,7 +2,7 @@ import click
 
 from gptme.util import logger
 
-from .cli import init
+from .cli import init, init_logging
 
 
 @click.command("gptme-server")
@@ -20,7 +20,8 @@ from .cli import init
 )
 def main(verbose, llm, model):  # pragma: no cover
     """Starts a server and web UI."""
-    init(verbose, llm, model, interactive=False)
+    init_logging(verbose)
+    init(llm, model, interactive=False)
 
     # if flask not installed, ask the user to install `server` extras
     try:

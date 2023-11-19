@@ -14,7 +14,7 @@ from gptme.server import create_app  # fmt: skip
 
 @pytest.fixture(autouse=True)
 def init_():
-    init(verbose=False, llm="openai", model="gpt-3.5-turbo", interactive=False)
+    init(llm="openai", model="gpt-3.5-turbo", interactive=False)
 
 
 @pytest.fixture
