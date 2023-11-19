@@ -471,25 +471,32 @@ def _include_paths(msg: Message) -> Message:
     assert msg.role == "user"
 
     # list the current directory
-    cwd = Path.cwd()
-    cwd_files = [f.name for f in cwd.iterdir()]
+    cwd_files = [f.name for f in Path.cwd().iterdir()]
 
-    # regex to match absolute, home, and relative paths anywhere in the message,
-    # could be wrapped with spaces or carets, possibly followed by a question mark
-    regex = re.compile(r"(\s|^|`)(/|~|\.|)([^`~\s]+)(?=(\s|$|`))")
-
-    # find all matches
-    # NOTE: findall returns non-overlapping matches,
-    #       which is why we have the lookahead in the regex.
-    matches = regex.findall(msg.content)
+    # match absolute, home, relative paths, and URLs anywhere in the message
+    # could be wrapped with spaces or backticks, possibly followed by a question mark
+    # don't look in codeblocks, and don't match paths that are already in codeblocks
+    # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
+    content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
     append_msg = ""
-    for match in matches:
+    for word in re.split(r"[\s`]", content_no_codeblocks):
+        # remove wrapping backticks
+        word = word.strip("`")
+        # remove trailing question mark
+        word = word.rstrip("?")
+        if not word:
+            continue
         if (
-            match[1] in ["/", "~", "."]
-            or match[2].startswith("http")
-            or any(match[2] in file for file in cwd_files)
+            # if word starts with a path character
+            word[0] in ["/", "~", "."]
+            # or word is a URL
+            or word.startswith("http")
+            # or word is a file in the current dir,
+            # or a path that starts in a folder in the current dir
+            or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
-            p = _parse_prompt("".join(match[1:3]))
+            logger.debug(f"potential path/url: {word=}")
+            p = _parse_prompt(word)
             if p:
                 # if we found a valid path, replace it with the contents of the file
                 append_msg += "\n\n" + p
@@ -497,12 +504,6 @@ def _include_paths(msg: Message) -> Message:
     # append the message with the file contents
     if append_msg:
         msg.content += append_msg
-
-    # check all words in the message if they are a URL
-    urls = []
-    for word in msg.content.split():
-        if word.startswith("http"):
-            urls.append(word)
 
     return msg
 
@@ -549,10 +550,17 @@ def _parse_prompt(prompt: str) -> str | None:
                 urls.append(word)
         except ValueError:
             pass
+
+    result = ""
     if paths or urls:
-        prompt += "\n\n"
+        result += "\n\n"
+        if paths:
+            logger.debug(f"{paths=}")
+        if urls:
+            logger.debug(f"{urls=}")
     for path in paths:
-        prompt += _parse_prompt(path) or ""
+        result += _parse_prompt(path) or ""
+
     for url in urls:
         try:
             # noreorder
@@ -566,11 +574,11 @@ def _parse_prompt(prompt: str) -> str | None:
 
         try:
             content = read_url(url)
-            prompt += f"```{url}\n{content}\n```"
+            result += f"```{url}\n{content}\n```"
         except Exception as e:
             logger.warning(f"Failed to read URL {url}: {e}")
 
-    return prompt
+    return result
 
 
 if __name__ == "__main__":
