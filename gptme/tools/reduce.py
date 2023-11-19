@@ -17,7 +17,7 @@ def reduce_log(
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
     # get the token limit
     if limit is None:
-        limit = 0.9 * get_model()["context"]
+        limit = 0.9 * get_model().context
 
     # if we are below the limit, return the log as-is
     tokens = len_tokens(log)
@@ -101,7 +101,7 @@ def limit_log(log: list[Message]) -> list[Message]:
     then removes the last message to get below the limit.
     Will always pick the first few system messages.
     """
-    limit = get_model()["context"]
+    limit = get_model().context
 
     # Always pick the first system messages
     initial_system_msgs = []

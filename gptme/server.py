@@ -4,7 +4,6 @@ Serve web UI and API for the application.
 See here for instructions how to serve matplotlib figures:
  - https://matplotlib.org/stable/gallery/user_interfaces/web_application_server_sgskip.html
 """
-
 import io
 from contextlib import redirect_stdout
 
@@ -81,7 +80,7 @@ def api_conversation_post(logfile: str):
 def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
-    model = req_json.get("model", get_model()["model"])
+    model = req_json.get("model", get_model().model)
 
     # load conversation
     log = LogManager.load(logfile, branch=req_json.get("branch", "main"))
