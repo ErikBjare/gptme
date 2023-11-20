@@ -1,6 +1,8 @@
 import logging
 from dataclasses import dataclass
-from typing import NotRequired, TypedDict
+from typing import TypedDict
+
+from typing_extensions import NotRequired
 
 logger = logging.getLogger(__name__)
 
