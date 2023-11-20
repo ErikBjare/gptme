@@ -488,7 +488,7 @@ def _include_paths(msg: Message) -> Message:
             continue
         if (
             # if word starts with a path character
-            word[0] in ["/", "~", "."]
+            any(word.startswith(s) for s in ["/", "~/", "./"])
             # or word is a URL
             or word.startswith("http")
             # or word is a file in the current dir,
