@@ -49,11 +49,16 @@ jobs:
       if: contains(matrix.extras, 'browser') || contains(matrix.extras, 'all')
       run: poetry run playwright install
 
+    # OpenAI sometimes randomly aborts connections, so we retry once
     - name: Run tests
+      uses: nick-fields/retry@v2
       env:
         TERM: xterm
-      run: |
-        make test SLOW=true
+      with:
+        timeout_minutes: 5
+        max_attempts: 2
+        retry_wait_seconds: 10
+        command: make test SLOW=true
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
