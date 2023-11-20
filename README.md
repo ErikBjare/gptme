@@ -18,22 +18,84 @@ GPTMe
 
 A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local model is used).
 
-## 🎥 Demo
+## 🎥 Demos
 
-> [!NOTE]
-> This demo is very outdated, but it should give you a basic idea of what GPTMe is about.
-> I hope to make a new demo soon, to show off all the new amazing features.
+<table>
+  <tr>
+    <th>Fibonacci (old)</th>  
+    <th>Snake with curses</th>
+  </tr>
+  <tr>
+    <td width="50%">
+    
+[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)    
 
-[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
-
-<details>
-<summary>Steps</summary>
-<ol>
+  <details>
+  <summary>Steps</summary>
+  <ol>
     <li> Create a new dir 'gptme-test-fib' and git init
     <li> Write a fib function to fib.py, commit
     <li> Create a public repo and push to GitHub
-</ol>
-</details>
+  </ol>
+  </details>
+
+  </td>
+
+  <td width="50%">
+
+[![621992-resvg](https://github.com/ErikBjare/gptme/assets/1405370/72ac819c-b633-495e-b20e-2e40753ec376)](https://asciinema.org/a/621992)
+
+  <details>
+  <summary>Steps</summary>
+  <ol>
+    <li> Create a snake game with curses to snake.py
+    <li> Running fails, ask gptme to fix a bug
+    <li> Game runs
+    <li> Ask gptme to add color
+    <li> Minor struggles
+    <li> Finished game with green snake and red apple pie!
+  </ol>
+  </details>
+    
+  </td>
+</tr>
+
+<tr>
+  <th>Mandelbrot with curses</th>
+  <th>Answer question from URL</th>
+</tr>
+<tr>
+  <td width="50%">
+    
+[![mandelbrot-curses](https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95)](https://asciinema.org/a/621991)
+
+  <details>
+  <summary>Steps</summary>
+  <ol>
+    <li> Render mandelbrot with curses to mandelbrot_curses.py
+    <li> Program runs
+    <li> Add color
+  </ol>
+  </details>
+
+  </td>
+
+  <td width="25%">
+
+[![superuserlabs-ceo](https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2)]()
+
+
+  <details>
+  <summary>Steps</summary>
+  <ol>
+    <li> Ask who the CEO of Superuser Labs is, passing website URL
+    <li> gptme browses the website, and answers correctly
+  </ol>
+  </details>
+    
+  </td>
+  </tr>
+</table>
 
 ## 🌟 Features
 
