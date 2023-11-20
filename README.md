@@ -82,7 +82,7 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
 
   <td width="25%">
 
-[![superuserlabs-ceo](https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2)]()
+[![superuserlabs-ceo](https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2)](https://asciinema.org/a/621997)
 
 
   <details>
