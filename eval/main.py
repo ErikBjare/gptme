@@ -1,9 +1,10 @@
 """
 Evals for code generation tools.
+
+Inspired by a document by Anton Osika and Axel Theorell.
 """
 import inspect
 import os
-import random
 import subprocess
 import sys
 import tempfile
@@ -123,6 +124,33 @@ tests: list[ExecTest] = [
             "correct output": lambda ctx: "541" in ctx.stdout.split(),
         },
     },
+    {
+        "name": "init-git",
+        "files": {},
+        "run": "git status",
+        "prompt": "initialize a git repository, write a main.py file, and commit it",
+        "expect": {
+            "clean working tree": lambda ctx: "nothing to commit, working tree clean"
+            in ctx.stdout,
+            "main.py exists": lambda ctx: "main.py" in ctx.files,
+            "we have a commit": lambda ctx: "No commits yet" not in ctx.stdout,
+        },
+    },
+    # Fails, gets stuck on interactive stuff
+    # {
+    #     "name": "init-vue-ts-tailwind",
+    #     "files": {},
+    #     "run": "cat package.json",
+    #     "prompt": "initialize a vue project with typescript and tailwind, make a page that says 'Hello, world!'. don't try to execute it or do anything interactive",
+    #     "expect": {
+    #         "package.json exists": lambda ctx: "package.json" in ctx.files,
+    #         "vue installed": lambda ctx: '"vue":' in ctx.files["package.json"],
+    #         "tailwind installed": lambda ctx: '"tailwindcss":'
+    #         in ctx.files["package.json"],
+    #         "typescript installed": lambda ctx: '"typescript":'
+    #         in ctx.files["package.json"],
+    #     },
+    # },
 ]
 
 tests_map = {test["name"]: test for test in tests}
@@ -132,6 +160,7 @@ class GPTMeExecEnv(ExecutionEnv):
     def __init__(self):
         self.working_dir = Path(tempfile.mkdtemp(prefix="gptme-evals-"))
         self.working_dir.mkdir(parents=True, exist_ok=True)
+        self.id = self.working_dir.name.split("-")[-1]
 
     def generate(self, prompt: str):
         # change current working dir
@@ -139,18 +168,19 @@ class GPTMeExecEnv(ExecutionEnv):
 
         print("\n--- Start of generation ---")
         print(f"Working in {self.working_dir}")
-        # don't exit on sys.exit()
+        # TODO: add timeout
         try:
             gptme_chat(
                 [Message("user", prompt)],
                 [get_prompt()],
-                f"gptme-evals-{random.randint(0, 100000)}",
+                f"gptme-evals-{self.id}",
                 "openai",
                 "gpt-4-1106-preview",
                 no_confirm=True,
                 interactive=False,
             )
-        except SystemExit:
+        # don't exit on sys.exit()
+        except (SystemExit, KeyboardInterrupt):
             pass
         print("--- Finished generation ---\n")
 
@@ -195,10 +225,17 @@ class GPTMeExecEnv(ExecutionEnv):
 
     def download(self) -> Files:
         files = {}
+        ignore = [".git"]
         for path in self.working_dir.glob("**/*"):
+            if any(path.match(i) for i in ignore):
+                continue
             if path.is_file():
                 with open(path, "r") as f:
-                    files[str(path.relative_to(self.working_dir))] = f.read()
+                    try:
+                        content = f.read()
+                    except UnicodeDecodeError:
+                        content = "binary file"
+                    files[str(path.relative_to(self.working_dir))] = content
         return files
 
 
@@ -229,7 +266,11 @@ def execute(test: ExecTest) -> TestResult:
     print(f"\n--- Results for {test['name']} ---")
     for name, case in test["expect"].items():
         code = inspect.getsource(case).strip()
-        passed = case(ctx)
+        try:
+            passed = case(ctx)
+        except Exception as e:
+            print(f"Error while checking {name}: {e}")
+            passed = False
         checkmark = "✅" if passed else "❌"
         print(f"{checkmark} {name:20s}")
         results.append({"name": name, "passed": passed, "code": code})
@@ -264,7 +305,7 @@ def main():
         )
         for case in result["results"]:
             checkmark = "✅" if case["passed"] else "❌"
-            print(f"  - {checkmark} {case['name']}")
+            print(f"  {checkmark} {case['name']}")
 
 
 if __name__ == "__main__":
