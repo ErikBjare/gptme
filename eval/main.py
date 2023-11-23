@@ -65,6 +65,7 @@ class ResultContext:
 class CaseResult(TypedDict):
     name: str
     passed: bool
+    code: str
 
 
 class TestResult(TypedDict):
@@ -89,8 +90,8 @@ tests: list[ExecTest] = [
         "prompt": "Change the code in hello.py to print 'Hello, human!'",
         "expect": {
             "correct output": lambda ctx: ctx.stdout == "Hello, human!\n",
-            "correct file": lambda ctx: ctx.files["hello.py"]
-            == "print('Hello, human!')\n",
+            "correct file": lambda ctx: ctx.files["hello.py"].strip()
+            == "print('Hello, human!')",
         },
     },
     {
@@ -100,8 +101,8 @@ tests: list[ExecTest] = [
         "prompt": "Patch the code in hello.py to print 'Hello, human!'",
         "expect": {
             "correct output": lambda ctx: ctx.stdout == "Hello, human!\n",
-            "correct file": lambda ctx: ctx.files["hello.py"]
-            == "print('Hello, human!')\n",
+            "correct file": lambda ctx: ctx.files["hello.py"].strip()
+            == "print('Hello, human!')",
         },
     },
     {
@@ -127,7 +128,8 @@ class GPTMeExecEnv(ExecutionEnv):
         # change current working dir
         os.chdir(self.working_dir)
 
-        print("--- Start of generation ---")
+        print("\n--- Start of generation ---")
+        print(f"Working in {self.working_dir}")
         # don't exit on sys.exit()
         try:
             gptme_chat(
@@ -141,10 +143,11 @@ class GPTMeExecEnv(ExecutionEnv):
             )
         except SystemExit:
             pass
-        print("--- Finished generation ---")
+        print("--- Finished generation ---\n")
 
     def run(self, command):
         start = time.time()
+        print("\n--- Start of run ---")
         # while running, also print the stdout and stderr
         p = subprocess.Popen(
             shlex.split(command),
@@ -153,7 +156,7 @@ class GPTMeExecEnv(ExecutionEnv):
             cwd=self.working_dir,
             text=True,
         )
-        print("Running command:", command)
+        print("$", command)
         stdout_full, stderr_full = "", ""
         while p.poll() is None:
             assert p.stdout is not None
@@ -170,6 +173,7 @@ class GPTMeExecEnv(ExecutionEnv):
                 print("Timeout!")
                 p.kill()
                 break
+        print("--- Finished run ---\n")
         return stdout_full, stderr_full
 
     def upload(self, files: Files):
@@ -212,17 +216,14 @@ def execute(test: ExecTest) -> TestResult:
 
     ctx = ResultContext(files, stdout, stderr)
     results: list[CaseResult] = []
+    print(f"\n--- Results for {test['name']} ---")
     for name, case in test["expect"].items():
         code = inspect.getsource(case).strip()
-        print(f"Case {name}")
-        print(f" - code: {code}")
-        print(" - result: ", end="")
         passed = case(ctx)
-        results.append({"name": name, "passed": True})
-        if passed:
-            print("passed!")
-        else:
-            print("failed!")
+        checkmark = "✅" if passed else "❌"
+        print(f"{checkmark} {name:20s}")
+        results.append({"name": name, "passed": passed, "code": code})
+    print("--- End of results ---\n")
 
     return {
         "name": test["name"],
@@ -235,21 +236,25 @@ def main():
     test_name = sys.argv[1] if len(sys.argv) > 1 else None
     results = []
     if test_name:
+        print(f"=== Running test {test_name} ===")
         result = execute(tests_map[test_name])
         results.append(result)
     else:
+        print("=== Running all tests ===")
         for test in tests:
             result = execute(test)
             results.append(result)
 
-    print("--- Finished ---\n")
+    print("=== Finished ===\n")
     print(f"Completed {len(results)} tests:")
     for result in results:
+        checkmark = "✅" if all(case["passed"] for case in result["results"]) else "❌"
         print(
             f"- {result['name']} in {result['timings']['gen']:.2f}s (gen) {result['timings']['run']:.2f}s (run)"
         )
         for case in result["results"]:
-            print(f"  - {case['name']}: {'passed' if case['passed'] else 'failed'}")
+            checkmark = "✅" if case["passed"] else "❌"
+            print(f"  - {checkmark} {case['name']}")
 
 
 if __name__ == "__main__":
