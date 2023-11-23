@@ -4,7 +4,6 @@ Evals for code generation tools.
 import inspect
 import os
 import random
-import shlex
 import subprocess
 import sys
 import tempfile
@@ -106,6 +105,16 @@ tests: list[ExecTest] = [
         },
     },
     {
+        "name": "hello-ask",
+        "files": {"hello.py": "print('Hello, world!')"},
+        "run": "echo 'Erik' | python hello.py",
+        # TODO: work around the "don't try to execute it" part by improving gptme such that it just gives EOF to stdin in non-interactive mode
+        "prompt": "modify hello.py to ask the user for their name and print 'Hello, <name>!'. don't try to execute it",
+        "expect": {
+            "correct output": lambda ctx: "Hello, Erik!" in ctx.stdout,
+        },
+    },
+    {
         "name": "prime100",
         "files": {},
         "run": "python prime.py",
@@ -150,11 +159,12 @@ class GPTMeExecEnv(ExecutionEnv):
         print("\n--- Start of run ---")
         # while running, also print the stdout and stderr
         p = subprocess.Popen(
-            shlex.split(command),
+            command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=self.working_dir,
             text=True,
+            shell=True,
         )
         print("$", command)
         stdout_full, stderr_full = "", ""
