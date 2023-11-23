@@ -50,7 +50,7 @@ class ShellSession:
                 # 2**12 = 4096
                 # 2**16 = 65536
                 data = os.read(fd, 2**16).decode("utf-8")
-                for line in data.split("\n"):
+                for line in re.split(r"(\n)", data):
                     if "ReturnCode:" in line:
                         return_code_str = (
                             line.split("ReturnCode:")[1].split(" ")[0].strip()
@@ -61,16 +61,16 @@ class ShellSession:
                         continue
                     if fd == self.stdout_fd:
                         stdout.append(line)
-                        print(line)
+                        print(line, end="", file=sys.stdout)
                     elif fd == self.stderr_fd:
                         stderr.append(line)
-                        print(line, file=sys.stderr)
+                        print(line, end="", file=sys.stderr)
             if read_delimiter:
                 break
         return (
             return_code,
-            "\n".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
-            "\n".join(stderr).strip(),
+            "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
+            "".join(stderr).strip(),
         )
 
     def close(self):
