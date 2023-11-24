@@ -60,12 +60,14 @@ class ResultContext:
     files: Files
     stdout: str
     stderr: str
+    exit_code: int
 
 
 class CaseResult(TypedDict):
     name: str
     passed: bool
     code: str
+    duration: float
 
 
 class TestResult(TypedDict):
@@ -130,6 +132,7 @@ tests: list[ExecTest] = [
         "run": "git status",
         "prompt": "initialize a git repository, write a main.py file, and commit it",
         "expect": {
+            "clean exit": lambda ctx: ctx.exit_code == 0,
             "clean working tree": lambda ctx: "nothing to commit, working tree clean"
             in ctx.stdout,
             "main.py exists": lambda ctx: "main.py" in ctx.files,
@@ -184,7 +187,7 @@ class GPTMeExecEnv(ExecutionEnv):
             pass
         print("--- Finished generation ---\n")
 
-    def run(self, command):
+    def run(self, command) -> tuple[str, str, int]:
         start = time.time()
         print("\n--- Start of run ---")
         # while running, also print the stdout and stderr
@@ -214,7 +217,7 @@ class GPTMeExecEnv(ExecutionEnv):
                 p.kill()
                 break
         print("--- Finished run ---\n")
-        return stdout_full, stderr_full
+        return stdout_full, stderr_full, p.returncode
 
     def upload(self, files: Files):
         for name, content in files.items():
@@ -256,30 +259,38 @@ def execute(test: ExecTest) -> TestResult:
 
     # check and collect results
     run_start = time.time()
-    stdout, stderr = env.run(test["run"])
-    time.time() - run_start
+    stdout, stderr, exit_code = env.run(test["run"])
+    run_duration = time.time() - run_start
 
     files = env.download()
 
-    ctx = ResultContext(files, stdout, stderr)
+    ctx = ResultContext(files, stdout, stderr, exit_code)
     results: list[CaseResult] = []
     print(f"\n--- Results for {test['name']} ---")
     for name, case in test["expect"].items():
         code = inspect.getsource(case).strip()
+        eval_start = time.time()
         try:
             passed = case(ctx)
         except Exception as e:
             print(f"Error while checking {name}: {e}")
             passed = False
+        eval_duration = time.time() - eval_start
         checkmark = "✅" if passed else "❌"
         print(f"{checkmark} {name:20s}")
-        results.append({"name": name, "passed": passed, "code": code})
+        results.append(
+            {"name": name, "passed": passed, "code": code, "duration": eval_duration}
+        )
     print("--- End of results ---\n")
 
     return {
         "name": test["name"],
         "results": results,
-        "timings": {"gen": gen_duration, "run": 0},
+        "timings": {
+            "gen": gen_duration,
+            "run": run_duration,
+            "eval": sum(r["duration"] for r in results),
+        },
     }
 
 
@@ -300,8 +311,13 @@ def main():
     print(f"Completed {len(results)} tests:")
     for result in results:
         checkmark = "✅" if all(case["passed"] for case in result["results"]) else "❌"
+        total_duration = (
+            result["timings"]["gen"]
+            + result["timings"]["run"]
+            + result["timings"]["eval"]
+        )
         print(
-            f"- {result['name']} in {result['timings']['gen']:.2f}s (gen) {result['timings']['run']:.2f}s (run)"
+            f"- {result['name']} in {total_duration} (gen: {result['timings']['gen']:.2f}s, run: {result['timings']['run']:.2f}s, eval: {result['timings']['eval']:.2f}s)"
         )
         for case in result["results"]:
             checkmark = "✅" if case["passed"] else "❌"
