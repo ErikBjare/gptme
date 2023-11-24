@@ -276,7 +276,7 @@ def execute(test: ExecTest) -> TestResult:
 
     # check and collect results
     run_start = time.time()
-    env = ExecutionEnv()
+    env = SimpleExecutionEnv()
     stdout, stderr, exit_code = env.upload(files).run(test["run"])
     run_duration = time.time() - run_start
 
