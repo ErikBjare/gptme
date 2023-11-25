@@ -183,7 +183,7 @@ class FileStore:
 class Agent:
     def act(files: Files | None, command: str | None, prompt: str) -> Files:
         """
-        Returns a dict of actions to take.
+        Carries out the prompt and returns artifacts in the form of `Files`.
         """
         raise NotImplementedError
 
