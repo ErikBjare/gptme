@@ -3,9 +3,9 @@ import logging
 import os
 import shutil
 import subprocess
+from collections.abc import Generator, Iterable
 from datetime import date
 from typing import Literal
-from collections.abc import Generator, Iterable
 
 from .config import get_config
 from .message import Message

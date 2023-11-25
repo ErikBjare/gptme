@@ -1,4 +1,3 @@
-import atexit
 import errno
 import importlib.metadata
 import io
@@ -14,21 +13,19 @@ from pathlib import Path
 from typing import Literal
 
 import click
-from dotenv import load_dotenv
 from pick import pick
 from rich import print  # noqa: F401
 from rich.console import Console
 
 from .commands import CMDFIX, action_descriptions, execute_cmd
 from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
-from .dirs import get_logs_dir, get_readline_history_file
-from .llm import init_llm, reply
+from .dirs import get_logs_dir
+from .init import init, init_logging
+from .llm import reply
 from .logmanager import LogManager, _conversations
 from .message import Message
-from .models import set_default_model
 from .prompts import get_prompt
-from .tabcomplete import register_tabcomplete
-from .tools import execute_msg, init_tools
+from .tools import execute_msg
 from .util import epoch_to_age, generate_name
 
 logger = logging.getLogger(__name__)
@@ -51,38 +48,6 @@ The chat offers some commands that can be used to interact with the system:
 
 \b
 {action_readme}"""
-
-
-_init_done = False
-
-
-def init(llm: LLMChoice, model: str, interactive: bool):
-    global _init_done
-    if _init_done:
-        logger.warning("init() called twice, ignoring")
-        return
-    _init_done = True
-
-    # init
-    logger.debug("Started")
-    load_dotenv()
-
-    # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
-    init_llm(llm, interactive)
-    set_default_model(model)
-
-    if interactive:  # pragma: no cover
-        _load_readline_history()
-
-        # for some reason it bugs out shell tests in CI
-        register_tabcomplete()
-
-    init_tools()
-
-
-def init_logging(verbose):
-    # log init
-    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
 
 
 @click.command(help=docstring)
@@ -207,8 +172,8 @@ def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
     name: str,
-    llm: LLMChoice,
-    model: ModelChoice,
+    llm: str,
+    model: str,
     stream: bool = True,
     no_confirm: bool = False,
     interactive: bool = True,
@@ -268,7 +233,7 @@ def chat(
 def loop(
     log: LogManager,
     no_confirm: bool,
-    model: ModelChoice,
+    model: str,
     stream: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
@@ -318,6 +283,14 @@ def loop(
 
 
 def get_name(name: str) -> Path:
+    """
+    Returns a name for the new conversation.
+
+    If name is "random", generates a random name.
+    If name is "ask", asks the user for a name.
+    If name is starts with a date, uses it as is.
+    Otherwise, prepends the current date to the name.
+    """
     datestr = datetime.now().strftime("%Y-%m-%d")
     logsdir = get_logs_dir()
 
@@ -351,34 +324,6 @@ def get_name(name: str) -> Path:
             name = f"{datestr}-{name}"
         logpath = logsdir / name
     return logpath
-
-
-# default history if none found
-# NOTE: there are also good examples in the integration tests
-history_examples = [
-    "What is love?",
-    "Have you heard about an open-source app called ActivityWatch?",
-    "Explain 'Attention is All You Need' in the style of Andrej Karpathy.",
-    "Explain how public-key cryptography works as if I'm five.",
-    "Write a Python script that prints the first 100 prime numbers.",
-    "Find all TODOs in the current git project",
-]
-
-
-def _load_readline_history() -> None:
-    logger.debug("Loading history")
-    # enabled by default in CPython, make it explicit
-    readline.set_auto_history(True)
-    # had some bugs where it grew to gigs, which should be fixed, but still good precaution
-    readline.set_history_length(100)
-    history_file = get_readline_history_file()
-    try:
-        readline.read_history_file(history_file)
-    except FileNotFoundError:
-        for line in history_examples:
-            readline.add_history(line)
-
-    atexit.register(readline.write_history_file, history_file)
 
 
 def get_logfile(name: str, interactive=True) -> Path:

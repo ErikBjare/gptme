@@ -1,8 +1,10 @@
+import logging
+
 import click
 
-from gptme.util import logger
+from .init import init, init_logging
 
-from .cli import init, init_logging
+logger = logging.getLogger(__name__)
 
 
 @click.command("gptme-server")
