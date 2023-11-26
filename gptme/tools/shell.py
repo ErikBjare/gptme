@@ -34,8 +34,11 @@ class ShellSession:
         assert self.process.stdin
 
         # cd to the current directory
-        self.process.stdin.write(f"cd {os.getcwd()}\n")
-        self.process.stdin.flush()
+        # NOTE: breaks some tests which rely on cd to persist,
+        #       instead we re-init with set_shell.
+        #       Ideally, cd in shell would modify os.getcwd() too.
+        # self.process.stdin.write(f"cd {os.getcwd()}\n")
+        # self.process.stdin.flush()
 
         # run the command
         full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"

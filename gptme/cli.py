@@ -26,6 +26,7 @@ from .logmanager import LogManager, _conversations
 from .message import Message
 from .prompts import get_prompt
 from .tools import execute_msg
+from .tools.shell import ShellSession, set_shell
 from .util import epoch_to_age, generate_name
 
 logger = logging.getLogger(__name__)
@@ -186,6 +187,9 @@ def chat(
     """
     # init
     init(llm, model, interactive)
+
+    # (re)init shell
+    set_shell(ShellSession())
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
