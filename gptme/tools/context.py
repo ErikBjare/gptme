@@ -12,12 +12,12 @@ def gen_context_msg() -> Message:
     msgstr = ""
 
     cmd = "pwd"
-    ret, pwd, _ = shell.run_command(cmd)
+    ret, pwd, _ = shell.run(cmd)
     assert ret == 0
     msgstr += f"$ {cmd}\n{pwd.rstrip()}\n\n"
 
     cmd = "git status -s --porcelain"
-    ret, git, _ = shell.run_command(cmd)
+    ret, git, _ = shell.run(cmd)
     if ret == 0 and git:
         msgstr += f"$ {cmd}\n{git}\n\n"
 
@@ -55,7 +55,7 @@ def ctags() -> str:
 
     shell = get_shell()
     cmd = _get_ctags_cmd()
-    ret, ctags, _ = shell.run_command(cmd)
+    ret, ctags, _ = shell.run(cmd)
     assert ret == 0
 
     output = ["ctags:"]
