@@ -23,13 +23,6 @@ Files = Dict[str, str]
 
 class ExecutionEnv:
     @abstractmethod
-    def generate(self, prompt: str):
-        """
-        Generates code in the execution environment.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def run(self, command: str):
         """
         Runs a command in the execution environment.
@@ -158,25 +151,59 @@ tests: list[ExecTest] = [
 
 tests_map = {test["name"]: test for test in tests}
 
-
-class GPTMeExecEnv(ExecutionEnv):
+class FileStore:
     def __init__(self):
         self.working_dir = Path(tempfile.mkdtemp(prefix="gptme-evals-"))
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.id = self.working_dir.name.split("-")[-1]
 
-    def generate(self, prompt: str):
-        # change current working dir
-        os.chdir(self.working_dir)
+    def upload(self, files: Files):
+        for name, content in files.items():
+            path = self.working_dir / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "w") as f:
+                f.write(content)
+        return self
+
+    def download(self) -> Files:
+        files = {}
+        ignore = [".git"]
+        for path in self.working_dir.glob("**/*"):
+            if any(path.match(i) for i in ignore):
+                continue
+            if path.is_file():
+                with open(path, "r") as f:
+                    try:
+                        content = f.read()
+                    except UnicodeDecodeError:
+                        content = "binary file"
+                    files[str(path.relative_to(self.working_dir))] = content
+        return files
+
+class Agent:
+    def act(files: Files | None, command: str | None, prompt: str) -> Files:
+        """
+        Carries out the prompt and returns artifacts in the form of `Files`.
+        """
+        raise NotImplementedError
+
+
+class GPTMe(Agent):
+    def act(self, files: Files | None, command: str | None, prompt: str):
+        store = FileStore()
+        os.chdir(store.working_dir) # can now modify store content
+
+        if files:
+            store.upload(files)
 
         print("\n--- Start of generation ---")
-        print(f"Working in {self.working_dir}")
+        print(f"Working in {store.working_dir}")
         # TODO: add timeout
         try:
             gptme_chat(
                 [Message("user", prompt)],
                 [get_prompt()],
-                f"gptme-evals-{self.id}",
+                f"gptme-evals-{store.id}",
                 "openai",
                 "gpt-4-1106-preview",
                 no_confirm=True,
@@ -187,7 +214,21 @@ class GPTMeExecEnv(ExecutionEnv):
             pass
         print("--- Finished generation ---\n")
 
+        return store.download()
+
+
+
+
+class SimpleExecutionEnv(FileStore, ExecutionEnv):
+    '''
+    A simple execution environment that runs the code in the files.
+
+    upload() and download() are inherited from FileStore.
+    '''
+
     def run(self, command) -> tuple[str, str, int]:
+        os.chdir(self.working_dir)
+
         start = time.time()
         print("\n--- Start of run ---")
         # while running, also print the stdout and stderr
@@ -219,47 +260,24 @@ class GPTMeExecEnv(ExecutionEnv):
         print("--- Finished run ---\n")
         return stdout_full, stderr_full, p.returncode
 
-    def upload(self, files: Files):
-        for name, content in files.items():
-            path = self.working_dir / name
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "w") as f:
-                f.write(content)
-
-    def download(self) -> Files:
-        files = {}
-        ignore = [".git"]
-        for path in self.working_dir.glob("**/*"):
-            if any(path.match(i) for i in ignore):
-                continue
-            if path.is_file():
-                with open(path, "r") as f:
-                    try:
-                        content = f.read()
-                    except UnicodeDecodeError:
-                        content = "binary file"
-                    files[str(path.relative_to(self.working_dir))] = content
-        return files
-
 
 def execute(test: ExecTest) -> TestResult:
     """
     Executes the code.
     """
     print(f"Running test {test['name']} with prompt: {test['prompt']}")
-    env = GPTMeExecEnv()
+    agent = GPTMe()
 
-    # upload files
-    env.upload(test["files"])
 
     # generate code
     gen_start = time.time()
-    env.generate(test["prompt"])
+    files = agent.act(test["files"], test["run"], test["prompt"])
     gen_duration = time.time() - gen_start
 
     # check and collect results
     run_start = time.time()
-    stdout, stderr, exit_code = env.run(test["run"])
+    env = SimpleExecutionEnv()
+    stdout, stderr, exit_code = env.upload(files).run(test["run"])
     run_duration = time.time() - run_start
 
     files = env.download()

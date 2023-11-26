@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 print_builtin = __builtins__["print"]  # type: ignore
 
 LLMChoice = Literal["openai", "local"]
-ModelChoice = Literal["gpt-3.5-turbo", "gpt-4"]
+ModelChoice = Literal["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 
 
 script_path = Path(os.path.realpath(__file__))
