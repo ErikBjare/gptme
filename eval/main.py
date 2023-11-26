@@ -3,7 +3,10 @@ Evals for code generation tools.
 
 Inspired by a document by Anton Osika and Axel Theorell.
 """
+
+import base64
 import inspect
+import logging
 import os
 import subprocess
 import sys
@@ -18,7 +21,20 @@ from gptme.cli import chat as gptme_chat
 from gptme.message import Message
 from gptme.prompts import get_prompt
 
-Files = Dict[str, str]
+logger = logging.getLogger(__name__)
+
+
+def hook_chdir(name, *args):
+    if "chdir" in name:
+        logger.warning(f"chdir {args[0]}")
+
+
+debug = False
+if debug:
+    # add audit hook to see how pwd is changed
+    sys.addaudithook(hook_chdir)
+
+Files = Dict[str, str | bytes]
 
 
 class ExecutionEnv:
@@ -151,6 +167,7 @@ tests: list[ExecTest] = [
 
 tests_map = {test["name"]: test for test in tests}
 
+
 class FileStore:
     def __init__(self):
         self.working_dir = Path(tempfile.mkdtemp(prefix="gptme-evals-"))
@@ -161,27 +178,30 @@ class FileStore:
         for name, content in files.items():
             path = self.working_dir / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            with open(path, "w") as f:
-                f.write(content)
-        return self
+            if isinstance(content, str):
+                with open(path, "w") as f:
+                    f.write(content)
+            elif isinstance(content, bytes):
+                with open(path, "wb") as f:
+                    f.write(base64.b64decode(content))
 
     def download(self) -> Files:
-        files = {}
-        ignore = [".git"]
+        files: Files = {}
         for path in self.working_dir.glob("**/*"):
-            if any(path.match(i) for i in ignore):
-                continue
             if path.is_file():
-                with open(path, "r") as f:
-                    try:
-                        content = f.read()
-                    except UnicodeDecodeError:
-                        content = "binary file"
-                    files[str(path.relative_to(self.working_dir))] = content
+                key = str(path.relative_to(self.working_dir))
+                try:
+                    with open(path, "r") as f:
+                        files[key] = f.read()
+                except UnicodeDecodeError:
+                    # file is binary
+                    with open(path, "rb") as f:
+                        files[key] = base64.b64encode(f.read())
         return files
 
+
 class Agent:
-    def act(files: Files | None, command: str | None, prompt: str) -> Files:
+    def act(self, files: Files | None, prompt: str) -> Files:
         """
         Carries out the prompt and returns artifacts in the form of `Files`.
         """
@@ -189,9 +209,9 @@ class Agent:
 
 
 class GPTMe(Agent):
-    def act(self, files: Files | None, command: str | None, prompt: str):
+    def act(self, files: Files | None, prompt: str):
         store = FileStore()
-        os.chdir(store.working_dir) # can now modify store content
+        os.chdir(store.working_dir)  # can now modify store content
 
         if files:
             store.upload(files)
@@ -217,14 +237,12 @@ class GPTMe(Agent):
         return store.download()
 
 
-
-
 class SimpleExecutionEnv(FileStore, ExecutionEnv):
-    '''
+    """
     A simple execution environment that runs the code in the files.
 
     upload() and download() are inherited from FileStore.
-    '''
+    """
 
     def run(self, command) -> tuple[str, str, int]:
         os.chdir(self.working_dir)
@@ -242,7 +260,7 @@ class SimpleExecutionEnv(FileStore, ExecutionEnv):
         )
         print("$", command)
         stdout_full, stderr_full = "", ""
-        while p.poll() is None:
+        while p.poll() is None or p.stdout or p.stderr:
             assert p.stdout is not None
             assert p.stderr is not None
             stdout = p.stdout.readline()
@@ -253,6 +271,8 @@ class SimpleExecutionEnv(FileStore, ExecutionEnv):
             if stderr:
                 print(stderr, end="")
                 stderr_full += stderr
+            if not stdout and not stderr and p.poll() is not None:
+                break
             if time.time() - start > 30:
                 print("Timeout!")
                 p.kill()
@@ -268,16 +288,16 @@ def execute(test: ExecTest) -> TestResult:
     print(f"Running test {test['name']} with prompt: {test['prompt']}")
     agent = GPTMe()
 
-
     # generate code
     gen_start = time.time()
-    files = agent.act(test["files"], test["run"], test["prompt"])
+    files = agent.act(test["files"], test["prompt"])
     gen_duration = time.time() - gen_start
 
     # check and collect results
     run_start = time.time()
     env = SimpleExecutionEnv()
-    stdout, stderr, exit_code = env.upload(files).run(test["run"])
+    env.upload(files)
+    stdout, stderr, exit_code = env.run(test["run"])
     run_duration = time.time() - run_start
 
     files = env.download()
@@ -326,16 +346,20 @@ def main():
             results.append(result)
 
     print("=== Finished ===\n")
-    print(f"Completed {len(results)} tests:")
+    duration_total = sum(
+        result["timings"]["gen"] + result["timings"]["run"] + result["timings"]["eval"]
+        for result in results
+    )
+    print(f"Completed {len(results)} tests in {duration_total:.2f}s:")
     for result in results:
         checkmark = "✅" if all(case["passed"] for case in result["results"]) else "❌"
-        total_duration = (
+        duration_result = (
             result["timings"]["gen"]
             + result["timings"]["run"]
             + result["timings"]["eval"]
         )
         print(
-            f"- {result['name']} in {total_duration} (gen: {result['timings']['gen']:.2f}s, run: {result['timings']['run']:.2f}s, eval: {result['timings']['eval']:.2f}s)"
+            f"- {result['name']} in {duration_result:.2f}s (gen: {result['timings']['gen']:.2f}s, run: {result['timings']['run']:.2f}s, eval: {result['timings']['eval']:.2f}s)"
         )
         for case in result["results"]:
             checkmark = "✅" if case["passed"] else "❌"

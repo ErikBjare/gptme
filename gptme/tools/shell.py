@@ -33,6 +33,11 @@ class ShellSession:
     def run_command(self, command: str, output=True) -> tuple[int | None, str, str]:
         assert self.process.stdin
 
+        # cd to the current directory
+        self.process.stdin.write(f"cd {os.getcwd()}\n")
+        self.process.stdin.flush()
+
+        # run the command
         full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
         self.process.stdin.write(full_command)
         self.process.stdin.flush()
