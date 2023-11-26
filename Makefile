@@ -1,4 +1,4 @@
-.PHONY: docs
+.PHONY: docs eval
 
 # set default shell
 SHELL := $(shell which bash)
@@ -24,6 +24,9 @@ test:
 		$(if $(SLOW),, -m "not slow") \
 		$(if $(PROFILE), --profile-svg) \
 		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
+
+eval:
+	cd eval && poetry run python main.py
 
 typecheck:
 	poetry run mypy --ignore-missing-imports ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))

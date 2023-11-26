@@ -365,6 +365,16 @@ def main():
             checkmark = "✅" if case["passed"] else "❌"
             print(f"  {checkmark} {case['name']}")
 
+    all_success = all(
+        all(case["passed"] for case in result["results"]) for result in results
+    )
+    if all_success:
+        print("\n✅ All tests passed!")
+    else:
+        print("\n❌ Some tests failed!")
+
+    sys.exit(0 if all_success else 1)
+
 
 if __name__ == "__main__":
     main()
