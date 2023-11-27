@@ -37,7 +37,7 @@ def args(name: str) -> list[str]:
         "--name",
         name,
         "--model",
-        "gpt-3.5-turbo",
+        "gpt-4-1106-preview",
     ]
 
 
