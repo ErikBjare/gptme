@@ -5,6 +5,9 @@ import select
 import subprocess
 import sys
 from collections.abc import Generator
+from typing import List
+
+import bashlex
 
 from ..message import Message
 from ..util import ask_execute, print_preview
@@ -28,17 +31,24 @@ class ShellSession:
         atexit.register(self.close)
 
         # set GIT_PAGER=cat
-        self.run_command("export GIT_PAGER=cat")
+        self.run("export GIT_PAGER=cat")
 
-    def run_command(self, command: str, output=True) -> tuple[int | None, str, str]:
+    def run(self, code: str, output=True) -> tuple[int | None, str, str]:
+        """Runs a command in the shell and returns the output."""
+        commands = split_commands(code)
+        res_code: int | None = None
+        res_stdout, res_stderr = "", ""
+        for cmd in commands:
+            res_cur = self._run(cmd, output=output)
+            res_code = res_cur[0]
+            res_stdout += res_cur[1]
+            res_stderr += res_cur[2]
+            if res_code != 0:
+                return res_code, res_stdout, res_stderr
+        return res_code, res_stdout, res_stderr
+
+    def _run(self, command: str, output=True) -> tuple[int | None, str, str]:
         assert self.process.stdin
-
-        # cd to the current directory
-        # NOTE: breaks some tests which rely on cd to persist,
-        #       instead we re-init with set_shell.
-        #       Ideally, cd in shell would modify os.getcwd() too.
-        # self.process.stdin.write(f"cd {os.getcwd()}\n")
-        # self.process.stdin.flush()
 
         # run the command
         full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
@@ -69,12 +79,21 @@ class ShellSession:
                         continue
                     if fd == self.stdout_fd:
                         stdout.append(line)
-                        print(line, end="", file=sys.stdout)
+                        if output:
+                            print(line, end="", file=sys.stdout)
                     elif fd == self.stderr_fd:
                         stderr.append(line)
-                        print(line, end="", file=sys.stderr)
+                        if output:
+                            print(line, end="", file=sys.stderr)
             if read_delimiter:
                 break
+
+        # if command is cd and successful, we need to change the directory
+        if command.startswith("cd ") and return_code == 0:
+            ex, pwd, _ = self._run("pwd", output=False)
+            assert ex == 0
+            os.chdir(pwd.strip())
+
         return (
             return_code,
             "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
@@ -121,7 +140,7 @@ def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
         print()
 
     if not ask or confirm:
-        returncode, stdout, stderr = shell.run_command(cmd)
+        returncode, stdout, stderr = shell.run(cmd)
         stdout = _shorten_stdout(stdout.strip())
         stderr = _shorten_stdout(stderr.strip())
 
@@ -181,3 +200,31 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
         )
 
     return "\n".join(lines)
+
+
+def split_commands(script: str) -> List[str]:
+    parts = bashlex.parse(script)
+    commands = []
+    for part in parts:
+        if part.kind == "command":
+            command_parts = []
+            for word in part.parts:
+                start, end = word.pos
+                command_parts.append(script[start:end])
+            command = " ".join(command_parts)
+            commands.append(command)
+    return commands
+
+
+if __name__ == "__main__":
+    script = """
+# This is a comment
+ls -l
+echo "Hello, World!"
+echo "This is a \
+multiline command"
+"""
+
+    commands = split_commands(script)
+    for command in commands:
+        print(command)

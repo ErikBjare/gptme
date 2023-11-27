@@ -25,6 +25,7 @@ tomlkit = "^0.12.1"
 typing-extensions = "^4.8.0"
 platformdirs = "^3.11.0"
 ipython = "^8.17.2"
+bashlex = "^0.18"
 
 # optionals
 llama-cpp-python = {version = "^0.1.57", optional=true}
