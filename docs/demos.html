@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Finetuning &#8212; gptme</title>
+    <title>Demos &#8212; gptme</title>
   
   
   
@@ -41,12 +41,11 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'finetuning';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'demos';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api.html" />
-    <link rel="prev" title="Local Models" href="local-models.html" />
+    <link rel="prev" title="API Reference" href="api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -144,9 +143,9 @@
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="local-models.html">Local Models</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Finetuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Demos</a></li>
 </ul>
 
     </div>
@@ -218,7 +217,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/finetuning.md" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/demos.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -248,7 +247,7 @@
       
       
       
-      <li><a href="_sources/finetuning.md" target="_blank"
+      <li><a href="_sources/demos.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -258,7 +257,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.rst</span>
 </a>
 </li>
       
@@ -330,7 +329,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Finetuning</h1>
+    <h1>Demos</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -340,10 +339,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-gather-the-data">Step 1: Gather the data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-prepare-the-data">Step 2: Prepare the data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-fine-tune-the-model">Step 3: Fine-tune the model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-suggestions">Model suggestions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#snake-with-curses">Snake with curses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mandelbrot-with-curses">Mandelbrot with curses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fibonacci-old">Fibonacci (old)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#answer-question-from-url">Answer question from URL</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-history-with-edit">Edit history with /edit</a></li>
 </ul>
             </nav>
         </div>
@@ -355,73 +355,75 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="finetuning">
-<h1>Finetuning<a class="headerlink" href="#finetuning" title="Permalink to this heading">#</a></h1>
-<p>NOTE: this document is a work in progress!</p>
-<p>This document aims to provide a step-by-step guide to finetuning a model on conversations from gptme.</p>
-<p>The goal of fine-tuning a model for gptme is to:</p>
-<ul class="simple">
-<li><p>Teach the tools available in gptme</p></li>
-<li><p>Update out-of-date knowledge and conventions</p></li>
-<li><p>Improve its ability to recover from errors</p></li>
-</ul>
-<section id="step-1-gather-the-data">
-<h2>Step 1: Gather the data<a class="headerlink" href="#step-1-gather-the-data" title="Permalink to this heading">#</a></h2>
-<p>To fine-tune we need something to fine-tune on.</p>
-<p>We will fine-tune on our own conversation history, combined with a subset of the [OpenAssistant dataset][oa-dataset] to extend the training data with relevant examples.</p>
-<p>We collect our own conversation history by running the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./train/collect.py<span class="w"> </span>--model<span class="w"> </span><span class="s2">&quot;HuggingFaceH4/zephyr-7b-beta&quot;</span><span class="w">  </span><span class="c1"># or whatever model you intend to fine-tune</span>
-</pre></div>
+  <section id="demos">
+<h1>Demos<a class="headerlink" href="#demos" title="Permalink to this heading">#</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page is a work in progress, and will be updated with more demos soon.</p>
 </div>
-<p>This will create files <code class="docutils literal notranslate"><span class="pre">train.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">train.jsonl</span></code> in the <code class="docutils literal notranslate"><span class="pre">train</span></code> directory.</p>
-<p>TODO: describe how to get the OpenAssistant dataset
-TODO: describe how to use exported ChatGPT conversations</p>
-</section>
-<section id="step-2-prepare-the-data">
-<h2>Step 2: Prepare the data<a class="headerlink" href="#step-2-prepare-the-data" title="Permalink to this heading">#</a></h2>
-<p>We need to prepare the data for fine-tuning. This involves:</p>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
 <ul class="simple">
-<li><p>Extend the data with examples from the OpenAssistant dataset</p></li>
-<li><p>Splitting the data into train and validation sets</p>
-<ul>
-<li><p>We might want to make sure that the validation set is comprised of examples from gptme, and not from the OpenAssistant dataset.</p></li>
+<li><p><a class="reference internal" href="#snake-with-curses" id="id1">Snake with curses</a></p></li>
+<li><p><a class="reference internal" href="#mandelbrot-with-curses" id="id2">Mandelbrot with curses</a></p></li>
+<li><p><a class="reference internal" href="#fibonacci-old" id="id3">Fibonacci (old)</a></p></li>
+<li><p><a class="reference internal" href="#answer-question-from-url" id="id4">Answer question from URL</a></p></li>
+<li><p><a class="reference internal" href="#edit-history-with-edit" id="id5">Edit history with /edit</a></p></li>
 </ul>
-</li>
-</ul>
-<p>TODO…</p>
-</section>
-<section id="step-3-fine-tune-the-model">
-<h2>Step 3: Fine-tune the model<a class="headerlink" href="#step-3-fine-tune-the-model" title="Permalink to this heading">#</a></h2>
-<p>Options:</p>
+</nav>
+<section id="snake-with-curses">
+<h2>Snake with curses<a class="headerlink" href="#snake-with-curses" title="Permalink to this heading">#</a></h2>
+<p>Generate a snake game that runs in the terminal using curses, and then modify it to add color.</p>
+<a href="https://asciinema.org/a/621992">
+<img src="https://github.com/ErikBjare/gptme/assets/1405370/72ac819c-b633-495e-b20e-2e40753ec376" width="600" />
+</a><p>Steps</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/OpenAccess-AI-Collective/axolotl">axolotl</a></p>
-<ul>
-<li><p>Does it support Mistral? (and by extension Zephyr)</p></li>
+<li><p>Create a snake game with curses to snake.py</p></li>
+<li><p>Running fails, ask gptme to fix a bug</p></li>
+<li><p>Game runs</p></li>
+<li><p>Ask gptme to add color</p></li>
+<li><p>Minor struggles</p></li>
+<li><p>Finished game with green snake and red apple pie!</p></li>
 </ul>
-</li>
-<li><p>[Hugging Face transformers][hf-transformers]</p>
-<ul>
-<li><p><a class="reference external" href="https://ai.meta.com/llama/get-started/#fine-tuning">Examples for Llama2</a> by Meta</p></li>
-</ul>
-</li>
-<li><p>[OpenPipe][openpipe]?</p>
-<ul>
-<li><p>Looks interesting, but not sure if it’s relevant for us.</p></li>
-</ul>
-</li>
-</ul>
-<p>TODO…</p>
 </section>
-<section id="model-suggestions">
-<h2>Model suggestions<a class="headerlink" href="#model-suggestions" title="Permalink to this heading">#</a></h2>
+<section id="mandelbrot-with-curses">
+<h2>Mandelbrot with curses<a class="headerlink" href="#mandelbrot-with-curses" title="Permalink to this heading">#</a></h2>
+<p>Generate a program that renders mandelbrot with curses, and then modify it to add color.</p>
+<a href="https://asciinema.org/a/621991">
+<img src="https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95" width="600" />
+</a><p>Steps</p>
 <ul class="simple">
-<li><p>HuggingFaceH4/zephyr-7b-beta</p></li>
-<li><p>teknium/Replit-v2-CodeInstruct-3B</p>
-<ul>
-<li><p>I had issues with this one on M2, but would be good to have some 3B model as an example used in testing/debug.</p></li>
+<li><p>Render mandelbrot with curses to mandelbrot_curses.py</p></li>
+<li><p>Program runs</p></li>
+<li><p>Add color</p></li>
 </ul>
-</li>
+</section>
+<section id="fibonacci-old">
+<h2>Fibonacci (old)<a class="headerlink" href="#fibonacci-old" title="Permalink to this heading">#</a></h2>
+<p>An old demo showing off basic code execution and shell interaction.</p>
+<a href="https://asciinema.org/a/606375">
+<img src="https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571" width="600" />
+</a><p>Steps</p>
+<ul class="simple">
+<li><p>Create a new dir ‘gptme-test-fib’ and git init</p></li>
+<li><p>Write a fib function to fib.py, commit</p></li>
+<li><p>Create a public repo and push to GitHub</p></li>
 </ul>
+</section>
+<section id="answer-question-from-url">
+<h2>Answer question from URL<a class="headerlink" href="#answer-question-from-url" title="Permalink to this heading">#</a></h2>
+<p>Showing off basic URL loading from the prompt, and answering questions based on the content.</p>
+<a href="https://asciinema.org/a/621997">
+<img src="https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2" />
+</a><p>Steps</p>
+<ul class="simple">
+<li><p>Ask who the CEO of Superuser Labs is, passing website URL</p></li>
+<li><p>gptme browses the website, and answers correctly</p></li>
+</ul>
+</section>
+<section id="edit-history-with-edit">
+<h2>Edit history with /edit<a class="headerlink" href="#edit-history-with-edit" title="Permalink to this heading">#</a></h2>
+<p>TODO</p>
 </section>
 </section>
 
@@ -437,22 +439,13 @@ TODO: describe how to use exported ChatGPT conversations</p>
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="local-models.html"
+       href="api.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Local Models</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="api.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">API Reference</p>
       </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -469,10 +462,11 @@ TODO: describe how to use exported ChatGPT conversations</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-gather-the-data">Step 1: Gather the data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-prepare-the-data">Step 2: Prepare the data</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-fine-tune-the-model">Step 3: Fine-tune the model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-suggestions">Model suggestions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#snake-with-curses">Snake with curses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mandelbrot-with-curses">Mandelbrot with curses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fibonacci-old">Fibonacci (old)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#answer-question-from-url">Answer question from URL</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-history-with-edit">Edit history with /edit</a></li>
 </ul>
   </nav></div>
 
