@@ -22,6 +22,7 @@ This is the documentation for gptme.
    local-models
    finetuning
    api
+   demos
 
 
 
