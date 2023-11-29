@@ -358,6 +358,8 @@ document.write(`
 <section id="gptme">
 <h2>gptme<a class="headerlink" href="#gptme" title="Permalink to this heading">#</a></h2>
 <p>GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.</p>
+<p>If PROMPTS are provided, a new conversation will be started with it.</p>
+<p>If one of the PROMPTS is ‘-’, following prompts will run after the assistant is done answering the first one.</p>
 <p>The chat offers some commands that can be used to interact with the system:</p>
 <div class="line-block">
 <div class="line">/undo         Undo the last action.</div>
@@ -454,7 +456,8 @@ document.write(`
 </section>
 <section id="gptme-server">
 <h2>gptme-server<a class="headerlink" href="#gptme-server" title="Permalink to this heading">#</a></h2>
-<p>Starts a server and web UI.</p>
+<p>Starts a server and web UI for gptme.</p>
+<p>Note that this is very much a work in progress, and is not yet ready for normal use.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-server<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </pre></div>
 </div>
