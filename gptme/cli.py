@@ -45,6 +45,10 @@ action_readme = "\n".join(
 docstring = f"""
 GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
 
+If PROMPTS are provided, a new conversation will be started with it.
+
+If one of the PROMPTS is '{MULTIPROMPT_SEPARATOR}', following prompts will run after the assistant is done answering the first one.
+
 The chat offers some commands that can be used to interact with the system:
 
 \b
@@ -52,7 +56,12 @@ The chat offers some commands that can be used to interact with the system:
 
 
 @click.command(help=docstring)
-@click.argument("prompts", default=None, required=False, nargs=-1)
+@click.argument(
+    "prompts",
+    default=None,
+    required=False,
+    nargs=-1,
+)
 @click.option(
     "--prompt-system",
     default="full",

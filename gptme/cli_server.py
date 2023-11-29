@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
     help="Model to use by default, can be overridden in each request.",
 )
 def main(verbose, llm, model):  # pragma: no cover
-    """Starts a server and web UI."""
+    """
+    Starts a server and web UI for gptme.
+
+    Note that this is very much a work in progress, and is not yet ready for normal use.
+    """
     init_logging(verbose)
     init(llm, model, interactive=False)
 
