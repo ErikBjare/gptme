@@ -21,8 +21,8 @@ test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
 	poetry run pytest ${SRCDIRS} -v --log-level INFO --durations=5 \
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html \
-		-n auto \
-		$(if $(SLOW),, -m "not slow") \
+		-n 8 \
+		$(if $(SLOW), --timeout 60, --timeout 5 -m "not slow") \
 		$(if $(PROFILE), --profile-svg) \
 		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
 
