@@ -3,8 +3,11 @@ API Reference
 
 Here is the API reference for ``gptme``.
 
-Classes
-^^^^^^^
+.. toctree::
+   :maxdepth: 2
+
+gptme package
+^^^^^^^^^^^^^
 
 Some of the main classes in ``gptme``.
 
@@ -20,28 +23,25 @@ gptme.logmanager
 .. automodule:: gptme.logmanager
    :members:
 
-Server
-^^^^^^
+gptme.server
+^^^^^^^^^^^^
 
 Endpoint functions for the server.
-
-gptme.server
-------------
 
 .. automodule:: gptme.server
    :members:
    :undoc-members:
 
-Tools
-^^^^^
+gptme.tools
+^^^^^^^^^^^
 
 Tools available to gptme.
 
 .. automodule:: gptme.tools
    :members:
 
-Shell
------
+gptme.tools.shell
+-----------------
 
 .. automodule:: gptme.tools.shell
    :members:
@@ -52,20 +52,20 @@ Python
 .. automodule:: gptme.tools.python
    :members:
 
-Context
--------
+gptme.tools.context
+-------------------
 
 .. automodule:: gptme.tools.context
    :members:
 
-Save
-----
+gptme.tools.save
+----------------
 
 .. automodule:: gptme.tools.save
    :members:
 
-Patch
------
+gptme.tools.patch
+-----------------
 
 .. automodule:: gptme.tools.patch
    :members:
