@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade poetry
-          poetry install
+          poetry install -E browser
 
       - name: Build docs
         run: make docs
