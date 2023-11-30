@@ -1,3 +1,9 @@
+"""
+Tools to reduce a log to a smaller size.
+
+Typically used when the log exceeds a token limit and needs to be shortened.
+"""
+
 import logging
 from collections.abc import Generator
 from copy import copy

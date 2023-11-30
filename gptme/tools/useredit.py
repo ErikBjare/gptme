@@ -1,5 +1,7 @@
 """
 Tool that lets the user edit something in a temporary file using their $EDITOR.
+
+This is typically used to edit a conversation log with /edit.
 """
 
 import logging
@@ -11,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def edit_text_with_editor(initial_text: str, ext=None) -> str:
+    """Edit some text in a temporary file using the user's $EDITOR."""
     suffix = f".{ext}" if ext else ""
     # Create a temporary file and write the initial text to it.
     with tempfile.NamedTemporaryFile(suffix=suffix, mode="w", delete=False) as f:

@@ -1,6 +1,11 @@
 """
-Tools to let LLMs control a browser.
+Tools to let the assistant control a browser, including reading webpages and searching.
+
+.. note::
+
+    This is an experimental feature. It needs some work to be more robust and useful.
 """
+
 import atexit
 import logging
 import urllib.parse

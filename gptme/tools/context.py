@@ -1,3 +1,9 @@
+"""
+Generate context information for a conversation.
+
+Can include the current working directory, git status, and ctags output.
+"""
+
 import json
 import shutil
 from pathlib import Path

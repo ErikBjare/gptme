@@ -1,3 +1,33 @@
+"""
+The assistant can execute Python code blocks.
+
+It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
+
+.. chat::
+
+    User: What is 2 + 2?
+    Assistant:
+    ```python
+    2 + 2
+    ```
+    System: Executed code block.
+    stdout:
+    ```
+    4
+    ```
+
+The user can also run Python code with the /python command:
+
+.. chat::
+
+    User: /python 2 + 2
+    System: Executed code block.
+    stdout:
+    ```
+    4
+    ```
+"""
+
 from collections.abc import Generator
 from logging import getLogger
 

@@ -1,3 +1,7 @@
+"""
+A tool to summarize long outputs.
+"""
+
 import logging
 from functools import lru_cache
 

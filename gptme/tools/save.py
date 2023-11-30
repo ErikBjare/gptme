@@ -1,3 +1,18 @@
+"""
+Gives the assistant the ability to save code to a file.
+
+Example:
+
+.. chat::
+
+    User: write hello world to hello.py
+    Assistant:
+    ```hello.py
+    print("hello world")
+    ```
+    System: Saved to hello.py
+"""
+
 from collections.abc import Generator
 from pathlib import Path
 

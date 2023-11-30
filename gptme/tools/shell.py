@@ -1,3 +1,37 @@
+"""
+The assistant can execute shell commands by outputting code blocks with `bash` or `sh` as the language.
+
+Example:
+
+.. chat::
+
+    User: How can I list the files in the current directory?
+    Assistant: To list the files in the current directory, use the `ls` command:
+    ```bash
+    ls
+    ```
+
+    System: Ran command: `ls`
+    stdout:
+    ```
+    file1.txt
+    file2.txt
+    ```
+
+The user can also run shell code with the /shell command:
+
+.. chat::
+
+    User: /shell ls
+    System: Ran command: `ls`
+    stdout:
+    ```
+    file1.txt
+    file2.txt
+    ```
+
+"""
+
 import atexit
 import os
 import re

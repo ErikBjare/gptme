@@ -1,8 +1,25 @@
 """
 Gives the LLM agent the ability to patch files, by using a adapted version git conflict markers.
 
+Example:
+
+.. chat::
+
+    User: patch the file `hello.py` to ask for the name of the user
+    Assistant:
+    ```patch hello.py
+    <<<<<<< ORIGINAL
+    print("Hello world")
+    =======
+    name = input("What is your name? ")
+    print(f"hello {name}")
+    >>>>>>> UPDATED
+    ```
+    System: Patch applied
+
 Inspired by aider.
 """
+
 import re
 from collections.abc import Generator
 from pathlib import Path
