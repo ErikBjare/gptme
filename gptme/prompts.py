@@ -1,4 +1,5 @@
 import functools
+import importlib.util
 import logging
 import os
 import shutil
@@ -10,6 +11,13 @@ from typing import Literal
 from .config import get_config
 from .message import Message
 from .tools import patch
+
+# noreorder
+if importlib.util.find_spec("playwright"):
+    from .tools import browser  # fmt: skip
+
+# check if browser was imported
+has_browser = globals().get("browser", None) is not None
 
 PromptType = Literal["full", "short"]
 
@@ -169,7 +177,15 @@ It is very important that such blocks begin with a filename, otherwise the code 
 ## patching files
 
 {patch.instructions}
-""".strip(),
+""".strip()
+        + f"""
+
+## browsing the web
+
+{browser.instructions}
+""".rstrip()
+        if has_browser
+        else "",
     )
 
 
@@ -226,7 +242,15 @@ python hello.py
 ## Patching files
 
 {patch.examples}
-""".strip(),
+""".strip()
+        + f"""
+
+## Browsing the web
+
+{browser.examples}
+""".rstrip()
+        if has_browser
+        else "",
     )
 
 

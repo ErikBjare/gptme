@@ -8,6 +8,9 @@ Tools to let the assistant control a browser, including reading webpages and sea
 
 import atexit
 import logging
+import re
+import shutil
+import subprocess
 import urllib.parse
 from dataclasses import dataclass
 from typing import Literal
@@ -18,6 +21,42 @@ _p = None
 logger = logging.getLogger(__name__)
 
 EngineType = Literal["google", "duckduckgo"]
+
+instructions = """
+To browse the web, you can use the `load_url` and `search` commands.
+"""
+
+examples = """
+> User: find out which is the latest ActivityWatch version from this site https://superuserlabs.org/
+> Assistant: ```load_url https://superuserlabs.org/```
+> System:
+```https://superuserlabs.org/
+...
+[ActivityWatch](https://activitywatch.net/)
+...
+```
+> Assistant: ```load_url https://activitywatch.net/```
+> System:
+```https://activitywatch.net/
+...
+Download latest version v0.12.2
+> Assistant: The latest version of ActivityWatch is v0.12.2
+
+> User: who is the founder of ActivityWatch?
+> Assistant: ```search who is the founder of ActivityWatch?```
+> System:
+```Results:
+1. [ActivityWatch](https://activitywatch.net/)
+...
+```
+> Assistant: ```load_url https://activitywatch.net/```
+> System:
+```https://activitywatch.net/
+...
+The ActivityWatch project was founded by Erik Bjäreholt in 2016.
+...
+```
+""".strip()
 
 
 def get_browser():
@@ -35,9 +74,16 @@ def get_browser():
 
 
 def read_url(url: str) -> str:
-    """Read the text of a webpage."""
+    """Read the text of a webpage and return the text in Markdown format."""
     page = load_page(url)
-    return page.inner_text("body")
+
+    # Get the HTML of the body
+    body_html = page.inner_html("body")
+
+    # Convert the HTML to Markdown
+    markdown = html_to_markdown(body_html)
+
+    return markdown
 
 
 def load_page(url: str) -> Page:
@@ -180,3 +226,37 @@ def _list_results_duckduckgo(page) -> str:
             result.query_selector("span").inner_text()
             s += f"\n{i+1}. {title} ({url})"
     return s
+
+
+def html_to_markdown(html):
+    # check that pandoc is installed
+    if not shutil.which("pandoc"):
+        raise Exception("Pandoc is not installed. Needed for browsing.")
+
+    p = subprocess.Popen(
+        ["pandoc", "-f", "html", "-t", "markdown"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    stdout, stderr = p.communicate(input=html.encode())
+
+    if p.returncode != 0:
+        raise Exception(f"Pandoc returned error code {p.returncode}: {stderr.decode()}")
+
+    # Post-process the output to remove :::
+    markdown = stdout.decode()
+    markdown = "\n".join(
+        line for line in markdown.split("\n") if not line.strip().startswith(":::")
+    )
+
+    # Post-process the output to remove div tags
+    markdown = markdown.replace("<div>", "").replace("</div>", "")
+
+    # replace [\n]{3,} with \n\n
+    markdown = re.sub(r"[\n]{3,}", "\n\n", markdown)
+
+    # replace {...} with ''
+    markdown = re.sub(r"\{(#|style|target|\.)[^}]*\}", "", markdown)
+
+    return markdown
