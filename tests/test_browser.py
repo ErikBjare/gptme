@@ -37,4 +37,4 @@ def test_read_url_with_links():
     assert "Erik Bjäreholt" in s
 
     # check that markdown link to activitywatch is present
-    assert "(https://activitywatch.net)" in s
+    assert "(https://activitywatch.net/)" in s
