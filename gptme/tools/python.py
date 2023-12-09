@@ -32,10 +32,11 @@ from collections.abc import Generator
 from logging import getLogger
 
 from IPython.terminal.embed import InteractiveShellEmbed
-from IPython.utils.io import capture_output
+from IPython.utils.capture import capture_output
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .browser import has_browser_tool, read_url, search
 
 logger = getLogger(__name__)
 
@@ -45,6 +46,17 @@ _ipython = None
 
 def init_python():
     check_available_packages()
+
+
+def _get_ipython():
+    global _ipython
+    if _ipython is None:
+        _ipython = InteractiveShellEmbed()
+
+        if has_browser_tool():
+            _ipython.push({"read_url": read_url, "search": search})
+
+    return _ipython
 
 
 def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
@@ -62,9 +74,7 @@ def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
         print("Skipping confirmation")
 
     # Create an IPython instance if it doesn't exist yet
-    global _ipython
-    if _ipython is None:
-        _ipython = InteractiveShellEmbed()
+    _ipython = _get_ipython()
 
     # Capture the standard output and error streams
     with capture_output() as captured:

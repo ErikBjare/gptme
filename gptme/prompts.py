@@ -1,5 +1,4 @@
 import functools
-import importlib.util
 import logging
 import os
 import shutil
@@ -10,14 +9,7 @@ from typing import Literal
 
 from .config import get_config
 from .message import Message
-from .tools import patch
-
-# noreorder
-if importlib.util.find_spec("playwright"):
-    from .tools import browser  # fmt: skip
-
-# check if browser was imported
-has_browser = globals().get("browser", None) is not None
+from .tools import browser, patch
 
 PromptType = Literal["full", "short"]
 
@@ -184,7 +176,7 @@ It is very important that such blocks begin with a filename, otherwise the code 
 
 {browser.instructions}
 """.rstrip()
-        if has_browser
+        if browser.has_browser_tool()
         else "",
     )
 
@@ -249,7 +241,7 @@ python hello.py
 
 {browser.examples}
 """.rstrip()
-        if has_browser
+        if browser.has_browser_tool()
         else "",
     )
 
