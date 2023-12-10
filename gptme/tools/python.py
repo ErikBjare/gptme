@@ -79,11 +79,18 @@ def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
     # Capture the standard output and error streams
     with capture_output() as captured:
         # Execute the code
-        result = _ipython.run_cell(code)
+        result = _ipython.run_cell(code, silent=False, store_history=False)
 
     output = ""
     if captured.stdout:
-        output += f"stdout:\n```\n{captured.stdout.rstrip()}\n```\n\n"
+        # remove one occurrence of the result if present, to avoid repeating the result in the output
+        stdout = (
+            captured.stdout.replace(str(result.result), "", 1)
+            if result.result
+            else captured.stdout
+        )
+        if stdout:
+            output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
     if captured.stderr:
         output += f"stderr:\n```\n{captured.stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
