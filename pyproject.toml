@@ -84,6 +84,7 @@ ignore = ["E402", "E501"]
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "eval: marks tests as evals (deselect with '-m \"not eval\"'), these may fail, and will not run in CI",
     "serial",
 ]
 
