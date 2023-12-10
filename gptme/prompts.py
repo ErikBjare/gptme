@@ -170,14 +170,16 @@ It is very important that such blocks begin with a filename, otherwise the code 
 
 {patch.instructions}
 """.strip()
-        + f"""
+        + (
+            f"""
 
 ## browsing the web
 
 {browser.instructions}
 """.rstrip()
-        if browser.has_browser_tool()
-        else "",
+            if browser.has_browser_tool()
+            else ""
+        ),
     )
 
 
