@@ -23,6 +23,7 @@ test:
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html \
 		-n 8 \
 		$(if $(SLOW), --timeout 60, --timeout 5 -m "not slow") \
+		$(if $(EVAL), , -m "not eval") \
 		$(if $(PROFILE), --profile-svg) \
 		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
 

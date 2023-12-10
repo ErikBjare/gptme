@@ -1,10 +1,11 @@
 import pytest
-from evals import tests
 
+from evals import tests
 from main import execute
 
 
 @pytest.mark.slow
+@pytest.mark.eval
 def test_eval(test):
     """
     This test will be run for each eval in the tests list.
