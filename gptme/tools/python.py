@@ -28,6 +28,7 @@ The user can also run Python code with the /python command:
     ```
 """
 
+import re
 from collections.abc import Generator
 from logging import getLogger
 
@@ -100,6 +101,10 @@ def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
         output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"  # type: ignore
     if result.result is not None:
         output += f"Result:\n```\n{result.result}\n```\n\n"
+
+    # strip ANSI escape sequences
+    # TODO: better to signal to the terminal that we don't want colors?
+    output = re.sub(r"\x1b[^m]*m", "", output)
     yield Message("system", "Executed code block.\n\n" + output)
 
 
