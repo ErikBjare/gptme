@@ -25,8 +25,8 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-    - name: Install ctags
-      run: sudo apt install universal-ctags
+    - name: Install ctags and pandoc
+      run: sudo apt install universal-ctags pandoc
     - name: Install poetry
       run: |
         pipx install poetry
