@@ -126,6 +126,7 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 - 💬 Web UI and API for conversations.
 - 🌐 Browse, interact, and automate the web from the terminal.
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
+- 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
 
 ## 🛠 Use Cases
 
