@@ -69,3 +69,18 @@ print("hello ``` world")
 print("hello ``` world")
 """
     )
+
+    # test a codeblock which contains triple backticks on its own line
+    s = """```python
+print('''hello\n```\nworld''')
+```
+"""
+
+    codeblocks = list(get_codeblocks(s))
+    assert len(codeblocks) == 1
+    assert (
+        codeblocks[0]
+        == """python
+print("hello ``` world")
+"""
+    )
