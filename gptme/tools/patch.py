@@ -54,6 +54,10 @@ if __name__ == "__main__":
 ```
 """.strip()
 
+ORIGINAL = "\n<<<<<<< ORIGINAL\n"
+DIVIDER = "\n=======\n"
+UPDATED = ">>>>>>> UPDATED\n"
+
 
 def apply(codeblock: str, content: str) -> str:
     """
@@ -64,11 +68,17 @@ def apply(codeblock: str, content: str) -> str:
     codeblock = codeblock.strip()
 
     # get the original and modified chunks
-    original = re.split("\n<<<<<<< ORIGINAL\n", codeblock)[1]
-    original, modified = re.split("\n=======\n", original)
-    if ">>>>>>> UPDATED\n" not in modified:  # pragma: no cover
-        raise ValueError("invalid patch", codeblock)
-    modified = re.split(">>>>>>> UPDATED\n", modified)[0].rstrip("\n")
+    if ORIGINAL not in codeblock:  # pragma: no cover
+        raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", codeblock)
+    original = re.split(ORIGINAL, codeblock)[1]
+
+    if DIVIDER not in original:  # pragma: no cover
+        raise ValueError(f"invalid patch, no `{DIVIDER.strip()}`", codeblock)
+    original, modified = re.split(DIVIDER, original)
+
+    if UPDATED not in modified:  # pragma: no cover
+        raise ValueError(f"invalid patch, no `{UPDATED.strip()}`", codeblock)
+    modified = re.split(UPDATED, modified)[0].rstrip("\n")
 
     # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
     #       and then replace these with the original chunks?
