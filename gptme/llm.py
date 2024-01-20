@@ -5,6 +5,7 @@ import sys
 
 import openai
 from litellm import completion
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from rich import print
 
 from .config import config_path, get_config, set_config_value
@@ -79,7 +80,7 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
-    response = completion(  # type: ignore
+    response = completion(
         model=model,
         messages=msgs2dicts(messages),
         temperature=temperature,
@@ -90,7 +91,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-    response = completion(  # type: ignore
+    response = completion(
         model=model,
         messages=msgs2dicts(messages),
         temperature=temperature,
@@ -100,22 +101,22 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         max_tokens=1000 if not model.startswith("gpt-") else None,
     )
 
-    def deltas_to_str(deltas: list[dict]):
-        return "".join([d.get("content", "") for d in deltas])
+    def deltas_to_str(deltas: list[ChoiceDelta]):
+        return "".join([d.content or "" for d in deltas])
 
     def print_clear():
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
-    deltas: list[dict] = []
+    deltas: list[ChoiceDelta] = []
     print_clear()
     print(f"{PROMPT_ASSISTANT}: ", end="")
     stop_reason = None
     try:
         for chunk in response:
-            delta = chunk["choices"][0]["delta"]
+            delta = chunk.choices[0].delta
             deltas.append(delta)
             delta_str = deltas_to_str(deltas)
-            stop_reason = chunk["choices"][0].get("finish_reason", None)
+            stop_reason = chunk.choices[0].finish_reason
             print(deltas_to_str([delta]), end="")
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
