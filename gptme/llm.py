@@ -48,6 +48,8 @@ def init_llm(llm: str, interactive: bool):
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)
         openai.api_key = api_key
+        # set the environment variable too (needed by litellm)
+        os.environ["OPENAI_API_KEY"] = api_key
     elif llm == "local":
         if "OPENAI_API_BASE" in os.environ:
             api_base = os.environ["OPENAI_API_BASE"]
