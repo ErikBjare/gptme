@@ -3,6 +3,7 @@ import os
 import shutil
 import sys
 
+import openai
 from litellm import completion
 from rich import print
 
@@ -56,7 +57,7 @@ def init_llm(llm: str, interactive: bool):
         else:
             print("Error: OPENAI_API_BASE not set in env or config, see README.")
             sys.exit(1)
-        openai.api_base = api_base
+        openai.base_url = api_base
         openai.api_key = "local"
     else:
         print(f"Error: Unknown LLM: {llm}")
@@ -171,7 +172,7 @@ def summarize(content: str) -> str:
         )
 
     try:
-        response = openai.ChatCompletion.create(
+        response = completion(
             model=model,
             messages=msgs2dicts(messages),
             temperature=0,
