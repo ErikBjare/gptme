@@ -1,22 +1,46 @@
 import os
-from typing import TypedDict
+from dataclasses import dataclass
 
 import tomlkit
 from tomlkit import TOMLDocument
 from tomlkit.container import Container
 
 
-class Config(TypedDict):
+@dataclass
+class Config:
     prompt: dict
     env: dict
+
+    def get_env(self, key: str, default: str | None = None) -> str | None:
+        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        try:
+            return self.get_env_required(key)
+        except KeyError:
+            return default
+
+    def get_env_required(self, key: str) -> str:
+        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        if key in os.environ:
+            return os.environ[key]
+        elif key in self.env:
+            return self.env[key]
+        raise KeyError(
+            f"Environment variable {key} not set in env or config, see README."
+        )
+
+    def dict(self) -> dict:
+        return {
+            "prompt": self.prompt,
+            "env": self.env,
+        }
 
 
 ABOUT_ACTIVITYWATCH = """ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices."""
 ABOUT_GPTME = "gptme is a CLI to interact with large language models in a Chat-style interface, enabling the assistant to execute commands and code on the local machine, letting them assist in all kinds of development and terminal-based work."
 
 
-default_config: Config = {
-    "prompt": {
+default_config = Config(
+    prompt={
         "about_user": "I am a curious human programmer.",
         "response_preference": "Basic concepts don't need to be explained.",
         "project": {
@@ -24,11 +48,11 @@ default_config: Config = {
             "gptme": ABOUT_GPTME,
         },
     },
-    "env": {
+    env={
         # toml doesn't support None
         # "OPENAI_API_KEY": None
     },
-}
+)
 
 # Define the path to the config file
 config_path = os.path.expanduser("~/.config/gptme/config.toml")
@@ -56,7 +80,7 @@ def _load_config() -> tomlkit.TOMLDocument:
         # If not, create it and write some default settings
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
         with open(config_path, "w") as config_file:
-            tomlkit.dump(default_config, config_file)
+            tomlkit.dump(default_config.dict(), config_file)
         print(f"Created config file at {config_path}")
 
     # Now you can read the settings from the config file like this:
