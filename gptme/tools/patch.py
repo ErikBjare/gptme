@@ -55,27 +55,54 @@ if __name__ == "__main__":
 """.strip()
 
 
+def common_leading_whitespace(lines):
+    """
+    Returns the common leading whitespace for a list of lines.
+    """
+    if not lines:
+        return ""
+    return min(re.match(r"\s*", line).group(0) for line in lines if line.strip())
+
+
 def apply(codeblock: str, content: str) -> str:
     """
     Applies the patch in ``codeblock`` to ``content``.
     """
-    # TODO: support multiple patches in one codeblock,
-    #       or make it clear that only one patch per codeblock is supported
     codeblock = codeblock.strip()
 
     # get the original and modified chunks
-    original = re.split("\n<<<<<<< ORIGINAL\n", codeblock)[1]
-    original, modified = re.split("\n=======\n", original)
-    if ">>>>>>> UPDATED\n" not in modified:  # pragma: no cover
+    original = re.split("<<<<<<< ORIGINAL\n", codeblock)[1]
+    original, modified = re.split("=======\n", original)
+    if ">>>>>>> UPDATED" not in modified:
         raise ValueError("invalid patch", codeblock)
-    modified = re.split(">>>>>>> UPDATED\n", modified)[0].rstrip("\n")
+    modified = re.split(">>>>>>> UPDATED", modified)[0].rstrip("\n")
 
-    # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
-    #       and then replace these with the original chunks?
+    # calculate the common leading whitespace for each block
+    original_lines = original.splitlines()
+    modified_lines = modified.splitlines()
+    original_whitespace = common_leading_whitespace(original_lines)
+    modified_whitespace = common_leading_whitespace(modified_lines)
 
-    # replace the original chunk with the modified chunk
-    new = content.replace(original, modified)
-    if new == content:  # pragma: no cover
+    # remove the common leading whitespace from each line in the blocks
+    original_no_whitespace = "\n".join(
+        line[len(original_whitespace) :] for line in original_lines
+    )
+    modified_no_whitespace = "\n".join(
+        line[len(modified_whitespace) :] for line in modified_lines
+    )
+
+    # replace the original block with the modified block in the content
+    new = content.replace(original_no_whitespace, modified_no_whitespace)
+
+    # add back the original block's leading whitespace to the modified block
+    new = new.replace(
+        modified_no_whitespace,
+        "\n".join(
+            original_whitespace + line for line in modified_no_whitespace.splitlines()
+        ),
+    )
+
+    if new == content:
         raise ValueError("patch did not change the file")
 
     return new
@@ -117,3 +144,51 @@ def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None
         yield Message("system", "Patch applied")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
+
+
+if __name__ == "__main__":
+    # Test 1: Original block has leading whitespace, modified block does not
+    content = """
+class Test:
+    def method(self):
+        print("Hello, world!")
+"""
+    patch = """
+```patch test.py
+<<<<<<< ORIGINAL
+    def method(self):
+        print("Hello, world!")
+=======
+def method(self):
+    print("Hello, Python!")
+>>>>>>> UPDATED
+"""
+    expected = """
+class Test:
+    def method(self):
+        print("Hello, Python!")
+"""
+    assert apply(patch, content) == expected
+
+    # Test 2: Original block does not have leading whitespace, modified block does
+    content = """
+def method():
+    print("Hello, world!")
+"""
+    patch = """
+```patch test.py
+<<<<<<< ORIGINAL
+def method():
+    print("Hello, world!")
+=======
+    def method():
+        print("Hello, Python!")
+>>>>>>> UPDATED
+"""
+    expected = """
+def method():
+    print("Hello, Python!")
+"""
+    assert apply(patch, content) == expected
+
+    print("All tests passed!")
