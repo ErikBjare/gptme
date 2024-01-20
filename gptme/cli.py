@@ -76,7 +76,7 @@ The chat offers some commands that can be used to interact with the system:
     "--llm",
     default="openai",
     help="LLM to use.",
-    type=click.Choice(["openai", "local"]),
+    type=click.Choice(["openai", "azure", "local"]),
 )
 @click.option(
     "--model",

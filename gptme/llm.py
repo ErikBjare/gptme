@@ -1,10 +1,9 @@
 import logging
-import os
 import shutil
 import sys
 
 import openai
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from rich import print
 
@@ -26,50 +25,54 @@ oai_client: OpenAI | None = None
 
 
 def init_llm(llm: str, interactive: bool):
+    global oai_client
+
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
 
     # TODO: use llm/model from config if specified and not passed as args
     if llm == "openai":
-        if "OPENAI_API_KEY" in os.environ:
-            api_key = os.environ["OPENAI_API_KEY"]
-        elif api_key := config["env"].get("OPENAI_API_KEY", None):
+        if api_key := config.get_env("OPENAI_API_KEY", None):
             pass
         elif interactive:
-            # Ask for API key
-            print("No API key set for OpenAI.")
-            print("You can get one at https://platform.openai.com/account/api-keys\n")
-            api_key = input("Your OpenAI API key: ").strip()
-
-            # TODO: test API key
-            # Save to config
-            set_config_value("env.OPENAI_API_KEY", api_key)
-            print(f"API key saved to config at {config_path}")
-
-            # Reload config
-            config = get_config()
+            api_key = ask_for_api_key()
+            # recursively call init_llm to start over with init
+            return init_llm(llm, interactive)
         else:
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)
-        openai.api_key = api_key
-        # set the environment variable too (needed by litellm)
-        os.environ["OPENAI_API_KEY"] = api_key
+        oai_client = OpenAI(api_key=api_key)
+    elif llm == "azure":
+        api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
+        azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
+        oai_client = AzureOpenAI(
+            api_key=api_key,
+            api_version="2023-07-01-preview",
+            azure_endpoint=azure_endpoint,
+        )
     elif llm == "local":
-        if "OPENAI_API_BASE" in os.environ:
-            api_base = os.environ["OPENAI_API_BASE"]
-        elif api_base := config["env"].get("OPENAI_API_BASE", None):
-            pass
-        else:
-            print("Error: OPENAI_API_BASE not set in env or config, see README.")
-            sys.exit(1)
-        openai.base_url = api_base
-        openai.api_key = "local"
+        api_key = config.get_env("OPENAI_API_BASE", "local")
+        api_base = config.get_env_required("OPENAI_API_BASE")
+        oai_client = OpenAI(api_key="local", base_url=api_base)
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
 
-    global oai_client
-    oai_client = OpenAI()
+    # ensure we have initialized the client
+    assert oai_client
+
+
+def ask_for_api_key():
+    """Interactively ask user for API key"""
+    print("No API key set for OpenAI.")
+    print("You can get one at https://platform.openai.com/account/api-keys\n")
+    api_key = input("Your OpenAI API key: ").strip()
+
+    # TODO: test API key
+    # Save to config
+    set_config_value("env.OPENAI_API_KEY", api_key)
+    print(f"API key saved to config at {config_path}")
+    return api_key
 
 
 def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
@@ -124,6 +127,9 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         for chunk in response:
             if isinstance(chunk, tuple):
                 print("Got a tuple, expected Chunk")
+                continue
+            if not chunk.choices:
+                # Got a chunk with no choices, Azure always sends one of these at the start
                 continue
             delta = chunk.choices[0].delta
             deltas.append(delta)

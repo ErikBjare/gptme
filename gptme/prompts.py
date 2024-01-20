@@ -74,7 +74,7 @@ If clarification is needed, ask the user.
 
 
 def prompt_user() -> Generator[Message, None, None]:
-    config_prompt = get_config().get("prompt", {})
+    config_prompt = get_config().prompt
     if about_user := config_prompt.get("about_user", None):
         response_preference = config_prompt.get("response_preference", None)
         yield Message(
@@ -91,7 +91,7 @@ def prompt_user() -> Generator[Message, None, None]:
 
 
 def prompt_project() -> Generator[Message, None, None]:
-    config_prompt = get_config().get("prompt", {})
+    config_prompt = get_config().prompt
     # detect from git root folder name
     projectdir = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True

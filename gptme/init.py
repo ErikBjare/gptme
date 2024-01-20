@@ -41,6 +41,8 @@ def init(llm: str, model: str, interactive: bool):
 def init_logging(verbose):
     # log init
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+    # set httpx logging to WARNING
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 # default history if none found
