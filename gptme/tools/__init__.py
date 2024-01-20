@@ -26,7 +26,15 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
 
     # get all markdown code blocks
     for codeblock in get_codeblocks(msg.content):
-        yield from execute_codeblock(codeblock, ask)
+        try:
+            yield from execute_codeblock(codeblock, ask)
+        except Exception as e:
+            logger.exception(e)
+            yield Message(
+                "system",
+                content=f"An error occurred: {e}",
+            )
+            break
 
 
 def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
