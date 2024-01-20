@@ -22,7 +22,7 @@ top_p = 0.1
 
 logger = logging.getLogger(__name__)
 
-oai_client = OpenAI()
+oai_client: OpenAI | None = None
 
 
 def init_llm(llm: str, interactive: bool):
@@ -68,6 +68,9 @@ def init_llm(llm: str, interactive: bool):
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
 
+    global oai_client
+    oai_client = OpenAI()
+
 
 def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
     if stream:
@@ -82,6 +85,7 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
+    assert oai_client, "LLM not initialized"
     response = oai_client.chat.completions.create(
         model=model,
         messages=msgs2dicts(messages),  # type: ignore
@@ -95,6 +99,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
+    assert oai_client, "LLM not initialized"
     response = oai_client.chat.completions.create(
         model=model,
         messages=msgs2dicts(messages),  # type: ignore
@@ -117,6 +122,9 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
     stop_reason = None
     try:
         for chunk in response:
+            if isinstance(chunk, tuple):
+                print("Got a tuple, expected Chunk")
+                continue
             delta = chunk.choices[0].delta
             deltas.append(delta)
             delta_str = deltas_to_str(deltas)
@@ -161,6 +169,7 @@ def summarize(content: str) -> str:
     To summarize messages or the conversation log,
     use `gptme.tools.summarize` instead (which wraps this).
     """
+    assert oai_client, "LLM not initialized"
     messages = [
         Message(
             "system",
