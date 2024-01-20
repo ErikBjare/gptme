@@ -4,6 +4,8 @@ import shutil
 import sys
 
 import openai
+from openai import OpenAI
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from rich import print
 
 from .config import config_path, get_config, set_config_value
@@ -19,6 +21,8 @@ temperature = 0
 top_p = 0.1
 
 logger = logging.getLogger(__name__)
+
+oai_client: OpenAI | None = None
 
 
 def init_llm(llm: str, interactive: bool):
@@ -48,6 +52,8 @@ def init_llm(llm: str, interactive: bool):
             print("Error: OPENAI_API_KEY not set in env or config, see README.")
             sys.exit(1)
         openai.api_key = api_key
+        # set the environment variable too (needed by litellm)
+        os.environ["OPENAI_API_KEY"] = api_key
     elif llm == "local":
         if "OPENAI_API_BASE" in os.environ:
             api_base = os.environ["OPENAI_API_BASE"]
@@ -56,11 +62,14 @@ def init_llm(llm: str, interactive: bool):
         else:
             print("Error: OPENAI_API_BASE not set in env or config, see README.")
             sys.exit(1)
-        openai.api_base = api_base
+        openai.base_url = api_base
         openai.api_key = "local"
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
+
+    global oai_client
+    oai_client = OpenAI()
 
 
 def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
@@ -76,20 +85,24 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
-    response = openai.ChatCompletion.create(  # type: ignore
+    assert oai_client, "LLM not initialized"
+    response = oai_client.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages),
+        messages=msgs2dicts(messages),  # type: ignore
         temperature=temperature,
         top_p=top_p,
     )
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    assert content
+    return content
 
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-    response = openai.ChatCompletion.create(  # type: ignore
+    assert oai_client, "LLM not initialized"
+    response = oai_client.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages),
+        messages=msgs2dicts(messages),  # type: ignore
         temperature=temperature,
         top_p=top_p,
         stream=True,
@@ -97,22 +110,25 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         max_tokens=1000 if not model.startswith("gpt-") else None,
     )
 
-    def deltas_to_str(deltas: list[dict]):
-        return "".join([d.get("content", "") for d in deltas])
+    def deltas_to_str(deltas: list[ChoiceDelta]):
+        return "".join([d.content or "" for d in deltas])
 
     def print_clear():
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
-    deltas: list[dict] = []
+    deltas: list[ChoiceDelta] = []
     print_clear()
     print(f"{PROMPT_ASSISTANT}: ", end="")
     stop_reason = None
     try:
         for chunk in response:
-            delta = chunk["choices"][0]["delta"]
+            if isinstance(chunk, tuple):
+                print("Got a tuple, expected Chunk")
+                continue
+            delta = chunk.choices[0].delta
             deltas.append(delta)
             delta_str = deltas_to_str(deltas)
-            stop_reason = chunk["choices"][0].get("finish_reason", None)
+            stop_reason = chunk.choices[0].finish_reason
             print(deltas_to_str([delta]), end="")
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
@@ -135,7 +151,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             if patch_started and patch_finished:
                 if "```" not in delta_str[-10:]:
                     print("\n```", end="")
-                    deltas.append({"content": "\n```"})
+                    deltas.append(ChoiceDelta(content="\n```"))
                 print("\n")
                 break
     except KeyboardInterrupt:
@@ -153,6 +169,7 @@ def summarize(content: str) -> str:
     To summarize messages or the conversation log,
     use `gptme.tools.summarize` instead (which wraps this).
     """
+    assert oai_client, "LLM not initialized"
     messages = [
         Message(
             "system",
@@ -171,9 +188,9 @@ def summarize(content: str) -> str:
         )
 
     try:
-        response = openai.ChatCompletion.create(
+        response = oai_client.chat.completions.create(
             model=model,
-            messages=msgs2dicts(messages),
+            messages=msgs2dicts(messages),  # type: ignore
             temperature=0,
             max_tokens=256,
         )
@@ -181,6 +198,7 @@ def summarize(content: str) -> str:
         logger.error("OpenAI API error, returning empty summary: ", exc_info=True)
         return "error"
     summary = response.choices[0].message.content
+    assert summary
     logger.debug(
         f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
         + summary
