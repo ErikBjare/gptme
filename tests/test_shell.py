@@ -3,7 +3,7 @@ import tempfile
 from collections.abc import Generator
 
 import pytest
-from gptme.tools.shell import ShellSession
+from gptme.tools.shell import ShellSession, split_commands
 
 
 @pytest.fixture
@@ -60,3 +60,23 @@ def test_shell_cd_chdir(shell):
         assert cwd == os.path.realpath(output.strip())
     finally:
         tmpdir.cleanup()
+
+
+def test_split_commands():
+    script = """
+# This is a comment
+ls -l
+echo "Hello, World!"
+echo "This is a
+multiline command"
+"""
+    commands = split_commands(script)
+    for command in commands:
+        print(command)
+    assert len(commands) == 3
+
+    script_loop = "for i in {1..10}; do echo $i; done"
+    commands = split_commands(script_loop)
+    for command in commands:
+        print(command)
+    assert len(commands) == 1
