@@ -283,27 +283,3 @@ def split_commands(script: str) -> List[str]:
         else:
             logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
     return commands
-
-
-if __name__ == "__main__":
-    script = """
-# This is a comment
-ls -l
-echo "Hello, World!"
-echo "This is a
-multiline command"
-"""
-
-    commands = split_commands(script)
-    for command in commands:
-        print(command)
-    assert len(commands) == 3
-
-    script_loop = """
-for i in {1..10}; do echo $i; done
-"""
-
-    print("Testing script_loop")
-    commands = split_commands(script_loop)
-    for command in commands:
-        print(command)
