@@ -33,6 +33,7 @@ The user can also run shell code with the /shell command:
 """
 
 import atexit
+import logging
 import os
 import re
 import select
@@ -46,9 +47,22 @@ import bashlex
 from ..message import Message
 from ..util import ask_execute, print_preview
 
+logger = logging.getLogger(__name__)
+
 
 class ShellSession:
+    process: subprocess.Popen
+    stdout_fd: int
+    stderr_fd: int
+    delimiter: str
+
     def __init__(self) -> None:
+        self._init()
+
+        # close on exit
+        atexit.register(self.close)
+
+    def _init(self):
         self.process = subprocess.Popen(
             ["bash"],
             stdin=subprocess.PIPE,
@@ -60,9 +74,6 @@ class ShellSession:
         self.stdout_fd = self.process.stdout.fileno()  # type: ignore
         self.stderr_fd = self.process.stderr.fileno()  # type: ignore
         self.delimiter = "END_OF_COMMAND_OUTPUT"
-
-        # close on exit
-        atexit.register(self.close)
 
         # set GIT_PAGER=cat
         self.run("export GIT_PAGER=cat")
@@ -81,12 +92,21 @@ class ShellSession:
                 return res_code, res_stdout, res_stderr
         return res_code, res_stdout, res_stderr
 
-    def _run(self, command: str, output=True) -> tuple[int | None, str, str]:
+    def _run(self, command: str, output=True, tries=0) -> tuple[int | None, str, str]:
         assert self.process.stdin
 
         # run the command
         full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
-        self.process.stdin.write(full_command)
+        try:
+            self.process.stdin.write(full_command)
+        except BrokenPipeError:
+            # process has died
+            if tries == 0:
+                # log warning and restart, once
+                logger.warning("Warning: shell process died, restarting")
+                self.restart()
+                return self._run(command, output=output, tries=tries + 1)
+
         self.process.stdin.flush()
 
         stdout = []
@@ -140,6 +160,10 @@ class ShellSession:
         self.process.terminate()
         self.process.wait(timeout=0.2)
         self.process.kill()
+
+    def restart(self):
+        self.close()
+        self._init()
 
 
 _shell = None
@@ -237,6 +261,7 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
 
 
 def split_commands(script: str) -> List[str]:
+    # TODO: write proper tests
     parts = bashlex.parse(script)
     commands = []
     for part in parts:
@@ -247,6 +272,16 @@ def split_commands(script: str) -> List[str]:
                 command_parts.append(script[start:end])
             command = " ".join(command_parts)
             commands.append(command)
+        elif part.kind == "compound":
+            for node in part.list:
+                command_parts = []
+                for word in node.parts:
+                    start, end = word.pos
+                    command_parts.append(script[start:end])
+                command = " ".join(command_parts)
+                commands.append(command)
+        else:
+            logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
     return commands
 
 
@@ -255,10 +290,20 @@ if __name__ == "__main__":
 # This is a comment
 ls -l
 echo "Hello, World!"
-echo "This is a \
+echo "This is a
 multiline command"
 """
 
     commands = split_commands(script)
+    for command in commands:
+        print(command)
+    assert len(commands) == 3
+
+    script_loop = """
+for i in {1..10}; do echo $i; done
+"""
+
+    print("Testing script_loop")
+    commands = split_commands(script_loop)
     for command in commands:
         print(command)
