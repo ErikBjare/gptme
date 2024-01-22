@@ -106,6 +106,8 @@ class ShellSession:
                 logger.warning("Warning: shell process died, restarting")
                 self.restart()
                 return self._run(command, output=output, tries=tries + 1)
+            else:
+                raise
 
         self.process.stdin.flush()
 
