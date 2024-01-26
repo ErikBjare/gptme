@@ -97,7 +97,7 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
   </tr>
 </table>
 
-You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/docs/demos/) in the docs.
+You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/docs/demos.html) in the docs.
 
 ## 🌟 Features
 
