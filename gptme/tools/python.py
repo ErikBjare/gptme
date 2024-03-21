@@ -60,7 +60,7 @@ def register_function(func: T) -> T:
     return func
 
 
-def register_function_conditional(condition: bool):
+def register_function_if(condition: bool):
     if condition:
         return register_function
     else:
