@@ -31,13 +31,13 @@ The user can also run Python code with the /python command:
 import re
 from collections.abc import Generator
 from logging import getLogger
+from typing import Callable, TypeVar
 
 from IPython.terminal.embed import InteractiveShellEmbed
 from IPython.utils.capture import capture_output
 
 from ..message import Message
 from ..util import ask_execute, print_preview
-from .browser import has_browser_tool, read_url, search
 
 logger = getLogger(__name__)
 
@@ -49,13 +49,29 @@ def init_python():
     check_available_packages()
 
 
+registered_functions = {}
+
+T = TypeVar("T", bound=Callable)
+
+
+def register_function(func: T) -> T:
+    """Decorator to register a function to be available in the IPython instance."""
+    registered_functions[func.__name__] = func
+    return func
+
+
+def register_function_conditional(condition: bool):
+    if condition:
+        return register_function
+    else:
+        return lambda x: x
+
+
 def _get_ipython():
     global _ipython
     if _ipython is None:
         _ipython = InteractiveShellEmbed()
-
-        if has_browser_tool():
-            _ipython.push({"read_url": read_url, "search": search})
+        _ipython.push(registered_functions)
 
     return _ipython
 

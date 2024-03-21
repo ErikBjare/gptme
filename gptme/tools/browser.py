@@ -13,6 +13,8 @@ import shutil
 import subprocess
 from typing import Literal
 
+from .python import register_function_conditional
+
 has_playwright = importlib.util.find_spec("playwright") is not None
 
 # noreorder
@@ -88,6 +90,7 @@ def has_browser_tool():
     return has_playwright
 
 
+@register_function_conditional(has_playwright)
 def read_url(url: str) -> str:
     """Read the text of a webpage and return the text in Markdown format."""
     page = load_page(url)
@@ -101,6 +104,7 @@ def read_url(url: str) -> str:
     return markdown
 
 
+@register_function_conditional(has_playwright)
 def search(query: str, engine: EngineType = "google") -> str:
     """Search for a query on a search engine."""
     logger.info(f"Searching for '{query}' on {engine}")
