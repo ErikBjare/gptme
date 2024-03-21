@@ -236,14 +236,14 @@ def chat(
                 exit(0)
 
         # ask for input if no prompt, generate reply, and run tools
-        for msg in loop(log, no_confirm, model, stream=stream):  # pragma: no cover
+        for msg in step(log, no_confirm, model, stream=stream):  # pragma: no cover
             log.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
                 break
 
 
-def loop(
+def step(
     log: LogManager,
     no_confirm: bool,
     model: str,
