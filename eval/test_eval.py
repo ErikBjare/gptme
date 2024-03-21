@@ -1,7 +1,6 @@
 import pytest
 
-from evals import tests
-from main import execute
+from . import execute, tests
 
 
 @pytest.mark.slow
