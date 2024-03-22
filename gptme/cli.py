@@ -109,6 +109,9 @@ The chat offers some commands that can be used to interact with the system:
     is_flag=True,
     help="Show version.",
 )
+@click.option(
+    '--list-conversations', is_flag=True, help='List past conversations.'
+)
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -119,6 +122,7 @@ def main(
     verbose: bool,
     no_confirm: bool,
     interactive: bool,
+    list_conversations: bool,
     show_hidden: bool,
     version: bool,
 ):
@@ -202,7 +206,7 @@ def chat(
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
-        name, interactive=(not prompt_msgs and interactive) and sys.stdin.isatty()
+        name, interactive=(not prompt_msgs and interactive) and sys.stdin.isatty(), list_conversations=list_conversations
     )
     print(f"Using logdir {logfile.parent}")
     log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
@@ -339,7 +343,7 @@ def get_name(name: str) -> Path:
     return logpath
 
 
-def get_logfile(name: str, interactive=True) -> Path:
+def get_logfile(name: str, interactive=True, list_conversations: bool = False) -> Path:
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
