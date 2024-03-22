@@ -192,6 +192,9 @@ def chat(
     """
     Run the chat loop.
 
+    prompt_msgs: list of messages to execute in sequence.
+    initial_msgs: list of history messages.
+
     Callable from other modules.
     """
     # init
@@ -233,7 +236,7 @@ def chat(
             codeblock = log.get_last_code_block("assistant", history=1, content=False)
             if not (codeblock and is_supported_codeblock(codeblock)):
                 logger.info("Non-interactive and exhausted prompts, exiting")
-                exit(0)
+                break
 
         # ask for input if no prompt, generate reply, and run tools
         for msg in step(log, no_confirm, model, stream=stream):  # pragma: no cover

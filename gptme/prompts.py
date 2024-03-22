@@ -9,7 +9,7 @@ from typing import Literal
 
 from .config import get_config
 from .message import Message
-from .tools import browser, patch
+from .tools import browser, patch, python
 
 PromptType = Literal["full", "short"]
 
@@ -152,6 +152,9 @@ Python will respond with the output of the execution.
 
 The following libraries are available:
 {python_libraries_str}
+
+The following functions are available in the REPL:
+{python.get_functions_prompt()}
 
 ## bash
 
