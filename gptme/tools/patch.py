@@ -79,6 +79,7 @@ def apply(codeblock: str, content: str) -> str:
     if UPDATED not in modified:  # pragma: no cover
         raise ValueError(f"invalid patch, no `{UPDATED.strip()}`", codeblock)
     modified = re.split(UPDATED, modified)[0].rstrip("\n")
+    modified = modified.replace("\\", "\\\\")
 
     # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
     #       and then replace these with the original chunks?
