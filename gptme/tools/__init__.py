@@ -6,8 +6,10 @@ from .patch import execute_patch
 from .python import execute_python, init_python
 from .save import execute_save
 from .shell import execute_shell
+from .subagent import noop
 from .summarize import summarize
 
+noop()  # just to make sure the import isn't automatically removed
 logger = logging.getLogger(__name__)
 
 

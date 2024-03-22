@@ -40,7 +40,6 @@ import select
 import subprocess
 import sys
 from collections.abc import Generator
-from typing import List
 
 import bashlex
 
@@ -262,7 +261,7 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
     return "\n".join(lines)
 
 
-def split_commands(script: str) -> List[str]:
+def split_commands(script: str) -> list[str]:
     # TODO: write proper tests
     parts = bashlex.parse(script)
     commands = []

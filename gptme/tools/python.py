@@ -31,7 +31,12 @@ The user can also run Python code with the /python command:
 import re
 from collections.abc import Generator
 from logging import getLogger
-from typing import Callable, TypeVar
+from typing import (
+    Literal,
+    TypeVar,
+    get_origin,
+)
+from collections.abc import Callable
 
 from IPython.terminal.embed import InteractiveShellEmbed
 from IPython.utils.capture import capture_output
@@ -49,7 +54,7 @@ def init_python():
     check_available_packages()
 
 
-registered_functions = {}
+registered_functions: dict[str, Callable] = {}
 
 T = TypeVar("T", bound=Callable)
 
@@ -65,6 +70,34 @@ def register_function_if(condition: bool):
         return register_function
     else:
         return lambda x: x
+
+
+def derive_type(t) -> str:
+    if get_origin(t) == Literal:
+        v = ", ".join(f'"{a}"' for a in t.__args__)
+        return f"Literal[{v}]"
+    else:
+        return t.__name__
+
+
+def callable_signature(func: Callable) -> str:
+    # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
+    args = ", ".join(
+        f"{k}: {derive_type(v)}"
+        for k, v in func.__annotations__.items()
+        if k != "return"
+    )
+    ret_type = func.__annotations__.get("return")
+    ret = f" -> {derive_type(ret_type)}" if ret_type else ""
+    return f"{func.__name__}({args}){ret}"
+
+
+def get_functions_prompt() -> str:
+    # return a prompt with a brief description of the available functions
+    return "\n".join(
+        f"- {callable_signature(func)}: {func.__doc__ or 'No description'}"
+        for func in registered_functions.values()
+    )
 
 
 def _get_ipython():
