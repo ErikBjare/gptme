@@ -49,6 +49,22 @@ from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
 
+instructions = """
+When you send a message containing bash code, it will be executed in a stateful bash shell.
+The shell will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: learn about the project
+```bash
+git ls-files
+```
+> stdout: `README.md`
+```bash
+cat README.md
+```
+""".strip()
+
 
 class ShellSession:
     process: subprocess.Popen
@@ -290,15 +306,8 @@ def split_commands(script: str) -> list[str]:
 tool = ToolSpec(
     name="shell",
     desc="Executes shell commands.",
-    examples="""
-    ```bash
-    ls
-    ```
-
-    ```sh
-    echo "Hello, world!"
-    ```
-    """,
+    instructions=instructions,
+    examples=examples,
     init=get_shell,
     execute=execute_shell,
 )

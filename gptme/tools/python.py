@@ -42,6 +42,18 @@ from .base import ToolSpec
 
 logger = getLogger(__name__)
 
+instructions = """
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: print hello world
+```python
+print("Hello world")
+```
+""".strip()
+
 # IPython instance
 _ipython = None
 
@@ -59,13 +71,6 @@ def register_function(func: T) -> T:
     """Decorator to register a function to be available in the IPython instance."""
     registered_functions[func.__name__] = func
     return func
-
-
-def register_function_if(condition: bool):
-    if condition:
-        return register_function
-    else:
-        return lambda x: x
 
 
 def derive_type(t) -> str:
@@ -105,7 +110,7 @@ def _get_ipython():
     return _ipython
 
 
-def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
+def execute_python(code: str, ask: bool, _=None) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
@@ -170,8 +175,9 @@ def check_available_packages():
 
 tool = ToolSpec(
     name="python",
-    desc="TODO",  # TODO: move from prompts.py
-    examples="TODO",  # TODO: move from prompts.py
-    functions=[],
+    desc="A tool to execute Python code.",
+    instructions=instructions,
+    examples=examples,
     init=init_python,
+    execute=execute_python,
 )

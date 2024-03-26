@@ -5,9 +5,11 @@ from xml.etree import ElementTree
 
 from ..message import Message
 from .base import ToolSpec
+from .browser import has_browser_tool
 from .browser import tool as browser_tool
 from .patch import execute_patch
-from .python import execute_python
+from .patch import tool as patch_tool
+from .python import execute_python, register_function
 from .python import tool as python_tool
 from .save import execute_save
 from .save import tool as save_tool
@@ -26,17 +28,23 @@ __all__ = [
     "execute_save",
     "summarize",
     "ToolSpec",
+    "ToolUse",
+    "all_tools",
 ]
 
 
-# TODO: init as empty list and add tools after they are initialized?
-all_tools: list[ToolSpec] = [
-    save_tool,
-    python_tool,
-    shell_tool,
-    browser_tool,
-    subagent_tool,
-]
+all_tools: list[ToolSpec] = (
+    [
+        save_tool,
+        patch_tool,
+        python_tool,
+        shell_tool,
+        subagent_tool,
+    ]
+    + [browser_tool]
+    if has_browser_tool()
+    else []
+)
 loaded_tools: list[ToolSpec] = []
 
 
@@ -46,22 +54,35 @@ class ToolUse:
     args: dict[str, str]
     content: str
 
+    def execute(self, ask: bool) -> Generator[Message, None, None]:
+        """Executes a tool-use tag and returns the output."""
+        tool = get_tool(self.tool)
+        if tool.execute:
+            self.args.copy()
+            yield from tool.execute(self.content, ask, self.args)
+
 
 def init_tools() -> None:
     """Runs initialization logic for tools."""
     for tool in all_tools:
+        if tool in loaded_tools:
+            continue
         load_tool(tool)
 
 
 def load_tool(tool: ToolSpec) -> None:
     """Loads a tool."""
-    if tool not in loaded_tools:
-        # FIXME: when are tools first initialized? do we need to store if they have been initialized?
-        if tool.init:
-            tool.init()
-        loaded_tools.append(tool)
-    else:
+    # FIXME: when are tools first initialized? do we need to store if they have been initialized?
+    if tool in loaded_tools:
         logger.warning(f"Tool '{tool.name}' already loaded")
+        return
+
+    if tool.init:
+        tool.init()
+    if tool.functions:
+        for func in tool.functions:
+            register_function(func)
+    loaded_tools.append(tool)
 
 
 def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
@@ -72,7 +93,7 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     for codeblock in get_codeblocks(msg.content):
         try:
             # yield from execute_codeblock(codeblock, ask)
-            yield from execute_tooluse(codeblock_to_tooluse(codeblock), ask)
+            yield from codeblock_to_tooluse(codeblock).execute(ask)
         except Exception as e:
             logger.exception(e)
             yield Message(
@@ -83,8 +104,7 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
 
     # TODO: execute them in order with codeblocks
     for tooluse in get_tooluse_xml(msg.content):
-        if tooluse.tool in [t.name for t in all_tools]:
-            yield from execute_tooluse(tooluse, ask)
+        yield from tooluse.execute(ask)
 
 
 def codeblock_to_tooluse(codeblock: str) -> ToolUse:
@@ -179,7 +199,7 @@ def get_codeblocks(content: str) -> Generator[str, None, None]:
 
 
 def get_tooluse_xml(content: str) -> Generator[ToolUse, None, None]:
-    """Returns all tool-use tags in a message.
+    """Returns all ToolUse in a message.
 
     Example:
       <tool-use>
@@ -204,29 +224,3 @@ def get_tool(tool_name: str) -> ToolSpec:
         if tool.name == tool_name:
             return tool
     raise ValueError(f"Tool '{tool_name}' not found")
-
-
-def execute_tooluse(tooluse: ToolUse, ask: bool) -> Generator[Message, None, None]:
-    """Executes a tool-use tag and returns the output."""
-    tool = get_tool(tooluse.tool)
-    if tool.execute:
-        tooluse.args.copy()
-        yield from tool.execute(tooluse.content, ask, tooluse.args)
-
-
-def execute_tooluse_legacy(
-    tooluse: ToolUse, ask: bool
-) -> Generator[Message, None, None]:
-    args = tooluse.args
-    content = tooluse.content
-    match tooluse.tool:
-        case "python":
-            yield from execute_python(content, ask=ask)
-        case "shell":
-            yield from execute_shell(content, ask=ask)
-        case "patch":
-            yield from execute_patch(content, ask, args)
-        case "save":
-            yield from execute_save(content, ask, args)
-        case _:
-            logger.debug(f"Unknown tool '{tooluse.tool}'")
