@@ -13,6 +13,7 @@ import shutil
 import subprocess
 from typing import Literal
 
+from .base import ToolSpec
 from .python import register_function_if
 
 has_playwright = importlib.util.find_spec("playwright") is not None
@@ -157,3 +158,11 @@ def html_to_markdown(html):
     markdown = re_strip_data.sub("", markdown)
 
     return markdown
+
+
+tool = ToolSpec(
+    name="browser",
+    desc=instructions,
+    examples=examples,
+    functions=[read_url, search],
+)

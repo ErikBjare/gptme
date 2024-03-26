@@ -45,6 +45,7 @@ import bashlex
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +185,7 @@ def set_shell(shell: ShellSession) -> None:
     _shell = shell
 
 
-def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
+def execute_shell(cmd: str, ask=True, _=None) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     shell = get_shell()
 
@@ -284,3 +285,20 @@ def split_commands(script: str) -> list[str]:
         else:
             logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
     return commands
+
+
+tool = ToolSpec(
+    name="shell",
+    desc="Executes shell commands.",
+    examples="""
+    ```bash
+    ls
+    ```
+
+    ```sh
+    echo "Hello, world!"
+    ```
+    """,
+    init=get_shell,
+    execute=execute_shell,
+)

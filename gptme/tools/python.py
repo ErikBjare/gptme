@@ -29,20 +29,16 @@ The user can also run Python code with the /python command:
 """
 
 import re
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from logging import getLogger
-from typing import (
-    Literal,
-    TypeVar,
-    get_origin,
-)
-from collections.abc import Callable
+from typing import Literal, TypeVar, get_origin
 
 from IPython.terminal.embed import InteractiveShellEmbed
 from IPython.utils.capture import capture_output
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .base import ToolSpec
 
 logger = getLogger(__name__)
 
@@ -170,3 +166,12 @@ def check_available_packages():
         logger.warning(
             f"Missing packages: {', '.join(missing)}. Install them with `pip install gptme-python -E datascience`"
         )
+
+
+tool = ToolSpec(
+    name="python",
+    desc="TODO",  # TODO: move from prompts.py
+    examples="TODO",  # TODO: move from prompts.py
+    functions=[],
+    init=init_python,
+)

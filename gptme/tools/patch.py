@@ -112,10 +112,14 @@ def apply_file(codeblock, filename):
     print(f"Applied patch to {filename}")
 
 
-def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None, None]:
+def execute_patch(
+    codeblock: str, ask: bool, args: dict[str, str]
+) -> Generator[Message, None, None]:
     """
     Applies the patch.
     """
+    fn = args.get("file")
+    assert fn, "No filename provided"
     if ask:
         confirm = ask_execute("Apply patch?")
         if not confirm:

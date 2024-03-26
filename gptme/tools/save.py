@@ -18,12 +18,16 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute
+from .base import ToolSpec
 
 
 def execute_save(
-    fn: str, code: str, ask: bool, append: bool = False
+    code: str, ask: bool, args: dict[str, str]
 ) -> Generator[Message, None, None]:
     """Save the code to a file."""
+    fn = args.get("file")
+    assert fn, "No filename provided"
+    append = args.get("append", False)
     action = "save" if not append else "append"
     # strip leading newlines
     code = code.lstrip("\n")
@@ -84,3 +88,12 @@ def execute_save(
     with open(path, "w") as f:
         f.write(code)
     yield Message("system", f"Saved to {fn}")
+
+
+tool = ToolSpec(
+    name="save",
+    desc="TODO",
+    examples="TODO",
+    functions=[],
+    execute=execute_save,
+)
