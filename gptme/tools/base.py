@@ -1,16 +1,26 @@
-from dataclasses import dataclass
 from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any, Generator, TypeAlias
+
+from ..message import Message
+
+InitFunc: TypeAlias = Callable[[], Any]
+ExecuteFunc: TypeAlias = Callable[
+    [str, bool, dict[str, str]], Generator[Message, None, None]
+]
 
 
 @dataclass
 class ToolSpec:
-    name: str
-    instructions: str
-    examples: str
-    functions: list[Callable]
-    enabled: bool = True
+    """
+    A dataclass to store metadata about a tool.
 
-    def __after_init__(self):
-        # TODO: register functions
-        # TODO: register instructions and example prompt
-        ...
+    Like documentation to be included in prompt, and functions to expose to the agent in the REPL.
+    """
+
+    name: str
+    desc: str
+    examples: str
+    functions: list[Callable] | None = None
+    init: InitFunc | None = None
+    execute: ExecuteFunc | None = None

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, TypedDict
 
 from ..message import Message
+from .base import ToolSpec
 from .python import register_function
 
 if TYPE_CHECKING:
@@ -59,6 +60,7 @@ def subagent(prompt: str, agent_id: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
     from gptme import chat  # fmt: skip
+
     from ..prompts import get_prompt  # fmt: skip
 
     name = f"subagent-{agent_id}"
@@ -105,5 +107,9 @@ def subagent_status(agent_id: str):
     raise ValueError(f"Subagent with ID {agent_id} not found.")
 
 
-def noop():
-    pass
+tool = ToolSpec(
+    name="subagent",
+    desc="A tool to create subagents",
+    examples="",  # TODO
+    functions=[subagent, subagent_status],
+)
