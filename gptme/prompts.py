@@ -9,7 +9,15 @@ from typing import Literal
 
 from .config import get_config
 from .message import Message
-from .tools import browser, patch, python
+from .tools import (
+    browser,
+    init_tools,
+    loaded_tools,
+    patch,
+    python,
+    save,
+    shell,
+)
 
 PromptType = Literal["full", "short"]
 
@@ -41,6 +49,8 @@ def prompt_full() -> Generator[Message, None, None]:
     yield from prompt_gptme()
 
     yield from prompt_tools()
+    # Useful in debugging
+    #yield from prompt_tools_from_spec()
     yield from prompt_examples()
     yield from prompt_gh()
 
@@ -133,6 +143,24 @@ When you send a message containing Python code to python, it will be executed in
     )
 
 
+def prompt_tools_from_spec() -> Generator[Message, None, None]:
+    # TODO: this should be moved to tools.py
+    # tools must have been initialized by now
+    init_tools()
+    prompt = ""
+    assert loaded_tools, "No tools loaded"
+    for tool in loaded_tools:
+        prompt += (
+            f"""## {tool.name}
+
+{tool.desc.strip()}
+
+{tool.instructions.strip()}""".strip()
+            + "\n\n"
+        )
+    yield Message("system", prompt.strip())
+
+
 def prompt_tools() -> Generator[Message, None, None]:
     python_libraries = get_installed_python_libraries()
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
@@ -147,8 +175,7 @@ def prompt_tools() -> Generator[Message, None, None]:
 
 ## python
 
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
+{python.instructions}
 
 The following libraries are available:
 {python_libraries_str}
@@ -158,16 +185,14 @@ The following functions are available in the REPL:
 
 ## bash
 
-When you send a message containing bash code, it will be executed in a stateful bash shell.
-The shell will respond with the output of the execution.
+{shell.instructions}
 
 These programs are available, among others:
 {shell_programs_str}
 
 ## saving files
 
-To save a file, output a code block with a filename on the first line, like "```src/example.py" (a "file block").
-It is very important that such blocks begin with a filename, otherwise the code will be executed instead of saved.
+{save.instructions}
 
 ## patching files
 
@@ -194,29 +219,15 @@ def prompt_examples() -> Generator[Message, None, None]:
 
 ## bash
 
-> User: learn about the project
-```bash
-git ls-files
-```
-> stdout: `README.md`
-```bash
-cat README.md
-```
+{shell.examples}
 
 ## Python
 
-> User: print hello world
-```python
-print("Hello world")
-```
+{python.examples}
 
 ## Save files
 
-> User: write a Hello world script to hello.py
-```hello.py
-print("Hello world")
-```
-Saved to `hello.py`.
+{save.examples}
 
 ## Read files
 

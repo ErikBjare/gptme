@@ -20,7 +20,8 @@ class ToolSpec:
 
     name: str
     desc: str
-    examples: str
+    instructions: str = ""
+    examples: str = ""
     functions: list[Callable] | None = None
     init: InitFunc | None = None
     execute: ExecuteFunc | None = None

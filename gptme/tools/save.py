@@ -20,6 +20,19 @@ from ..message import Message
 from ..util import ask_execute
 from .base import ToolSpec
 
+instructions = """
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: write a Hello world script to hello.py
+```hello.py
+print("Hello world")
+```
+Saved to `hello.py`.
+""".strip()
+
 
 def execute_save(
     code: str, ask: bool, args: dict[str, str]
@@ -92,8 +105,8 @@ def execute_save(
 
 tool = ToolSpec(
     name="save",
-    desc="TODO",
-    examples="TODO",
-    functions=[],
+    desc="Allows saving code to a file.",
+    instructions=instructions,
+    examples=examples,
     execute=execute_save,
 )
