@@ -58,7 +58,6 @@ class ToolUse:
         """Executes a tool-use tag and returns the output."""
         tool = get_tool(self.tool)
         if tool.execute:
-            self.args.copy()
             yield from tool.execute(self.content, ask, self.args)
 
 
@@ -72,7 +71,7 @@ def init_tools() -> None:
 
 def load_tool(tool: ToolSpec) -> None:
     """Loads a tool."""
-    # FIXME: when are tools first initialized? do we need to store if they have been initialized?
+    # FIXME: when are tools first initialized?
     if tool in loaded_tools:
         logger.warning(f"Tool '{tool.name}' already loaded")
         return
