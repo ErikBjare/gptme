@@ -26,6 +26,7 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute
+from .base import ToolSpec
 
 instructions = """
 To patch/modify files, we can use an adapted version of git conflict markers.
@@ -112,10 +113,14 @@ def apply_file(codeblock, filename):
     print(f"Applied patch to {filename}")
 
 
-def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None, None]:
+def execute_patch(
+    codeblock: str, ask: bool, args: dict[str, str]
+) -> Generator[Message, None, None]:
     """
     Applies the patch.
     """
+    fn = args.get("file")
+    assert fn, "No filename provided"
     if ask:
         confirm = ask_execute("Apply patch?")
         if not confirm:
@@ -127,3 +132,12 @@ def execute_patch(codeblock: str, fn: str, ask: bool) -> Generator[Message, None
         yield Message("system", "Patch applied")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
+
+
+tool = ToolSpec(
+    name="patch",
+    desc="Apply a patch to a file",
+    instructions=instructions,
+    examples=examples,
+    execute=execute_patch,
+)

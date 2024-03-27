@@ -29,17 +29,30 @@ The user can also run Python code with the /python command:
 """
 
 import re
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from logging import getLogger
-from typing import Callable, TypeVar
+from typing import Literal, TypeVar, get_origin
 
 from IPython.terminal.embed import InteractiveShellEmbed
 from IPython.utils.capture import capture_output
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .base import ToolSpec
 
 logger = getLogger(__name__)
+
+instructions = """
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: print hello world
+```python
+print("Hello world")
+```
+""".strip()
 
 # IPython instance
 _ipython = None
@@ -49,7 +62,7 @@ def init_python():
     check_available_packages()
 
 
-registered_functions = {}
+registered_functions: dict[str, Callable] = {}
 
 T = TypeVar("T", bound=Callable)
 
@@ -60,11 +73,32 @@ def register_function(func: T) -> T:
     return func
 
 
-def register_function_if(condition: bool):
-    if condition:
-        return register_function
+def derive_type(t) -> str:
+    if get_origin(t) == Literal:
+        v = ", ".join(f'"{a}"' for a in t.__args__)
+        return f"Literal[{v}]"
     else:
-        return lambda x: x
+        return t.__name__
+
+
+def callable_signature(func: Callable) -> str:
+    # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
+    args = ", ".join(
+        f"{k}: {derive_type(v)}"
+        for k, v in func.__annotations__.items()
+        if k != "return"
+    )
+    ret_type = func.__annotations__.get("return")
+    ret = f" -> {derive_type(ret_type)}" if ret_type else ""
+    return f"{func.__name__}({args}){ret}"
+
+
+def get_functions_prompt() -> str:
+    # return a prompt with a brief description of the available functions
+    return "\n".join(
+        f"- {callable_signature(func)}: {func.__doc__ or 'No description'}"
+        for func in registered_functions.values()
+    )
 
 
 def _get_ipython():
@@ -76,7 +110,7 @@ def _get_ipython():
     return _ipython
 
 
-def execute_python(code: str, ask: bool) -> Generator[Message, None, None]:
+def execute_python(code: str, ask: bool, _=None) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
@@ -137,3 +171,13 @@ def check_available_packages():
         logger.warning(
             f"Missing packages: {', '.join(missing)}. Install them with `pip install gptme-python -E datascience`"
         )
+
+
+tool = ToolSpec(
+    name="python",
+    desc="A tool to execute Python code.",
+    instructions=instructions,
+    examples=examples,
+    init=init_python,
+    execute=execute_python,
+)

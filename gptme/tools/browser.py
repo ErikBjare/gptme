@@ -13,7 +13,7 @@ import shutil
 import subprocess
 from typing import Literal
 
-from .python import register_function_if
+from .base import ToolSpec
 
 has_playwright = importlib.util.find_spec("playwright") is not None
 
@@ -32,7 +32,7 @@ EngineType = Literal["google", "duckduckgo"]
 
 instructions = """
 To browse the web, you can use the `read_url` and `search` functions in Python.
-"""
+""".strip()
 
 examples = """
 ### Answer question from URL with browsing
@@ -90,7 +90,6 @@ def has_browser_tool():
     return has_playwright
 
 
-@register_function_if(has_playwright)
 def read_url(url: str) -> str:
     """Read the text of a webpage and return the text in Markdown format."""
     page = load_page(url)
@@ -104,7 +103,6 @@ def read_url(url: str) -> str:
     return markdown
 
 
-@register_function_if(has_playwright)
 def search(query: str, engine: EngineType = "google") -> str:
     """Search for a query on a search engine."""
     logger.info(f"Searching for '{query}' on {engine}")
@@ -157,3 +155,12 @@ def html_to_markdown(html):
     markdown = re_strip_data.sub("", markdown)
 
     return markdown
+
+
+tool = ToolSpec(
+    name="browser",
+    desc="A tool to browse the web.",
+    instructions=instructions,
+    examples=examples,
+    functions=[read_url, search],
+)

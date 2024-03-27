@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, TypedDict
+from typing import TypedDict
+from collections.abc import Callable
 
-Files = Dict[str, str | bytes]
+Files = dict[str, str | bytes]
 
 
 @dataclass

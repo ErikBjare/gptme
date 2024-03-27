@@ -40,14 +40,30 @@ import select
 import subprocess
 import sys
 from collections.abc import Generator
-from typing import List
 
 import bashlex
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
+
+instructions = """
+When you send a message containing bash code, it will be executed in a stateful bash shell.
+The shell will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: learn about the project
+```bash
+git ls-files
+```
+> stdout: `README.md`
+```bash
+cat README.md
+```
+""".strip()
 
 
 class ShellSession:
@@ -185,7 +201,7 @@ def set_shell(shell: ShellSession) -> None:
     _shell = shell
 
 
-def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
+def execute_shell(cmd: str, ask=True, _=None) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     shell = get_shell()
 
@@ -262,7 +278,7 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
     return "\n".join(lines)
 
 
-def split_commands(script: str) -> List[str]:
+def split_commands(script: str) -> list[str]:
     # TODO: write proper tests
     parts = bashlex.parse(script)
     commands = []
@@ -285,3 +301,13 @@ def split_commands(script: str) -> List[str]:
         else:
             logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
     return commands
+
+
+tool = ToolSpec(
+    name="shell",
+    desc="Executes shell commands.",
+    instructions=instructions,
+    examples=examples,
+    init=get_shell,
+    execute=execute_shell,
+)

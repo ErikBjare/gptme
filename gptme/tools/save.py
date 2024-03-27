@@ -18,12 +18,29 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute
+from .base import ToolSpec
+
+instructions = """
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: write a Hello world script to hello.py
+```hello.py
+print("Hello world")
+```
+Saved to `hello.py`.
+""".strip()
 
 
 def execute_save(
-    fn: str, code: str, ask: bool, append: bool = False
+    code: str, ask: bool, args: dict[str, str]
 ) -> Generator[Message, None, None]:
     """Save the code to a file."""
+    fn = args.get("file")
+    assert fn, "No filename provided"
+    append = args.get("append", False)
     action = "save" if not append else "append"
     # strip leading newlines
     code = code.lstrip("\n")
@@ -84,3 +101,12 @@ def execute_save(
     with open(path, "w") as f:
         f.write(code)
     yield Message("system", f"Saved to {fn}")
+
+
+tool = ToolSpec(
+    name="save",
+    desc="Allows saving code to a file.",
+    instructions=instructions,
+    examples=examples,
+    execute=execute_save,
+)
