@@ -5,7 +5,7 @@ def test_shorten_stdout_timestamp():
     s = """2021-09-02T08:48:43.123Z
 2021-09-02T08:48:43.123Z
 """
-    assert _shorten_stdout(s) == "\n\n"
+    assert _shorten_stdout(s, strip_dates=True) == "\n\n"
 
 
 def test_shorten_stdout_common_prefix():
@@ -14,7 +14,7 @@ foo 2
 foo 3
 foo 4
 foo 5"""
-    assert _shorten_stdout(s) == "1\n2\n3\n4\n5"
+    assert _shorten_stdout(s, strip_common_prefix_lines=5) == "1\n2\n3\n4\n5"
 
 
 def test_shorten_stdout_indent():
