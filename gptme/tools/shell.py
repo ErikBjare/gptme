@@ -31,7 +31,6 @@ The user can also run shell code with the /shell command:
     ```
 
 """
-
 import atexit
 import logging
 import os
@@ -241,23 +240,31 @@ def _format_block_smart(header: str, cmd: str, lang="") -> str:
         return f"{header}:\n```{lang}\n{cmd}\n```"
 
 
-def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
+def _shorten_stdout(
+    stdout: str,
+    pre_lines=None,
+    post_lines=None,
+    strip_dates=False,
+    strip_common_prefix=False,
+) -> str:
     """Shortens stdout to 1000 tokens."""
     lines = stdout.split("\n")
 
-    # strip iso8601 timestamps
-    lines = [
-        re.sub(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.]\d{3,9}Z?", "", line)
-        for line in lines
-    ]
-    # strip dates like "2017-08-02 08:48:43 +0000 UTC"
-    lines = [
-        re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line)
-        for line in lines
-    ]
+    # NOTE: This can cause issues when, for example, reading a CSV with dates in the first column
+    if strip_dates:
+        # strip iso8601 timestamps
+        lines = [
+            re.sub(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.]\d{3,9}Z?", "", line)
+            for line in lines
+        ]
+        # strip dates like "2017-08-02 08:48:43 +0000 UTC"
+        lines = [
+            re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line)
+            for line in lines
+        ]
 
     # strip common prefixes, useful for things like `gh runs view`
-    if len(lines) >= 5:
+    if strip_common_prefix and len(lines) >= 10:
         prefix = os.path.commonprefix([line.rstrip() for line in lines])
         if prefix:
             lines = [line[len(prefix) :] for line in lines]
