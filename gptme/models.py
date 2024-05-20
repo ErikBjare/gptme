@@ -34,13 +34,7 @@ DEFAULT_MODEL: str | None = None
 # TODO: can we get this from the API?
 MODELS: dict[str, dict[str, _ModelDictMeta]] = {
     "openai": {
-        "gpt-4": {
-            "context": 8193,
-            # 0.03 USD per 1k input tokens
-            # 0.06 USD per 1k output tokens
-            "price_input": 0.03,
-            "price_output": 0.06,
-        },
+        # gpt-3.5
         "gpt-3.5-turbo": {
             "context": 4097,
             # 0.001 USD per 1k input tokens
@@ -51,6 +45,17 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         "gpt-3.5-turbo-16k": {
             "context": 16385,
         },
+        "gpt-3.5-turbo-1106": {
+            "context": 16385,
+        },
+        # gpt-4 (non-turbo, small context)
+        "gpt-4": {
+            "context": 8193,
+            # 0.03 USD per 1k input tokens
+            # 0.06 USD per 1k output tokens
+            "price_input": 0.03,
+            "price_output": 0.06,
+        },
         # gpt-4-turbo
         # https://openai.com/blog/new-models-and-developer-products-announced-at-devday
         "gpt-4-1106-preview": {
@@ -59,8 +64,8 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         "gpt-4-vision-preview": {
             "context": 128_000,
         },
-        "gpt-3.5-turbo-1106": {
-            "context": 16385,
+        "gpt-4-turbo": {
+            "context": 128_000,
         },
     }
 }

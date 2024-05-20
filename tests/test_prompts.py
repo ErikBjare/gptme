@@ -7,7 +7,7 @@ def test_get_prompt():
     assert len_tokens(prompt.content) < 1500
 
     prompt = get_prompt("short")
-    assert len_tokens(prompt.content) < 600
+    assert len_tokens(prompt.content) < 800
 
     prompt = get_prompt("Hello world!")
     assert prompt.content == "Hello world!"

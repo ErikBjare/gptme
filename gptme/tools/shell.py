@@ -31,7 +31,6 @@ The user can also run shell code with the /shell command:
     ```
 
 """
-
 import atexit
 import logging
 import os
@@ -40,14 +39,30 @@ import select
 import subprocess
 import sys
 from collections.abc import Generator
-from typing import List
 
 import bashlex
 
 from ..message import Message
 from ..util import ask_execute, print_preview
+from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
+
+instructions = """
+When you send a message containing bash code, it will be executed in a stateful bash shell.
+The shell will respond with the output of the execution.
+""".strip()
+
+examples = """
+> User: learn about the project
+```bash
+git ls-files
+```
+> stdout: `README.md`
+```bash
+cat README.md
+```
+""".strip()
 
 
 class ShellSession:
@@ -185,7 +200,7 @@ def set_shell(shell: ShellSession) -> None:
     _shell = shell
 
 
-def execute_shell(cmd: str, ask=True) -> Generator[Message, None, None]:
+def execute_shell(cmd: str, ask=True, _=None) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     shell = get_shell()
 
@@ -225,23 +240,31 @@ def _format_block_smart(header: str, cmd: str, lang="") -> str:
         return f"{header}:\n```{lang}\n{cmd}\n```"
 
 
-def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
+def _shorten_stdout(
+    stdout: str,
+    pre_lines=None,
+    post_lines=None,
+    strip_dates=False,
+    strip_common_prefix=False,
+) -> str:
     """Shortens stdout to 1000 tokens."""
     lines = stdout.split("\n")
 
-    # strip iso8601 timestamps
-    lines = [
-        re.sub(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.]\d{3,9}Z?", "", line)
-        for line in lines
-    ]
-    # strip dates like "2017-08-02 08:48:43 +0000 UTC"
-    lines = [
-        re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line)
-        for line in lines
-    ]
+    # NOTE: This can cause issues when, for example, reading a CSV with dates in the first column
+    if strip_dates:
+        # strip iso8601 timestamps
+        lines = [
+            re.sub(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.]\d{3,9}Z?", "", line)
+            for line in lines
+        ]
+        # strip dates like "2017-08-02 08:48:43 +0000 UTC"
+        lines = [
+            re.sub(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}( [+]\d{4})?( UTC)?", "", line)
+            for line in lines
+        ]
 
     # strip common prefixes, useful for things like `gh runs view`
-    if len(lines) >= 5:
+    if strip_common_prefix and len(lines) >= 10:
         prefix = os.path.commonprefix([line.rstrip() for line in lines])
         if prefix:
             lines = [line[len(prefix) :] for line in lines]
@@ -262,7 +285,7 @@ def _shorten_stdout(stdout: str, pre_lines=None, post_lines=None) -> str:
     return "\n".join(lines)
 
 
-def split_commands(script: str) -> List[str]:
+def split_commands(script: str) -> list[str]:
     # TODO: write proper tests
     parts = bashlex.parse(script)
     commands = []
@@ -285,3 +308,13 @@ def split_commands(script: str) -> List[str]:
         else:
             logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
     return commands
+
+
+tool = ToolSpec(
+    name="shell",
+    desc="Executes shell commands.",
+    instructions=instructions,
+    examples=examples,
+    init=get_shell,
+    execute=execute_shell,
+)

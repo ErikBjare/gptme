@@ -28,7 +28,7 @@ class FileStore:
             if path.is_file():
                 key = str(path.relative_to(self.working_dir))
                 try:
-                    with open(path, "r") as f:
+                    with open(path) as f:
                         files[key] = f.read()
                 except UnicodeDecodeError:
                     # file is binary
