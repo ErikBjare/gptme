@@ -9,6 +9,7 @@ import tomlkit
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
+from tomlkit._utils import escape_string
 from typing_extensions import Self
 
 from .constants import ROLE_COLOR
@@ -80,7 +81,10 @@ class Message:
         flags_toml = "\n".join(f"{flag} = true" for flag in flags)
 
         # doublequotes need to be escaped
-        content = self.content.replace('"', '\\"')
+        # content = self.content.replace('"', '\\"')
+        content = escape_string(self.content)
+        content = content.replace("\\n", "\n")
+
         return f'''[message]
 role = "{self.role}"
 content = """
