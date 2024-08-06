@@ -245,7 +245,7 @@ def _shorten_stdout(
     pre_lines=None,
     post_lines=None,
     strip_dates=False,
-    strip_common_prefix=False,
+    strip_common_prefix_lines=0,
 ) -> str:
     """Shortens stdout to 1000 tokens."""
     lines = stdout.split("\n")
@@ -264,7 +264,7 @@ def _shorten_stdout(
         ]
 
     # strip common prefixes, useful for things like `gh runs view`
-    if strip_common_prefix and len(lines) >= 10:
+    if strip_common_prefix_lines and len(lines) >= strip_common_prefix_lines:
         prefix = os.path.commonprefix([line.rstrip() for line in lines])
         if prefix:
             lines = [line[len(prefix) :] for line in lines]
