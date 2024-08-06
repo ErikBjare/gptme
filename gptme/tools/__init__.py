@@ -133,6 +133,9 @@ def codeblock_to_tooluse(codeblock: str) -> ToolUse:
         return ToolUse("save", {"file": lang_or_fn}, codeblock_content)
     else:
         assert not is_supported_codeblock(codeblock)
+        raise ValueError(
+            f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
+        )
 
 
 def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
