@@ -161,7 +161,7 @@ def _transform_system_messages_anthropic(
     # for first system message, transform it into a system kwarg
     assert messages[0].role == "system"
     system_prompt = messages[0].content
-    messages.pop()
+    messages.pop(0)
 
     # for any subsequent system messages, transform them into a <system> message
     for i, message in enumerate(messages):
@@ -171,12 +171,26 @@ def _transform_system_messages_anthropic(
                 content=f"<system>{message.content}</system>",
             )
 
+    # find consecutive user role messages and merge them into a single <system> message
+    messages_new = []
+    while messages:
+        message = messages.pop(0)
+        if messages_new and messages_new[-1].role == "user":
+            messages_new[-1] = Message(
+                "user",
+                content=f"{messages_new[-1].content}\n{message.content}",
+            )
+        else:
+            messages_new.append(message)
+    messages = messages_new
+
     return messages, system_prompt
 
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
-    stream_manager = None
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
+
+    stream_manager = None
     if oai_client:
         response = oai_client.chat.completions.create(
             model=model,
@@ -189,7 +203,6 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         )
     elif anthropic_client:
         messages, system_prompt = _transform_system_messages_anthropic(messages)
-        # TODO: rewrite handling of response to support anthropic API
         stream_manager = anthropic_client.messages.stream(
             model=model,
             messages=msgs2dicts(messages),  # type: ignore
