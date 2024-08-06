@@ -55,9 +55,9 @@ if __name__ == "__main__":
 ```
 """.strip()
 
-ORIGINAL = "\n<<<<<<< ORIGINAL\n"
+ORIGINAL = "<<<<<<< ORIGINAL\n"
 DIVIDER = "\n=======\n"
-UPDATED = ">>>>>>> UPDATED\n"
+UPDATED = "\n>>>>>>> UPDATED"
 
 
 def apply(codeblock: str, content: str) -> str:
@@ -77,9 +77,9 @@ def apply(codeblock: str, content: str) -> str:
         raise ValueError(f"invalid patch, no `{DIVIDER.strip()}`", codeblock)
     original, modified = re.split(DIVIDER, original)
 
-    if UPDATED not in modified:  # pragma: no cover
+    if UPDATED not in "\n" + modified:  # pragma: no cover
         raise ValueError(f"invalid patch, no `{UPDATED.strip()}`", codeblock)
-    modified = re.split(UPDATED, modified)[0].rstrip("\n")
+    modified = re.split(UPDATED, modified)[0]
 
     # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
     #       and then replace these with the original chunks?
@@ -93,12 +93,6 @@ def apply(codeblock: str, content: str) -> str:
 
 
 def apply_file(codeblock, filename):
-    codeblock = codeblock.strip()
-    _patch, filename = codeblock.splitlines()[0].split()
-    if not _patch == "```patch":
-        raise ValueError(
-            "invalid patch, codeblock is missing leading ```patch", codeblock
-        )
     if not Path(filename).exists():
         raise FileNotFoundError(filename)
 
