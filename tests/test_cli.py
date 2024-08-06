@@ -133,6 +133,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
 
     # tests saving with a ```filename.txt block
     args.append(f"{CMDFIX}impersonate ```hello.py\nprint('hello')\n```")
+    print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
@@ -144,6 +145,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     # test append
     args = args_orig.copy()
     args.append(f"{CMDFIX}impersonate ```append hello.py\nprint('world')\n```")
+    print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
@@ -155,6 +157,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     # test write file to directory that doesn't exist
     args = args_orig.copy()
     args.append(f"{CMDFIX}impersonate ```hello/hello.py\nprint('hello')\n```")
+    print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
@@ -163,6 +166,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     args.append(
         f"{CMDFIX}impersonate ```patch hello/hello.py\n<<<<<<< ORIGINAL\nprint('hello')\n=======\nprint('hello world')\n>>>>>>> UPDATED\n```"
     )
+    print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
