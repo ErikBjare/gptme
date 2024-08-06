@@ -111,8 +111,8 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
   - Passing a filename as an argument will read the file and include it as context.
 - 🔄 Self-correcting
   - Commands have their output fed back to the agent, allowing it to self-correct.
-- 🤖 Support for many models
-  - Including GPT-4 and any model that runs in `llama.cpp`
+- 🤖 Support for several LLM providers
+  - Use OpenAI, Azure, Anthropic, or serve locally with `llama.cpp`
 - 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
