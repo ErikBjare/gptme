@@ -14,7 +14,7 @@ class ModelMeta:
     context: int
     max_output: Optional[int] = None
 
-    # price in USD per 1k tokens
+    # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0
     price_input: float = 0
     price_output: float = 0
@@ -24,7 +24,7 @@ class _ModelDictMeta(TypedDict):
     context: int
     max_output: NotRequired[int]
 
-    # price in USD per 1k tokens
+    # price in USD per 1M tokens
     price_input: NotRequired[float]
     price_output: NotRequired[float]
 
@@ -39,10 +39,8 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         # gpt-3.5
         "gpt-3.5-turbo": {
             "context": 4097,
-            # 0.001 USD per 1k input tokens
-            # 0.002 USD per 1k output tokens
-            "price_input": 0.001,
-            "price_output": 0.002,
+            "price_input": 1,
+            "price_output": 2,
         },
         "gpt-3.5-turbo-16k": {
             "context": 16385,
@@ -50,13 +48,16 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         "gpt-3.5-turbo-1106": {
             "context": 16385,
         },
-        # gpt-4 (non-turbo, small context)
+        # gpt-4
         "gpt-4": {
             "context": 8193,
-            # 0.03 USD per 1k input tokens
-            # 0.06 USD per 1k output tokens
-            "price_input": 0.03,
-            "price_output": 0.06,
+            "price_input": 30,
+            "price_output": 60,
+        },
+        "gpt-4-32k": {
+            "context": 32769,
+            "price_input": 60,
+            "price_output": 120,
         },
         # gpt-4-turbo
         # https://openai.com/blog/new-models-and-developer-products-announced-at-devday
@@ -68,20 +69,37 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         },
         "gpt-4-turbo": {
             "context": 128_000,
+            "price_input": 10,
+            "price_output": 30,
         },
         "gpt-4o": {
             "context": 128_000,
+            "price_input": 5,
+            "price_output": 15,
+        },
+        "gpt-4o-2024-08-06": {
+            "context": 128_000,
+            "price_input": 2.5,
+            "price_output": 10,
         },
         "gpt-4o-mini": {
             "context": 128_000,
+            "price_input": 0.15,
+            "price_output": 0.6,
         },
     },
     "anthropic": {
+        "claude-3-opus-20240229": {
+            "context": 200_000,
+            "max_output": 4096,
+            "price_input": 15,
+            "price_output": 75,
+        },
         "claude-3-5-sonnet-20240620": {
             "context": 200_000,
             "max_output": 4096,
-            "price_input": 0.003,
-            "price_output": 0.015,
+            "price_input": 3,
+            "price_output": 15,
         },
     },
     "local": {
