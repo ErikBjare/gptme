@@ -67,7 +67,19 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         "gpt-4-turbo": {
             "context": 128_000,
         },
-    }
+        "gpt-4o": {
+            "context": 128_000,
+        },
+        "gpt-4o-mini": {
+            "context": 128_000,
+        },
+    },
+    "local": {
+        # 8B
+        "llama3": {
+            "context": 8193,
+        },
+    },
 }
 
 
