@@ -1,12 +1,11 @@
 import logging
 import shutil
 import sys
-from typing import Tuple
+from typing import Generator, Iterator, Tuple
 
 import openai
 from anthropic import Anthropic
 from openai import AzureOpenAI, OpenAI
-from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from rich import print
 
 from .config import config_path, get_config, set_config_value
@@ -91,26 +90,8 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
         print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
         response = _chat_complete(messages, model)
         print(" " * shutil.get_terminal_size().columns, end="\r")
+        print(f"{PROMPT_ASSISTANT}: {response}")
         return Message("assistant", response)
-
-
-def create(messages: list[Message], model: str) -> str:
-    if oai_client:
-        return oai_client.chat.completions.create(
-            model=model,
-            messages=msgs2dicts(messages),  # type: ignore
-            temperature=temperature,
-            top_p=top_p,
-        )
-    elif anthropic_client:
-        return anthropic_client.messages.create(
-            model=model,
-            messages=msgs2dicts(messages),  # type: ignore
-            temperature=temperature,
-            top_p=top_p,
-        )
-    else:
-        raise ValueError("LLM not initialized")
 
 
 def _chat_complete_openai(messages: list[Message], model: str) -> str:
@@ -142,7 +123,8 @@ def _chat_complete_anthropic(messages: list[Message], model: str) -> str:
     # TODO: rewrite handling of response to support anthropic API
     content = response.content
     assert content
-    return content
+    assert len(content) == 1
+    return content[0].text  # type: ignore
 
 
 def _chat_complete(messages: list[Message], model: str) -> str:
@@ -172,7 +154,7 @@ def _transform_system_messages_anthropic(
             )
 
     # find consecutive user role messages and merge them into a single <system> message
-    messages_new = []
+    messages_new: list[Message] = []
     while messages:
         message = messages.pop(0)
         if messages_new and messages_new[-1].role == "user":
@@ -187,61 +169,72 @@ def _transform_system_messages_anthropic(
     return messages, system_prompt
 
 
-def _reply_stream(messages: list[Message], model: str) -> Message:
-    print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-
-    stream_manager = None
+def _stream(messages: list[Message], model: str) -> Iterator[str]:
     if oai_client:
-        response = oai_client.chat.completions.create(
-            model=model,
-            messages=msgs2dicts(messages),  # type: ignore
-            temperature=temperature,
-            top_p=top_p,
-            stream=True,
-            # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
-            max_tokens=1000 if not model.startswith("gpt-") else None,
-        )
+        return _stream_openai(messages, model)
     elif anthropic_client:
-        messages, system_prompt = _transform_system_messages_anthropic(messages)
-        stream_manager = anthropic_client.messages.stream(
-            model=model,
-            messages=msgs2dicts(messages),  # type: ignore
-            system=system_prompt,
-            temperature=temperature,
-            top_p=top_p,
-            max_tokens=4096,
-        )
-        stream = stream_manager.__enter__()
-        response = stream.text_stream
+        return _stream_anthropic(messages, model)
     else:
         raise ValueError("LLM not initialized")
 
-    def deltas_to_str(deltas: list[ChoiceDelta]):
-        return "".join([d if isinstance(d, str) else d.content or "" for d in deltas])
+
+def _stream_openai(messages: list[Message], model: str) -> Generator[str, None, None]:
+    assert oai_client, "LLM not initialized"
+    stop_reason = None
+    for chunk in oai_client.chat.completions.create(
+        model=model,
+        messages=msgs2dicts(messages),  # type: ignore
+        temperature=temperature,
+        top_p=top_p,
+        stream=True,
+        # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
+        max_tokens=1000 if not model.startswith("gpt-") else None,
+    ):
+        if not chunk.choices:  # type: ignore
+            # Got a chunk with no choices, Azure always sends one of these at the start
+            continue
+        stop_reason = chunk.choices[0].finish_reason  # type: ignore
+        yield chunk.choices[0].delta.content  # type: ignore
+    logger.debug(f"Stop reason: {stop_reason}")
+
+
+def _stream_anthropic(
+    messages: list[Message], model: str
+) -> Generator[str, None, None]:
+    messages, system_prompt = _transform_system_messages_anthropic(messages)
+    assert anthropic_client, "LLM not initialized"
+    with anthropic_client.messages.stream(
+        model=model,
+        messages=msgs2dicts(messages),  # type: ignore
+        system=system_prompt,
+        temperature=temperature,
+        top_p=top_p,
+        max_tokens=4096,
+    ) as stream:
+        yield from stream.text_stream
+
+
+def _reply_stream(messages: list[Message], model: str) -> Message:
+    print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
+
+    def deltas_to_str(deltas: list[str]):
+        return "".join([d or "" for d in deltas])
 
     def print_clear():
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
-    deltas: list[ChoiceDelta] = []
+    deltas: list[str] = []
     print_clear()
     print(f"{PROMPT_ASSISTANT}: ", end="")
-    stop_reason = None
     try:
-        for chunk in response:
-            if isinstance(chunk, tuple):
-                print("Got a tuple, expected Chunk")
+        for delta in _stream(messages, model):
+            if isinstance(delta, tuple):
+                print("Got a tuple, expected str")
                 continue
-            if oai_client:
-                if not chunk.choices:
-                    # Got a chunk with no choices, Azure always sends one of these at the start
-                    continue
-                delta = chunk.choices[0].delta
-                deltas.append(delta)
-                stop_reason = chunk.choices[0].finish_reason
-            elif anthropic_client:
-                delta = chunk
-                deltas.append(delta)
-
+            if isinstance(delta, tuple):
+                print("Got a Chunk, expected str")
+                continue
+            deltas.append(delta)
             delta_str = deltas_to_str(deltas)
             print(deltas_to_str([deltas[-1]]), end="")
             # need to flush stdout to get the print to show up
@@ -265,16 +258,13 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             if patch_started and patch_finished:
                 if "```" not in delta_str[-10:]:
                     print("\n```", end="")
-                    deltas.append(ChoiceDelta(content="\n```"))
+                    deltas.append("\n```")
                 print("\n")
                 break
     except KeyboardInterrupt:
         return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
     finally:
-        if anthropic_client:
-            stream_manager.__exit__(None, None, None)
         print_clear()
-    logger.debug(f"Stop reason: {stop_reason}")
     return Message("assistant", deltas_to_str(deltas))
 
 
