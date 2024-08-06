@@ -92,7 +92,10 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     for codeblock in get_codeblocks(msg.content):
         try:
             # yield from execute_codeblock(codeblock, ask)
-            yield from codeblock_to_tooluse(codeblock).execute(ask)
+            if is_supported_codeblock(codeblock):
+                yield from codeblock_to_tooluse(codeblock).execute(ask)
+            else:
+                logger.info(f"Codeblock not supported: {codeblock}")
         except Exception as e:
             logger.exception(e)
             yield Message(
@@ -107,7 +110,7 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
 
 
 def codeblock_to_tooluse(codeblock: str) -> ToolUse:
-    """Parses a codeblock into a ToolUse"""
+    """Parses a codeblock into a ToolUse. Codeblock must be a supported type."""
     lang_or_fn = codeblock.splitlines()[0].strip()
     codeblock_content = codeblock[len(lang_or_fn) :]
 
@@ -129,7 +132,7 @@ def codeblock_to_tooluse(codeblock: str) -> ToolUse:
     elif is_filename:
         return ToolUse("save", {"file": lang_or_fn}, codeblock_content)
     else:
-        raise ValueError(f"Unknown codeblock type '{lang_or_fn}'")
+        assert not is_supported_codeblock(codeblock)
 
 
 def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
@@ -163,18 +166,60 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
         )
 
 
+# TODO: use this instead of passing around codeblocks as strings (with or without ```)
+@dataclass
+class Codeblock:
+    lang_or_fn: str
+    content: str
+
+    @classmethod
+    def from_markdown(cls, content: str) -> "Codeblock":
+        if content.startswith("```"):
+            content = content[3:]
+        if content.endswith("```"):
+            content = content[:-3]
+        lang_or_fn = content.splitlines()[0].strip()
+        return cls(lang_or_fn, content[len(lang_or_fn) :])
+
+    @property
+    def is_filename(self) -> bool:
+        return "." in self.lang_or_fn or "/" in self.lang_or_fn
+
+    @property
+    def is_supported(self) -> bool:
+        return is_supported_codeblock_tool(self.lang_or_fn)
+
+
 def is_supported_codeblock(codeblock: str) -> bool:
     """Returns whether a codeblock is supported by tools."""
-    # passed argument might not be a clean string, could have leading text and even leading codeblocks
-    # only check the last occurring codeblock
+    # if the codeblock are the clean contents of a code block,
+    # with a tool on the first line, without any leading or trailing whitespace or ```
+    content = codeblock
+    if content.startswith("```"):
+        content = codeblock[3:]
+        if codeblock.endswith("```"):
+            content = content[:-3]
+    lang_or_fn = content.splitlines()[0].strip()
+    if is_supported_codeblock_tool(lang_or_fn):
+        return True
 
-    msg = Message("system", content=codeblock)
-    codeblocks = msg.get_codeblocks()
-    if not codeblocks:
-        return False
+    # if not, it might be a message containing a code block
+    # TODO: this doesn't really make sense?
+    # codeblocks = list(get_codeblocks(codeblock))
+    # if codeblocks:
+    #     all_supported = True
+    #     for cb in codeblocks:
+    #         lang_or_fn = cb.strip().splitlines()[0].strip()
+    #         supported = is_supported_codeblock_tool(lang_or_fn)
+    #         print(f"supported: {supported}\n{cb}")
+    #         all_supported = all_supported and supported
+    #     if not all_supported:
+    #         return False
 
-    codeblock = codeblocks[-1]
-    lang_or_fn = codeblock.splitlines()[0].split("```")[1].strip()
+    return False
+
+
+def is_supported_codeblock_tool(lang_or_fn: str) -> bool:
     is_filename = "." in lang_or_fn or "/" in lang_or_fn
 
     if lang_or_fn in ["python", "py"]:
