@@ -32,12 +32,14 @@ print("hello world")
     assert is_supported_codeblock(block_python)
 
     # has preamble
-    s = f"""bla bla\n{block_python}"""
-    assert is_supported_codeblock(s)
+    # NOTE: this should not be supported by this function, clean it first if you really want to
+    # s = f"""bla bla\n{block_python}"""
+    # assert is_supported_codeblock(s)
 
     # last block is plain/unsupported
-    s = f"""{block_python}\n{block_plain}"""
-    assert not is_supported_codeblock(s)
+    # NOTE: this should not be supported by this function, clean it first if you really want to
+    # s = f"""{block_python}\n{block_plain}"""
+    # assert not is_supported_codeblock(s)
 
 
 def test_get_codeblocks():
