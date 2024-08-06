@@ -3,6 +3,7 @@ import shutil
 import sys
 
 import openai
+from anthropic import Anthropic
 from openai import AzureOpenAI, OpenAI
 from openai.types.chat.chat_completion_chunk import ChoiceDelta
 from rich import print
@@ -22,10 +23,11 @@ top_p = 0.1
 logger = logging.getLogger(__name__)
 
 oai_client: OpenAI | None = None
+anthropic_client: Anthropic | None = None
 
 
 def init_llm(llm: str, interactive: bool):
-    global oai_client
+    global oai_client, anthropic_client
 
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
@@ -50,16 +52,22 @@ def init_llm(llm: str, interactive: bool):
             api_version="2023-07-01-preview",
             azure_endpoint=azure_endpoint,
         )
+
+    elif llm == "anthropic":
+        api_key = config.get_env_required("ANTHROPIC_API_KEY")
+        anthropic_client = Anthropic(
+            api_key=api_key,
+        )
+
     elif llm == "local":
-        api_key = config.get_env("OPENAI_API_BASE", "local")
         api_base = config.get_env_required("OPENAI_API_BASE")
-        oai_client = OpenAI(api_key="local", base_url=api_base)
+        oai_client = OpenAI(api_key="ollama", base_url=api_base)
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
 
     # ensure we have initialized the client
-    assert oai_client
+    assert oai_client or anthropic_client
 
 
 def ask_for_api_key():
@@ -88,8 +96,13 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 def _chat_complete(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
-    assert oai_client, "LLM not initialized"
-    response = oai_client.chat.completions.create(
+    if oai_client:
+        func = oai_client.chat.completions.create
+    elif anthropic_client:
+        func = anthropic_client.messages.create
+    else:
+        raise ValueError("LLM not initialized")
+    response = func(
         model=model,
         messages=msgs2dicts(messages),  # type: ignore
         temperature=temperature,
@@ -102,8 +115,13 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-    assert oai_client, "LLM not initialized"
-    response = oai_client.chat.completions.create(
+    if oai_client:
+        func = oai_client.chat.completions.create
+    elif anthropic_client:
+        func = anthropic_client.messages.create
+    else:
+        raise ValueError("LLM not initialized")
+    response = func(
         model=model,
         messages=msgs2dicts(messages),  # type: ignore
         temperature=temperature,

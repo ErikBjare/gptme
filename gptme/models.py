@@ -74,6 +74,11 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
             "context": 128_000,
         },
     },
+    "anthropic": {
+        "claude-3.5-sonnet": {
+            "context": 8193,
+        },
+    },
     "local": {
         # 8B
         "llama3": {

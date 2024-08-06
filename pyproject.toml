@@ -15,7 +15,6 @@ gptme-server = "gptme.cli_server:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-openai = "^1.0"
 click = "^8.0"
 python-dotenv = "^1.0.0"
 rich = "^13.5.2"
@@ -24,8 +23,14 @@ tiktoken = "^0.5.1"
 tomlkit = "^0.12.1"
 typing-extensions = "^4.8.0"
 platformdirs = "^3.11.0"
+
+# tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
+
+# llm-providers
+openai = "^1.0"
+anthropic = "^0.32.0"
 
 # optionals
 llama-cpp-python = {version = "^0.1.57", optional=true}
