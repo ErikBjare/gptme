@@ -33,18 +33,13 @@ __all__ = [
 ]
 
 
-all_tools: list[ToolSpec] = (
-    [
-        save_tool,
-        patch_tool,
-        python_tool,
-        shell_tool,
-        subagent_tool,
-    ]
-    + [browser_tool]
-    if has_browser_tool()
-    else []
-)
+all_tools: list[ToolSpec] = [
+    save_tool,
+    patch_tool,
+    python_tool,
+    shell_tool,
+    subagent_tool,
+] + ([browser_tool] if has_browser_tool() else [])
 loaded_tools: list[ToolSpec] = []
 
 
