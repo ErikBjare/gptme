@@ -47,13 +47,25 @@ def hello(name="world"):
 """
     )
 
+
+def test_clear_file():
     # only remove code in patch
+    content = """
+def hello():
+    print("hello")
+
+if __name__ == "__main__":
+    hello()
+"""
+
+    # NOTE: test fails if UPDATED block doesn't have an empty line
     codeblock = """
 ```patch test.py
 <<<<<<< ORIGINAL
 def hello():
     print("hello")
 =======
+
 >>>>>>> UPDATED
 ```
 """
@@ -64,3 +76,27 @@ def hello():
     assert result.startswith(
         "\n\n"
     ), f"result: {result.replace(newline, newline_escape)}"
+
+
+def test_apply_empty_lines():
+    # a test where it replaces a empty line with 3 empty lines
+    # checks that whitespace is preserved
+    content = """
+def hello():
+    print("hello")
+
+if __name__ == "__main__":
+    hello()
+"""
+    codeblock = """
+```patch test.py
+<<<<<<< ORIGINAL
+
+=======
+
+
+>>>>>>> UPDATED
+```
+"""
+    result = apply(codeblock, content)
+    assert "\n\n\n" in result
