@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from typing_extensions import NotRequired
 
@@ -12,6 +12,7 @@ class ModelMeta:
     provider: str
     model: str
     context: int
+    max_output: Optional[int] = None
 
     # price in USD per 1k tokens
     # if price is not set, it is assumed to be 0
@@ -21,6 +22,7 @@ class ModelMeta:
 
 class _ModelDictMeta(TypedDict):
     context: int
+    max_output: NotRequired[int]
 
     # price in USD per 1k tokens
     price_input: NotRequired[float]
@@ -75,8 +77,11 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
         },
     },
     "anthropic": {
-        "claude-3.5-sonnet": {
-            "context": 8193,
+        "claude-3-5-sonnet-20240620": {
+            "context": 200_000,
+            "max_output": 4096,
+            "price_input": 0.003,
+            "price_output": 0.015,
         },
     },
     "local": {
