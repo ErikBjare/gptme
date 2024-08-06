@@ -15,6 +15,7 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
+from .models import get_model
 from .tools import execute_msg, execute_python, execute_shell
 from .tools.context import gen_context_msg
 from .tools.summarize import summarize
@@ -142,7 +143,13 @@ def handle_cmd(
             yield from execute_msg(msg, ask=not no_confirm)
         case "tokens":
             log.undo(1, quiet=True)
-            print(f"Tokens used: {len_tokens(log.log)}")
+            n_tokens = len_tokens(log.log)
+            print(f"Tokens used: {n_tokens}")
+            model = get_model()
+            if model:
+                print(f"Model: {model.model}")
+                if model.price_input:
+                    print(f"Cost (input): ${n_tokens * model.price_input / 1_000_000}")
         case _:
             if log.log[-1].content != f"{CMDFIX}help":
                 print("Unknown command")
