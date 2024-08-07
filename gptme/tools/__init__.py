@@ -5,11 +5,12 @@ from xml.etree import ElementTree
 
 from ..message import Message
 from .base import ToolSpec
-from .browser import has_browser_tool
 from .browser import tool as browser_tool
+from .gh import tool as gh_tool
 from .patch import tool as patch_tool
 from .python import execute_python, register_function
 from .python import tool as python_tool
+from .read import tool as tool_read
 from .save import execute_save, tool_append, tool_save
 from .shell import execute_shell
 from .shell import tool as shell_tool
@@ -33,14 +34,21 @@ __all__ = [
 
 
 all_tools: list[ToolSpec] = [
-    tool_save,
-    tool_append,
-    patch_tool,
-    python_tool,
-    shell_tool,
-    subagent_tool,
-    terminal_tool,
-] + ([browser_tool] if has_browser_tool() else [])
+    tool
+    for tool in [
+        tool_read,
+        tool_save,
+        tool_append,
+        patch_tool,
+        python_tool,
+        shell_tool,
+        subagent_tool,
+        terminal_tool,
+        browser_tool,
+        gh_tool,
+    ]
+    if tool.available
+]
 loaded_tools: list[ToolSpec] = []
 
 

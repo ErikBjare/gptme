@@ -30,3 +30,4 @@ class ToolSpec:
     init: InitFunc | None = None
     execute: ExecuteFunc | None = None
     block_types: list[str] = field(default_factory=list)
+    available: bool = True

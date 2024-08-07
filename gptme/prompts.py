@@ -39,13 +39,7 @@ def join_messages(msgs: Iterable[Message]) -> Message:
 def prompt_full() -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme()
-
     yield from prompt_tools()
-    # Useful in debugging
-    # yield from prompt_tools_from_spec()
-    yield from prompt_examples()
-    yield from prompt_gh()
-
     yield from prompt_user()
     yield from prompt_project()
 
@@ -53,7 +47,7 @@ def prompt_full() -> Generator[Message, None, None]:
 def prompt_short() -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme()
-    yield from prompt_tools()
+    yield from prompt_tools(examples=False)
     yield from prompt_user()
     yield from prompt_project()
 
@@ -135,122 +129,39 @@ When you send a message containing Python code to python, it will be executed in
     )
 
 
-def prompt_tools_from_spec() -> Generator[Message, None, None]:
-    # TODO: this should be moved to tools.py
-    # tools must have been initialized by now
-    init_tools()
-    assert loaded_tools, "No tools loaded"
-    prompt = ""
-    for tool in loaded_tools:
-        prompt += (
-            f"""## {tool.name}
-
-{tool.desc.strip()}
-
-{tool.instructions.strip()}""".strip()
-            + "\n\n"
-        )
-    yield Message("system", prompt.strip())
-
-
-def prompt_tools() -> Generator[Message, None, None]:
+def prompt_tools(examples=True) -> Generator[Message, None, None]:
     init_tools()
     assert loaded_tools, "No tools loaded"
     prompt = "# Tools"
     for tool in loaded_tools:
-        prompt += f"## {tool.name}\n\n{tool.instructions}\n\n"
+        prompt += f"\n\n## {tool.name}"
+        if tool.desc:
+            prompt += f"\n\n{tool.desc}"
+        if tool.instructions:
+            prompt += f"\n\n{tool.instructions}"
+
+        # tool-specific
+        # TODO: move into tools themselves
         if tool.name == "python":
             python_libraries = get_installed_python_libraries()
             python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
-            prompt += f"""
-The following libraries are available:
+            prompt += f"""\n\nThe following libraries are available:
 {python_libraries_str}
 
 The following functions are available in the REPL:
 {python.get_functions_prompt()}
-"""
+            """.rstrip()
         elif tool.name == "bash":
             shell_programs = get_installed_programs()
             shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
-            prompt += f"""
-These programs are available, among others:
+            prompt += f"""\n\nThese programs are available, among others:
 {shell_programs_str}
-"""
+""".rstrip()
 
-    yield Message("system", prompt.strip())
+        if tool.examples and examples:
+            prompt += f"\n\n### Examples\n\n{tool.examples}"
 
-
-def prompt_examples() -> Generator[Message, None, None]:
-    tool_examples = "\n".join(
-        f"## {tool.name}\n\n{tool.examples}" for tool in loaded_tools
-    )
-    yield Message(
-        "system",
-        f"""
-# Examples
-
-{tool_examples}
-
-## Read files
-
-Reading is done using `cat`.
-
-> User: read hello.py
-```bash
-cat hello.py
-```
-(prints the contents of `hello.py`)
-
-## Putting it together
-
-> User: run hello.py
-```bash
-python hello.py
-```
-> stdout: `Hello world!`
-""".strip(),
-    )
-
-
-def prompt_gh() -> Generator[Message, None, None]:
-    # gh examples
-    # only include if gh is installed
-    if shutil.which("gh") is not None:
-        yield Message(
-            "system",
-            """
-## gh
-
-Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
-
-> User: create a public repo from the current directory, and push
-Note: --confirm and -y are deprecated, and no longer needed
-```sh
-REPO=$(basename $(pwd))
-gh repo create $REPO --public --source . --push
-```
-
-> User: show issues
-```sh
-gh issue list --repo $REPO
-```
-
-> User: read issue with comments
-```sh
-gh issue view $ISSUE --repo $REPO --comments
-```
-
-> User: show recent workflows
-```sh
-gh run list --status failure --repo $REPO --limit 5
-```
-
-> User: show workflow
-```sh
-gh run view $RUN --repo $REPO --log
-```
-""".strip(),
-        )
+    yield Message("system", prompt.strip() + "\n\n")
 
 
 @functools.lru_cache
