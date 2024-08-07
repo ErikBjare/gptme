@@ -219,11 +219,14 @@ def set_shell(shell: ShellSession) -> None:
     _shell = shell
 
 
-def execute_shell(cmd: str, ask=True, _=None) -> Generator[Message, None, None]:
+def execute_shell(
+    code: str, ask: bool, args: list[str]
+) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     shell = get_shell()
+    assert not args
 
-    cmd = cmd.strip()
+    cmd = code.strip()
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
@@ -338,4 +341,5 @@ tool = ToolSpec(
     examples=examples,
     init=get_shell,
     execute=execute_shell,
+    block_types=["bash", "sh"],
 )

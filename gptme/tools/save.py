@@ -21,8 +21,7 @@ from ..util import ask_execute
 from .base import ToolSpec
 
 instructions = """
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
+To save code to a file, use a code block with the filepath as the language.
 """.strip()
 
 examples = """
@@ -35,39 +34,27 @@ Saved to `hello.py`.
 
 
 def execute_save(
-    code: str, ask: bool, args: dict[str, str]
+    code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
     """Save the code to a file."""
-    fn = args.get("file")
+    fn = " ".join(args)
     assert fn, "No filename provided"
-    append = args.get("append", False)
-    action = "save" if not append else "append"
     # strip leading newlines
     code = code.lstrip("\n")
 
     if ask:
-        confirm = ask_execute(f"{action.capitalize()} to {fn}?")
+        confirm = ask_execute(f"Save to {fn}?")
         print()
     else:
         confirm = True
-        print(f"Skipping {action} confirmation.")
+        print("Skipping confirmation.")
 
     if ask and not confirm:
         # early return
-        yield Message("system", f"{action.capitalize()} cancelled.")
+        yield Message("system", "Save cancelled.")
         return
 
     path = Path(fn).expanduser()
-
-    if append:
-        if not path.exists():
-            yield Message("system", f"File {fn} doesn't exist, can't append to it.")
-            return
-
-        with open(path, "a") as f:
-            f.write(code)
-        yield Message("system", f"Appended to {fn}")
-        return
 
     # if the file exists, ask to overwrite
     if path.exists():
@@ -103,10 +90,65 @@ def execute_save(
     yield Message("system", f"Saved to {fn}")
 
 
-tool = ToolSpec(
+def execute_append(
+    code: str, ask: bool, args: list[str]
+) -> Generator[Message, None, None]:
+    """Append the code to a file."""
+    fn = " ".join(args)
+    assert fn, "No filename provided"
+    # strip leading newlines
+    code = code.lstrip("\n")
+
+    if ask:
+        confirm = ask_execute(f"Append to {fn}?")
+        print()
+    else:
+        confirm = True
+        print("Skipping append confirmation.")
+
+    if ask and not confirm:
+        # early return
+        yield Message("system", "Append cancelled.")
+        return
+
+    path = Path(fn).expanduser()
+
+    if not path.exists():
+        yield Message("system", f"File {fn} doesn't exist, can't append to it.")
+        return
+
+    with open(path, "a") as f:
+        f.write(code)
+    yield Message("system", f"Appended to {fn}")
+
+
+tool_save = ToolSpec(
     name="save",
     desc="Allows saving code to a file.",
     instructions=instructions,
     examples=examples,
     execute=execute_save,
+    block_types=["save"],
+)
+
+instructions_append = """
+To append code to a file, use a code block with the language: append <filepath>
+""".strip()
+
+examples_append = """
+> User: append a print "Hello world" to hello.py
+> Assistant:
+```append hello.py
+print("Hello world")
+```
+> System: Appended to `hello.py`.
+""".strip()
+
+tool_append = ToolSpec(
+    name="append",
+    desc="Allows appending code to a file.",
+    instructions=instructions_append,
+    examples=examples_append,
+    execute=execute_append,
+    block_types=["append"],
 )

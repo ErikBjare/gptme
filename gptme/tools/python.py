@@ -110,7 +110,7 @@ def _get_ipython():
     return _ipython
 
 
-def execute_python(code: str, ask: bool, _=None) -> Generator[Message, None, None]:
+def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     if ask:
@@ -180,4 +180,5 @@ tool = ToolSpec(
     examples=examples,
     init=init_python,
     execute=execute_python,
+    block_types=["python"],
 )

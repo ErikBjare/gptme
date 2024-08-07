@@ -9,15 +9,7 @@ from typing import Literal
 
 from .config import get_config
 from .message import Message
-from .tools import (
-    browser,
-    init_tools,
-    loaded_tools,
-    patch,
-    python,
-    save,
-    shell,
-)
+from .tools import init_tools, loaded_tools, python
 
 PromptType = Literal["full", "short"]
 
@@ -47,13 +39,7 @@ def join_messages(msgs: Iterable[Message]) -> Message:
 def prompt_full() -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme()
-
     yield from prompt_tools()
-    # Useful in debugging
-    #yield from prompt_tools_from_spec()
-    yield from prompt_examples()
-    yield from prompt_gh()
-
     yield from prompt_user()
     yield from prompt_project()
 
@@ -61,7 +47,7 @@ def prompt_full() -> Generator[Message, None, None]:
 def prompt_short() -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme()
-    yield from prompt_tools()
+    yield from prompt_tools(examples=False)
     yield from prompt_user()
     yield from prompt_project()
 
@@ -143,164 +129,39 @@ When you send a message containing Python code to python, it will be executed in
     )
 
 
-def prompt_tools_from_spec() -> Generator[Message, None, None]:
-    # TODO: this should be moved to tools.py
-    # tools must have been initialized by now
+def prompt_tools(examples=True) -> Generator[Message, None, None]:
     init_tools()
-    prompt = ""
     assert loaded_tools, "No tools loaded"
+    prompt = "# Tools"
     for tool in loaded_tools:
-        prompt += (
-            f"""## {tool.name}
+        prompt += f"\n\n## {tool.name}"
+        if tool.desc:
+            prompt += f"\n\n{tool.desc}"
+        if tool.instructions:
+            prompt += f"\n\n{tool.instructions}"
 
-{tool.desc.strip()}
-
-{tool.instructions.strip()}""".strip()
-            + "\n\n"
-        )
-    yield Message("system", prompt.strip())
-
-
-def prompt_tools() -> Generator[Message, None, None]:
-    python_libraries = get_installed_python_libraries()
-    python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
-
-    shell_programs = get_installed_programs()
-    shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
-
-    yield Message(
-        "system",
-        f"""
-# Tools
-
-## python
-
-{python.instructions}
-
-The following libraries are available:
+        # tool-specific
+        # TODO: move into tools themselves
+        if tool.name == "python":
+            python_libraries = get_installed_python_libraries()
+            python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+            prompt += f"""\n\nThe following libraries are available:
 {python_libraries_str}
 
 The following functions are available in the REPL:
 {python.get_functions_prompt()}
-
-## bash
-
-{shell.instructions}
-
-These programs are available, among others:
+            """.rstrip()
+        elif tool.name == "bash":
+            shell_programs = get_installed_programs()
+            shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
+            prompt += f"""\n\nThese programs are available, among others:
 {shell_programs_str}
-
-## saving files
-
-{save.instructions}
-
-## patching files
-
-{patch.instructions}
-""".strip()
-        + (
-            f"""
-
-## browsing the web
-
-{browser.instructions}
 """.rstrip()
-            if browser.has_browser_tool()
-            else ""
-        ),
-    )
 
+        if tool.examples and examples:
+            prompt += f"\n\n### Examples\n\n{tool.examples}"
 
-def prompt_examples() -> Generator[Message, None, None]:
-    yield Message(
-        "system",
-        f"""
-# Examples
-
-## bash
-
-{shell.examples}
-
-## Python
-
-{python.examples}
-
-## Save files
-
-{save.examples}
-
-## Read files
-
-Reading is done using `cat`.
-
-> User: read hello.py
-```bash
-cat hello.py
-```
-(prints the contents of `hello.py`)
-
-## Putting it together
-
-> User: run hello.py
-```bash
-python hello.py
-```
-> stdout: `Hello world!`
-
-## Patching files
-
-{patch.examples}
-""".strip()
-        + f"""
-
-## Browsing the web
-
-{browser.examples}
-""".rstrip()
-        if browser.has_browser_tool()
-        else "",
-    )
-
-
-def prompt_gh() -> Generator[Message, None, None]:
-    # gh examples
-    # only include if gh is installed
-    if shutil.which("gh") is not None:
-        yield Message(
-            "system",
-            """
-## gh
-
-Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
-
-> User: create a public repo from the current directory, and push
-Note: --confirm and -y are deprecated, and no longer needed
-```sh
-REPO=$(basename $(pwd))
-gh repo create $REPO --public --source . --push
-```
-
-> User: show issues
-```sh
-gh issue list --repo $REPO
-```
-
-> User: read issue with comments
-```sh
-gh issue view $ISSUE --repo $REPO --comments
-```
-
-> User: show recent workflows
-```sh
-gh run list --status failure --repo $REPO --limit 5
-```
-
-> User: show workflow
-```sh
-gh run view $RUN --repo $REPO --log
-```
-""".strip(),
-        )
+    yield Message("system", prompt.strip() + "\n\n")
 
 
 @functools.lru_cache

@@ -163,4 +163,5 @@ tool = ToolSpec(
     instructions=instructions,
     examples=examples,
     functions=[read_url, search],
+    available=has_browser_tool(),
 )
