@@ -201,7 +201,8 @@ _block_sh = """function test() {
     echo "start"  # start
 
     echo "after empty line"
-}"""
+}
+"""
 _block_py = """def test():
     print("start")  # start
 
