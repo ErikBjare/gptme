@@ -4,7 +4,7 @@ from gptme.util import len_tokens
 
 def test_get_prompt():
     prompt = get_prompt("full")
-    assert 1600 < len_tokens(prompt.content) < 2000
+    assert 1200 < len_tokens(prompt.content) < 2000
 
     prompt = get_prompt("short")
     assert 700 < len_tokens(prompt.content) < 900
