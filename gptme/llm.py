@@ -1,4 +1,3 @@
-import itertools
 import logging
 import shutil
 import sys
@@ -172,7 +171,9 @@ def _stream_openai(messages: list[Message], model: str) -> Generator[str, None, 
             # Got a chunk with no choices, Azure always sends one of these at the start
             continue
         stop_reason = chunk.choices[0].finish_reason  # type: ignore
-        yield chunk.choices[0].delta.content  # type: ignore
+        content = chunk.choices[0].delta.content  # type: ignore
+        if content:
+            yield content
     logger.debug(f"Stop reason: {stop_reason}")
 
 
@@ -202,7 +203,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
     print_clear()
     print(f"{PROMPT_ASSISTANT}: ", end="")
     try:
-        for char in itertools.chain.from_iterable(_stream(messages, model)):
+        for char in (char for chunk in _stream(messages, model) for char in chunk):
             print(char, end="")
             assert len(char) == 1
             output += char
