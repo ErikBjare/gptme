@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from .init import init, init_logging
+from .init import PROVIDERS, init, init_logging
 
 logger = logging.getLogger(__name__)
 
@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 @click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
 @click.option(
     "--llm",
-    default="openai",
-    help="LLM to use.",
-    type=click.Choice(["openai", "local"]),
+    default=None,
+    help="LLM provider to use.",
+    type=click.Choice(PROVIDERS),
 )
 @click.option(
     "--model",
-    default="gpt-4",
+    default=None,
     help="Model to use by default, can be overridden in each request.",
 )
-def main(verbose, llm, model):  # pragma: no cover
+def main(verbose: bool, llm: str | None, model: str | None):  # pragma: no cover
     """
     Starts a server and web UI for gptme.
 

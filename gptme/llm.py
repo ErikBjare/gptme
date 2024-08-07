@@ -3,7 +3,6 @@ import shutil
 import sys
 from typing import Generator, Iterator, Tuple
 
-import openai
 from anthropic import Anthropic
 from openai import AzureOpenAI, OpenAI
 from rich import print
@@ -268,6 +267,16 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
     return Message("assistant", deltas_to_str(deltas))
 
 
+def get_recommended_model() -> str:
+    assert oai_client or anthropic_client, "LLM not initialized"
+    return "gpt-4-turbo" if oai_client else "claude-3-5-sonnet-20240620"
+
+
+def get_summary_model() -> str:
+    assert oai_client or anthropic_client, "LLM not initialized"
+    return "gpt-4o-mini" if oai_client else "claude-3-haiku-20240307"
+
+
 def summarize(content: str) -> str:
     """
     Summarizes a long text using a LLM.
@@ -275,35 +284,22 @@ def summarize(content: str) -> str:
     To summarize messages or the conversation log,
     use `gptme.tools.summarize` instead (which wraps this).
     """
-    assert oai_client, "LLM not initialized"
     messages = [
         Message(
             "system",
-            content="You are ChatGPT, a large language model by OpenAI. You summarize messages.",
+            content="You are a helpful assistant that helps summarize messages with an AI assistant through a tool called gptme.",
         ),
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
-    # model selection
-    model = "gpt-3.5-turbo"
-    if len_tokens(messages) > MODELS["openai"][model]["context"]:
-        model = "gpt-3.5-turbo-16k"
-    if len_tokens(messages) > MODELS["openai"][model]["context"]:
+    model = get_summary_model()
+    context_limit = MODELS["openai" if oai_client else "anthropic"][model]["context"]
+    if len_tokens(messages) > context_limit:
         raise ValueError(
-            f"Cannot summarize more than 16385 tokens, got {len_tokens(messages)}"
+            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages)}"
         )
 
-    try:
-        response = oai_client.chat.completions.create(
-            model=model,
-            messages=msgs2dicts(messages),  # type: ignore
-            temperature=0,
-            max_tokens=256,
-        )
-    except openai.APIError:
-        logger.error("OpenAI API error, returning empty summary: ", exc_info=True)
-        return "error"
-    summary = response.choices[0].message.content
+    summary = _chat_complete(messages, model)
     assert summary
     logger.debug(
         f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
@@ -325,15 +321,19 @@ def generate_name(msgs: list[Message]) -> str:
                 """
 The following is a conversation between a user and an assistant. Which we will generate a name for.
 
-The name should be 2-5 words describing the conversation, separated by dashes. Examples:
+The name should be 3-6 words describing the conversation, separated by dashes. Examples:
  - install-llama
  - implement-game-of-life
  - capitalize-words-in-python
+
+Focus on the main and/or initial topic of the conversation. Avoid using names that are too generic or too specific.
+
+IMPORTANT: output only the name, no preamble or postamble.
 """,
             )
         ]
         + msgs
         + [Message("user", "Now, generate a name for this conversation.")]
     )
-    name = _chat_complete(msgs, model="gpt-3.5-turbo").strip()
+    name = _chat_complete(msgs, model=get_summary_model()).strip()
     return name

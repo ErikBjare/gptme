@@ -4,8 +4,9 @@ import readline
 
 from dotenv import load_dotenv
 
+from .config import load_config
 from .dirs import get_readline_history_file
-from .llm import init_llm
+from .llm import get_recommended_model, init_llm
 from .models import set_default_model
 from .tabcomplete import register_tabcomplete
 from .tools import init_tools
@@ -13,8 +14,10 @@ from .tools import init_tools
 logger = logging.getLogger(__name__)
 _init_done = False
 
+PROVIDERS = ["openai", "anthropic", "azure", "local"]
 
-def init(llm: str, model: str, interactive: bool):
+
+def init(provider: str | None, model: str | None, interactive: bool):
     global _init_done
     if _init_done:
         logger.warning("init() called twice, ignoring")
@@ -25,8 +28,25 @@ def init(llm: str, model: str, interactive: bool):
     logger.debug("Started")
     load_dotenv()
 
+    config = load_config()
+    if not provider:
+        provider = config.get_env("PROVIDER")
+    if not provider:
+        # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
+        if config.get_env("OPENAI_API_KEY"):
+            print("Found OpenAI API key, using OpenAI provider")
+            provider = "openai"
+        elif config.get_env("ANTHROPIC_API_KEY"):
+            print("Found Anthropic API key, using Anthropic provider")
+            provider = "anthropic"
+        else:
+            raise ValueError("No API key found, couldn't auto-detect provider")
+
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
-    init_llm(llm, interactive)
+    init_llm(provider, interactive)
+
+    if not model:
+        model = config.get_env("MODEL") or get_recommended_model()
     set_default_model(model)
 
     if interactive:  # pragma: no cover
