@@ -54,7 +54,18 @@ logger = logging.getLogger(__name__)
 
 @functools.lru_cache
 def get_installed_programs() -> set[str]:
-    candidates = ["ffmpeg", "convert", "pandoc"]
+    candidates = [
+        # platform-specific
+        "brew",
+        "apt-get",
+        "pacman",
+        # common and useful
+        "ffmpeg",
+        "convert",
+        "pandoc",
+        "git",
+        "docker",
+    ]
     installed = set()
     for candidate in candidates:
         if shutil.which(candidate) is not None:
@@ -63,11 +74,13 @@ def get_installed_programs() -> set[str]:
 
 
 shell_programs_str = "\n".join(f"- {prog}" for prog in get_installed_programs())
+is_macos = sys.platform == "darwin"
 
 instructions = f"""
 When you send a message containing bash code, it will be executed in a stateful bash shell.
 The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
+{'The platform is macOS.' if is_macos else ''}
 
 These programs are available, among others:
 {shell_programs_str}
