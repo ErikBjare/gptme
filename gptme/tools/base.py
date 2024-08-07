@@ -9,7 +9,7 @@ InitFunc: TypeAlias = Callable[[], Any]
 
 class ExecuteFunc(Protocol):
     def __call__(
-        self, code: str, ask: bool, args: None | dict[str, str] = None
+        self, code: str, ask: bool, args: list[str]
     ) -> Generator[Message, None, None]:
         ...
 

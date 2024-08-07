@@ -45,7 +45,7 @@ The user can also run terminal commands with the /terminal command:
 import logging
 import subprocess
 from time import sleep
-from typing import Generator, List
+from collections.abc import Generator
 
 from ..message import Message
 from ..util import ask_execute, print_preview
@@ -53,91 +53,53 @@ from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
 
-
-class TmuxSession:
-    """
-    session: gpt_0
-    window: gpt_0:0
-    pane: gpt_0:0.0
-    """
-
-    def __init__(self):
-        output = subprocess.run(
-            ["tmux", "list-sessions"],
-            capture_output=True,
-            text=True,
-        )
-        assert output.returncode == 0
-        self.sessions = [
-            session.split(":")[0] for session in output.stdout.split("\n") if session
-        ]
-
-    def new_session(self, command: str) -> tuple[str, str]:
-        _max_session_id = 0
-        for session in self.sessions:
-            if session.startswith("gptme_"):
-                _max_session_id = max(_max_session_id, int(session.split("_")[1]))
-        session_id = f"gptme_{_max_session_id + 1}"
-        cmd = ["tmux", "new-session", "-d", "-s", session_id, command]
-        print(" ".join(cmd))
-        result = subprocess.run(
-            " ".join(cmd),
-            check=True,
-            capture_output=True,
-            text=True,
-            shell=True,
-        )
-        assert result.returncode == 0
-        print(result.stdout, result.stderr)
-
-        # sleep 1s and capture output
-        sleep(1)
-        output = self.capture_pane(f"{session_id}")
-
-        self.sessions.append(session_id)
-        return session_id, output
-
-    def send_keys(self, pane_id: str, keys: str) -> tuple[str, str | None]:
-        result = subprocess.run(
-            ["tmux", "send-keys", "-t", pane_id, *keys.split(" ")],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            return "", f"Failed to send keys to tmux pane `{pane_id}`: {result.stderr}"
-        sleep(1)
-        output = self.capture_pane(pane_id)
-        return output, None
-
-    def capture_pane(self, pane_id: str) -> str:
-        result = subprocess.run(
-            ["tmux", "capture-pane", "-p", "-t", pane_id],
-            capture_output=True,
-            text=True,
-        )
-        return result.stdout
-
-    def kill_session(self, session_id: str):
-        subprocess.run(["tmux", "kill-session", "-t", f"gptme_{session_id}"])
-        self.sessions.remove(session_id)
-
-    def list_sessions(self) -> List[str]:
-        return self.sessions
+"""
+session: gpt_0
+window: gpt_0:0
+pane: gpt_0:0.0
+"""
 
 
-_tmux_session = None
+def get_sessions() -> list[str]:
+    output = subprocess.run(
+        ["tmux", "list-sessions"],
+        capture_output=True,
+        text=True,
+    )
+    assert output.returncode == 0
+    return [session.split(":")[0] for session in output.stdout.split("\n") if session]
 
 
-def get_tmux_session() -> TmuxSession:
-    global _tmux_session
-    if _tmux_session is None:
-        _tmux_session = TmuxSession()
-    return _tmux_session
+def _capture_pane(pane_id: str) -> str:
+    result = subprocess.run(
+        ["tmux", "capture-pane", "-p", "-t", pane_id],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout
 
 
 def new_session(command: str) -> Message:
-    tmux = get_tmux_session()
-    session_id, output = tmux.new_session(command)
+    _max_session_id = 0
+    for session in get_sessions():
+        if session.startswith("gptme_"):
+            _max_session_id = max(_max_session_id, int(session.split("_")[1]))
+    session_id = f"gptme_{_max_session_id + 1}"
+    cmd = ["tmux", "new-session", "-d", "-s", session_id, command]
+    print(" ".join(cmd))
+    result = subprocess.run(
+        " ".join(cmd),
+        check=True,
+        capture_output=True,
+        text=True,
+        shell=True,
+    )
+    assert result.returncode == 0
+    print(result.stdout, result.stderr)
+
+    # sleep 1s and capture output
+    sleep(1)
+    output = _capture_pane(f"{session_id}")
     return Message(
         "system",
         f"Created new tmux session with ID {session_id} and started '{command}'.\nOutput:\n```\n{output}\n```",
@@ -145,18 +107,24 @@ def new_session(command: str) -> Message:
 
 
 def send_keys(pane_id: str, keys: str) -> Message:
-    tmux = get_tmux_session()
-    output, error = tmux.send_keys(pane_id, keys)
-    if error:
-        return Message("system", error)
+    result = subprocess.run(
+        ["tmux", "send-keys", "-t", pane_id, *keys.split(" ")],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return Message(
+            "system", f"Failed to send keys to tmux pane `{pane_id}`: {result.stderr}"
+        )
+    sleep(1)
+    output = _capture_pane(pane_id)
     return Message(
         "system", f"Sent '{keys}' to pane `{pane_id}`\nOutput:\n```\n{output}\n```"
     )
 
 
 def inspect_pane(pane_id: str) -> Message:
-    tmux = get_tmux_session()
-    content = tmux.capture_pane(pane_id)
+    content = _capture_pane(pane_id)
     return Message(
         "system",
         f"""Pane content:
@@ -167,20 +135,31 @@ def inspect_pane(pane_id: str) -> Message:
 
 
 def kill_session(session_id: str) -> Message:
-    tmux = get_tmux_session()
-    tmux.kill_session(session_id)
+    result = subprocess.run(
+        ["tmux", "kill-session", "-t", f"gptme_{session_id}"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return Message(
+            "system",
+            f"Failed to kill tmux session with ID {session_id}: {result.stderr}",
+        )
     return Message("system", f"Killed tmux session with ID {session_id}")
 
 
 def list_sessions() -> Message:
-    tmux = get_tmux_session()
-    sessions = tmux.list_sessions()
+    sessions = get_sessions()
     return Message("system", f"Active tmux sessions: {sessions}")
 
 
-def execute_terminal(cmd: str, ask=True, _=None) -> Generator[Message, None, None]:
+def execute_terminal(
+    code: str, ask: bool, args: list[str]
+) -> Generator[Message, None, None]:
     """Executes a terminal command and returns the output."""
-    cmd = cmd.strip()
+    assert not args
+    cmd = code.strip()
 
     if ask:
         print_preview(f"Terminal command: {cmd}", "sh")
@@ -193,17 +172,17 @@ def execute_terminal(cmd: str, ask=True, _=None) -> Generator[Message, None, Non
     if len(parts) == 1:
         yield Message("system", "Invalid command. Please provide arguments.")
 
-    command, args = parts[0], parts[1]
+    command, _args = parts[0], parts[1]
 
     if command == "new_session":
-        yield new_session(args)
+        yield new_session(_args)
     elif command == "send_keys":
-        pane_id, keys = args.split(maxsplit=1)
+        pane_id, keys = _args.split(maxsplit=1)
         yield send_keys(pane_id, keys)
     elif command == "inspect_pane":
-        yield inspect_pane(args)
+        yield inspect_pane(_args)
     elif command == "kill_session":
-        yield kill_session(args)
+        yield kill_session(_args)
     elif command == "list_sessions":
         yield list_sessions()
     else:
@@ -292,7 +271,6 @@ tool = ToolSpec(
     desc="Executes terminal commands in a tmux session for interactive applications.",
     instructions=instructions,
     examples=examples,
-    init=get_tmux_session,
     execute=execute_terminal,
     block_types=["terminal"],
 )

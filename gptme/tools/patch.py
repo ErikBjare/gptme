@@ -108,12 +108,12 @@ def apply_file(codeblock, filename):
 
 
 def execute_patch(
-    codeblock: str, ask: bool, args: dict[str, str]
+    code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
     """
     Applies the patch.
     """
-    fn = args.get("file")
+    fn = " ".join(args)
     assert fn, "No filename provided"
     if ask:
         confirm = ask_execute("Apply patch?")
@@ -122,7 +122,7 @@ def execute_patch(
             return
 
     try:
-        apply_file(codeblock, fn)
+        apply_file(code, fn)
         yield Message("system", "Patch applied")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
@@ -134,4 +134,5 @@ tool = ToolSpec(
     instructions=instructions,
     examples=examples,
     execute=execute_patch,
+    block_types=["patch"],
 )

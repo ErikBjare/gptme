@@ -84,10 +84,11 @@ def handle_cmd(
     name, *args = re.split(r"[\n\s]", cmd)
     full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
     match name:
+        # TODO: rewrite to auto-register tools using block_types
         case "bash" | "sh" | "shell":
-            yield from execute_shell(full_args, ask=not no_confirm)
+            yield from execute_shell(full_args, ask=not no_confirm, args=[])
         case "python" | "py":
-            yield from execute_python(full_args, ask=not no_confirm)
+            yield from execute_python(full_args, ask=not no_confirm, args=[])
         case "log":
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
