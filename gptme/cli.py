@@ -24,6 +24,7 @@ from .init import PROVIDERS, init, init_logging
 from .llm import reply
 from .logmanager import LogManager, _conversations
 from .message import Message
+from .models import get_model
 from .prompts import get_prompt
 from .tools import execute_msg
 from .tools.shell import ShellSession, set_shell
@@ -183,8 +184,8 @@ def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
     name: str,
-    llm: str,
-    model: str,
+    llm: str | None,
+    model: str | None,
     stream: bool = True,
     no_confirm: bool = False,
     interactive: bool = True,
@@ -240,7 +241,7 @@ def chat(
                 break
 
         # ask for input if no prompt, generate reply, and run tools
-        for msg in step(log, no_confirm, model, stream=stream):  # pragma: no cover
+        for msg in step(log, no_confirm, stream=stream):  # pragma: no cover
             log.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, log):
@@ -250,7 +251,6 @@ def chat(
 def step(
     log: LogManager,
     no_confirm: bool,
-    model: str,
     stream: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
@@ -288,7 +288,7 @@ def step(
             logger.debug(f"Prepared message: {m}")
 
         # generate response
-        msg_response = reply(msgs, model, stream)
+        msg_response = reply(msgs, get_model().model, stream)
 
         # log response and run tools
         if msg_response:
