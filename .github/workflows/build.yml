@@ -8,10 +8,11 @@ on:
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
 jobs:
   build:
-    name: Test on ${{ matrix.os }}, py-${{ matrix.python_version }}, extras-${{ matrix.extras }}
+    name: Test ${{ matrix.os }} with `${{ matrix.extras }}` on ${{ matrix.provider }}
     runs-on: ${{ matrix.os }}
     env:
       RELEASE: false
@@ -21,6 +22,12 @@ jobs:
         os: [ubuntu-latest]
         python_version: ['3.10']
         extras: ['-E server', '-E browser', '-E all']
+        provider: ['openai']
+        include:
+          - os: ubuntu-latest
+            python_version: '3.10'
+            extras: '-E all'
+            provider: 'anthropic'
     steps:
     - uses: actions/checkout@v3
       with:
@@ -54,6 +61,7 @@ jobs:
       uses: nick-fields/retry@v2
       env:
         TERM: xterm
+        PROVIDER: ${{ matrix.provider }}
       with:
         timeout_minutes: 5
         max_attempts: 2
