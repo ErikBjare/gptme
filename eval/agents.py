@@ -34,8 +34,8 @@ class GPTMe(Agent):
                 [Message("user", prompt)],
                 [get_prompt()],
                 f"gptme-evals-{store.id}",
-                "openai",
-                "gpt-4-1106-preview",
+                llm=None,
+                model=None,
                 no_confirm=True,
                 interactive=False,
             )

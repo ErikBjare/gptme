@@ -28,7 +28,7 @@ test:
 		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
 
 eval:
-	cd eval && poetry run python main.py
+	poetry run python3 -m eval
 
 typecheck:
 	poetry run mypy --ignore-missing-imports ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
