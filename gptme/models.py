@@ -101,6 +101,12 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
             "price_input": 3,
             "price_output": 15,
         },
+        "claude-3-haiku-20240307": {
+            "context": 200_000,
+            "max_output": 4096,
+            "price_input": 0.25,
+            "price_output": 1.25,
+        },
     },
     "local": {
         # 8B

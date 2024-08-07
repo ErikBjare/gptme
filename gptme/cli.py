@@ -20,7 +20,7 @@ from rich.console import Console
 from .commands import CMDFIX, action_descriptions, execute_cmd
 from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
-from .init import init, init_logging
+from .init import PROVIDERS, init, init_logging
 from .llm import reply
 from .logmanager import LogManager, _conversations
 from .message import Message
@@ -32,7 +32,8 @@ from .util import epoch_to_age, generate_name
 logger = logging.getLogger(__name__)
 print_builtin = __builtins__["print"]  # type: ignore
 
-LLMChoice = Literal["openai", "local"]
+# TODO: these are a bit redundant/incorrect
+LLMChoice = Literal["openai", "anthropic", "local"]
 ModelChoice = Literal["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
 
 
@@ -74,13 +75,13 @@ The chat offers some commands that can be used to interact with the system:
 )
 @click.option(
     "--llm",
-    default="openai",
-    help="LLM to use.",
-    type=click.Choice(["openai", "azure", "anthropic", "local"]),
+    default=None,
+    help="LLM provider to use.",
+    type=click.Choice(PROVIDERS),
 )
 @click.option(
     "--model",
-    default="gpt-4",
+    default=None,
     help="Model to use.",
 )
 @click.option(
