@@ -1,14 +1,17 @@
-from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Any, TypeAlias
-from collections.abc import Generator
+from collections.abc import Callable, Generator
+from dataclasses import dataclass, field
+from typing import Any, Protocol, TypeAlias
 
 from ..message import Message
 
 InitFunc: TypeAlias = Callable[[], Any]
-ExecuteFunc: TypeAlias = Callable[
-    [str, bool, dict[str, str]], Generator[Message, None, None]
-]
+
+
+class ExecuteFunc(Protocol):
+    def __call__(
+        self, code: str, ask: bool, args: None | dict[str, str] = None
+    ) -> Generator[Message, None, None]:
+        ...
 
 
 @dataclass
@@ -26,3 +29,4 @@ class ToolSpec:
     functions: list[Callable] | None = None
     init: InitFunc | None = None
     execute: ExecuteFunc | None = None
+    block_types: list[str] = field(default_factory=list)

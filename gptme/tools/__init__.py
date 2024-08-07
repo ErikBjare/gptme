@@ -17,6 +17,7 @@ from .shell import execute_shell
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
 from .summarize import summarize
+from .terminal import tool as terminal_tool
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ all_tools: list[ToolSpec] = [
     python_tool,
     shell_tool,
     subagent_tool,
+    terminal_tool,
 ] + ([browser_tool] if has_browser_tool() else [])
 loaded_tools: list[ToolSpec] = []
 
@@ -114,10 +116,8 @@ def codeblock_to_tooluse(codeblock: str) -> ToolUse:
     cmd = lang_or_fn.split(" ")[0]
     is_filename = "." in cmd or "/" in cmd
 
-    if lang_or_fn in ["python", "py"]:
-        return ToolUse("python", {}, codeblock_content)
-    elif lang_or_fn in ["bash", "sh"]:
-        return ToolUse("shell", {}, codeblock_content)
+    if tool := get_tool_for_codeblock(lang_or_fn):
+        return ToolUse(tool.name, {}, codeblock_content)
     elif lang_or_fn.startswith("patch "):
         fn = lang_or_fn[len("patch ") :]
         return ToolUse("patch", {"file": fn}, codeblock_content)
@@ -143,10 +143,9 @@ def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, Non
     cmd = lang_or_fn.split(" ")[0]
     is_filename = "." in cmd or "/" in cmd
 
-    if lang_or_fn in ["python", "py"]:
-        yield from execute_python(codeblock_content, ask=ask)
-    elif lang_or_fn in ["bash", "sh"]:
-        yield from execute_shell(codeblock_content, ask=ask)
+    if tool := get_tool_for_codeblock(lang_or_fn):
+        assert tool.execute
+        yield from tool.execute(codeblock_content, ask=ask, args={})
     elif lang_or_fn.startswith("patch "):
         fn = lang_or_fn[len("patch ") :]
         yield from execute_patch(f"```{codeblock}```", ask, {"file": fn})
@@ -214,15 +213,21 @@ def is_supported_codeblock(codeblock: str) -> bool:
     #     if not all_supported:
     #         return False
 
+    logger.warning(f"Unsupported codeblock type: {lang_or_fn}")
     return False
+
+
+def get_tool_for_codeblock(lang_or_fn: str) -> ToolSpec | None:
+    for tool in loaded_tools:
+        if lang_or_fn in tool.block_types:
+            return tool
+    return None
 
 
 def is_supported_codeblock_tool(lang_or_fn: str) -> bool:
     is_filename = "." in lang_or_fn or "/" in lang_or_fn
 
-    if lang_or_fn in ["python", "py"]:
-        return True
-    elif lang_or_fn in ["bash", "sh"]:
+    if get_tool_for_codeblock(lang_or_fn):
         return True
     elif lang_or_fn.startswith("patch "):
         return True

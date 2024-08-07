@@ -63,7 +63,7 @@ tests: list["ExecTest"] = [
     #     "name": "init-vue-ts-tailwind",
     #     "files": {},
     #     "run": "cat package.json",
-    #     "prompt": "initialize a vue project with typescript and tailwind, make a page that says 'Hello, world!'. don't try to execute it or do anything interactive",
+    #     "prompt": "initialize a vue project with typescript and tailwind, make a page that says 'Hello, world!'. avoid interactive tools to initialize the project",
     #     "expect": {
     #         "package.json exists": lambda ctx: "package.json" in ctx.files,
     #         "vue installed": lambda ctx: '"vue":' in ctx.files["package.json"],

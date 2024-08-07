@@ -1,3 +1,4 @@
+import itertools
 import logging
 import shutil
 import sys
@@ -194,55 +195,52 @@ def _stream_anthropic(
 def _reply_stream(messages: list[Message], model: str) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
 
-    def deltas_to_str(deltas: list[str]):
-        return "".join([d or "" for d in deltas])
-
     def print_clear():
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
-    deltas: list[str] = []
+    output = ""
     print_clear()
     print(f"{PROMPT_ASSISTANT}: ", end="")
     try:
-        for delta in _stream(messages, model):
-            if isinstance(delta, tuple):
-                print("Got a tuple, expected str")
-                continue
-            if isinstance(delta, tuple):
-                print("Got a Chunk, expected str")
-                continue
-            deltas.append(delta)
-            delta_str = deltas_to_str(deltas)
-            print(deltas_to_str([deltas[-1]]), end="")
+        for char in itertools.chain.from_iterable(_stream(messages, model)):
+            print(char, end="")
+            assert len(char) == 1
+            output += char
+
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
 
             # pause inference on finished code-block, letting user run the command before continuing
-            codeblock_started = "```" in delta_str[:-3]
-            codeblock_finished = "\n```\n" in delta_str[-7:]
+            codeblock_started = "```" in output[:-3]
+            codeblock_finished = "\n```\n" in output[-7:]
             if codeblock_started and codeblock_finished:
+                print("\nFound codeblock, breaking")
                 # noreorder
                 from .tools import is_supported_codeblock  # fmt: skip
 
                 # if closing a code block supported by tools, abort generation to let them run
-                if is_supported_codeblock(delta_str):
+                if is_supported_codeblock(output):
                     print("\n")
                     break
+                else:
+                    logger.warning(
+                        "Code block not supported by tools, continuing generation"
+                    )
 
             # pause inference in finished patch
-            patch_started = "```patch" in delta_str[:-3]
-            patch_finished = "\n>>>>>>> UPDATED" in delta_str[-30:]
+            patch_started = "```patch" in output[:-3]
+            patch_finished = "\n>>>>>>> UPDATED" in output[-30:]
             if patch_started and patch_finished:
-                if "```" not in delta_str[-10:]:
+                if "```" not in output[-10:]:
                     print("\n```", end="")
-                    deltas.append("\n```")
+                    output += "\n```"
                 print("\n")
                 break
     except KeyboardInterrupt:
-        return Message("assistant", deltas_to_str(deltas) + "... ^C Interrupted")
+        return Message("assistant", output + "... ^C Interrupted")
     finally:
         print_clear()
-    return Message("assistant", deltas_to_str(deltas))
+    return Message("assistant", output)
 
 
 def get_recommended_model() -> str:

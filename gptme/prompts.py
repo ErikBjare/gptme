@@ -9,15 +9,7 @@ from typing import Literal
 
 from .config import get_config
 from .message import Message
-from .tools import (
-    browser,
-    init_tools,
-    loaded_tools,
-    patch,
-    python,
-    save,
-    shell,
-)
+from .tools import init_tools, loaded_tools, python
 
 PromptType = Literal["full", "short"]
 
@@ -50,7 +42,7 @@ def prompt_full() -> Generator[Message, None, None]:
 
     yield from prompt_tools()
     # Useful in debugging
-    #yield from prompt_tools_from_spec()
+    # yield from prompt_tools_from_spec()
     yield from prompt_examples()
     yield from prompt_gh()
 
@@ -147,8 +139,8 @@ def prompt_tools_from_spec() -> Generator[Message, None, None]:
     # TODO: this should be moved to tools.py
     # tools must have been initialized by now
     init_tools()
-    prompt = ""
     assert loaded_tools, "No tools loaded"
+    prompt = ""
     for tool in loaded_tools:
         prompt += (
             f"""## {tool.name}
@@ -162,72 +154,42 @@ def prompt_tools_from_spec() -> Generator[Message, None, None]:
 
 
 def prompt_tools() -> Generator[Message, None, None]:
-    python_libraries = get_installed_python_libraries()
-    python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
-
-    shell_programs = get_installed_programs()
-    shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
-
-    yield Message(
-        "system",
-        f"""
-# Tools
-
-## python
-
-{python.instructions}
-
+    init_tools()
+    assert loaded_tools, "No tools loaded"
+    prompt = "# Tools"
+    for tool in loaded_tools:
+        prompt += f"## {tool.name}\n\n{tool.instructions}\n\n"
+        if tool.name == "python":
+            python_libraries = get_installed_python_libraries()
+            python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+            prompt += f"""
 The following libraries are available:
 {python_libraries_str}
 
 The following functions are available in the REPL:
 {python.get_functions_prompt()}
-
-## bash
-
-{shell.instructions}
-
+"""
+        elif tool.name == "bash":
+            shell_programs = get_installed_programs()
+            shell_programs_str = "\n".join(f"- {prog}" for prog in shell_programs)
+            prompt += f"""
 These programs are available, among others:
 {shell_programs_str}
+"""
 
-## saving files
-
-{save.instructions}
-
-## patching files
-
-{patch.instructions}
-""".strip()
-        + (
-            f"""
-
-## browsing the web
-
-{browser.instructions}
-""".rstrip()
-            if browser.has_browser_tool()
-            else ""
-        ),
-    )
+    yield Message("system", prompt.strip())
 
 
 def prompt_examples() -> Generator[Message, None, None]:
+    tool_examples = "\n".join(
+        f"## {tool.name}\n\n{tool.examples}" for tool in loaded_tools
+    )
     yield Message(
         "system",
         f"""
 # Examples
 
-## bash
-
-{shell.examples}
-
-## Python
-
-{python.examples}
-
-## Save files
-
-{save.examples}
+{tool_examples}
 
 ## Read files
 
@@ -246,19 +208,7 @@ cat hello.py
 python hello.py
 ```
 > stdout: `Hello world!`
-
-## Patching files
-
-{patch.examples}
-""".strip()
-        + f"""
-
-## Browsing the web
-
-{browser.examples}
-""".rstrip()
-        if browser.has_browser_tool()
-        else "",
+""".strip(),
     )
 
 
