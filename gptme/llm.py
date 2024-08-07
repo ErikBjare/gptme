@@ -1,13 +1,13 @@
 import logging
 import shutil
 import sys
-from typing import Generator, Iterator, Tuple
+from collections.abc import Generator, Iterator
 
 from anthropic import Anthropic
 from openai import AzureOpenAI, OpenAI
 from rich import print
 
-from .config import config_path, get_config, set_config_value
+from .config import get_config
 from .constants import PROMPT_ASSISTANT
 from .message import Message
 from .models import MODELS
@@ -25,23 +25,14 @@ oai_client: OpenAI | None = None
 anthropic_client: Anthropic | None = None
 
 
-def init_llm(llm: str, interactive: bool):
+def init_llm(llm: str):
     global oai_client, anthropic_client
 
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
 
-    # TODO: use llm/model from config if specified and not passed as args
     if llm == "openai":
-        if api_key := config.get_env("OPENAI_API_KEY", None):
-            pass
-        elif interactive:
-            api_key = ask_for_api_key()
-            # recursively call init_llm to start over with init
-            return init_llm(llm, interactive)
-        else:
-            print("Error: OPENAI_API_KEY not set in env or config, see README.")
-            sys.exit(1)
+        api_key = config.get_env_required("OPENAI_API_KEY")
         oai_client = OpenAI(api_key=api_key)
     elif llm == "azure":
         api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
@@ -67,19 +58,6 @@ def init_llm(llm: str, interactive: bool):
 
     # ensure we have initialized the client
     assert oai_client or anthropic_client
-
-
-def ask_for_api_key():
-    """Interactively ask user for API key"""
-    print("No API key set for OpenAI.")
-    print("You can get one at https://platform.openai.com/account/api-keys\n")
-    api_key = input("Your OpenAI API key: ").strip()
-
-    # TODO: test API key
-    # Save to config
-    set_config_value("env.OPENAI_API_KEY", api_key)
-    print(f"API key saved to config at {config_path}")
-    return api_key
 
 
 def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
@@ -137,7 +115,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _transform_system_messages_anthropic(
     messages: list[Message],
-) -> Tuple[list[Message], str]:
+) -> tuple[list[Message], str]:
     # transform system messages into system kwarg for anthropic
     # for first system message, transform it into a system kwarg
     assert messages[0].role == "system"

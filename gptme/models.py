@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from typing_extensions import NotRequired
 
@@ -12,7 +12,7 @@ class ModelMeta:
     provider: str
     model: str
     context: int
-    max_output: Optional[int] = None
+    max_output: int | None = None
 
     # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0

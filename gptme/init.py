@@ -4,7 +4,7 @@ import readline
 
 from dotenv import load_dotenv
 
-from .config import load_config
+from .config import config_path, load_config, set_config_value
 from .dirs import get_readline_history_file
 from .llm import get_recommended_model, init_llm
 from .models import set_default_model
@@ -29,8 +29,11 @@ def init(provider: str | None, model: str | None, interactive: bool):
     load_dotenv()
 
     config = load_config()
+
+    # get from config
     if not provider:
         provider = config.get_env("PROVIDER")
+
     if not provider:
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
         if config.get_env("OPENAI_API_KEY"):
@@ -39,11 +42,16 @@ def init(provider: str | None, model: str | None, interactive: bool):
         elif config.get_env("ANTHROPIC_API_KEY"):
             print("Found Anthropic API key, using Anthropic provider")
             provider = "anthropic"
-        else:
-            raise ValueError("No API key found, couldn't auto-detect provider")
+        # ask user for API key
+        elif interactive:
+            provider, _ = ask_for_api_key()
+
+    # fail
+    if not provider:
+        raise ValueError("No API key found, couldn't auto-detect provider")
 
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
-    init_llm(provider, interactive)
+    init_llm(provider)
 
     if not model:
         model = config.get_env("MODEL") or get_recommended_model()
@@ -91,3 +99,28 @@ def _load_readline_history() -> None:
             readline.add_history(line)
 
     atexit.register(readline.write_history_file, history_file)
+
+
+def ask_for_api_key():
+    """Interactively ask user for API key"""
+    print("No API key set for OpenAI or Anthropic.")
+    print(
+        """You can get one at:
+ - OpenAI: https://platform.openai.com/account/api-keys
+ - Anthropic: https://console.anthropic.com/settings/keys
+ """
+    )
+    api_key = input("Your OpenAI or Anthropic API key: ").strip()
+
+    if api_key.startswith("sk-ant-"):
+        provider = "anthropic"
+        env_var = "ANTHROPIC_API_KEY"
+    else:
+        provider = "openai"
+        env_var = "OPENAI_API_KEY"
+
+    # TODO: test API key
+    # Save to config
+    set_config_value(f"env.{env_var}", api_key)
+    print(f"API key saved to config at {config_path}")
+    return provider, api_key
