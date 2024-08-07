@@ -28,6 +28,7 @@ The user can also run Python code with the /python command:
     ```
 """
 
+import functools
 import re
 from collections.abc import Callable, Generator
 from logging import getLogger
@@ -42,10 +43,47 @@ from .base import ToolSpec
 
 logger = getLogger(__name__)
 
-instructions = """
+
+@functools.lru_cache
+def get_installed_python_libraries() -> set[str]:
+    """Check if a select list of Python libraries are installed."""
+    candidates = [
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "seaborn",
+        "scipy",
+        "scikit-learn",
+        "statsmodels",
+        "pillow",
+    ]
+    installed = set()
+    for candidate in candidates:
+        try:
+            __import__(candidate)
+            installed.add(candidate)
+        except ImportError:
+            pass
+    return installed
+
+
+python_libraries = get_installed_python_libraries()
+python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+
+
+instructions = f"""
 When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
 Python will respond with the output of the execution.
+
+The following libraries are available:
+{python_libraries_str}
 """.strip()
+
+# TODO: get this working again (needs to run get_functions_prompt() after all functions are registered)
+_unused = """
+The following functions are available in the REPL:
+{get_functions_prompt()}
+"""
 
 examples = """
 > User: print hello world
@@ -163,9 +201,7 @@ def check_available_packages():
     expected = ["numpy", "pandas", "matplotlib"]
     missing = []
     for package in expected:
-        try:
-            __import__(package)
-        except ImportError:
+        if package not in get_installed_python_libraries():
             missing.append(package)
     if missing:
         logger.warning(
