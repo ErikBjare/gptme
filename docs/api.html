@@ -45,8 +45,7 @@
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Demos" href="demos.html" />
-    <link rel="prev" title="Finetuning" href="finetuning.html" />
+    <link rel="prev" title="CLI Reference" href="cli.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -155,15 +154,15 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="local-models.html">Local Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 </ul>
 
     </div>
@@ -641,7 +640,7 @@ If you want to keep the old log, use fork()</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.execute_save">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_save" title="Permalink to this definition">#</a></dt>
-<dd><p>Save the code to a file.</p>
+<dd><p>Save code to a file.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -659,26 +658,95 @@ If you want to keep the old log, use fork()</p>
 <section id="module-gptme.tools.shell">
 <span id="gptme-tools-shell"></span><h3>gptme.tools.shell<a class="headerlink" href="#module-gptme.tools.shell" title="Permalink to this heading">#</a></h3>
 <p>The assistant can execute shell commands by outputting code blocks with <cite>bash</cite> or <cite>sh</cite> as the language.</p>
-<p>Example:</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">How can I list the files in the current directory?</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44ff44">Assistant</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">To list the files in the current directory, use the `ls` command:
-```bash
-ls
-```
-</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Ran command: `ls`
-stdout:
-```
-file1.txt
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">list the current directory</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To list the files in the current directory, use `ls`:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">ls
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Ran command: `ls`<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">stdout</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">file1.txt
 file2.txt
-```</pre></td></tr>
-</table><p>The user can also run shell code with the /shell command:</p>
+</pre></div></pre>
+  </td>
+</tr>
+</table><p>The assistant can learn context by exploring the filesystem</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">/shell ls</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Ran command: `ls`
-stdout:
-```
-file1.txt
-file2.txt
-```</pre></td></tr>
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">learn about the project</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Lets start by checking the files<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">git ls-files
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">README.md
+main.py
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Now lets check the README<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">cat README.md
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">stdout</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">(contents of README.md)
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Now we check main.py<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">cat main.py
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">(contents of main.py)
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">The project is...</pre>
+  </td>
+</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.shell.execute_shell">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.shell.</span></span><span class="sig-name descname"><span class="pre">execute_shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.shell.execute_shell" title="Permalink to this definition">#</a></dt>
@@ -689,23 +757,49 @@ file2.txt
 <section id="module-gptme.tools.python">
 <span id="python"></span><h3>Python<a class="headerlink" href="#module-gptme.tools.python" title="Permalink to this heading">#</a></h3>
 <p>The assistant can execute Python code blocks.</p>
-<p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.</p>
+<p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
+Results of the last expression will be displayed, IPython-style:</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">What is 2 + 2?</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44ff44">Assistant</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">
-```python
-2 + 2
-```</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Executed code block.
-stdout:
-```
-4
-```</pre></td></tr>
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">What is 2 + 2?</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">python</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">2 + 2
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Executed code block.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">stdout</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">4
+</pre></div></pre>
+  </td>
+</tr>
 </table><p>The user can also run Python code with the /python command:</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">/python 2 + 2</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Executed code block.
-stdout:
-```
-4
-```</pre></td></tr>
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">/python 2 + 2</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Executed code block.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">stdout</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">4
+</pre></div></pre>
+  </td>
+</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.python.check_available_packages">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.python.</span></span><span class="sig-name descname"><span class="pre">check_available_packages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gptme.tools.python.check_available_packages" title="Permalink to this definition">#</a></dt>
@@ -753,20 +847,37 @@ stdout:
 <p>Gives the assistant the ability to save code to a file.</p>
 <p>Example:</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">write hello world to hello.py</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44ff44">Assistant</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">
-```hello.py
-print("hello world")
-```</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Saved to hello.py</pre></td></tr>
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">write hello world to hello.py</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("hello world")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to hello.py</pre>
+  </td>
+</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.save.execute_append">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.save.</span></span><span class="sig-name descname"><span class="pre">execute_append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.save.execute_append" title="Permalink to this definition">#</a></dt>
-<dd><p>Append the code to a file.</p>
+<dd><p>Append code to a file.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.save.execute_save">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.save.</span></span><span class="sig-name descname"><span class="pre">execute_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.save.execute_save" title="Permalink to this definition">#</a></dt>
-<dd><p>Save the code to a file.</p>
+<dd><p>Save code to a file.</p>
 </dd></dl>
 
 </section>
@@ -775,15 +886,32 @@ print("hello world")
 <p>Gives the LLM agent the ability to patch files, by using a adapted version git conflict markers.</p>
 <p>Example:</p>
 <table style="width: 100%; margin-bottom: 1em">
-  <tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #6666ff;">User</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">patch the file `hello.py` to ask for the name of the user</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44ff44">Assistant</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">
-```patch hello.py
-<<<<<<< ORIGINAL
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">patch the file `hello.py` to ask for the name of the user</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;"><<<<<<< ORIGINAL
 print("Hello world")
 =======
 name = input("What is your name? ")
 print(f"hello {name}")
 >>>>>>> UPDATED
-```</pre></td></tr><tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #999999">System</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">Patch applied</pre></td></tr>
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Patch applied</pre>
+  </td>
+</tr>
 </table><p>Inspired by aider.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.tools.patch.apply">
@@ -813,22 +941,13 @@ print(f"hello {name}")
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="finetuning.html"
+       href="cli.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Finetuning</p>
+        <p class="prev-next-title">CLI Reference</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="demos.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Demos</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>

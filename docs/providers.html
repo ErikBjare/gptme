@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Local Models &#8212; gptme</title>
+    <title>Providers &#8212; gptme</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'local-models';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'providers';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -155,15 +155,15 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Local Models</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 </ul>
 
     </div>
@@ -235,7 +235,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/local-models.md" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/providers.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -265,7 +265,7 @@
       
       
       
-      <li><a href="_sources/local-models.md" target="_blank"
+      <li><a href="_sources/providers.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -349,7 +349,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Local Models</h1>
+    <h1>Providers</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -359,13 +359,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llama-cpp-python">llama-cpp-python</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
             </nav>
         </div>
@@ -377,11 +379,27 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="local-models">
-<h1>Local Models<a class="headerlink" href="#local-models" title="Permalink to this heading">#</a></h1>
-<p>This is a guide to setting up a local model for use with gptme.</p>
-<section id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">#</a></h2>
+  <section id="providers">
+<h1>Providers<a class="headerlink" href="#providers" title="Permalink to this heading">#</a></h1>
+<p>We support several LLM providers, including OpenAI, Anthropic, Azure, and any OpenAI-compatible server (e.g. <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, <code class="docutils literal notranslate"><span class="pre">llama-cpp-python</span></code>).</p>
+<section id="openai">
+<h2>OpenAI<a class="headerlink" href="#openai" title="Permalink to this heading">#</a></h2>
+<p>To use OpenAI, set your API key:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+</pre></div>
+</div>
+<p>If no key is set, it will be prompted for and saved in the configuration file.</p>
+</section>
+<section id="anthropic">
+<h2>Anthropic<a class="headerlink" href="#anthropic" title="Permalink to this heading">#</a></h2>
+<p>To use Anthropic, set your API key:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+</pre></div>
+</div>
+<p>If no key is set, it will be prompted for and saved in the configuration file.</p>
+</section>
+<section id="local">
+<h2>Local<a class="headerlink" href="#local" title="Permalink to this heading">#</a></h2>
 <p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover two:</p>
 <section id="ollama-litellm">
 <h3>ollama + litellm<a class="headerlink" href="#ollama-litellm" title="Permalink to this heading">#</a></h3>
@@ -404,17 +422,18 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
 </pre></div>
 </div>
 </section>
-</section>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="s2">&quot;say hello!&quot;</span>
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h3>
+<p>Now, simply run <code class="docutils literal notranslate"><span class="pre">gptme</span></code> with the <code class="docutils literal notranslate"><span class="pre">--llm</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">local</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="how-well-does-it-work">
-<h2>How well does it work?<a class="headerlink" href="#how-well-does-it-work" title="Permalink to this heading">#</a></h2>
+<h3>How well does it work?<a class="headerlink" href="#how-well-does-it-work" title="Permalink to this heading">#</a></h3>
 <p>I’ve had mixed results. They are not nearly as good as GPT-4, and often struggles with the tools laid out in the system prompt. However I haven’t tested with models larger than 7B/13B.</p>
 <p>I’m hoping future models, trained better for tool-use and interactive coding (where outputs are fed back), can remedy this, even at 7B/13B model sizes. Perhaps we can fine-tune a model on (GPT-4) conversation logs to create a purpose-fit model that knows how to use the tools.</p>
+</section>
 </section>
 </section>
 
@@ -463,13 +482,15 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llama-cpp-python">llama-cpp-python</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
   </nav></div>
 
