@@ -54,7 +54,7 @@ jobs:
 
     - name: Install playwright
       if: contains(matrix.extras, 'browser') || contains(matrix.extras, 'all')
-      run: poetry run playwright install
+      run: poetry run playwright install chromium
 
     # OpenAI sometimes randomly aborts connections, so we retry once
     - name: Run tests
