@@ -243,7 +243,7 @@ Assistant: The project name has been set, now we choose TypeScript
 ```terminal
 send_keys 0 Right Enter
 ```
-System: Sent 'Right Enter' to: pane 0
+System: Sent 'Right Enter' to pane 0
 
 #### Ending a session
 User: I changed my mind
