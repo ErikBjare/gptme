@@ -20,14 +20,14 @@ def test_browser():
 # def test_search_duckduckgo():
 #     results = search("test", "duckduckgo")
 #     print(results)
-#     assert "Results:" in results
+#     assert "```results" in results
 
 
 @pytest.mark.slow
 def test_search_google():
     results = search("test", "google")
     print(results)
-    assert "Results:" in results
+    assert "```results" in results
 
 
 @pytest.mark.slow

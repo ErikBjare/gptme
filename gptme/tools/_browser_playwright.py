@@ -117,6 +117,13 @@ def _list_clickable_elements(page, selector=None) -> list[Element]:
     return elements
 
 
+def titleurl_to_list(results: list[tuple[str, str]]) -> str:
+    s = "```results"
+    for i, (title, url) in enumerate(results):
+        s += f"\n{i+1}. {title} ({url})"
+    return s + "\n```"
+
+
 def _list_results_google(page) -> str:
     # fetch the results (elements with .g class)
     results = page.query_selector_all(".g")
@@ -124,15 +131,15 @@ def _list_results_google(page) -> str:
         return "Error: something went wrong with the search."
 
     # list results
-    s = "Results:"
-    for i, result in enumerate(results):
+    hits = []
+    for result in results:
         url = result.query_selector("a").evaluate("el => el.href")
         h3 = result.query_selector("h3")
         if h3:
             title = h3.inner_text()
             result.query_selector("span").inner_text()
-            s += f"\n{i+1}. {title} ({url})"
-    return s
+            hits.append((title, url))
+    return titleurl_to_list(hits)
 
 
 def _list_results_duckduckgo(page) -> str:
@@ -146,12 +153,12 @@ def _list_results_duckduckgo(page) -> str:
         return "Error: something went wrong with the search."
 
     # list results
-    s = "Results:"
-    for i, result in enumerate(results):
+    hits = []
+    for result in results:
         url = result.query_selector("a").evaluate("el => el.href")
         h2 = result.query_selector("h2")
         if h2:
             title = h2.inner_text()
             result.query_selector("span").inner_text()
-            s += f"\n{i+1}. {title} ({url})"
-    return s
+            hits.append((title, url))
+    return titleurl_to_list(hits)
