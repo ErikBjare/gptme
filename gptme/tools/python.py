@@ -62,7 +62,7 @@ The following functions are available in the REPL:
 """
 
 examples = """
-#### Results of the last expression will be displayed, IPython-style.
+#### Results of the last expression will be displayed, IPython-style:
 User: What is 2 + 2?
 Assistant:
 ```python
@@ -73,7 +73,7 @@ System: Executed code block.
 4
 ```
 
-The user can also run Python code with the /python command:
+#### The user can also run Python code with the /python command:
 
 User: /python 2 + 2
 System: Executed code block.

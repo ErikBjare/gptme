@@ -62,9 +62,9 @@ Assistant: The latest version of ActivityWatch is v0.12.2
 
 ### Searching
 User: who is the founder of ActivityWatch?
-Let's search for that.
+Assistant: Let's search for that.
 ```python
-search("who is the founder of ActivityWatch?")
+search("ActivityWatch founder")
 ```
 System:
 ```Results:

@@ -159,12 +159,21 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
 def transform_examples_to_chat_directives(s: str, strict=False) -> str:
     # transforms an example with "> Role:" dividers into ".. chat::" directive
     orig = s
-    s = re.sub(r"(^|\n)([>] )?(.+):", r"\1\3:", s, re.DOTALL)
+    s = re.sub(
+        r"(^|\n)([>] )?(.+):",
+        r"\1\3:",
+        s,
+        re.DOTALL,
+    )
     if strict:
         assert s != orig, "Couldn't find a message"
     s = textwrap.indent(s, "   ")
     orig = s
-    s = re.sub(r"(^|\n)(   [# ]+(.+)\n)?   User:", r"\1\3\n\n.. chat::\n\n   User:", s)
+    s = re.sub(
+        r"(^|\n)(   [# ]+(.+)(\n\s*)+)?   User:",
+        r"\1\3\n\n.. chat::\n\n   User:",
+        s,
+    )
     if strict:
         assert s != orig, "Couldn't find place to put start of directive"
     return s
