@@ -1,4 +1,0 @@
-# Needed to get playwright to play nice with coverage
-# https://stackoverflow.com/a/28589618/965332
-[run]
-concurrency = greenlet

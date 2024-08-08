@@ -11,9 +11,6 @@ SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 EXCLUDES = tests/output scripts/build_changelog.py
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py' $(foreach EXCLUDE,$(EXCLUDES),-not -path $(EXCLUDE)))
 
-# Check if playwright is installed (for browser tests)
-HAS_PLAYWRIGHT := $(shell poetry run command -v playwright 2> /dev/null)
-
 build:
 	poetry install
 
@@ -24,8 +21,7 @@ test:
 		-n 8 \
 		$(if $(SLOW), --timeout 60, --timeout 5 -m "not slow") \
 		$(if $(EVAL), , -m "not eval") \
-		$(if $(PROFILE), --profile-svg) \
-		$(if $(HAS_PLAYWRIGHT), --cov-config=scripts/.coveragerc-playwright)
+		$(if $(PROFILE), --profile-svg)
 
 eval:
 	poetry run python3 -m eval
