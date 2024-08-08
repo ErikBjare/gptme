@@ -1,9 +1,29 @@
-Local Models
-============
+Providers
+=========
 
-This is a guide to setting up a local model for use with gptme.
+We support several LLM providers, including OpenAI, Anthropic, Azure, and any OpenAI-compatible server (e.g. `ollama`, `llama-cpp-python`).
 
-## Setup
+## OpenAI
+
+To use OpenAI, set your API key:
+
+```sh
+export OPENAI_API_KEY="your-api-key"
+```
+
+If no key is set, it will be prompted for and saved in the configuration file.
+
+## Anthropic
+
+To use Anthropic, set your API key:
+
+```sh
+export ANTHROPIC_API_KEY="your-api-key"
+```
+
+If no key is set, it will be prompted for and saved in the configuration file.
+
+## Local
 
 There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover two:
 
@@ -32,14 +52,15 @@ poetry run python -m llama_cpp.server --model $MODEL --n_gpu_layers 1  # Use `--
 export OPENAI_API_BASE="http://localhost:8000/v1"
 ```
 
-## Usage
+### Usage
+
+Now, simply run `gptme` with the `--llm` flag set to `local`:
 
 ```sh
-gptme --llm local "say hello!"
+gptme --llm local "hello"
 ```
 
-
-## How well does it work?
+### How well does it work?
 
 I've had mixed results. They are not nearly as good as GPT-4, and often struggles with the tools laid out in the system prompt. However I haven't tested with models larger than 7B/13B.
 
