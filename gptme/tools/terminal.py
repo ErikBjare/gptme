@@ -1,5 +1,5 @@
 """
-You can use the terminal tool to run long-lived and/or interactive applications in a tmux session.
+You can use the terminal tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.
 
 This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: ``npm run dev``, ``npm create vue@latest``, ``python3 server.py``, ``python3 train.py``, etc.
@@ -7,6 +7,7 @@ It allows for inspecting pane contents and sending input.
 """
 
 import logging
+import shutil
 import subprocess
 from collections.abc import Generator
 from time import sleep
@@ -24,6 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_sessions() -> list[str]:
+    output = subprocess.run(
+        ["tmux", "has"],
+        capture_output=True,
+        text=True,
+    )
+    if output.returncode != 0:
+        return []
     output = subprocess.run(
         ["tmux", "list-sessions"],
         capture_output=True,
@@ -272,4 +280,5 @@ tool = ToolSpec(
     examples="####".join(examples.split("####")[:-2]),
     execute=execute_terminal,
     block_types=["terminal"],
+    available=shutil.which("tmux") is not None,
 )

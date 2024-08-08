@@ -267,7 +267,7 @@ def test_terminal(args: list[str], runner: CliRunner):
     )
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
-    assert "Load Avg:" in result.output
+    assert "%CPU" in result.output
     assert result.exit_code == 0
 
 
