@@ -57,7 +57,7 @@ def init(provider: str | None, model: str | None, interactive: bool):
         model = config.get_env("MODEL") or get_recommended_model()
     set_default_model(model)
 
-    if interactive:  # pragma: no cover
+    if interactive:
         _load_readline_history()
 
         # for some reason it bugs out shell tests in CI

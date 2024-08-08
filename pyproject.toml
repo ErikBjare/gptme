@@ -93,6 +93,26 @@ markers = [
     "serial",
 ]
 
+[tool.coverage.run]
+# Needed to get playwright to play nice with coverage
+# https://stackoverflow.com/a/28589618/965332
+concurrency = ["greenlet"]
+#branch = true
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+    # Don't complain if tests don't hit defensive assertion code
+    "raise NotImplementedError",
+
+    # Don't complain about interactive stuff
+    "except KeyboardInterrupt:",
+    "if interactive:",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

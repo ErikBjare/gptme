@@ -270,7 +270,7 @@ def step(
         or (last_msg.role in ["assistant"])
         or last_msg.content == "Interrupted"
         or last_msg.pinned
-    ):
+    ):  # pragma: no cover
         inquiry = prompt_user()
         if not inquiry:
             # Empty command, ask for input again
@@ -387,14 +387,14 @@ def get_logfile(name: str, interactive=True) -> Path:
     return logfile
 
 
-def prompt_user(value=None) -> str:
+def prompt_user(value=None) -> str:  # pragma: no cover
     response = prompt_input(PROMPT_USER, value)
     if response:
         readline.add_history(response)
     return response
 
 
-def prompt_input(prompt: str, value=None) -> str:
+def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     prompt = prompt.strip() + ": "
     if value:
         print(prompt + value)
