@@ -271,6 +271,20 @@ def test_terminal(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
+# TODO: move elsewhere
+@pytest.mark.slow
+def test_subagent(args: list[str], runner: CliRunner):
+    # f14: 377
+    # f15: 610
+    # f16: 987
+    args.append("compute fib 15 with subagent")
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    print(result.output)
+    assert "610" in result.output
+    assert "610" in result.output.splitlines()[-1]
+
+
 @pytest.mark.slow
 @pytest.mark.skipif(
     importlib.util.find_spec("playwright") is None,

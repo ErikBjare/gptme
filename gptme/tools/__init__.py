@@ -188,7 +188,8 @@ def is_supported_codeblock(codeblock: str) -> bool:
     #     if not all_supported:
     #         return False
 
-    logger.warning(f"Unsupported codeblock type: {lang_or_fn}")
+    if lang_or_fn not in ["json", "csv", "stdout", "stderr", "output"]:
+        logger.warning(f"Unsupported codeblock type: {lang_or_fn}")
     return False
 
 
