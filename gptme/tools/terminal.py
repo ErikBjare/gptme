@@ -82,7 +82,7 @@ def send_keys(pane_id: str, keys: str) -> Message:
     sleep(1)
     output = _capture_pane(pane_id)
     return Message(
-        "system", f"Sent '{keys}' to pane `{pane_id}`\n```output:\n{output}\n```"
+        "system", f"Sent '{keys}' to pane `{pane_id}`\n```output\n{output}\n```"
     )
 
 

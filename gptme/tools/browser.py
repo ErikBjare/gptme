@@ -67,7 +67,7 @@ Assistant: Let's search for that.
 search("ActivityWatch founder")
 ```
 System:
-```Results:
+```results
 1. [ActivityWatch](https://activitywatch.net/)
 ...
 ```
