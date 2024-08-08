@@ -199,6 +199,11 @@ Usage: gptme [OPTIONS] [PROMPTS]...
 
   GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
 
+  If PROMPTS are provided, a new conversation will be started with it.
+
+  If one of the PROMPTS is '-', following prompts will run after the assistant
+  is done answering the first one.
+
   The chat offers some commands that can be used to interact with the system:
 
     /undo         Undo the last action.
@@ -212,6 +217,8 @@ Usage: gptme [OPTIONS] [PROMPTS]...
     /python       Execute Python code.
     /replay       Re-execute codeblocks in the conversation, wont store output in log.
     /impersonate  Impersonate the assistant.
+    /tokens       Show the number of tokens used.
+    /tools        Show available tools.
     /help         Show this help message.
     /exit         Exit the program.
 
@@ -221,7 +228,8 @@ Options:
   --name TEXT                     Name of conversation. Defaults to generating
                                   a random name. Pass 'ask' to be prompted for
                                   a name.
-  --llm [openai|local]            LLM to use.
+  --llm [openai|anthropic|azure|local]
+                                  LLM provider to use.
   --model TEXT                    Model to use.
   --stream / --no-stream          Stream responses
   -v, --verbose                   Verbose output.
