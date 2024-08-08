@@ -103,28 +103,36 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 
 - 💻 Code execution
   - Directly execute code (shell and Python) in your local environment.
-  - Lets the assistant use commandline tools to work with files, access the web, etc.
   - Executed code maintains state in a REPL-like manner.
 - 🧩 Read, write, and change files
   - Supports making incremental changes with a patch mechanism.
-- 🚰 Pipe in context via stdin or as arguments.
-  - Passing a filename as an argument will read the file and include it as context.
+- 🌐 Search and browse the web.
+  - Equipped with a browser via Playwright.
 - 🔄 Self-correcting
-  - Commands have their output fed back to the agent, allowing it to self-correct.
+  - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM providers
   - Use OpenAI, Azure, Anthropic, or serve locally with `llama.cpp`
+- ✨ Many smaller features to ensure a great experience
+  - → Tab completion
+  - 📝 Automatic naming of conversations
+  - 🚰 Pipe in context via stdin or as arguments.
+    - Passing a filename as an argument will read the file and include it as context.
+  - 💬 Optional basic Web UI and REST API
+
+🛠  Developer perks:
+
+- 🧰 Easy to extend
+  - Most functionality is implemented as [tools](https://erik.bjareholt.com/gptme/docs/tools.html), making it easy to add new features.
+- 🧪 Extensive testing, high coverage.
+- 🧹 Clean codebase, checked and formatted with `mypy`, `ruff`, and `pyupgrade`.
 - 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
-- ✨ Many smaller features to ensure a great experience
-  - Tab completion
-  - Automatic naming of conversations
 
 🚧 In progress:
 
-- 📝 Handle long contexts intelligently through summarization, truncation, and pinning.
-- 💬 Web UI and API for conversations.
-- 🌐 Browse, interact, and automate the web from the terminal.
+- 📝 Handle long contexts intelligently through summarization, truncation, pinning, and subagents.
+- 🌐 Interact with and automate the web.
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
 
@@ -134,6 +142,7 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 - 🖥 **Development:** Write, test, and run code with AI assistance.
 - 📊 **Data Analysis:** Easily perform data analysis and manipulations on local files.
 - 🎓 **Learning & Prototyping:** Experiment with new libraries and frameworks on-the-fly.
+- 🤖 **Agents & Tools:** Experiment with agents and tools in a local environment.
 
 ## 🚀 Getting Started
 
