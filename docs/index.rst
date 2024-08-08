@@ -18,12 +18,12 @@ This is the documentation for gptme.
    :caption: Contents:
 
    getting-started
-   cli
+   demos
    tools
    providers
    finetuning
+   cli
    api
-   demos
 
 
 
