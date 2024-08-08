@@ -1,58 +1,117 @@
-Getting started
+Getting Started
 ===============
 
-Here we will help you get started with effectively using gptme.
-
+This guide will assist you in beginning your journey with gptme.
 
 Installation
 ------------
 
-We suggest you install it with pipx:
+To install gptme, we recommend using pipx:
 
 .. code-block:: bash
 
     pipx install gptme-python
 
-If you don't have pipx, you can install it with pip: ``pip install --user pipx``
+If pipx is not installed, you can install it using pip:
+
+.. code-block:: bash
+
+    pip install --user pipx
 
 Usage
 -----
 
-Run the following to start a new chat or choose a previous one:
+To initiate a new chat or select an existing one, execute:
 
 .. code-block:: bash
 
     gptme
 
-To fully utilize the assistant, you need to know a little bit about what it can do. 
+This will show you a list of past chats, allowing you to select one or start a new one.
 
-You can ask the assistant to make changes to files. For example, you can ask it to create a new file:
+Writing a file
+**************
 
-.. code-block:: text
+You can then interact with the assistant. Lets start by asking it to write code.
 
-    User: implement game of life in life.py
+.. chat::
 
-The assistant will generate the file, then ask you to confirm the changes.
+   User: create a new file named life.py implementing the game of life
 
-You can also run a prompt directly from the command line:
+   Assistant: Certainly! I'll create a new file named `life.py` implementing Conway's Game of Life. This implementation will use NumPy for efficient array operations and Matplotlib for visualization. Here's the code:
+   ```life.py
+   import numpy as np
+   import matplotlib.pyplot as plt
+   from matplotlib.animation import FuncAnimation
+   ...
+   ```
+
+   System: Saved to life.py
+
+The assistant will prompt for your confirmation and save the file, as requested.
+
+Making changes
+**************
+
+We can also start chats and request changes directly from the command line. The contents of any mentioned text files will be included as context, and the assistant will generate patches to apply the requested changes:
 
 .. code-block:: bash
 
-    gptme 'write a snake game with curses to snake.py'
+   gptme 'make improvements to life.py so that dead cells fade out over time'
 
-Any text files are in the prompt and exist will be included in the context.
+.. chat::
+
+   User: make improvements to life.py so that dead cells fade out over time
+   ```life.py
+   ...
+   ```
+
+   Assistant: To make alive cells green and dead cells black in the Game of Life simulation, we need to modify the colormap and how we represent the cell states. Here's the updated `life.py` script with these changes:
+   ```patch life.py
+   ...
+   ```
+
+   System: Patch applied
 
 .. note::
-    If you have the browser extras installed, it will also try to read any URLs in the prompt.
+    With the browser extras installed, the assistant can also process URLs included in the prompt.
 
-You can then ask it to make modifications:
+Other tools
+***********
 
-.. code-block:: text
+You can read about other tools in the :ref:`Tools` section.
 
-    User: make the snake green and the apple red
+Other interfaces
+****************
 
-This will make it generate and apply patches to the file, making the requested changes.
+There are other ways to interact with the assistant:
 
-----
+Command line
+^^^^^^^^^^^^
 
-Any issues? Report them on the `issue tracker <https://github.com/ErikBjare/gptme/issues>`_.
+Commands can also be executed directly from the command line. For example, one can skip confirmation prompts and  run in non-interactive mode to terminate when all prompts have been completed:
+
+.. code-block:: bash
+
+    gptme --non-interactive --no-confirm 'create a snake game using curses in snake.py, dont run it' '-' 'make the snake green and the apple red'
+
+This should make it first write snake.py, then make the change in a following prompt. The '-' is special "multiprompt" syntax that tells the assistant to wait for the next prompt before continuing.
+
+Web UI
+^^^^^^
+
+To run the assistant in a web interface, execute:
+
+.. code-block:: bash
+
+    gptme-server
+
+This should let you view your chats in a web browser and make basic requests.
+
+.. note::
+    The web interface is still in development and is not fully functional (no confirmation prompts or streaming).
+
+Support
+-------
+
+For any issues, please visit our `issue tracker <https://github.com/ErikBjare/gptme/issues>`_.

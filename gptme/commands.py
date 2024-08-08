@@ -16,7 +16,12 @@ from .message import (
     toml_to_msgs,
 )
 from .models import get_model
-from .tools import execute_msg, execute_python, execute_shell
+from .tools import (
+    execute_msg,
+    execute_python,
+    execute_shell,
+    loaded_tools,
+)
 from .tools.context import gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
@@ -38,6 +43,7 @@ Actions = Literal[
     "replay",
     "undo",
     "impersonate",
+    "tools",
     "tokens",
     "help",
     "exit",
@@ -56,6 +62,7 @@ action_descriptions: dict[Actions, str] = {
     "replay": "Re-execute codeblocks in the conversation, wont store output in log",
     "impersonate": "Impersonate the assistant",
     "tokens": "Show the number of tokens used",
+    "tools": "Show available tools",
     "help": "Show this help message",
     "exit": "Exit the program",
 }
@@ -151,6 +158,16 @@ def handle_cmd(
                 print(f"Model: {model.model}")
                 if model.price_input:
                     print(f"Cost (input): ${n_tokens * model.price_input / 1_000_000}")
+        case "tools":
+            log.undo(1, quiet=True)
+            print("Available tools:")
+            for tool in loaded_tools:
+                print(
+                    f"""
+- {tool.name}  ({tool.desc.rstrip(".")})
+    tokens (example): {len_tokens(tool.examples)}
+                      """.strip()
+                )
         case _:
             if log.log[-1].content != f"{CMDFIX}help":
                 print("Unknown command")

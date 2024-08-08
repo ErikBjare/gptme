@@ -2,30 +2,6 @@
 The assistant can execute Python code blocks.
 
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
-
-.. chat::
-
-    User: What is 2 + 2?
-    Assistant:
-    ```python
-    2 + 2
-    ```
-    System: Executed code block.
-    stdout:
-    ```
-    4
-    ```
-
-The user can also run Python code with the /python command:
-
-.. chat::
-
-    User: /python 2 + 2
-    System: Executed code block.
-    stdout:
-    ```
-    4
-    ```
 """
 
 import functools
@@ -38,7 +14,7 @@ from IPython.terminal.embed import InteractiveShellEmbed
 from IPython.utils.capture import capture_output
 
 from ..message import Message
-from ..util import ask_execute, print_preview
+from ..util import ask_execute, print_preview, transform_examples_to_chat_directives
 from .base import ToolSpec
 
 logger = getLogger(__name__)
@@ -86,9 +62,23 @@ The following functions are available in the REPL:
 """
 
 examples = """
-> User: print hello world
+#### Results of the last expression will be displayed, IPython-style.
+User: What is 2 + 2?
+Assistant:
 ```python
-print("Hello world")
+2 + 2
+```
+System: Executed code block.
+```stdout
+4
+```
+
+The user can also run Python code with the /python command:
+
+User: /python 2 + 2
+System: Executed code block.
+```stdout
+4
 ```
 """.strip()
 
@@ -209,9 +199,11 @@ def check_available_packages():
         )
 
 
+__doc__ += transform_examples_to_chat_directives(examples)
+
 tool = ToolSpec(
     name="python",
-    desc="A tool to execute Python code.",
+    desc="Execute Python code",
     instructions=instructions,
     examples=examples,
     init=init_python,

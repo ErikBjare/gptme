@@ -43,7 +43,11 @@ format:
 
 precommit: format lint typecheck test
 
-docs:
+docs/.clean: docs/conf.py
+	poetry run make -C docs clean
+	touch docs/.clean
+
+docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
 clean-test:
@@ -54,10 +58,10 @@ clean-test:
 cloc: cloc-core cloc-tools
 
 cloc-core:
-	cloc gptme/*.py
+	cloc gptme/*.py --by-file
 
 cloc-tools:
-	cloc gptme/tools
+	cloc gptme/tools --by-file
 
 cloc-tests:
-	cloc tests/*.py
+	cloc tests/*.py --by-file

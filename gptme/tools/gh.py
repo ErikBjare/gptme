@@ -11,7 +11,7 @@ def has_gh_tool() -> bool:
 tool = ToolSpec(
     name="gh",
     available=has_gh_tool(),
-    desc="Use the `gh` command-line tool to interact with GitHub.",
+    desc="Interact with GitHub",
     instructions="",
     examples="""Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
 

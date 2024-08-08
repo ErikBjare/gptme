@@ -36,7 +36,7 @@ Saved to `hello.py`.
 def execute_save(
     code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
-    """Save the code to a file."""
+    """Save code to a file."""
     fn = " ".join(args)
     assert fn, "No filename provided"
     # strip leading newlines
@@ -93,7 +93,7 @@ def execute_save(
 def execute_append(
     code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
-    """Append the code to a file."""
+    """Append code to a file."""
     fn = " ".join(args)
     assert fn, "No filename provided"
     # strip leading newlines
@@ -124,7 +124,7 @@ def execute_append(
 
 tool_save = ToolSpec(
     name="save",
-    desc="Allows saving code to a file.",
+    desc="Save code to a file",
     instructions=instructions,
     examples=examples,
     execute=execute_save,
@@ -146,7 +146,7 @@ print("Hello world")
 
 tool_append = ToolSpec(
     name="append",
-    desc="Allows appending code to a file.",
+    desc="Append code to a file",
     instructions=instructions_append,
     examples=examples_append,
     execute=execute_append,
