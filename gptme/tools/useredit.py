@@ -12,7 +12,7 @@ import tempfile
 logger = logging.getLogger(__name__)
 
 
-def edit_text_with_editor(initial_text: str, ext=None) -> str:
+def edit_text_with_editor(initial_text: str, ext=None) -> str:  # pragma: no cover
     """Edit some text in a temporary file using the user's $EDITOR."""
     suffix = f".{ext}" if ext else ""
     # Create a temporary file and write the initial text to it.

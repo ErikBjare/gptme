@@ -253,6 +253,24 @@ def test_stdin(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
+# TODO: move elsewhere
+@pytest.mark.slow
+def test_terminal(args: list[str], runner: CliRunner):
+    """
+    $ gptme '/impersonate lets find out the current load
+    ```terminal
+    new_session top
+    ```'
+    """
+    args.append(
+        f"{CMDFIX}impersonate find out the current load\n```terminal\nnew_session top\n```"
+    )
+    print(f"running: gptme {' '.join(args)}")
+    result = runner.invoke(gptme.cli.main, args)
+    assert "Load Avg:" in result.output
+    assert result.exit_code == 0
+
+
 @pytest.mark.slow
 @pytest.mark.skipif(
     importlib.util.find_spec("playwright") is None,
