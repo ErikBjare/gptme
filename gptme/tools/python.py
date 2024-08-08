@@ -169,7 +169,7 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
             else captured.stdout
         )
         if stdout:
-            output += f"stdout:\n```\n{stdout.rstrip()}\n```\n\n"
+            output += f"\n```stdout\n{stdout.rstrip()}\n```\n\n"
     if captured.stderr:
         output += f"stderr:\n```\n{captured.stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
