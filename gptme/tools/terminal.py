@@ -130,13 +130,15 @@ def execute_terminal(
         print()
         if not confirm:
             yield Message("system", "Command execution cancelled.")
+            return
 
     parts = cmd.split(maxsplit=1)
-    if len(parts) == 1:
-        yield Message("system", "Invalid command. Please provide arguments.")
+    command = parts[0]
+    if command == "list_sessions":
+        yield list_sessions()
+        return
 
-    command, _args = parts[0], parts[1]
-
+    _args = parts[1]
     if command == "new_session":
         yield new_session(_args)
     elif command == "send_keys":
@@ -146,8 +148,6 @@ def execute_terminal(
         yield inspect_pane(_args)
     elif command == "kill_session":
         yield kill_session(_args)
-    elif command == "list_sessions":
-        yield list_sessions()
     else:
         yield Message("system", f"Unknown command: {command}")
 
