@@ -51,13 +51,16 @@ clean-test:
 	rm -I $$HOME/.local/share/gptme/logs/*test-*-test_*/*.jsonl || true
 	rm --dir $$HOME/.local/share/gptme/logs/*test-*-test_*/ || true
 
-cloc: cloc-core cloc-tools
+cloc: cloc-core cloc-tools cloc-server cloc-tests
 
 cloc-core:
-	cloc gptme/*.py --by-file
+	cloc gptme/*.py gptme/*/__init__.py gptme/*/base.py --by-file
 
 cloc-tools:
-	cloc gptme/tools --by-file
+	cloc gptme/tools/*.py --by-file
+
+cloc-server:
+	cloc gptme/server --by-file
 
 cloc-tests:
 	cloc tests/*.py --by-file
