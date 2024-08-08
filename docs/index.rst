@@ -20,7 +20,7 @@ This is the documentation for gptme.
    getting-started
    cli
    tools
-   local-models
+   providers
    finetuning
    api
    demos
