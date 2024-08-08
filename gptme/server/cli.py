@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from .init import PROVIDERS, init, init_logging
+from ..init import PROVIDERS, init, init_logging
 
 logger = logging.getLogger(__name__)
 
@@ -41,5 +41,5 @@ def main(verbose: bool, llm: str | None, model: str | None):  # pragma: no cover
     click.echo("Initialization complete, starting server")
 
     # noreorder
-    from gptme.server import main as server_main  # fmt: skip
+    from gptme.server.api import main as server_main  # fmt: skip
     server_main()
