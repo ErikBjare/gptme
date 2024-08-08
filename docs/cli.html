@@ -360,7 +360,6 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
 </ul>
             </nav>
         </div>
@@ -474,38 +473,6 @@ document.write(`
 </dd></dl>
 
 </section>
-<section id="gptme-server">
-<h2>gptme-server<a class="headerlink" href="#gptme-server" title="Permalink to this heading">#</a></h2>
-<p>Starts a server and web UI for gptme.</p>
-<p>Note that this is very much a work in progress, and is not yet ready for normal use.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-server<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-<p class="rubric">Options</p>
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server-v">
-<span id="cmdoption-gptme-server-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-v" title="Permalink to this definition">#</a></dt>
-<dd><p>Verbose output.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server-llm">
-<span class="sig-name descname"><span class="pre">--llm</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;llm&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-llm" title="Permalink to this definition">#</a></dt>
-<dd><p>LLM provider to use.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Options<span class="colon">:</span></dt>
-<dd class="field-odd"><p>openai | anthropic | azure | local</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server-model">
-<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-model" title="Permalink to this definition">#</a></dt>
-<dd><p>Model to use by default, can be overridden in each request.</p>
-</dd></dl>
-
-</section>
 </section>
 
 
@@ -554,7 +521,6 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
 </ul>
   </nav></div>
 
