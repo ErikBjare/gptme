@@ -109,9 +109,11 @@ exclude_also = [
     # Don't complain about interactive stuff
     "except KeyboardInterrupt:",
     "if interactive:",
+    "if ask:",
 
     # Don't complain if non-runnable code isn't run:
     "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [build-system]

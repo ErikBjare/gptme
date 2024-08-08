@@ -34,7 +34,7 @@ def init(provider: str | None, model: str | None, interactive: bool):
     if not provider:
         provider = config.get_env("PROVIDER")
 
-    if not provider:
+    if not provider:  # pragma: no cover
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
         if config.get_env("OPENAI_API_KEY"):
             print("Found OpenAI API key, using OpenAI provider")
@@ -85,7 +85,7 @@ history_examples = [
 ]
 
 
-def _load_readline_history() -> None:
+def _load_readline_history() -> None:  # pragma: no cover
     logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
     readline.set_auto_history(True)
@@ -101,7 +101,7 @@ def _load_readline_history() -> None:
     atexit.register(readline.write_history_file, history_file)
 
 
-def ask_for_api_key():
+def ask_for_api_key():  # pragma: no cover
     """Interactively ask user for API key"""
     print("No API key set for OpenAI or Anthropic.")
     print(
