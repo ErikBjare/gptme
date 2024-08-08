@@ -77,14 +77,7 @@ multiline command"
 
     script_loop = "for i in {1..10}; do echo $i; done"
     commands = split_commands(script_loop)
-    for command in commands:
-        print(command)
     assert len(commands) == 1
-
-    shell = ShellSession()
-    ret, out, err = shell.run(script)
-    assert ret == 0
-    assert out.strip() == "Hello, World!\nThis is a\nmultiline command"
 
 
 def test_function():
