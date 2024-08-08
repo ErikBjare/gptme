@@ -80,3 +80,31 @@ multiline command"
     for command in commands:
         print(command)
     assert len(commands) == 1
+
+    shell = ShellSession()
+    ret, out, err = shell.run(script)
+    assert ret == 0
+    assert out.strip() == "Hello, World!\nThis is a\nmultiline command"
+
+
+def test_function():
+    script = """
+function hello() {
+    echo "Hello, World!"
+}
+hello
+"""
+    shell = ShellSession()
+    ret, out, err = shell.run(script)
+    assert ret == 0
+    assert out.strip() == "Hello, World!"
+
+
+def test_pipeline():
+    script = """
+echo "Hello, World!" | wc -w
+"""
+    shell = ShellSession()
+    ret, out, err = shell.run(script)
+    assert ret == 0
+    assert out.strip() == "2"
