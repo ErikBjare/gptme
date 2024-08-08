@@ -13,6 +13,7 @@ import shutil
 import subprocess
 from typing import Literal
 
+from ..util import transform_examples_to_chat_directives
 from .base import ToolSpec
 
 has_playwright = importlib.util.find_spec("playwright") is not None
@@ -36,53 +37,51 @@ To browse the web, you can use the `read_url` and `search` functions in Python.
 
 examples = """
 ### Answer question from URL with browsing
-
-> User: find out which is the latest ActivityWatch version from superuserlabs.org
-> Assistant: Let's browse the site.
+User: find out which is the latest ActivityWatch version from superuserlabs.org
+Assistant: Let's browse the site.
 ```python
 read_url("https://superuserlabs.org/")
 ```
-> System:
+System:
 ```https://superuserlabs.org/
 ...
 [ActivityWatch](https://activitywatch.net/)
 ...
 ```
-> Assistant: Couldn't find the answer on the page. Following link to the ActivityWatch website.
+Assistant: Couldn't find the answer on the page. Following link to the ActivityWatch website.
 ```python
 read_url("https://activitywatch.net/")
 ```
-> System:
+System:
 ```https://activitywatch.net/
 ...
 Download latest version v0.12.2
 ...
 ```
-> Assistant: The latest version of ActivityWatch is v0.12.2
+Assistant: The latest version of ActivityWatch is v0.12.2
 
 ### Searching
-
-> User: who is the founder of ActivityWatch?
+User: who is the founder of ActivityWatch?
 Let's search for that.
 ```python
 search("who is the founder of ActivityWatch?")
 ```
-> System:
+System:
 ```Results:
 1. [ActivityWatch](https://activitywatch.net/)
 ...
 ```
-Following link to the ActivityWatch website.
+Assistant: Following link to the ActivityWatch website.
 ```python
 read_url("https://activitywatch.net/")
 ```
-
+System:
 ```https://activitywatch.net/
 ...
 The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 ...
 ```
-The founder of ActivityWatch is Erik Bjäreholt.
+Assistant: The founder of ActivityWatch is Erik Bjäreholt.
 """.strip()
 
 
@@ -157,9 +156,11 @@ def html_to_markdown(html):
     return markdown
 
 
+__doc__ += transform_examples_to_chat_directives(examples)
+
 tool = ToolSpec(
     name="browser",
-    desc="A tool to browse the web.",
+    desc="Browse the web",
     instructions=instructions,
     examples=examples,
     functions=[read_url, search],

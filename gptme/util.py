@@ -1,5 +1,7 @@
 import logging
 import random
+import re
+import textwrap
 from datetime import datetime, timedelta
 
 import tiktoken
@@ -152,3 +154,17 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
         f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
     )
     return answer.lower() in (["y", "yes"] + [""] if default else [])
+
+
+def transform_examples_to_chat_directives(s: str, strict=False) -> str:
+    # transforms an example with "> Role:" dividers into ".. chat::" directive
+    orig = s
+    s = re.sub(r"\n([>] )?(.+):", r"\n\2:", s, re.DOTALL)
+    if strict:
+        assert s != orig, "Couldn't find a message"
+    s = textwrap.indent(s, "   ")
+    orig = s
+    s = re.sub(r"(^|\n)(   [#]+ (.+))?\n   User:", r"\1\3\n\n.. chat::\n\n   User:", s)
+    if strict:
+        assert s != orig, "Couldn't find place to put start of directive"
+    return s

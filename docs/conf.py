@@ -5,6 +5,8 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import re
+
 from docutils import nodes
 from docutils.parsers.rst import Directive
 
@@ -28,26 +30,47 @@ class ChatDirective(Directive):
         # ]
         msgs = []
         for line in self.content:
-            if any(line.startswith(role) for role in ["User", "Assistant", "System"]):
+            if any(
+                line.lstrip().startswith(role)
+                for role in ["User", "Assistant", "System"]
+            ):
                 role, content = line.split(":", 1)
-                msgs.append({"role": role, "content": content.strip()})
+                msgs.append({"role": role.strip(), "content": content.strip()})
             else:
-                msgs[-1]["content"] += f"\n{line}"
+                print(line)
+                if msgs:
+                    msgs[-1]["content"] += f"\n{line}"
+                else:
+                    raise Exception(f"no start of message found for line: {line}")
 
         for msg in msgs:
             if msg["role"] == "User":
-                msg["role_style"] = "color: #6666ff;"
+                msg["role_style"] = "color: #5555cc;"
             elif msg["role"] == "Assistant":
-                msg["role_style"] = "color: #44ff44"
+                msg["role_style"] = "color: #44cc44"
             elif msg["role"] == "System":
-                msg["role_style"] = "color: #999999"
+                msg["role_style"] = "color: #AAAAAA"
+
+            # if contains codeblocks, we want to put them into their own scrolling <pre> block
+            msg["content"] = re.sub(
+                r"\n```([^\n]*?)\n(.*?)\n\s*```",
+                r'<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">\1</div>\n<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">\2\n</pre></div>',
+                msg["content"],
+                flags=re.DOTALL,
+            ).rstrip()
 
         # set up table
-        src = f"""
+        src = f'''
 <table style="width: 100%; margin-bottom: 1em">
-  {"".join(f'<tr><td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; {msg["role_style"]}">{msg["role"]}</td><td><pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em;">{msg["content"]}</pre></td></tr>' for msg in msgs)}
+  {"".join(f"""
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; {msg["role_style"]}">{msg["role"]}</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">{msg["content"]}</pre>
+  </td>
+</tr>""" for msg in msgs)}
 </table>
-""".strip()
+'''.strip()
 
         return [nodes.raw("", src, format="html")]
 

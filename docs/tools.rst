@@ -9,6 +9,7 @@ The main tools can be grouped in the following categories:
 
   - :ref:`Shell`
   - :ref:`Python`
+  - :ref:`Terminal`
 
 - filesystem
 
@@ -37,6 +38,13 @@ Python
 ------
 
 .. automodule:: gptme.tools.python
+    :members:
+    :noindex:
+
+Terminal
+--------
+
+.. automodule:: gptme.tools.terminal
     :members:
     :noindex:
 

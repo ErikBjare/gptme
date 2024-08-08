@@ -1,63 +1,26 @@
 """
-The assistant can execute terminal commands in a tmux session for interactive applications.
-It also provides tools for inspecting pane contents and sending input.
+You can use the terminal tool to run long-lived and/or interactive applications in a tmux session.
 
-Example:
-
-.. chat::
-
-    User: Start the dev server
-    Assistant: Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:
-    ```terminal
-    new_session npm run dev
-    ```
-
-    System: Created new tmux session with ID 0 and started 'npm run dev'
-
-    User: Can you show me the current content of the pane?
-    Assistant: Of course! Let's inspect the pane content:
-    ```terminal
-    inspect_pane 0
-    ```
-
-    System: Pane content:
-    ```
-    Server is running on localhost:5600
-    ```
-
-    User: Can you stop the dev server?
-    Assistant: Certainly! I'll send 'Ctrl+C' to the pane to stop the server:
-    ```terminal
-    send_keys 0 C+c
-    ```
-
-    System: Sent 'q' to pane 0
-
-The user can also run terminal commands with the /terminal command:
-
-.. chat::
-
-    User: /terminal new_session htop
-    System: Created new tmux session with ID 1 and started 'htop'
-
+This tool is suitable to run long-running commands or interactive applications that require user input.
+Examples of such commands: ``npm run dev``, ``npm create vue@latest``, ``python3 server.py``, ``python3 train.py``, etc.
+It allows for inspecting pane contents and sending input.
 """
 
 import logging
 import subprocess
-from time import sleep
 from collections.abc import Generator
+from time import sleep
 
 from ..message import Message
-from ..util import ask_execute, print_preview
+from ..util import ask_execute, print_preview, transform_examples_to_chat_directives
 from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
 
-"""
-session: gpt_0
-window: gpt_0:0
-pane: gpt_0:0.0
-"""
+# Examples of identifiers:
+#   session: gpt_0
+#   window: gpt_0:0
+#   pane: gpt_0:0.0
 
 
 def get_sessions() -> list[str]:
@@ -102,7 +65,7 @@ def new_session(command: str) -> Message:
     output = _capture_pane(f"{session_id}")
     return Message(
         "system",
-        f"Created new tmux session with ID {session_id} and started '{command}'.\nOutput:\n```\n{output}\n```",
+        f"Running '{command}' in session {session_id}.\n```output\n{output}\n```",
     )
 
 
@@ -119,7 +82,7 @@ def send_keys(pane_id: str, keys: str) -> Message:
     sleep(1)
     output = _capture_pane(pane_id)
     return Message(
-        "system", f"Sent '{keys}' to pane `{pane_id}`\nOutput:\n```\n{output}\n```"
+        "system", f"Sent '{keys}' to pane `{pane_id}`\n```output:\n{output}\n```"
     )
 
 
@@ -205,20 +168,54 @@ Available commands:
 # TODO: implement smart-wait, where we wait for n seconds and then until output is stable
 
 examples = """
-> User: Start the dev server
-> Assistant: Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:
+#### Managing a dev server
+User: Start the dev server
+Assistant: Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:
+```terminal
+new_session npm run dev
+```
+System: Running `npm run dev` in session 0
+
+User: Can you show me the current content of the pane?
+Assistant: Of course! Let's inspect the pane content:
+```terminal
+inspect_pane 0
+```
+System:
+```output
+Server is running on localhost:5600
+```
+
+User: Can you stop the dev server?
+Assistant: Certainly! I'll send 'Ctrl+C' to the pane to stop the server:
+```terminal
+send_keys 0 C-c
+```
+System: Sent 'C-c' to pane 0
+
+#### Get info from ncurses applications
+User: start top and give me a summary
+System: Running `top` in session 1.
+```output
+(output from top shown here)
+```
+Assistant: The load is...
+
+#### Background process
+User: Start the dev server
+Assistant: Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:
 ```terminal
 new_session 'npm run dev'
 ```
 
-> User: Create a new vue project with typescript
-> Assistant: Sure! Let's create a new vue project in a tmux session:
+#### Interactive process
+User: Create a new vue project with typescript
+Assistant: Sure! Let's create a new vue project in a tmux session:
 ```terminal
 new_session 'npm create vue@latest'
 ```
-> System: Created new tmux session with ID 0 and started 'npm create vue@latest'
-Output:
-```
+System: Running 'npm create vue@latest' in session 0
+```output
 > npx
 > create-vue
 
@@ -226,51 +223,52 @@ Vue.js - The Progressive JavaScript Framework
 
 ? Project name: › vue-project
 ```
-> Assistant: vue-project is a placeholder we can fill in. What would you like to name your project?
-> User: Lets go with 'test-project'
-> Assistant:
+Assistant: vue-project is a placeholder we can fill in. What would you like to name your project?
+User: Lets go with 'test-project'
+Assistant:
 ```terminal
 send_keys 0 test-project Enter
-> System: Sent 'test-project Enter' to pane 0
-> User: Show the content of the pane
-> Assistant:
+```
+System: Sent 'test-project Enter' to pane 0
+Assistant: Lets check that the name was set and move on
 ```terminal
 inspect_pane 0
 ```
-> System:
-```
-> npx
-> create-vue
-
-Vue.js - The Progressive JavaScript Framework
-
-✔ Project name: … test-project
+System:
+```output
 ? Add TypeScript? › No / Yes
 ```
-> Assistant: The project name has been set, now we select TypeScript as requested.
+Assistant: The project name has been set, now we choose TypeScript
 ```terminal
 send_keys 0 Right Enter
 ```
-> System: Sent 'Right Enter' to pane 0
+System: Sent 'Right Enter' to: pane 0
 
-> User: I changed my mind
-> Assistant: No problem! Let's kill the session and start over:
+#### Ending a session
+User: I changed my mind
+Assistant: No problem! Let's kill the session and start over:
 ```terminal
 list_sessions
 ```
-> System: Active tmux sessions: [0]
-> Assistant:
+System: Active tmux sessions [0]
+Assistant:
 ```terminal
 kill_session 0
 ```
-> System: Killed tmux session with ID 0
+System: Killed tmux session with ID 0
 """
+
+
+new_examples = transform_examples_to_chat_directives(examples)
+__doc__ += new_examples
+
 
 tool = ToolSpec(
     name="terminal",
-    desc="Executes terminal commands in a tmux session for interactive applications.",
+    desc="Executes shell commands in a tmux session",
     instructions=instructions,
-    examples=examples,
+    # we want to skip the last two examples in prompting
+    examples="####".join(examples.split("####")[:-2]),
     execute=execute_terminal,
     block_types=["terminal"],
 )
