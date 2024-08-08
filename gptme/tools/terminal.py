@@ -224,18 +224,19 @@ Vue.js - The Progressive JavaScript Framework
 ? Project name: › vue-project
 ```
 Assistant: vue-project is a placeholder we can fill in. What would you like to name your project?
-User: Lets go with 'test-project'
+User: fancy-project
 Assistant:
 ```terminal
-send_keys 0 test-project Enter
+send_keys 0 fancy-project Enter
 ```
-System: Sent 'test-project Enter' to pane 0
+System: Sent 'fancy-project Enter' to pane 0
 Assistant: Lets check that the name was set and move on
 ```terminal
 inspect_pane 0
 ```
 System:
 ```output
+? Project name: › fancy-project
 ? Add TypeScript? › No / Yes
 ```
 Assistant: The project name has been set, now we choose TypeScript
