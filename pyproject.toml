@@ -9,6 +9,8 @@ packages = [
     { include = "gptme" },
 ]
 
+include = ["static/**/*", "media/logo.png"]
+
 [tool.poetry.scripts]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"

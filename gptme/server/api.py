@@ -5,10 +5,13 @@ See here for instructions how to serve matplotlib figures:
  - https://matplotlib.org/stable/gallery/user_interfaces/web_application_server_sgskip.html
 """
 
+import atexit
 import io
 from contextlib import redirect_stdout
+from importlib import resources
 
 import flask
+from flask import current_app
 
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
@@ -123,22 +126,25 @@ def api_conversation_generate(logfile: str):
     )
 
 
-# serve the static assets in the static folder
-@api.route("/static/<path:path>")
-def static_proxy(path):
-    return flask.send_from_directory("static", path)
+gptme_path_ctx = resources.as_file(resources.files("gptme"))
+static_path = gptme_path_ctx.__enter__().parent / "static"
+atexit.register(gptme_path_ctx.__exit__, None, None, None)
 
 
 # serve index.html from the root
 @api.route("/")
 def root():
-    return flask.send_from_directory("../../static", "index.html")
+    return current_app.send_static_file("index.html")
+
+
+@api.route("/favicon.png")
+def favicon():
+    return flask.send_from_directory(static_path.parent / "media", "logo.png")
 
 
 def create_app():
-    app = flask.Flask(__name__, static_folder="../static")
+    app = flask.Flask(__name__, static_folder=static_path)
     app.register_blueprint(api)
-
     return app
 
 
