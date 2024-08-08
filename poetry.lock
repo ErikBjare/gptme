@@ -723,7 +723,7 @@ files = [
 name = "greenlet"
 version = "3.0.3"
 description = "Lightweight in-process concurrent programming"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "greenlet-3.0.3-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:9da2bd29ed9e4f15955dd1595ad7bc9320308a3b766ef7f837e23ad4b4aac31a"},
@@ -3455,4 +3455,4 @@ training = ["torch", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5218b7a398cac4fa510bb9b93fe2e80b3a815155794979f69180e6fd7e02fff9"
+content-hash = "2cd0d3009d86179aeb1fbd50db9b23aa270855e5eeed782be4c56b28e18df38e"
