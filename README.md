@@ -13,6 +13,8 @@ GPTMe
 [![PyPI version](https://img.shields.io/pypi/v/gptme-python)](https://pypi.org/project/gptme-python/)
 [![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
 [![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
+[![Discord](https://img.shields.io/discord/1271539422017618012?logo=discord&style=social)](https://discord.gg/NMaCmmkxWv)
+[![Twitter](https://img.shields.io/twitter/follow/ErikBjare?style=social)](https://twitter.com/ErikBjare)
 
 📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
 
@@ -289,4 +291,5 @@ Looking for other similar projects? Check out [Are Copilots Local Yet?](https://
 
  - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)
  - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
- - [HN announcement](https://news.ycombinator.com/item?id=37394845)
+ - [HN announcement (2023 aug)](https://news.ycombinator.com/item?id=37394845)
+ - [HN announcement (2024 aug)](https://news.ycombinator.com/item?id=41204256)
