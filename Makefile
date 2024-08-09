@@ -47,9 +47,13 @@ docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
 version:
+	# check that pyproject.toml is clean
+	git diff --exit-code pyproject.toml || (echo "pyproject.toml is dirty, please commit or stash changes" && exit 1)
 	git pull
-	VERSION=$$(git describe --tags --abbrev=0) && \
-		poetry version $(git describe --tags --abbrev=0)
+	@VERSION=$$(git describe --tags --abbrev=0 | cut -b 2-) && \
+		poetry version $${VERSION} && \
+		git add pyproject.toml && \
+		git commit -m "chore: bump version to $${VERSION}" || echo "No version bump needed"
 
 CHANGELOG.md: version
 	VERSION=$$(git describe --tags --abbrev=0) && \
