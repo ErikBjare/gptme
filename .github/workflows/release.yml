@@ -26,6 +26,8 @@ jobs:
         poetry version $VERSION
     - name: Commit version bump
       run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
         if git diff --quiet; then
           echo "No changes to commit"
         else
