@@ -46,6 +46,21 @@ docs/.clean: docs/conf.py
 docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
+version:
+	git pull
+	VERSION=$$(git describe --tags --abbrev=0) && \
+		poetry version $(git describe --tags --abbrev=0)
+
+CHANGELOG.md: version
+	VERSION=$$(git describe --tags --abbrev=0) && \
+		./scripts/build_changelog.py --range v0.12.0...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
+
+release: CHANGELOG.md
+	@VERSION=$$(git describe --tags --abbrev=0) && \
+		echo "Releasing version $${VERSION}"; \
+		read -p "Press enter to continue" && \
+		gh release create $${VERSION} -t $${VERSION} -F CHANGELOG.md
+
 clean: clean-docs
 
 clean-docs:
