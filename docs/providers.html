@@ -362,11 +362,9 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llama-cpp-python">llama-cpp-python</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
 </li>
 </ul>
@@ -383,13 +381,19 @@ document.write(`
   <section id="providers">
 <h1>Providers<a class="headerlink" href="#providers" title="Permalink to this heading">#</a></h1>
 <p>We support several LLM providers, including OpenAI, Anthropic, Azure, and any OpenAI-compatible server (e.g. <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, <code class="docutils literal notranslate"><span class="pre">llama-cpp-python</span></code>).</p>
+<p>To select a provider and model, run <code class="docutils literal notranslate"><span class="pre">gptme</span></code> with the <code class="docutils literal notranslate"><span class="pre">--model</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;/&lt;model&gt;</span></code>, for example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
+gptme<span class="w"> </span>--model<span class="w"> </span>anthropic<span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="w">  </span><span class="c1"># if model part unspecified, will fall back to the provider default</span>
+gptme<span class="w"> </span>--model<span class="w"> </span>openrouter/meta-llama/llama-3.1-70b-instruct<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
+</pre></div>
+</div>
+<p>On first startup, if <code class="docutils literal notranslate"><span class="pre">--model</span></code> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
 <section id="openai">
 <h2>OpenAI<a class="headerlink" href="#openai" title="Permalink to this heading">#</a></h2>
 <p>To use OpenAI, set your API key:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 </pre></div>
 </div>
-<p>If no key is set, it will be prompted for and saved in the configuration file.</p>
 </section>
 <section id="anthropic">
 <h2>Anthropic<a class="headerlink" href="#anthropic" title="Permalink to this heading">#</a></h2>
@@ -397,11 +401,17 @@ document.write(`
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
 </pre></div>
 </div>
-<p>If no key is set, it will be prompted for and saved in the configuration file.</p>
+</section>
+<section id="openrouter">
+<h2>OpenRouter<a class="headerlink" href="#openrouter" title="Permalink to this heading">#</a></h2>
+<p>To use OpenRouter, set your API key:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+</pre></div>
+</div>
 </section>
 <section id="local">
 <h2>Local<a class="headerlink" href="#local" title="Permalink to this heading">#</a></h2>
-<p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover two:</p>
+<p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover:</p>
 <section id="ollama-litellm">
 <h3>ollama + litellm<a class="headerlink" href="#ollama-litellm" title="Permalink to this heading">#</a></h3>
 <p>Here’s how to use <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, with the <code class="docutils literal notranslate"><span class="pre">litellm</span></code> proxy to provide the API-compatible server.</p>
@@ -412,28 +422,6 @@ litellm<span class="w"> </span>--model<span class="w"> </span>ollama/mistral
 <span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000&quot;</span>
 </pre></div>
 </div>
-</section>
-<section id="llama-cpp-python">
-<h3>llama-cpp-python<a class="headerlink" href="#llama-cpp-python" title="Permalink to this heading">#</a></h3>
-<p>Here’s how to use <code class="docutils literal notranslate"><span class="pre">llama-cpp-python</span></code>.</p>
-<p>You first need to install and run the <a class="reference external" href="https://github.com/abetlen/llama-cpp-python">llama-cpp-python</a> server. To ensure you get the most out of your hardware, make sure you build it with <a class="reference external" href="https://github.com/abetlen/llama-cpp-python#installation-with-hardware-acceleration">the appropriate hardware acceleration</a>. For macOS, you can find detailed instructions <a class="reference external" href="https://github.com/abetlen/llama-cpp-python/blob/main/docs/install/macos.md">here</a>.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL</span><span class="o">=</span>~/ML/wizardcoder-python-13b-v1.0.Q4_K_M.gguf
-poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>llama_cpp.server<span class="w"> </span>--model<span class="w"> </span><span class="nv">$MODEL</span><span class="w"> </span>--n_gpu_layers<span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="c1"># Use `--n_gpu_layer 1` if you have a M1/M2 chip</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/v1&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="usage">
-<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h3>
-<p>Now, simply run <code class="docutils literal notranslate"><span class="pre">gptme</span></code> with the <code class="docutils literal notranslate"><span class="pre">--llm</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">local</span></code>:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="how-well-does-it-work">
-<h3>How well does it work?<a class="headerlink" href="#how-well-does-it-work" title="Permalink to this heading">#</a></h3>
-<p>I’ve had mixed results. They are not nearly as good as GPT-4, and often struggles with the tools laid out in the system prompt. However I haven’t tested with models larger than 7B/13B.</p>
-<p>I’m hoping future models, trained better for tool-use and interactive coding (where outputs are fed back), can remedy this, even at 7B/13B model sizes. Perhaps we can fine-tune a model on (GPT-4) conversation logs to create a purpose-fit model that knows how to use the tools.</p>
 </section>
 </section>
 </section>
@@ -485,11 +473,9 @@ poetry<span class="w"> </span>run<span class="w"> </span>python<span class="w"> 
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llama-cpp-python">llama-cpp-python</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-well-does-it-work">How well does it work?</a></li>
 </ul>
 </li>
 </ul>
