@@ -230,9 +230,10 @@ Options:
   --name TEXT                     Name of conversation. Defaults to generating
                                   a random name. Pass 'ask' to be prompted for
                                   a name.
-  --llm [openai|anthropic|azure|local]
-                                  LLM provider to use.
-  --model TEXT                    Model to use.
+  --model TEXT                    Model to use, e.g. openai/gpt-4-turbo,
+                                  anthropic/claude-3-5-sonnet-20240620. If
+                                  only provider is given, the default model
+                                  for that provider is used.
   --stream / --no-stream          Stream responses
   -v, --verbose                   Verbose output.
   -y, --no-confirm                Skips all confirmation prompts.

@@ -29,8 +29,11 @@ class _ModelDictMeta(TypedDict):
     price_output: NotRequired[float]
 
 
+# available providers
+PROVIDERS = ["openai", "anthropic", "azure", "openrouter", "local"]
+
 # default model
-DEFAULT_MODEL: str | None = None
+DEFAULT_MODEL: ModelMeta | None = None
 
 # known models metadata
 # TODO: can we get this from the API?
@@ -118,34 +121,62 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
 
 
 def set_default_model(model: str) -> None:
-    assert get_model(model)
+    modelmeta = get_model(model)
+    assert modelmeta
     global DEFAULT_MODEL
-    DEFAULT_MODEL = model
+    DEFAULT_MODEL = modelmeta
 
 
 def get_model(model: str | None = None) -> ModelMeta:
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
-        model = DEFAULT_MODEL
+        return DEFAULT_MODEL
 
-    if "/" in model:
-        provider, model = model.split("/")
+    if model in PROVIDERS:
+        provider = model
+        return ModelMeta(
+            provider, model, **MODELS[provider][get_recommended_model(provider)]
+        )
+    if any(f"{provider}/" in model for provider in PROVIDERS):
+        provider, model = model.split("/", 1)
         if provider not in MODELS or model not in MODELS[provider]:
             logger.warning(
-                f"Model {provider}/{model} not found, using fallback model metadata"
+                f"Unknown model {model} from {provider}, using fallback metadata"
             )
-            return ModelMeta(provider=provider, model=model, context=4000)
+            return ModelMeta(provider=provider, model=model, context=128_000)
     else:
         # try to find model in all providers
         for provider in MODELS:
             if model in MODELS[provider]:
                 break
         else:
-            logger.warning(f"Model {model} not found, using fallback model metadata")
-            return ModelMeta(provider="unknown", model=model, context=4000)
+            logger.warning(f"Unknown model {model} not found, using fallback metadata")
+            return ModelMeta(provider="unknown", model=model, context=128_000)
 
     return ModelMeta(
         provider=provider,
         model=model,
         **MODELS[provider][model],
     )
+
+
+def get_recommended_model(provider: str) -> str:
+    if provider == "openai":
+        return "gpt-4-turbo"
+    elif provider == "openrouter":
+        return "meta-llama/llama-3.1-70b-instruct"
+    elif provider == "anthropic":
+        return "claude-3-5-sonnet-20240620"
+    else:
+        raise ValueError(f"Unknown provider {provider}")
+
+
+def get_summary_model(provider: str) -> str:
+    if provider == "openai":
+        return "gpt-4o-mini"
+    elif provider == "openrouter":
+        return "meta-llama/llama-3.1-8b-instruct"
+    elif provider == "anthropic":
+        return "claude-3-haiku-20240307"
+    else:
+        raise ValueError(f"Unknown provider {provider}")

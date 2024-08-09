@@ -10,8 +10,7 @@ from .types import Files
 
 
 class Agent:
-    def __init__(self, llm: str, model: str):
-        self.llm = llm
+    def __init__(self, model: str):
         self.model = model
 
     @abstractmethod
@@ -42,7 +41,6 @@ class GPTMe(Agent):
                 [Message("user", prompt)],
                 [prompt_sys],
                 f"gptme-evals-{store.id}",
-                llm=self.llm,
                 model=self.model,
                 no_confirm=True,
                 interactive=False,

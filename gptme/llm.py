@@ -10,7 +10,7 @@ from rich import print
 from .config import get_config
 from .constants import PROMPT_ASSISTANT
 from .message import Message
-from .models import MODELS
+from .models import MODELS, get_summary_model
 from .util import len_tokens, msgs2dicts
 
 # Optimized for code
@@ -42,16 +42,18 @@ def init_llm(llm: str):
             api_version="2023-07-01-preview",
             azure_endpoint=azure_endpoint,
         )
-
     elif llm == "anthropic":
         api_key = config.get_env_required("ANTHROPIC_API_KEY")
         anthropic_client = Anthropic(
             api_key=api_key,
         )
-
+    elif llm == "openrouter":
+        api_key = config.get_env_required("OPENROUTER_API_KEY")
+        oai_client = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
     elif llm == "local":
         api_base = config.get_env_required("OPENAI_API_BASE")
-        oai_client = OpenAI(api_key="ollama", base_url=api_base)
+        api_key = config.get_env("OPENAI_API_KEY") or "ollama"
+        oai_client = OpenAI(api_key=api_key, base_url=api_base)
     else:
         print(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
@@ -244,14 +246,18 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
     return Message("assistant", output)
 
 
-def get_recommended_model() -> str:
-    assert oai_client or anthropic_client, "LLM not initialized"
-    return "gpt-4-turbo" if oai_client else "claude-3-5-sonnet-20240620"
-
-
-def get_summary_model() -> str:
-    assert oai_client or anthropic_client, "LLM not initialized"
-    return "gpt-4o-mini" if oai_client else "claude-3-haiku-20240307"
+def _client_to_provider() -> str:
+    if oai_client:
+        if "openai" in oai_client.base_url.host:
+            return "openai"
+        elif "openrouter" in oai_client.base_url.host:
+            return "openrouter"
+        else:
+            return "azure"
+    elif anthropic_client:
+        return "anthropic"
+    else:
+        raise ValueError("Unknown client type")
 
 
 def summarize(content: str) -> str:
@@ -269,7 +275,7 @@ def summarize(content: str) -> str:
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
-    model = get_summary_model()
+    model = get_summary_model(_client_to_provider())
     context_limit = MODELS["openai" if oai_client else "anthropic"][model]["context"]
     if len_tokens(messages) > context_limit:
         raise ValueError(
@@ -312,5 +318,5 @@ IMPORTANT: output only the name, no preamble or postamble.
         + msgs
         + [Message("user", "Now, generate a name for this conversation.")]
     )
-    name = _chat_complete(msgs, model=get_summary_model()).strip()
+    name = _chat_complete(msgs, model=get_summary_model(_client_to_provider())).strip()
     return name
