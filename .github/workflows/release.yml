@@ -19,22 +19,23 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install poetry
-    - name: Bump version
-      run: |
-        # set pyproject.toml version to github.ref_name (without v prefix)
-        VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-        poetry version $VERSION
-    - name: Commit version bump
-      run: |
-        git config --global user.name github-actions
-        git config --global user.email github-actions@github.com
-        if git diff --quiet; then
-          echo "No changes to commit"
-        else
-          git add pyproject.toml
-          git commit -m "chore: bump version to $(poetry version)"
-          git push
-        fi
+    # NOTE: we cannot do this here, as we're on a tag and not a branch
+    #- name: Bump version
+    #  run: |
+    #    # set pyproject.toml version to github.ref_name (without v prefix)
+    #    VERSION=$(echo "${{ github.ref_name }}" | sed 's/^v//')
+    #    poetry version $VERSION
+    #- name: Commit version bump
+    #  run: |
+    #    git config --global user.name github-actions
+    #    git config --global user.email github-actions@github.com
+    #    if git diff --quiet; then
+    #      echo "No changes to commit"
+    #    else
+    #      git add pyproject.toml
+    #      git commit -m "chore: bump version to $(poetry version)"
+    #      git push
+    #    fi
     - name: Build
       run: poetry build
     - name: Publish
