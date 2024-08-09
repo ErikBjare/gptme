@@ -10,6 +10,10 @@ from .types import Files
 
 
 class Agent:
+    def __init__(self, llm: str, model: str):
+        self.llm = llm
+        self.model = model
+
     @abstractmethod
     def act(self, files: Files | None, prompt: str) -> Files:
         """
@@ -28,14 +32,18 @@ class GPTMe(Agent):
 
         print("\n--- Start of generation ---")
         print(f"Working in {store.working_dir}")
+        prompt_sys = get_prompt()
+        prompt_sys.content += (
+            "\n\nIf you have trouble and dont seem to make progress, stop trying."
+        )
         # TODO: add timeout
         try:
             gptme_chat(
                 [Message("user", prompt)],
-                [get_prompt()],
+                [prompt_sys],
                 f"gptme-evals-{store.id}",
-                llm=None,
-                model=None,
+                llm=self.llm,
+                model=self.model,
                 no_confirm=True,
                 interactive=False,
             )
