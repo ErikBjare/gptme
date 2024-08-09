@@ -46,6 +46,11 @@ docs/.clean: docs/conf.py
 docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
+clean: clean-docs
+
+clean-docs:
+	poetry run make -C docs clean
+
 clean-test:
 	echo $$HOME/.local/share/gptme/logs/*test-*-test_*
 	rm -I $$HOME/.local/share/gptme/logs/*test-*-test_*/*.jsonl || true
