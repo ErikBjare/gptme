@@ -46,7 +46,9 @@ docs/.clean: docs/conf.py
 docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
+# Makes sure that the pyproject.toml is set to the latest tagged version, and if not, bumps the version to the latest tag in a new commit
 version:
+	@git diff --cached --exit-code || (echo "There are staged files, please commit or unstage them" && exit 1)
 	@git diff --exit-code pyproject.toml || (echo "pyproject.toml is dirty, please commit or stash changes" && exit 1)
 	git pull
 	@VERSION=$$(git describe --tags --abbrev=0 | cut -b 2-) && \
