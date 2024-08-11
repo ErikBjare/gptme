@@ -6,6 +6,9 @@
 *.log
 *logs*
 
+# fetched by make
+scripts/build_changelog.py
+
 # build/test/prof/cache
 dist
 prof

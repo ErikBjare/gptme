@@ -47,23 +47,25 @@ docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
 version:
-	# check that pyproject.toml is clean
-	git diff --exit-code pyproject.toml || (echo "pyproject.toml is dirty, please commit or stash changes" && exit 1)
+	@git diff --exit-code pyproject.toml || (echo "pyproject.toml is dirty, please commit or stash changes" && exit 1)
 	git pull
 	@VERSION=$$(git describe --tags --abbrev=0 | cut -b 2-) && \
 		poetry version $${VERSION} && \
 		git add pyproject.toml && \
 		git commit -m "chore: bump version to $${VERSION}" || echo "No version bump needed"
 
-CHANGELOG.md: version
-	VERSION=$$(git describe --tags --abbrev=0) && \
-		./scripts/build_changelog.py --range v0.12.0...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
+./scripts/build_changelog.py:
+	wget -O $@ https://raw.githubusercontent.com/ActivityWatch/activitywatch/master/scripts/build_changelog.py
 
-release: CHANGELOG.md
+dist/CHANGELOG.md: version ./scripts/build_changelog.py
+	VERSION=$$(git describe --tags --abbrev=0) && \
+		./scripts/build_changelog.py --range $$(./scripts/get-last-version.sh $${VERSION})...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
+
+release: dist/CHANGELOG.md
 	@VERSION=$$(git describe --tags --abbrev=0) && \
 		echo "Releasing version $${VERSION}"; \
 		read -p "Press enter to continue" && \
-		gh release create $${VERSION} -t $${VERSION} -F CHANGELOG.md
+		gh release create $${VERSION} -t $${VERSION} -F dist/CHANGELOG.md
 
 clean: clean-docs
 
