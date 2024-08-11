@@ -2,19 +2,41 @@
   <img src="./media/logo.png" width=150/>
 </p>
 
-GPTMe
-=====
+<h1 align="center">GPTMe</h1>
 
-*/ʤiː piː tiː miː/*
+<p align="center">
+<i>/ʤiː piː tiː miː/</i>
+</p>
 
-[![Build](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml/badge.svg)](https://github.com/ErikBjare/gpt-playground/actions/workflows/build.yml)
-[![Docs](https://github.com/ErikBjare/gptme/actions/workflows/docs.yml/badge.svg)](https://erik.bjareholt.com/gptme/docs/)
-[![codecov](https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41)](https://codecov.io/gh/ErikBjare/gptme)
-[![PyPI version](https://img.shields.io/pypi/v/gptme-python)](https://pypi.org/project/gptme-python/)
-[![Downloads all-time](https://static.pepy.tech/badge/gptme-python)][pepy]
-[![Downloads per week](https://static.pepy.tech/badge/gptme-python/week)][pepy]
-[![Discord](https://img.shields.io/discord/1271539422017618012?logo=discord&style=social)](https://discord.gg/NMaCmmkxWv)
-[![Twitter](https://img.shields.io/twitter/follow/ErikBjare?style=social)](https://twitter.com/ErikBjare)
+<p align="center">
+  <a href="https://github.com/ErikBjare/gptme/actions/workflows/build.yml">
+    <img src="https://github.com/ErikBjare/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
+  </a>
+  <a href="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml">
+    <img src="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml/badge.svg" alt="Docs Build Status" />
+  </a>
+  <a href="https://codecov.io/gh/ErikBjare/gptme">
+    <img src="https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
+  </a>
+  <br>
+  <a href="https://pypi.org/project/gptme-python/">
+    <img src="https://img.shields.io/pypi/v/gptme-python" alt="PyPI version" />
+  </a>
+  <a href="https://pepy.tech/project/gptme-python">
+    <img src="https://static.pepy.tech/badge/gptme-python" alt="Downloads all-time" />
+  </a>
+  <a href="https://pepy.tech/project/gptme-python/week">
+    <img src="https://static.pepy.tech/badge/gptme-python/week" alt="Downloads per week" />
+  </a>
+  <br>
+  <a href="https://discord.gg/NMaCmmkxWv">
+    <img src="https://img.shields.io/discord/1271539422017618012?logo=discord&style=social" alt="Discord" />
+  </a>
+  <a href="https://twitter.com/ErikBjare">
+    <img src="https://img.shields.io/twitter/follow/ErikBjare?style=social" alt="Twitter" />
+  </a>
+</p>
+
 
 📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
 
