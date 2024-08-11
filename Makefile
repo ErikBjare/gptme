@@ -46,22 +46,17 @@ docs/.clean: docs/conf.py
 docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
-# Makes sure that the pyproject.toml is set to the latest tagged version, and if not, bumps the version to the latest tag in a new commit
 version:
-	@git diff --cached --exit-code || (echo "There are staged files, please commit or unstage them" && exit 1)
-	@git diff --exit-code pyproject.toml || (echo "pyproject.toml is dirty, please commit or stash changes" && exit 1)
-	git pull
-	@VERSION=$$(git describe --tags --abbrev=0 | cut -b 2-) && \
-		poetry version $${VERSION} && \
-		git add pyproject.toml && \
-		git commit -m "chore: bump version to $${VERSION}" || echo "No version bump needed"
+	@./scripts/bump_version.sh
 
 ./scripts/build_changelog.py:
 	wget -O $@ https://raw.githubusercontent.com/ActivityWatch/activitywatch/master/scripts/build_changelog.py
+	chmod +x $@
 
 dist/CHANGELOG.md: version ./scripts/build_changelog.py
 	VERSION=$$(git describe --tags --abbrev=0) && \
-		./scripts/build_changelog.py --range $$(./scripts/get-last-version.sh $${VERSION})...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
+	PREV_VERSION=$$(./scripts/get-last-version.sh $${VERSION}) && \
+		./scripts/build_changelog.py --range $${PREV_VERSION}...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
 
 release: dist/CHANGELOG.md
 	@VERSION=$$(git describe --tags --abbrev=0) && \
