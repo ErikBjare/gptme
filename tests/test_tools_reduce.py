@@ -24,6 +24,7 @@ long_msg = Message(
 def test_truncate_msg():
     len_pre = len_tokens(long_msg)
     truncated = truncate_msg(long_msg)
+    assert truncated is not None
     len_post = len_tokens(truncated)
     assert len_pre > len_post
     assert "[...]" in truncated.content

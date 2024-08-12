@@ -1,6 +1,6 @@
 import pytest
-
-from . import execute, tests
+from gptme.eval import execute, tests
+from gptme.eval.agents import GPTMe
 
 
 @pytest.mark.slow
@@ -10,7 +10,8 @@ def test_eval(test):
     This test will be run for each eval in the tests list.
     See pytest_generate_tests() below.
     """
-    result = execute(test)
+    agent = GPTMe("openai/gpt-4o")
+    result = execute(test, agent, timeout=30)
     assert all(case["passed"] for case in result["results"])
 
 

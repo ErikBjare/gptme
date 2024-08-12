@@ -1,10 +1,10 @@
-.PHONY: docs eval
+.PHONY: docs
 
 # set default shell
 SHELL := $(shell which bash)
 
 # src dirs and files
-SRCDIRS = gptme tests scripts train eval
+SRCDIRS = gptme tests scripts train
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 
 # exclude files
@@ -24,7 +24,7 @@ test:
 		$(if $(PROFILE), --profile-svg)
 
 eval:
-	poetry run python3 -m eval
+	poetry run python3 -m gptme.eval
 
 typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
