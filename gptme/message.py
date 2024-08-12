@@ -68,18 +68,24 @@ class Message:
     def to_dict(self, keys=None, anthropic=False) -> dict:
         """Return a dict representation of the message, serializable to JSON."""
         content: str | list[dict | str] = self.content
+        allowed_file_exts = ["jpg", "jpeg", "png", "gif"]
 
-        # if anthropic, make sure content is a list of dicts, to support multiple types of content
-        if anthropic:
-            content = [{"type": "text", "text": self.content}]
-            for f in self.files:
-                ext = f.suffix[1:]
-                if ext not in ["jpg", "jpeg", "png", "gif"]:
-                    logger.warning("Unsupported file type: %s", ext)
-                    continue
-                else:
-                    logger.warning("Found image file: %s", f)
-                media_type = f"image/{ext}"
+        content = [{"type": "text", "text": self.content}]
+        for f in self.files:
+            ext = f.suffix[1:]
+            if ext not in allowed_file_exts:
+                logger.warning("Unsupported file type: %s", ext)
+                continue
+            else:
+                logger.warning("Found image file: %s", f)
+            media_type = f"image/{ext}"
+            content.append(
+                {
+                    "type": "text",
+                    "text": f"![{f.name}]({f.name}):",
+                }
+            )
+            if anthropic:
                 content.append(
                     {
                         "type": "image",
@@ -90,8 +96,16 @@ class Message:
                         },
                     }
                 )
-        else:
-            content = self.content
+            else:
+                # OpenAI format
+                content.append(
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{media_type};base64,{base64.b64encode(f.read_bytes()).decode('utf-8')}"
+                        },
+                    }
+                )
 
         d = {
             "role": self.role,

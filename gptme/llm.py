@@ -166,7 +166,8 @@ def _stream_openai(messages: list[Message], model: str) -> Generator[str, None, 
         top_p=top_p,
         stream=True,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
-        max_tokens=1000 if not model.startswith("gpt-") else None,
+        # TODO: make this better
+        max_tokens=1000 if not model.startswith("gpt-") else 4096,
     ):
         if not chunk.choices:  # type: ignore
             # Got a chunk with no choices, Azure always sends one of these at the start
