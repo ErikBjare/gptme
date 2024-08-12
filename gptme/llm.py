@@ -93,13 +93,12 @@ def _chat_complete_anthropic(messages: list[Message], model: str) -> str:
     messages, system_message = _transform_system_messages_anthropic(messages)
     response = anthropic_client.messages.create(
         model=model,
-        messages=msgs2dicts(messages),  # type: ignore
+        messages=msgs2dicts(messages, anthropic=True),  # type: ignore
         system=system_message,
         temperature=temperature,
         top_p=top_p,
         max_tokens=4096,
     )
-    # TODO: rewrite handling of response to support anthropic API
     content = response.content
     assert content
     assert len(content) == 1
