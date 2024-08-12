@@ -202,10 +202,11 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
     output = ""
-    print_clear()
-    print(f"{PROMPT_ASSISTANT}: ", end="")
     try:
         for char in (char for chunk in _stream(messages, model) for char in chunk):
+            if not output:  # first character
+                print_clear()
+                print(f"{PROMPT_ASSISTANT}: ", end="")
             print(char, end="")
             assert len(char) == 1
             output += char
