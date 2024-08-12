@@ -105,7 +105,6 @@ def subagent(prompt: str, agent_id: str):
             prompt_msgs,
             initial_msgs,
             name=name,
-            llm=None,
             model=None,
             stream=False,
             no_confirm=True,

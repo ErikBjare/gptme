@@ -27,7 +27,7 @@ eval:
 	poetry run python3 -m eval
 
 typecheck:
-	poetry run mypy --ignore-missing-imports ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
+	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
 lint:
 	poetry run ruff ${SRCDIRS}
