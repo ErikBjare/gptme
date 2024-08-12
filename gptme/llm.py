@@ -215,21 +215,28 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             sys.stdout.flush()
 
             # pause inference on finished code-block, letting user run the command before continuing
-            codeblock_started = "```" in output[:-3]
-            codeblock_finished = "\n```\n" in output[-7:]
+            # TODO: support nested code blocks
+            # TODO: test for nested code blocks
+            code_start = "\n```"
+            code_end = "\n```\n"
+            codeblock_started = code_start in output[:-3]
+            codeblock_finished = code_end in output[-7:]
             if codeblock_started and codeblock_finished:
-                print("\nFound codeblock, breaking")
-                # noreorder
-                from .tools import is_supported_codeblock  # fmt: skip
+                n_start = output.count(code_start)
+                n_end = output.count(code_end)
+                if n_start == n_end:
+                    print("\nFound codeblock, breaking")
+                    # noreorder
+                    from .tools import is_supported_codeblock  # fmt: skip
 
-                # if closing a code block supported by tools, abort generation to let them run
-                if is_supported_codeblock(output):
-                    print("\n")
-                    break
-                else:
-                    logger.warning(
-                        "Code block not supported by tools, continuing generation"
-                    )
+                    # if closing a code block supported by tools, abort generation to let them run
+                    if is_supported_codeblock(output):
+                        print("\n")
+                        break
+                    else:
+                        logger.warning(
+                            "Code block not supported by tools, continuing generation"
+                        )
 
             # pause inference in finished patch
             patch_started = "```patch" in output[:-3]
