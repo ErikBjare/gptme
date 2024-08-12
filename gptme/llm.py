@@ -185,7 +185,7 @@ def _stream_anthropic(
     assert anthropic_client, "LLM not initialized"
     with anthropic_client.messages.stream(
         model=model,
-        messages=msgs2dicts(messages),  # type: ignore
+        messages=msgs2dicts(messages, anthropic=True),  # type: ignore
         system=system_prompt,
         temperature=temperature,
         top_p=top_p,

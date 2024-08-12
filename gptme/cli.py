@@ -420,7 +420,11 @@ def _read_stdin() -> str:
 
 
 def _include_paths(msg: Message) -> Message:
-    """Searches the message for any valid paths and appends the contents of such files as codeblocks."""
+    """
+    Searches the message for any valid paths and:
+     - appends the contents of such files as codeblocks.
+     - include images as files.
+    """
     # TODO: add support for directories?
     assert msg.role == "user"
 
@@ -450,10 +454,14 @@ def _include_paths(msg: Message) -> Message:
             or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
             logger.debug(f"potential path/url: {word=}")
-            p = _parse_prompt(word)
-            if p:
+            contents = _parse_prompt(word)
+            if contents:
                 # if we found a valid path, replace it with the contents of the file
-                append_msg += "\n\n" + p
+                append_msg += "\n\n" + contents
+
+            file = _parse_prompt_files(word)
+            if file:
+                msg.files.append(file)
 
     # append the message with the file contents
     if append_msg:
@@ -483,10 +491,12 @@ def _parse_prompt(prompt: str) -> str | None:
         # some prompts are too long to be a path, so we can't read them
         if oserr.errno != errno.ENAMETOOLONG:
             pass
+        raise
     except UnicodeDecodeError:
         # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
         # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
-        pass
+        # logger.warning(f"Failed to read file {prompt}: not a text file")
+        return None
 
     # check if any word in prompt is a path or URL,
     # if so, append the contents as a code block
@@ -526,6 +536,34 @@ def _parse_prompt(prompt: str) -> str | None:
                 logger.warning(f"Failed to read URL {url}: {e}")
 
     return result
+
+
+def _parse_prompt_files(prompt: str) -> Path | None:
+    """
+    Takes a string that might be a image path or PDF, to be attached to the message, and returns the path.
+    """
+    allowed_exts = ["png", "jpg", "jpeg", "gif", "pdf"]
+
+    # if prompt is a command, exit early (as commands might take paths as arguments)
+    if any(
+        prompt.startswith(command)
+        for command in [f"{CMDFIX}{cmd}" for cmd in action_descriptions.keys()]
+    ):
+        return None
+
+    try:
+        # check if prompt is a path, if so, replace it with the contents of that file
+        p = Path(prompt)
+        if p.exists() and p.is_file() and p.suffix[1:] in allowed_exts:
+            logger.warning("Attaching file to message")
+            return p
+        else:
+            return None
+    except OSError as oserr:
+        # some prompts are too long to be a path, so we can't read them
+        if oserr.errno != errno.ENAMETOOLONG:
+            return None
+        raise
 
 
 if __name__ == "__main__":
