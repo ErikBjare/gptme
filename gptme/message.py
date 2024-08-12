@@ -1,3 +1,4 @@
+import base64
 import io
 import logging
 import shutil
@@ -76,14 +77,16 @@ class Message:
                 if ext not in ["jpg", "jpeg", "png", "gif"]:
                     logger.warning("Unsupported file type: %s", ext)
                     continue
+                else:
+                    logger.warning("Found image file: %s", f)
                 media_type = f"image/{ext}"
                 content.append(
                     {
-                        "type": "file",
+                        "type": "image",
                         "source": {
                             "type": "base64",
                             "media_type": media_type,
-                            "data": f.read_bytes().decode("base64"),
+                            "data": base64.b64encode(f.read_bytes()).decode("utf-8"),
                         },
                     }
                 )
