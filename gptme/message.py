@@ -32,7 +32,7 @@ class Message:
         hide: bool = False,
         quiet: bool = False,
         timestamp: datetime | str | None = None,
-        files: list[Path] = [],
+        files: list[Path | str] | None = None,
     ):
         assert role in ["system", "user", "assistant"]
         self.role = role
@@ -50,7 +50,9 @@ class Message:
         # This is not persisted to the log file.
         self.quiet = quiet
         # Files attached to the message, could e.g. be images for vision.
-        self.files = files
+        self.files = (
+            [Path(f) if isinstance(f, str) else f for f in files] if files else []
+        )
 
     def __repr__(self):
         content = textwrap.shorten(self.content, 20, placeholder="...")
@@ -82,8 +84,6 @@ class Message:
             if ext not in allowed_file_exts:
                 logger.warning("Unsupported file type: %s", ext)
                 continue
-            else:
-                logger.warning("Found image file: %s", f)
             media_type = f"image/{ext}"
             content.append(
                 {
