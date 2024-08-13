@@ -104,7 +104,7 @@ The chat offers some commands that can be used to interact with the system:
 @click.option(
     "--version",
     is_flag=True,
-    help="Show version.",
+    help="Show version and configuration information",
 )
 def main(
     prompts: list[str],
@@ -120,8 +120,12 @@ def main(
 ):
     """Main entrypoint for the CLI."""
     if version:
-        # print version and exit
+        # print version
         print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
+
+        # print dirs
+        print_builtin(f"Logs dir: {get_logs_dir()}")
+
         exit(0)
 
     if "PYTEST_CURRENT_TEST" in os.environ:
