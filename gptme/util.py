@@ -9,21 +9,9 @@ from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
 
-from .message import Message
-
 EMOJI_WARN = "⚠️"
 
 logger = logging.getLogger(__name__)
-
-
-# FIXME: model assumption
-def len_tokens(content: str | Message | list[Message], model: str = "gpt-4") -> int:
-    """Get the number of tokens in a string, message, or list of messages."""
-    if isinstance(content, list):
-        return sum(len_tokens(msg.content, model) for msg in content)
-    if isinstance(content, Message):
-        return len_tokens(content.content, model)
-    return len(get_tokenizer(model).encode(content))
 
 
 def get_tokenizer(model: str):
@@ -36,11 +24,6 @@ def get_tokenizer(model: str):
             "Use results only as estimates."
         )
         return tiktoken.get_encoding("cl100k_base")
-
-
-def msgs2dicts(msgs: list[Message], openai=False, anthropic=False) -> list[dict]:
-    """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
-    return [msg.to_dict(keys=["role", "content"], openai=openai, anthropic=anthropic) for msg in msgs]
 
 
 actions = [

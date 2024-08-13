@@ -11,6 +11,7 @@ from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
     Message,
+    len_tokens,
     msgs_to_toml,
     print_msg,
     toml_to_msgs,
@@ -25,7 +26,7 @@ from .tools import (
 from .tools.context import gen_context_msg
 from .tools.summarize import summarize
 from .tools.useredit import edit_text_with_editor
-from .util import ask_execute, len_tokens
+from .util import ask_execute
 
 logger = logging.getLogger(__name__)
 

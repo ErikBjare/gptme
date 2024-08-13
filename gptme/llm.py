@@ -9,9 +9,9 @@ from rich import print
 
 from .config import get_config
 from .constants import PROMPT_ASSISTANT
-from .message import Message
+from .message import Message, len_tokens, msgs2dicts
 from .models import MODELS, get_summary_model
-from .util import extract_codeblocks, len_tokens, msgs2dicts
+from .util import extract_codeblocks
 
 # Optimized for code
 # Discussion here: https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683

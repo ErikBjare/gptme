@@ -13,10 +13,9 @@ from rich import print
 
 from .constants import CMDFIX
 from .dirs import get_logs_dir
-from .message import Message, print_msg
+from .message import Message, print_msg, len_tokens
 from .prompts import get_prompt
 from .tools.reduce import limit_log, reduce_log
-from .util import len_tokens
 
 PathLike: TypeAlias = str | Path
 
