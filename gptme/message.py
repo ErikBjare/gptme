@@ -6,7 +6,7 @@ import sys
 import textwrap
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import tomlkit
 from rich import print
@@ -65,12 +65,17 @@ class Message:
             and self.timestamp == other.timestamp
         )
 
-    def to_dict(self, keys=None, anthropic=False) -> dict:
-        """Return a dict representation of the message, serializable to JSON."""
-        content: str | list[dict | str] = self.content
+    def _content_files_list(
+        self, openai: bool = False, anthropic: bool = False
+    ) -> list[dict[str, Any]]:
+        # combines a content message with a list of files
+        content: list[dict[str, Any]] = (
+            self.content
+            if isinstance(self.content, list)
+            else [{"type": "text", "text": self.content}]
+        )
         allowed_file_exts = ["jpg", "jpeg", "png", "gif"]
 
-        content = [{"type": "text", "text": self.content}]
         for f in self.files:
             ext = f.suffix[1:]
             if ext not in allowed_file_exts:
@@ -96,7 +101,7 @@ class Message:
                         },
                     }
                 )
-            else:
+            elif openai:
                 # OpenAI format
                 content.append(
                     {
@@ -106,6 +111,22 @@ class Message:
                         },
                     }
                 )
+            else:
+                # Storage/wire format (keep files in `files` list)
+                # Do nothing to integrate files into the message content
+                pass
+
+        return content
+
+    def to_dict(self, keys=None, openai=False, anthropic=False) -> dict:
+        """Return a dict representation of the message, serializable to JSON."""
+        content: str | list[dict[str, Any]]
+        if not anthropic and not openai:
+            # storage/wire format should keep the content as a string
+            content = self.content
+        else:
+            # OpenAI format or Anthropic format should include files in the content
+            content = self._content_files_list(openai=openai, anthropic=anthropic)
 
         d = {
             "role": self.role,
