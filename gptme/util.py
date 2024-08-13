@@ -38,9 +38,9 @@ def get_tokenizer(model: str):
         return tiktoken.get_encoding("cl100k_base")
 
 
-def msgs2dicts(msgs: list[Message], anthropic=False) -> list[dict]:
+def msgs2dicts(msgs: list[Message], openai=False, anthropic=False) -> list[dict]:
     """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
-    return [msg.to_dict(keys=["role", "content"], anthropic=anthropic) for msg in msgs]
+    return [msg.to_dict(keys=["role", "content"], openai=openai, anthropic=anthropic) for msg in msgs]
 
 
 actions = [

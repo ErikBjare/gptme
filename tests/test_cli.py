@@ -10,6 +10,9 @@ import pytest
 from click.testing import CliRunner
 from gptme.constants import CMDFIX, MULTIPROMPT_SEPARATOR
 
+project_root = Path(__file__).parent.parent
+logo = project_root / "media" / "logo.png"
+
 
 @pytest.fixture(scope="session", autouse=True)
 def tmp_data_dir():
@@ -303,3 +306,11 @@ def test_version(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
     assert "gptme" in result.output
     assert result.output.count("\n") == 1
+
+
+@pytest.mark.slow
+def test_vision(args: list[str], runner: CliRunner):
+    args.append(f"can you see the image at {logo}? answer with yes or no")
+    result = runner.invoke(gptme.cli.main, args)
+    assert result.exit_code == 0
+    assert "yes" in result.output
