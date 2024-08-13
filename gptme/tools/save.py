@@ -41,6 +41,9 @@ def execute_save(
     assert fn, "No filename provided"
     # strip leading newlines
     code = code.lstrip("\n")
+    # ensure it ends with a newline
+    if not code.endswith("\n"):
+        code += "\n"
 
     if ask:
         confirm = ask_execute(f"Save to {fn}?")
@@ -98,6 +101,9 @@ def execute_append(
     assert fn, "No filename provided"
     # strip leading newlines
     code = code.lstrip("\n")
+    # ensure it ends with a newline
+    if not code.endswith("\n"):
+        code += "\n"
 
     if ask:
         confirm = ask_execute(f"Append to {fn}?")

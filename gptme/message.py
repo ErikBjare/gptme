@@ -186,13 +186,12 @@ timestamp = "{self.timestamp.isoformat()}"
             timestamp=datetime.fromisoformat(msg["timestamp"]),
         )
 
-    def get_codeblocks(self, content=False) -> list[str]:
+    def get_codeblocks(self) -> list[tuple[str, str]]:
         """
-        Get all codeblocks.
-        If `content` set, return the content of the code block, else return the whole message.
+        Get all codeblocks from the message content, as a list of tuples (lang, content).
         """
-        codeblocks = []
         content_str = self.content
+
         # prepend newline to make sure we get the first codeblock
         if not content_str.startswith("\n"):
             content_str = "\n" + content_str
@@ -201,19 +200,10 @@ timestamp = "{self.timestamp.isoformat()}"
         backtick_count = content_str.count("\n```")
         if backtick_count < 2:
             return []
-        for i in range(1, backtick_count, 2):
-            codeblock_str = content_str.split("\n```")[i]
-            # get codeblock language or filename from first line
-            lang_or_fn = codeblock_str.split("\n")[0]
-            codeblock_str = "\n".join(codeblock_str.split("\n")[1:])
 
-            if content:
-                codeblocks.append(codeblock_str)
-            else:
-                full_codeblock = f"```{lang_or_fn}\n{codeblock_str}\n```"
-                codeblocks.append(full_codeblock)
+        from .util import extract_codeblocks  # noreorder
 
-        return codeblocks
+        return extract_codeblocks(content_str)
 
 
 def format_msgs(

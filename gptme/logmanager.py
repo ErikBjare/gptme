@@ -218,13 +218,11 @@ class LogManager:
         self,
         role: RoleLiteral | None = None,
         history: int | None = None,
-        content=False,
-    ) -> str | None:
+    ) -> tuple[str, str] | None:
         """Returns the last code block in the log, if any.
 
         If `role` set, only check that role.
         If `history` set, only check n messages back.
-        If `content` set, return the content of the code block, else return the whole message.
         """
         msgs = self.log
         if role:
@@ -233,7 +231,7 @@ class LogManager:
             msgs = msgs[-history:]
 
         for msg in msgs[::-1]:
-            codeblocks = msg.get_codeblocks(content=content)
+            codeblocks = msg.get_codeblocks()
             if codeblocks:
                 return codeblocks[-1]
         return None

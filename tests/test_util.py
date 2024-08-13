@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from gptme.tools import get_codeblocks, is_supported_codeblock
 from gptme.util import (
     epoch_to_age,
+    extract_codeblocks,
     generate_name,
     is_generated_name,
     transform_examples_to_chat_directives,
@@ -19,63 +19,6 @@ def test_epoch_to_age():
     assert epoch_to_age(epoch_today) == "just now"
     epoch_yesterday = epoch_today - 24 * 60 * 60
     assert epoch_to_age(epoch_yesterday) == "yesterday"
-
-
-def test_is_supported_codeblock():
-    block_plain = """```
-some plaintext
-```
-"""
-    # clean unsupported block
-    assert not is_supported_codeblock(block_plain)
-
-    block_python = """```python
-print("hello world")
-```
-"""
-    # clean supported block
-    assert is_supported_codeblock(block_python)
-
-    # has preamble
-    # NOTE: this should not be supported by this function, clean it first if you really want to
-    # s = f"""bla bla\n{block_python}"""
-    # assert is_supported_codeblock(s)
-
-    # last block is plain/unsupported
-    # NOTE: this should not be supported by this function, clean it first if you really want to
-    # s = f"""{block_python}\n{block_plain}"""
-    # assert not is_supported_codeblock(s)
-
-
-def test_get_codeblocks():
-    s = """```python
-print("hello world")
-```
-"""
-
-    codeblocks = list(get_codeblocks(s))
-    assert len(codeblocks) == 1
-    assert (
-        codeblocks[0]
-        == """python
-print("hello world")
-"""
-    )
-
-    # test a codeblock which contains triple backticks
-    s = """```python
-print("hello ``` world")
-```
-"""
-
-    codeblocks = list(get_codeblocks(s))
-    assert len(codeblocks) == 1
-    assert (
-        codeblocks[0]
-        == """python
-print("hello ``` world")
-"""
-    )
 
 
 def test_transform_examples_to_chat_directives():
@@ -114,3 +57,80 @@ def test_transform_examples_to_chat_directives_tricky():
    Assistant: lol"""
 
     assert transform_examples_to_chat_directives(src, strict=True) == expected
+
+
+def test_extract_codeblocks_basic():
+    markdown = """
+Some text
+```python
+def hello():
+    print("Hello, World!")
+```
+More text
+"""
+    assert extract_codeblocks(markdown) == [
+        ("python", 'def hello():\n    print("Hello, World!")')
+    ]
+
+
+def test_extract_codeblocks_multiple():
+    markdown = """
+```java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, Java!");
+    }
+}
+```
+Some text
+```python
+def greet(name):
+    return f"Hello, {name}!"
+```
+"""
+    assert extract_codeblocks(markdown) == [
+        (
+            "java",
+            'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Java!");\n    }\n}',
+        ),
+        ("python", 'def greet(name):\n    return f"Hello, {name}!"'),
+    ]
+
+
+def test_extract_codeblocks_nested():
+    markdown = """
+```python
+def print_readme():
+    print('''Usage:
+```javascript
+callme()
+```
+''')
+```
+"""
+    assert extract_codeblocks(markdown) == [
+        (
+            "python",
+            "def print_readme():\n    print('''Usage:\n```javascript\ncallme()\n```\n''')",
+        )
+    ]
+
+
+def test_extract_codeblocks_empty():
+    assert extract_codeblocks("") == []
+
+
+def test_extract_codeblocks_text_only():
+    assert extract_codeblocks("Just some regular text\nwithout any code blocks.") == []
+
+
+def test_extract_codeblocks_no_language():
+    markdown = """
+```
+def hello():
+    print("Hello, World!")
+```
+"""
+    assert extract_codeblocks(markdown) == [
+        ("", 'def hello():\n    print("Hello, World!")')
+    ]

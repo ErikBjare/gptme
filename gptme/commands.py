@@ -200,16 +200,17 @@ def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
 
 def save(log: LogManager, filename: str):
     # save the most recent code block to a file
-    code = log.get_last_code_block(content=True)
-    if not code:
+    codeblock = log.get_last_code_block()
+    if not codeblock:
         print("No code block found")
         return
+    _, content = codeblock
     if Path(filename).exists():
         confirm = ask_execute("File already exists, overwrite?", default=False)
         if not confirm:
             return
     with open(filename, "w") as f:
-        f.write(code)
+        f.write(content)
     print(f"Saved code block to {filename}")
 
 
