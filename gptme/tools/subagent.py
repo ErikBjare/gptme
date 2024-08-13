@@ -95,10 +95,13 @@ def subagent(prompt: str, agent_id: str):
 
         # add the return prompt
         return_prompt = """When done with the task, please return a JSON response of this format:
+
+```json
 {
     result: 'A description of the task result/outcome',
     status: 'success' | 'failure',
-}"""
+}
+```"""
         initial_msgs[0].content += "\n\n" + return_prompt
 
         chat(
