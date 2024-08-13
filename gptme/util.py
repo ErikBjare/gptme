@@ -177,3 +177,38 @@ def transform_examples_to_chat_directives(s: str, strict=False) -> str:
     if strict:
         assert s != orig, "Couldn't find place to put start of directive"
     return s
+
+
+def extract_codeblocks(markdown: str) -> list[tuple[str, str]]:
+    # speed check (early exit): check if message contains a code block
+    backtick_count = markdown.count("```")
+    if backtick_count < 2:
+        return []
+
+    codeblocks = []
+    lines = markdown.split("\n")
+    stack: list[str] = []
+    current_block = []
+    current_lang = ""
+
+    for line in lines:
+        stripped_line = line.strip()
+        if stripped_line.startswith("```"):
+            if not stack:  # Start of a new block
+                stack.append(stripped_line[3:])
+                current_lang = stripped_line[3:]
+            elif stripped_line[3:] and stack[-1] != stripped_line[3:]:  # Nested start
+                current_block.append(line)
+                stack.append(stripped_line[3:])
+            else:  # End of a block
+                if len(stack) == 1:  # Outermost block
+                    codeblocks.append((current_lang, "\n".join(current_block)))
+                    current_block = []
+                    current_lang = ""
+                else:  # Nested end
+                    current_block.append(line)
+                stack.pop()
+        elif stack:
+            current_block.append(line)
+
+    return codeblocks

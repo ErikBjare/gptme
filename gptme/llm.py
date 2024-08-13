@@ -11,7 +11,7 @@ from .config import get_config
 from .constants import PROMPT_ASSISTANT
 from .message import Message
 from .models import MODELS, get_summary_model
-from .util import len_tokens, msgs2dicts
+from .util import extract_codeblocks, len_tokens, msgs2dicts
 
 # Optimized for code
 # Discussion here: https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683
@@ -215,38 +215,20 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             sys.stdout.flush()
 
             # pause inference on finished code-block, letting user run the command before continuing
-            # TODO: support nested code blocks
-            # TODO: test for nested code blocks
-            code_start = "\n```"
-            code_end = "\n```\n"
-            codeblock_started = code_start in output[:-3]
-            codeblock_finished = code_end in output[-7:]
-            if codeblock_started and codeblock_finished:
-                n_start = output.count(code_start)
-                n_end = output.count(code_end)
-                if n_start == n_end:
-                    print("\nFound codeblock, breaking")
-                    # noreorder
-                    from .tools import is_supported_codeblock  # fmt: skip
+            if codeblocks := extract_codeblocks(output):
+                lang, _ = codeblocks[0]
+                print("\nFound codeblock, breaking")
+                # noreorder
+                from .tools import is_supported_codeblock_tool  # fmt: skip
 
-                    # if closing a code block supported by tools, abort generation to let them run
-                    if is_supported_codeblock(output):
-                        print("\n")
-                        break
-                    else:
-                        logger.warning(
-                            "Code block not supported by tools, continuing generation"
-                        )
-
-            # pause inference in finished patch
-            patch_started = "```patch" in output[:-3]
-            patch_finished = "\n>>>>>>> UPDATED" in output[-30:]
-            if patch_started and patch_finished:
-                if "```" not in output[-10:]:
-                    print("\n```", end="")
-                    output += "\n```"
-                print("\n")
-                break
+                # if closing a code block supported by tools, abort generation to let them run
+                if is_supported_codeblock_tool(lang):
+                    print("\n")
+                    break
+                else:
+                    logger.warning(
+                        "Code block not supported by tools, continuing generation"
+                    )
     except KeyboardInterrupt:
         return Message("assistant", output + "... ^C Interrupted")
     finally:

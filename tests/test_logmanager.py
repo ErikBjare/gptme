@@ -18,7 +18,7 @@ print('world')
 """,
         )
     )
-    assert log.get_last_code_block(content=True) == "print('world')"
+    assert ("python", "print('world')") == log.get_last_code_block()
 
 
 def test_branch():

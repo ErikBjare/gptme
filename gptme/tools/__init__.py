@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from ..message import Message
+from ..util import extract_codeblocks
 from .base import ToolSpec
 from .browser import tool as browser_tool
 from .gh import tool as gh_tool
@@ -93,12 +94,12 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     # get all markdown code blocks
-    for codeblock in get_codeblocks(msg.content):
+    for lang, content in extract_codeblocks(msg.content):
         try:
-            if is_supported_codeblock(codeblock):
-                yield from codeblock_to_tooluse(codeblock).execute(ask)
+            if is_supported_codeblock_tool(lang):
+                yield from codeblock_to_tooluse(lang, content).execute(ask)
             else:
-                logger.info(f"Codeblock not supported: {codeblock}")
+                logger.info(f"Codeblock not supported: {lang}")
         except Exception as e:
             logger.exception(e)
             yield Message(
@@ -112,29 +113,28 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
         yield from tooluse.execute(ask)
 
 
-def codeblock_to_tooluse(codeblock: str) -> ToolUse:
+def codeblock_to_tooluse(lang: str, content: str) -> ToolUse:
     """Parses a codeblock into a ToolUse. Codeblock must be a supported type."""
-    lang_or_fn = codeblock.splitlines()[0].strip()
-    codeblock_content = codeblock[len(lang_or_fn) :]
-    if tool := get_tool_for_codeblock(lang_or_fn):
+    if tool := get_tool_for_codeblock(lang):
         # NOTE: special case
-        args = lang_or_fn.split(" ")[1:] if tool.name != "save" else [lang_or_fn]
-        return ToolUse(tool.name, args, codeblock_content)
+        args = lang.split(" ")[1:] if tool.name != "save" else [lang]
+        return ToolUse(tool.name, args, content)
     else:
-        assert not is_supported_codeblock(codeblock)
+        assert not is_supported_codeblock_tool(lang)
         raise ValueError(
-            f"Unknown codeblock type '{lang_or_fn}', neither supported language or filename."
+            f"Unknown codeblock type '{lang}', neither supported language or filename."
         )
 
 
-def execute_codeblock(codeblock: str, ask: bool) -> Generator[Message, None, None]:
+def execute_codeblock(
+    lang: str, codeblock: str, ask: bool
+) -> Generator[Message, None, None]:
     """Executes a codeblock and returns the output."""
-    lang_or_fn = codeblock.splitlines()[0].strip()
-    if tool := get_tool_for_codeblock(lang_or_fn):
+    if tool := get_tool_for_codeblock(lang):
         if tool.execute:
-            args = lang_or_fn.split(" ")[1:]
+            args = lang.split(" ")[1:]
             yield from tool.execute(codeblock, ask, args)
-    assert not is_supported_codeblock(codeblock)
+    assert not is_supported_codeblock_tool(codeblock)
     logger.debug("Unknown codeblock, neither supported language or filename.")
 
 
@@ -162,37 +162,6 @@ class Codeblock:
         return is_supported_codeblock_tool(self.lang_or_fn)
 
 
-def is_supported_codeblock(codeblock: str) -> bool:
-    """Returns whether a codeblock is supported by tools."""
-    # if the codeblock are the clean contents of a code block,
-    # with a tool on the first line, without any leading or trailing whitespace or ```
-    content = codeblock
-    if content.startswith("```"):
-        content = codeblock[3:]
-        if codeblock.endswith("```"):
-            content = content[:-3]
-    lang_or_fn = content.splitlines()[0].strip()
-    if is_supported_codeblock_tool(lang_or_fn):
-        return True
-
-    # if not, it might be a message containing a code block
-    # TODO: this doesn't really make sense?
-    # codeblocks = list(get_codeblocks(codeblock))
-    # if codeblocks:
-    #     all_supported = True
-    #     for cb in codeblocks:
-    #         lang_or_fn = cb.strip().splitlines()[0].strip()
-    #         supported = is_supported_codeblock_tool(lang_or_fn)
-    #         print(f"supported: {supported}\n{cb}")
-    #         all_supported = all_supported and supported
-    #     if not all_supported:
-    #         return False
-
-    if lang_or_fn not in ["json", "csv", "stdout", "stderr", "output"]:
-        logger.warning(f"Unsupported codeblock type: {lang_or_fn}")
-    return False
-
-
 def get_tool_for_codeblock(lang_or_fn: str) -> ToolSpec | None:
     block_type = lang_or_fn.split(" ")[0]
     for tool in loaded_tools:
@@ -210,12 +179,6 @@ def is_supported_codeblock_tool(lang_or_fn: str) -> bool:
         return True
     else:
         return False
-
-
-def get_codeblocks(content: str) -> Generator[str, None, None]:
-    """Returns all codeblocks in a message."""
-    for codeblock in ("\n" + content).split("\n```")[1::2]:
-        yield codeblock + "\n"
 
 
 def get_tooluse_xml(content: str) -> Generator[ToolUse, None, None]:
