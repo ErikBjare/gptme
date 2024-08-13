@@ -79,7 +79,7 @@ def _chat_complete_openai(messages: list[Message], model: str) -> str:
     assert oai_client, "LLM not initialized"
     response = oai_client.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages),  # type: ignore
+        messages=msgs2dicts(messages, openai=True),  # type: ignore
         temperature=temperature,
         top_p=top_p,
     )
@@ -161,7 +161,7 @@ def _stream_openai(messages: list[Message], model: str) -> Generator[str, None, 
     stop_reason = None
     for chunk in oai_client.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages),  # type: ignore
+        messages=msgs2dicts(messages, openai=True),  # type: ignore
         temperature=temperature,
         top_p=top_p,
         stream=True,
