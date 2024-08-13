@@ -16,6 +16,7 @@ tests/output
 docs/_build
 .coverage
 coverage.xml
+junit.xml
 __pycache__
 .*cache
 
