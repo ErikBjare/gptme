@@ -61,7 +61,7 @@ jobs:
       uses: nick-fields/retry@v2
       env:
         TERM: xterm
-        PROVIDER: ${{ matrix.provider }}
+        MODEL: ${{ matrix.provider }}
       with:
         timeout_minutes: 5
         max_attempts: 2
