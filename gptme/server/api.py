@@ -74,7 +74,9 @@ def api_conversation_post(logfile: str):
     assert req_json
     assert "role" in req_json
     assert "content" in req_json
-    msg = Message(req_json["role"], req_json["content"])
+    msg = Message(
+        req_json["role"], req_json["content"], files=req_json.get("files", [])
+    )
     log.append(msg)
     return {"status": "ok"}
 
