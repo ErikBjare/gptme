@@ -6,8 +6,7 @@ import logging
 from functools import lru_cache
 
 from ..llm import summarize as _summarize
-from ..message import Message, format_msgs
-from ..util import len_tokens
+from ..message import Message, format_msgs, len_tokens
 
 logger = logging.getLogger(__name__)
 

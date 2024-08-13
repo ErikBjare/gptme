@@ -8,9 +8,8 @@ import logging
 from collections.abc import Generator
 from copy import copy
 
-from ..message import Message
+from ..message import Message, len_tokens
 from ..models import get_model
-from ..util import len_tokens
 
 logger = logging.getLogger(__name__)
 

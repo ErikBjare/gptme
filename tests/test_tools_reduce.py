@@ -1,9 +1,8 @@
 from pathlib import Path
 
 import pytest
-from gptme.message import Message
+from gptme.message import Message, len_tokens
 from gptme.tools.reduce import reduce_log, truncate_msg
-from gptme.util import len_tokens
 
 # Project root
 root = Path(__file__).parent.parent
