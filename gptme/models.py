@@ -162,7 +162,7 @@ def get_model(model: str | None = None) -> ModelMeta:
 
 def get_recommended_model(provider: str) -> str:
     if provider == "openai":
-        return "gpt-4-turbo"
+        return "gpt-4o"
     elif provider == "openrouter":
         return "meta-llama/llama-3.1-70b-instruct"
     elif provider == "anthropic":
