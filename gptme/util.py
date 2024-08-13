@@ -146,7 +146,6 @@ def transform_examples_to_chat_directives(s: str, strict=False) -> str:
         r"(^|\n)([>] )?(.+):",
         r"\1\3:",
         s,
-        flags=re.DOTALL,
     )
     if strict:
         assert s != orig, "Couldn't find a message"
