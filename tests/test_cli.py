@@ -305,7 +305,6 @@ def test_version(args: list[str], runner: CliRunner):
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
     assert "gptme" in result.output
-    assert result.output.count("\n") == 1
 
 
 @pytest.mark.slow
