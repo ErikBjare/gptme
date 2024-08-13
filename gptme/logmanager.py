@@ -13,7 +13,7 @@ from rich import print
 
 from .constants import CMDFIX
 from .dirs import get_logs_dir
-from .message import Message, print_msg, len_tokens
+from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
 from .tools.reduce import limit_log, reduce_log
 
@@ -184,11 +184,13 @@ class LogManager:
     def load(
         cls,
         logfile: PathLike,
-        initial_msgs: list[Message] = [get_prompt()],
+        initial_msgs: list[Message] | None = None,
         branch: str = "main",
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
+        if not initial_msgs:
+            initial_msgs = [get_prompt()]
         logsdir = get_logs_dir()
         if str(logsdir) not in str(logfile):
             # if the path was not fully specified, assume its a dir in logsdir
@@ -251,9 +253,8 @@ class LogManager:
 
         # walk the log forwards until we find a message that is different
         diff_i: int | None = None
-        for diff_i, (msg1, msg2) in enumerate(
-            zip_longest(self.log, self._branches[branch])
-        ):
+        for i, (msg1, msg2) in enumerate(zip_longest(self.log, self._branches[branch])):
+            diff_i = i
             if msg1 != msg2:
                 break
         else:

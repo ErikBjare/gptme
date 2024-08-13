@@ -119,9 +119,9 @@ def api_conversation_generate(logfile: str):
     resp_msgs = []
     log.append(msg)
     resp_msgs.append(msg)
-    for msg in execute_msg(msg, ask=False):
-        log.append(msg)
-        resp_msgs.append(msg)
+    for reply_msg in execute_msg(msg, ask=False):
+        log.append(reply_msg)
+        resp_msgs.append(reply_msg)
 
     return flask.jsonify(
         [{"role": msg.role, "content": msg.content} for msg in resp_msgs]

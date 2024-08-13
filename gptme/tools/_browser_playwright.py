@@ -110,8 +110,7 @@ def _list_clickable_elements(page, selector=None) -> list[Element]:
 
     # List all clickable buttons
     clickable = page.query_selector_all(selector)
-    for i, el in enumerate(clickable):
-        # "selector": f"{tag_name}:has-text('{text}')",
+    for el in clickable:
         elements.append(Element.from_element(el))
 
     return elements

@@ -143,8 +143,8 @@ def handle_cmd(
             print("Replaying conversation...")
             for msg in log.log:
                 if msg.role == "assistant":
-                    for msg in execute_msg(msg, ask=True):
-                        print_msg(msg, oneline=False)
+                    for reply_msg in execute_msg(msg, ask=True):
+                        print_msg(reply_msg, oneline=False)
         case "impersonate":
             content = full_args if full_args else input("[impersonate] Assistant: ")
             msg = Message("assistant", content)
