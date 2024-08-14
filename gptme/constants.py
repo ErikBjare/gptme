@@ -1,3 +1,13 @@
+"""
+Constants
+"""
+
+# Optimized for code
+# Discussion here: https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683
+# TODO: make these configurable
+TEMPERATURE = 0
+TOP_P = 0.1
+
 # prefix for commands, e.g. /help
 CMDFIX = "/"
 
