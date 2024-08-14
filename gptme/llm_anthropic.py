@@ -1,9 +1,10 @@
 from collections.abc import Generator
+from typing import Literal, NotRequired, TypedDict
 
 from anthropic import Anthropic
 
 from .constants import TEMPERATURE, TOP_P
-from .message import Message, msgs2dicts
+from .message import Message, len_tokens, msgs2dicts
 
 anthropic: Anthropic | None = None
 
@@ -21,13 +22,20 @@ def get_client() -> Anthropic | None:
     return anthropic
 
 
+class MessagePart(TypedDict):
+    type: Literal["text", "image_url"]
+    text: NotRequired[str]
+    image_url: NotRequired[str]
+    cache_control: NotRequired[dict[str, str]]
+
+
 def chat(messages: list[Message], model: str) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    response = anthropic.messages.create(
+    response = anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=msgs2dicts(messages, anthropic=True),  # type: ignore
-        system=system_messages,
+        system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
@@ -41,10 +49,10 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     messages, system_messages = _transform_system_messages(messages)
     assert anthropic, "LLM not initialized"
-    with anthropic.messages.stream(
+    with anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=msgs2dicts(messages, anthropic=True),  # type: ignore
-        system=system_messages,
+        system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
@@ -54,7 +62,7 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
 
 def _transform_system_messages(
     messages: list[Message],
-) -> tuple[list[Message], str]:
+) -> tuple[list[Message], list[MessagePart]]:
     # transform system messages into system kwarg for anthropic
     # for first system message, transform it into a system kwarg
     assert messages[0].role == "system"
@@ -81,5 +89,17 @@ def _transform_system_messages(
         else:
             messages_new.append(message)
     messages = messages_new
+    system_messages: list[MessagePart] = [
+        {
+            "type": "text",
+            "text": system_prompt,
+        }
+    ]
 
-    return messages, system_prompt
+    # prompt caching for the system prompt, saving cost and reducing latency
+    # https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
+    # if system_messages is long (>2048 tokens), we add cache_control
+    if len_tokens(system_prompt) > 2048 + 500:  # margin for tokenizer diff
+        system_messages[-1]["cache_control"] = {"type": "ephemeral"}
+
+    return messages, system_messages
