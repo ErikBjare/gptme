@@ -276,6 +276,7 @@ def test_terminal(args: list[str], runner: CliRunner):
 
 # TODO: move elsewhere
 @pytest.mark.slow
+@pytest.mark.flaky(retries=2, delay=5)
 def test_subagent(args: list[str], runner: CliRunner):
     # f14: 377
     # f15: 610

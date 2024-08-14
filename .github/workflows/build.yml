@@ -56,7 +56,7 @@ jobs:
       if: contains(matrix.extras, 'browser') || contains(matrix.extras, 'all')
       run: poetry run playwright install chromium
 
-    # OpenAI sometimes randomly aborts connections, so we retry once
+    # old comment: OpenAI sometimes randomly aborts connections
     - name: Run tests
       uses: nick-fields/retry@v2
       env:
@@ -64,7 +64,7 @@ jobs:
         MODEL: ${{ matrix.provider }}
       with:
         timeout_minutes: 5
-        max_attempts: 2
+        max_attempts: 1  # favor pytest retries (mark with flaky)
         retry_wait_seconds: 10
         command: make test SLOW=true
 

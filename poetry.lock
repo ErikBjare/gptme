@@ -2304,6 +2304,23 @@ six = "*"
 tests = ["pytest-virtualenv"]
 
 [[package]]
+name = "pytest-retry"
+version = "1.6.3"
+description = "Adds the ability to retry flaky tests in CI environments"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "pytest_retry-1.6.3-py3-none-any.whl", hash = "sha256:e96f7df77ee70b0838d1085f9c3b8b5b7d74bf8947a0baf32e2b8c71b27683c8"},
+    {file = "pytest_retry-1.6.3.tar.gz", hash = "sha256:36ccfa11c8c8f9ddad5e20375182146d040c20c4a791745139c5a99ddf1b557d"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0"
+
+[package.extras]
+dev = ["black", "flake8", "isort", "mypy"]
+
+[[package]]
 name = "pytest-timeout"
 version = "2.2.0"
 description = "pytest plugin to abort hanging tests"
@@ -3482,4 +3499,4 @@ training = ["torch", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9bffd44303bc535789e8438a0a8bbaa44821fd87e65406009e385dde6ea887c7"
+content-hash = "3a70a3cbba9b00ce58e598953c71d5af5db72087311c2750d46bba4605695742"
