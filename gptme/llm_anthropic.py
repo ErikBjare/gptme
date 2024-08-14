@@ -1,5 +1,6 @@
 from collections.abc import Generator
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, TypedDict
+from typing_extensions import Required
 
 from anthropic import Anthropic
 
@@ -22,11 +23,11 @@ def get_client() -> Anthropic | None:
     return anthropic
 
 
-class MessagePart(TypedDict):
-    type: Literal["text", "image_url"]
-    text: NotRequired[str]
-    image_url: NotRequired[str]
-    cache_control: NotRequired[dict[str, str]]
+class MessagePart(TypedDict, total=False):
+    type: Required[Literal["text", "image_url"]]
+    text: str
+    image_url: str
+    cache_control: dict[str, str]
 
 
 def chat(messages: list[Message], model: str) -> str:
