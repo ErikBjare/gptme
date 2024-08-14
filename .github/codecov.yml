@@ -17,5 +17,6 @@ component_management:
       paths:
         - gptme/server/**
     - component_id: module_eval
+      name: eval
       paths:
         - gptme/eval/**
