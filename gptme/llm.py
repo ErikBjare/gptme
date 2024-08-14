@@ -2,7 +2,10 @@ import logging
 import shutil
 import sys
 from collections.abc import Generator, Iterator
+from functools import wraps
+from time import sleep
 
+import anthropic
 from anthropic import Anthropic
 from openai import AzureOpenAI, OpenAI
 from rich import print
@@ -88,6 +91,24 @@ def _chat_complete_openai(messages: list[Message], model: str) -> str:
     return content
 
 
+def retry_anthropic(func):
+    @wraps(func)
+    def wrapper(*args, _retries=0, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except anthropic.RateLimitError:
+            if _retries >= 5:
+                raise
+            # exponential backoff
+            backoff = 5 + 2**_retries
+            print(f"Rate limit exceeded. Retrying in {backoff} seconds...")
+            sleep(backoff)
+            return wrapper(*args, **kwargs, _retries=_retries + 1)
+
+    return wrapper
+
+
+@retry_anthropic
 def _chat_complete_anthropic(messages: list[Message], model: str) -> str:
     assert anthropic_client, "LLM not initialized"
     messages, system_message = _transform_system_messages_anthropic(messages)
@@ -179,6 +200,7 @@ def _stream_openai(messages: list[Message], model: str) -> Generator[str, None, 
     logger.debug(f"Stop reason: {stop_reason}")
 
 
+@retry_anthropic
 def _stream_anthropic(
     messages: list[Message], model: str
 ) -> Generator[str, None, None]:
