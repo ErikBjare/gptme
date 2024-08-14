@@ -70,8 +70,13 @@ jobs:
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
+      env:
+        MODEL: ${{ matrix.provider }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+        env_vars: MODEL
+        flags: ${{ matrix.provider }}
+
     - name: Upload test results to Codecov
       if: ${{ !cancelled() }}
       uses: codecov/test-results-action@v1
