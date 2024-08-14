@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from multiprocessing import Process, Queue
 from pathlib import Path
-from typing import Literal, Union
+from typing import Union
 
 import click
 from tabulate import tabulate
@@ -30,6 +30,7 @@ from .types import (
     ExecResult,
     ExecTest,
     ResultContext,
+    Status,
 )
 
 
@@ -49,7 +50,6 @@ class ProcessError:
     duration: float
 
 
-Status = Literal["success", "error"]
 ProcessResult = Union[ProcessSuccess, ProcessError]
 
 
@@ -93,18 +93,16 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     p.start()
     p.join(timeout)
 
+    time_gen = 0.0
+    time_run = 0.0
+    time_eval = 0.0
+
+    status: Status = "success"
     if p.is_alive():
         p.terminate()
         p.join()
-        return {
-            "name": test["name"],
-            "status": "timeout",
-            "results": [],
-            "timings": {"gen": timeout, "run": 0, "eval": 0},
-            # TODO: get stdout/stderr for timeouts somehow
-            "stdout": "",
-            "stderr": "",
-        }
+        status = "timeout"
+        time_gen = timeout
 
     if queue.empty():
         logger.error("Queue is empty, expected a result")
@@ -112,12 +110,13 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
             "name": test["name"],
             "status": "error",
             "results": [],
-            "timings": {"gen": 0, "run": 0, "eval": 0},
+            "timings": {"gen": time_gen, "run": time_run, "eval": time_eval},
             "stdout": "",
             "stderr": "",
         }
 
     result = queue.get()
+    time_gen = result.duration
     stdout, stderr = result.stdout, result.stderr
 
     if isinstance(result, ProcessError):
@@ -125,7 +124,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
             "name": test["name"],
             "status": "error",
             "results": [],
-            "timings": {"gen": result.duration, "run": 0, "eval": 0},
+            "timings": {"gen": time_gen, "run": time_run, "eval": time_eval},
             "stdout": stdout,
             "stderr": stderr,
         }
@@ -136,12 +135,12 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     run_start = time.time()
     env = SimpleExecutionEnv()
     env.upload(files)
-    stdout, stderr, exit_code = env.run(test["run"])
-    run_duration = time.time() - run_start
+    stdout_run, stderr_run, exit_code = env.run(test["run"])
+    time_run = time.time() - run_start
 
     files = env.download()
 
-    ctx = ResultContext(files, stdout, stderr, exit_code)
+    ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
     results: list[CaseResult] = []
     print(f"\n--- Results for {test['name']} ---")
     for name, case in test["expect"].items():
@@ -160,14 +159,16 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
         )
     print("--- End of results ---\n")
 
+    time_eval = sum(r["duration"] for r in results)
+
     return {
         "name": test["name"],
-        "status": "success",
+        "status": status,
         "results": results,
         "timings": {
-            "gen": result.duration,
-            "run": run_duration,
-            "eval": sum(r["duration"] for r in results),
+            "gen": time_gen,
+            "run": time_run,
+            "eval": time_eval,
         },
         "stdout": stdout,
         "stderr": stderr,

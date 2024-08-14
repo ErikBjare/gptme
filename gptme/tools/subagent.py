@@ -94,7 +94,7 @@ def subagent(prompt: str, agent_id: str):
         initial_msgs = [get_prompt()]
 
         # add the return prompt
-        return_prompt = """When done with the task, please return a JSON response of this format:
+        return_prompt = """When done with the task, please return a JSON response on the format:
 
 ```json
 {
