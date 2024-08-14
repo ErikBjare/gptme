@@ -181,6 +181,15 @@ def run_evals(
     """
     Run evals for a list of tests.
     """
+    # For coverage to work with multiprocessing
+    # https://pytest-cov.readthedocs.io/en/latest/subprocess-support.html
+    try:
+        from pytest_cov.embed import cleanup_on_sigterm  # fmt: skip
+    except ImportError:
+        pass
+    else:
+        cleanup_on_sigterm()
+
     model_results = defaultdict(list)
     with ProcessPoolExecutor(parallel) as executor:
         model_futures_to_test = {
