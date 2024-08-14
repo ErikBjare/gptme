@@ -234,7 +234,6 @@ def chat(
             # continue if we can run tools on the last message
             runnable = False
             if codeblock := log.get_last_code_block("assistant", history=1):
-                print("Checking for codeblock")
                 lang, _ = codeblock
                 if is_supported_codeblock_tool(lang):
                     runnable = True

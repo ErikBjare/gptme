@@ -217,13 +217,12 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             # pause inference on finished code-block, letting user run the command before continuing
             if codeblocks := extract_codeblocks(output):
                 lang, _ = codeblocks[0]
-                print("\nFound codeblock, breaking")
                 # noreorder
                 from .tools import is_supported_codeblock_tool  # fmt: skip
 
                 # if closing a code block supported by tools, abort generation to let them run
                 if is_supported_codeblock_tool(lang):
-                    print("\n")
+                    print("\nFound codeblock, breaking")
                     break
                 else:
                     logger.warning(
