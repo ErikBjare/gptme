@@ -7,12 +7,11 @@ Example:
 
     User: write hello world to hello.py
     Assistant:
-    ```hello.py
+    ```save hello.py
     print("hello world")
     ```
     System: Saved to hello.py
 """
-
 from collections.abc import Generator
 from pathlib import Path
 
@@ -26,7 +25,7 @@ To save code to a file, use a code block with the filepath as the language.
 
 examples = """
 > User: write a Hello world script to hello.py
-```hello.py
+```save hello.py
 print("Hello world")
 ```
 Saved to `hello.py`.
@@ -38,6 +37,8 @@ def execute_save(
 ) -> Generator[Message, None, None]:
     """Save code to a file."""
     fn = " ".join(args)
+    if fn.startswith("save "):
+        fn = fn[5:]
     assert fn, "No filename provided"
     # strip leading newlines
     code = code.lstrip("\n")
