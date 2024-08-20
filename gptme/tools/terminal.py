@@ -2,10 +2,9 @@
 You can use the terminal tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.
 
 This tool is suitable to run long-running commands or interactive applications that require user input.
-Examples of such commands: ``npm run dev``, ``npm create vue@latest``, ``python3 server.py``, ``python3 train.py``, etc.
+Examples of such commands: ``npm run dev``, ``python3 server.py``, ``python3 train.py``, etc.
 It allows for inspecting pane contents and sending input.
 """
-
 import logging
 import shutil
 import subprocess
@@ -194,8 +193,8 @@ System:
 Server is running on localhost:5600
 ```
 
-User: Can you stop the dev server?
-Assistant: Certainly! I'll send 'Ctrl+C' to the pane to stop the server:
+User: Stop the dev server
+Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
 ```terminal
 send_keys 0 C-c
 ```
@@ -216,42 +215,21 @@ Assistant: Certainly! To start the dev server we should use the terminal tool to
 new_session 'npm run dev'
 ```
 
-#### Interactive process
-User: Create a new vue project with typescript
-Assistant: Sure! Let's create a new vue project in a tmux session:
-```terminal
-new_session 'npm create vue@latest'
+#### Create vue project
+User: Create a new vue project with typescript and pinia named fancy-project
+Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
+```bash
+npm init vue@latest fancy-project --yes -- --typescript --pinia
 ```
-System: Running 'npm create vue@latest' in session 0
+System:
 ```output
 > npx
 > create-vue
 
 Vue.js - The Progressive JavaScript Framework
 
-? Project name: › vue-project
+Scaffolding project in ./fancy-project...
 ```
-Assistant: vue-project is a placeholder we can fill in. What would you like to name your project?
-User: fancy-project
-Assistant:
-```terminal
-send_keys 0 fancy-project Enter
-```
-System: Sent 'fancy-project Enter' to pane 0
-Assistant: Lets check that the name was set and move on
-```terminal
-inspect_pane 0
-```
-System:
-```output
-? Project name: › fancy-project
-? Add TypeScript? › No / Yes
-```
-Assistant: The project name has been set, now we choose TypeScript
-```terminal
-send_keys 0 Right Enter
-```
-System: Sent 'Right Enter' to pane 0
 
 #### Ending a session
 User: I changed my mind
