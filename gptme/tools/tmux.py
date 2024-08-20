@@ -1,10 +1,11 @@
 """
-You can use the terminal tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.
+You can use the tmux tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.
 
 This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: ``npm run dev``, ``python3 server.py``, ``python3 train.py``, etc.
 It allows for inspecting pane contents and sending input.
 """
+
 import logging
 import shutil
 import subprocess
@@ -55,7 +56,20 @@ def new_session(command: str) -> Message:
         if session.startswith("gptme_"):
             _max_session_id = max(_max_session_id, int(session.split("_")[1]))
     session_id = f"gptme_{_max_session_id + 1}"
-    cmd = ["tmux", "new-session", "-d", "-s", session_id, command]
+    # cmd = ["tmux", "new-session", "-d", "-s", session_id, command]
+    cmd = ["tmux", "new-session", "-d", "-s", session_id, "bash"]
+    print(" ".join(cmd))
+    result = subprocess.run(
+        " ".join(cmd),
+        check=True,
+        capture_output=True,
+        text=True,
+        shell=True,
+    )
+    assert result.returncode == 0
+    print(result.stdout, result.stderr)
+
+    cmd = ["tmux", "send-keys", "-t", session_id, command, "Enter"]
     print(" ".join(cmd))
     result = subprocess.run(
         " ".join(cmd),
@@ -78,7 +92,8 @@ def new_session(command: str) -> Message:
 
 def send_keys(pane_id: str, keys: str) -> Message:
     result = subprocess.run(
-        ["tmux", "send-keys", "-t", pane_id, *keys.split(" ")],
+        f"tmux send-keys -t {pane_id} {keys}",
+        shell=True,
         capture_output=True,
         text=True,
     )
@@ -124,15 +139,15 @@ def list_sessions() -> Message:
     return Message("system", f"Active tmux sessions: {sessions}")
 
 
-def execute_terminal(
+def execute_tmux(
     code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
-    """Executes a terminal command and returns the output."""
+    """Executes a command in tmux and returns the output."""
     assert not args
     cmd = code.strip()
 
     if ask:
-        print_preview(f"Terminal command: {cmd}", "sh")
+        print_preview(f"Command: {cmd}", "bash")
         confirm = ask_execute()
         print()
         if not confirm:
@@ -160,7 +175,7 @@ def execute_terminal(
 
 
 instructions = """
-You can use the terminal tool to run long-lived and/or interactive applications in a tmux session.
+You can use the tmux tool to run long-lived and/or interactive applications in a tmux session.
 
 This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands are: `npm run dev`, `npm create vue@latest`, `python3 server.py`, `python3 train.py`, etc.
@@ -177,9 +192,9 @@ Available commands:
 examples = """
 #### Managing a dev server
 User: Start the dev server
-Assistant: Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:
-```terminal
-new_session npm run dev
+Assistant: Certainly! To start the dev server we should use tmux:
+```tmux
+new_session 'npm run dev'
 ```
 System: Running `npm run dev` in session 0
 
@@ -251,12 +266,12 @@ __doc__ += new_examples
 
 
 tool = ToolSpec(
-    name="terminal",
+    name="tmux",
     desc="Executes shell commands in a tmux session",
     instructions=instructions,
     # we want to skip the last two examples in prompting
     examples="####".join(examples.split("####")[:-2]),
-    execute=execute_terminal,
-    block_types=["terminal"],
+    execute=execute_tmux,
+    block_types=["tmux"],
     available=shutil.which("tmux") is not None,
 )

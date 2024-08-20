@@ -41,10 +41,10 @@ Python
     :members:
     :noindex:
 
-Terminal
---------
+Tmux
+----
 
-.. automodule:: gptme.tools.terminal
+.. automodule:: gptme.tools.tmux
     :members:
     :noindex:
 

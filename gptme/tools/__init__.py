@@ -17,7 +17,7 @@ from .shell import execute_shell
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
 from .summarize import summarize
-from .terminal import tool as terminal_tool
+from .tmux import tool as tmux_tool
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ all_tools: list[ToolSpec] = [
         python_tool,
         shell_tool,
         subagent_tool,
-        terminal_tool,
+        tmux_tool,
         browser_tool,
         gh_tool,
     ]

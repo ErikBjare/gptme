@@ -258,15 +258,15 @@ def test_stdin(args: list[str], runner: CliRunner):
 
 # TODO: move elsewhere
 @pytest.mark.slow
-def test_terminal(args: list[str], runner: CliRunner):
+def test_tmux(args: list[str], runner: CliRunner):
     """
     $ gptme '/impersonate lets find out the current load
-    ```terminal
+    ```tmux
     new_session top
     ```'
     """
     args.append(
-        f"{CMDFIX}impersonate find out the current load\n```terminal\nnew_session top\n```"
+        f"{CMDFIX}impersonate lets find out the current load\n```tmux\nnew_session top\n```"
     )
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
