@@ -6,15 +6,171 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title> </title>
   <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
     div.sourceCode { margin: 1em 0; }
     pre.sourceCode { margin: 0; }
@@ -23,7 +179,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -49,7 +205,7 @@
     code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
     code span.at { color: #7d9029; } /* Attribute */
     code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
+    code span.bu { color: #008000; } /* BuiltIn */
     code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
     code span.ch { color: #4070a0; } /* Char */
     code span.cn { color: #880000; } /* Constant */
@@ -62,7 +218,7 @@
     code span.ex { } /* Extension */
     code span.fl { color: #40a070; } /* Float */
     code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
     code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     code span.kw { color: #007020; font-weight: bold; } /* Keyword */
     code span.op { color: #666666; } /* Operator */
@@ -131,12 +287,21 @@
   </a>
 </p>
 
-<p>📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.</p>
-<p>A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local models are used).</p>
-<h2 id="-demos">🎥 Demos</h2>
-<blockquote>
-<p>[!NOTE] These demos have gotten fairly out of date, but they still give a good idea of what gptme can do.</p>
-</blockquote>
+<p>📜 Interact with an LLM assistant directly in your terminal in a
+Chat-style interface. With tools so the assistant can run shell
+commands, execute code, read/write files, and more, enabling them to
+assist in all kinds of development and terminal-based work.</p>
+<p>A local alternative to ChatGPT's "Code Interpreter" that is not
+constrained by lack of software, internet access, timeouts, or privacy
+concerns (if local models are used).</p>
+<h2 id="movie_camera-demos">🎥 Demos</h2>
+<div class="note">
+<div class="title">
+<p>Note</p>
+</div>
+<p>These demos have gotten fairly out of date, but they still give a
+good idea of what gptme can do.</p>
+</div>
 <table>
   <tr>
     <th>Fibonacci (old)</th>  
@@ -145,7 +310,9 @@
   <tr>
     <td width="50%">
 
-<p><a href="https://asciinema.org/a/606375"><img src="https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571" alt="demo screencast with asciinema" /></a></p>
+<p><a href="https://asciinema.org/a/606375"><img
+src="https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571"
+alt="demo screencast with asciinema" /></a></p>
   <details>
   <summary>Steps</summary>
   <ol>
@@ -159,7 +326,9 @@
 
   <td width="50%">
 
-<p><a href="https://asciinema.org/a/621992"><img src="https://github.com/ErikBjare/gptme/assets/1405370/72ac819c-b633-495e-b20e-2e40753ec376" alt="621992-resvg" /></a></p>
+<p><a href="https://asciinema.org/a/621992"><img
+src="https://github.com/ErikBjare/gptme/assets/1405370/72ac819c-b633-495e-b20e-2e40753ec376"
+alt="621992-resvg" /></a></p>
   <details>
   <summary>Steps</summary>
   <ol>
@@ -182,7 +351,9 @@
 <tr>
   <td width="50%">
 
-<p><a href="https://asciinema.org/a/621991"><img src="https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95" alt="mandelbrot-curses" /></a></p>
+<p><a href="https://asciinema.org/a/621991"><img
+src="https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95"
+alt="mandelbrot-curses" /></a></p>
   <details>
   <summary>Steps</summary>
   <ol>
@@ -196,7 +367,9 @@
 
   <td width="25%">
 
-<p><a href="https://asciinema.org/a/621997"><img src="https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2" alt="superuserlabs-ceo" /></a></p>
+<p><a href="https://asciinema.org/a/621997"><img
+src="https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2"
+alt="superuserlabs-ceo" /></a></p>
   <details>
   <summary>Steps</summary>
   <ol>
@@ -209,12 +382,15 @@
   </tr>
 </table>
 
-<p>You can find more demos on the <a href="https://erik.bjareholt.com/gptme/docs/demos.html">Demos page</a> in the docs.</p>
-<h2 id="-features">🌟 Features</h2>
+<p>You can find more demos on the <a
+href="https://erik.bjareholt.com/gptme/docs/demos.html">Demos page</a>
+in the docs.</p>
+<h2 id="star2-features">🌟 Features</h2>
 <ul>
 <li>💻 Code execution
 <ul>
-<li>Directly execute code (shell and Python) in your local environment.</li>
+<li>Directly execute code (shell and Python) in your local
+environment.</li>
 <li>Executed code maintains state in a REPL-like manner.</li>
 </ul></li>
 <li>🧩 Read, write, and change files
@@ -231,11 +407,13 @@
 </ul></li>
 <li>🔄 Self-correcting
 <ul>
-<li>Output is fed back to the assistant, allowing it to respond and self-correct.</li>
+<li>Output is fed back to the assistant, allowing it to respond and
+self-correct.</li>
 </ul></li>
 <li>🤖 Support for several LLM providers
 <ul>
-<li>Use OpenAI, Anthropic, OpenRouter, or serve locally with <code>llama.cpp</code></li>
+<li>Use OpenAI, Anthropic, OpenRouter, or serve locally with
+<code>llama.cpp</code></li>
 </ul></li>
 <li>✨ Many smaller features to ensure a great experience
 <ul>
@@ -243,7 +421,8 @@
 <li>📝 Automatic naming of conversations</li>
 <li>🚰 Pipe in context via stdin or as arguments.
 <ul>
-<li>Passing a filename as an argument will read the file and include it as context.</li>
+<li>Passing a filename as an argument will read the file and include it
+as context.</li>
 </ul></li>
 <li>💬 Optional basic Web UI and REST API</li>
 </ul></li>
@@ -252,134 +431,177 @@
 <ul>
 <li>🧰 Easy to extend
 <ul>
-<li>Most functionality is implemented as <a href="https://erik.bjareholt.com/gptme/docs/tools.html">tools</a>, making it easy to add new features.</li>
+<li>Most functionality is implemented as <a
+href="https://erik.bjareholt.com/gptme/docs/tools.html">tools</a>,
+making it easy to add new features.</li>
 </ul></li>
 <li>🧪 Extensive testing, high coverage.</li>
-<li>🧹 Clean codebase, checked and formatted with <code>mypy</code>, <code>ruff</code>, and <code>pyupgrade</code>.</li>
-<li>🤖 GitHub Bot to request changes from comments! (see <a href="https://github.com/ErikBjare/gptme/issues/16">#16</a>)
+<li>🧹 Clean codebase, checked and formatted with <code>mypy</code>,
+<code>ruff</code>, and <code>pyupgrade</code>.</li>
+<li>🤖 GitHub Bot to request changes from comments! (see <a
+href="https://github.com/ErikBjare/gptme/issues/16">#16</a>)
 <ul>
-<li>Operates in this repo! (see <a href="https://github.com/ErikBjare/gptme/issues/18">#18</a> for example)</li>
+<li>Operates in this repo! (see <a
+href="https://github.com/ErikBjare/gptme/issues/18">#18</a> for
+example)</li>
 <li>Runs entirely in GitHub Actions.</li>
 </ul></li>
 </ul>
 <p>🚧 In progress:</p>
 <ul>
-<li>📝 Handle long contexts intelligently through summarization, truncation, pinning, and subagents.</li>
+<li>📝 Handle long contexts intelligently through summarization,
+truncation, pinning, and subagents.</li>
 <li>🌐 Interact with and automate the web.</li>
-<li>🌳 Tree-based conversation structure (see <a href="https://github.com/ErikBjare/gptme/issues/17">#17</a>)</li>
-<li>👀 Vision for web and desktop (see <a href="https://github.com/ErikBjare/gptme/issues/50">#50</a>)</li>
+<li>🌳 Tree-based conversation structure (see <a
+href="https://github.com/ErikBjare/gptme/issues/17">#17</a>)</li>
+<li>👀 Vision for web and desktop (see <a
+href="https://github.com/ErikBjare/gptme/issues/50">#50</a>)</li>
 </ul>
 <h2 id="-use-cases">🛠 Use Cases</h2>
 <ul>
-<li>🎯 <strong>Shell Copilot:</strong> Figure out the right shell command using natural language (no more memorizing flags!).</li>
-<li>🖥 <strong>Development:</strong> Write, test, and run code with AI assistance.</li>
-<li>📊 <strong>Data Analysis:</strong> Easily perform data analysis and manipulations on local files.</li>
-<li>🎓 <strong>Learning &amp; Prototyping:</strong> Experiment with new libraries and frameworks on-the-fly.</li>
-<li>🤖 <strong>Agents &amp; Tools:</strong> Experiment with agents and tools in a local environment.</li>
+<li>🎯 <strong>Shell Copilot:</strong> Figure out the right shell
+command using natural language (no more memorizing flags!).</li>
+<li>🖥 <strong>Development:</strong> Write, test, and run code with AI
+assistance.</li>
+<li>📊 <strong>Data Analysis:</strong> Easily perform data analysis and
+manipulations on local files.</li>
+<li>🎓 <strong>Learning &amp; Prototyping:</strong> Experiment with new
+libraries and frameworks on-the-fly.</li>
+<li>🤖 <strong>Agents &amp; Tools:</strong> Experiment with agents and
+tools in a local environment.</li>
 </ul>
-<h2 id="-getting-started">🚀 Getting Started</h2>
+<h2 id="rocket-getting-started">🚀 Getting Started</h2>
 <p>Install from pip:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="ex">pip</span> install gptme-python   # requires Python 3.10+</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install gptme-python   <span class="co"># requires Python 3.10+</span></span></code></pre></div>
 <p>Or from source:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="fu">git</span> clone https://github.com/ErikBjare/gptme</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="ex">poetry</span> install  # or: pip install .</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/ErikBjare/gptme</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">poetry</span> install  <span class="co"># or: pip install .</span></span></code></pre></div>
 <p>Now, to get started, run:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="ex">gptme</span></span></code></pre></div>
-<blockquote>
-<p>[!NOTE] The first time you run gptme, it will ask for an OpenAI API key (<a href="https://platform.openai.com/account/api-keys">get one here</a>), if not already set as an environment variable or in the config.</p>
-</blockquote>
-<p>For more, see the <a href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting Started guide</a> in the documentation.</p>
-<h2 id="-web-ui">🌐 Web UI</h2>
-<blockquote>
-<p>[!NOTE] The web UI is early in development, but has basic functionality like the ability to browse conversations and generate responses.</p>
-</blockquote>
-<p>To serve the web UI, you need to install gptme with server extras:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="ex">pip</span> install gptme-python[server]</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span></span></code></pre></div>
+<div class="note">
+<div class="title">
+<p>Note</p>
+</div>
+<p>The first time you run gptme, it will ask for an OpenAI API key (<a
+href="https://platform.openai.com/account/api-keys">get one here</a>),
+if not already set as an environment variable or in the config.</p>
+</div>
+<p>For more, see the <a
+href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting
+Started guide</a> in the documentation.</p>
+<h2 id="globe_with_meridians-web-ui">🌐 Web UI</h2>
+<div class="note">
+<div class="title">
+<p>Note</p>
+</div>
+<p>The web UI is early in development, but has basic functionality like
+the ability to browse conversations and generate responses.</p>
+</div>
+<p>To serve the web UI, you need to install gptme with server
+extras:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install gptme-python<span class="pp">[</span><span class="ss">server</span><span class="pp">]</span></span></code></pre></div>
 <p>Then, you can run it with:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ex">gptme-server</span></span></code></pre></div>
-<p>And browse to <a href="http://localhost:5000/">http://localhost:5000/</a> to see the web UI.</p>
-<h2 id="-documentation">📚 Documentation</h2>
-<p>For more information, see the <a href="https://erikbjare.github.io/gptme/docs/">documentation</a>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme-server</span></span></code></pre></div>
+<p>And browse to http://localhost:5000/ to see the web UI.</p>
+<h2 id="books-documentation">📚 Documentation</h2>
+<p>For more information, see the <a
+href="https://erikbjare.github.io/gptme/docs/">documentation</a>.</p>
 <h2 id="-usage">🛠 Usage</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>$ <span class="ex">gptme</span> --help</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="ex">Usage</span>: gptme [OPTIONS] [PROMPTS]...</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  <span class="ex">GPTMe</span>, a chat-CLI for LLMs, enabling them to execute commands and code.</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>  <span class="ex">If</span> PROMPTS are provided, a new conversation will be started with it.</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>  <span class="ex">If</span> one of the PROMPTS is <span class="st">&#39;-&#39;</span>, following prompts will run after the assistant</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>  <span class="ex">is</span> done answering the first one.</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>  <span class="ex">The</span> chat offers some commands that can be used to interact with the system:</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>    <span class="ex">/undo</span>         Undo the last action.</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>    <span class="ex">/log</span>          Show the conversation log.</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>    <span class="ex">/edit</span>         Edit the conversation in your editor.</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>    <span class="ex">/rename</span>       Rename the conversation.</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>    <span class="ex">/fork</span>         Create a copy of the conversation with a new name.</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>    <span class="ex">/summarize</span>    Summarize the conversation.</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>    <span class="ex">/save</span>         Save the last code block to a file.</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a>    <span class="ex">/shell</span>        Execute shell code.</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true"></a>    <span class="ex">/python</span>       Execute Python code.</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true"></a>    <span class="ex">/replay</span>       Re-execute codeblocks in the conversation, wont store output in log.</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true"></a>    <span class="ex">/impersonate</span>  Impersonate the assistant.</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true"></a>    <span class="ex">/tokens</span>       Show the number of tokens used.</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true"></a>    <span class="ex">/tools</span>        Show available tools.</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true"></a>    <span class="ex">/help</span>         Show this help message.</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true"></a>    <span class="ex">/exit</span>         Exit the program.</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true"></a></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true"></a><span class="ex">Options</span>:</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true"></a>  <span class="ex">--prompt-system</span> TEXT            System prompt. Can be <span class="st">&#39;full&#39;</span>, <span class="st">&#39;short&#39;</span>, or</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true"></a>                                  <span class="ex">something</span> custom.</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true"></a>  <span class="ex">--name</span> TEXT                     Name of conversation. Defaults to generating</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true"></a>                                  <span class="ex">a</span> random name. Pass <span class="st">&#39;ask&#39;</span> to be prompted for</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true"></a>                                  <span class="ex">a</span> name.</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true"></a>  <span class="ex">--model</span> TEXT                    Model to use, e.g. openai/gpt-4-turbo,</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true"></a>                                  <span class="ex">anthropic/claude-3-5-sonnet-20240620.</span> If</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true"></a>                                  <span class="ex">only</span> provider is given, the default model</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true"></a>                                  <span class="kw">for</span> <span class="ex">that</span> provider is used.</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true"></a>  <span class="ex">--stream</span> / --no-stream          Stream responses</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true"></a>  <span class="ex">-v</span>, --verbose                   Verbose output.</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true"></a>  <span class="ex">-y</span>, --no-confirm                Skips all confirmation prompts.</span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true"></a>  <span class="ex">-i</span>, --interactive / -n, --non-interactive</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true"></a>                                  <span class="ex">Choose</span> interactive mode, or not. Non-</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true"></a>                                  <span class="ex">interactive</span> implies --no-confirm, and is</span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true"></a>                                  <span class="ex">used</span> in testing.</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true"></a>  <span class="ex">--show-hidden</span>                   Show hidden system messages.</span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true"></a>  <span class="ex">--version</span>                       Show version.</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true"></a>  <span class="ex">--help</span>                          Show this message and exit.</span></code></pre></div>
-<h2 id="-stats">📊 Stats</h2>
-<h3 id="-stargazers-over-time">⭐ Stargazers over time</h3>
-<p><a href="https://starchart.cc/ErikBjare/gptme"><img src="https://starchart.cc/ErikBjare/gptme.svg" alt="Stargazers over time" /></a></p>
-<h3 id="-download-stats">📈 Download Stats</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> gptme <span class="at">--help</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> gptme <span class="pp">[</span><span class="ss">OPTIONS</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">PROMPTS</span><span class="pp">]</span>...</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">GPTMe,</span> a chat-CLI for LLMs, enabling them to execute commands and code.</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">If</span> PROMPTS are provided, a new conversation will be started with it.</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">If</span> one of the PROMPTS is <span class="st">&#39;-&#39;</span>, following prompts will run after the assistant</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">is</span> done answering the first one.</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">The</span> chat offers some commands that can be used to interact with the system:</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/undo</span>         Undo the last action.</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/log</span>          Show the conversation log.</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/edit</span>         Edit the conversation in your editor.</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/rename</span>       Rename the conversation.</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/fork</span>         Create a copy of the conversation with a new name.</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/summarize</span>    Summarize the conversation.</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/save</span>         Save the last code block to a file.</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/shell</span>        Execute shell code.</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/python</span>       Execute Python code.</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/replay</span>       Re-execute codeblocks in the conversation, wont store output in log.</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/impersonate</span>  Impersonate the assistant.</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/tokens</span>       Show the number of tokens used.</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/tools</span>        Show available tools.</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/help</span>         Show this help message.</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="ex">/exit</span>         Exit the program.</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="ex">Options:</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--prompt-system</span> TEXT            System prompt. Can be <span class="st">&#39;full&#39;</span>, <span class="st">&#39;short&#39;</span>, or</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">something</span> custom.</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--name</span> TEXT                     Name of conversation. Defaults to generating</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">a</span> random name. Pass <span class="st">&#39;ask&#39;</span> to be prompted for</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">a</span> name.</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--model</span> TEXT                    Model to use, e.g. openai/gpt-4-turbo,</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">anthropic/claude-3-5-sonnet-20240620.</span> If</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">only</span> provider is given, the default model</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>                                  <span class="cf">for</span> that <span class="ex">provider</span> is used.</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--stream</span> / <span class="at">--no-stream</span>          Stream responses</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-v,</span> <span class="at">--verbose</span>                   Verbose output.</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-y,</span> <span class="at">--no-confirm</span>                Skips all confirmation prompts.</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-i,</span> <span class="at">--interactive</span> / <span class="at">-n,</span> <span class="at">--non-interactive</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">Choose</span> interactive mode, or not. Non-</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">interactive</span> implies <span class="at">--no-confirm,</span> and is</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>                                  <span class="ex">used</span> in testing.</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--show-hidden</span>                   Show hidden system messages.</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--version</span>                       Show version.</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--help</span>                          Show this message and exit.</span></code></pre></div>
+<h2 id="bar_chart-stats">📊 Stats</h2>
+<h3 id="star-stargazers-over-time">⭐ Stargazers over time</h3>
+<p><a href="https://starchart.cc/ErikBjare/gptme"><img
+src="https://starchart.cc/ErikBjare/gptme.svg"
+alt="Stargazers over time" /></a></p>
+<h3 id="chart_with_upwards_trend-download-stats">📈 Download Stats</h3>
 <ul>
 <li><a href="https://pepy.tech/project/gptme-python">PePy</a></li>
-<li><a href="https://pypistats.org/packages/gptme-python">PyPiStats</a></li>
+<li><a
+href="https://pypistats.org/packages/gptme-python">PyPiStats</a></li>
 </ul>
-<h2 id="-development">💻 Development</h2>
-<p>Do you want to contribute? Or do you have questions relating to development?</p>
+<h2 id="computer-development">💻 Development</h2>
+<p>Do you want to contribute? Or do you have questions relating to
+development?</p>
 <p>Check out the <a href="CONTRIBUTING.md">CONTRIBUTING</a> file!</p>
-<h2 id="-future-plans">🚀 Future plans</h2>
+<h2 id="rocket-future-plans">🚀 Future plans</h2>
 <h3 id="-fine-tuning">🎛 Fine tuning</h3>
-<p>While current LLMs do okay in this domain, they sometimes take weird approaches that I think could be addressed by fine-tuning on conversation history.</p>
+<p>While current LLMs do okay in this domain, they sometimes take weird
+approaches that I think could be addressed by fine-tuning on
+conversation history.</p>
 <p>If fine-tuned, I would expect improvements in:</p>
 <ul>
 <li>how it structures commands</li>
 <li>how it recovers from errors</li>
-<li>doesn't need special prompts to get rid of "I can't execute commands on the local machine".</li>
+<li>doesn't need special prompts to get rid of "I can't execute commands
+on the local machine".</li>
 <li>and more...</li>
 </ul>
-<h3 id="-running-in-a-sandbox">📦 Running in a sandbox</h3>
-<p>For extensive testing, it'd be good to run it in a simple sandbox to prevent it from doing anything harmful.</p>
-<h2 id="-alternatives">🔀 Alternatives</h2>
-<p>Looking for other similar projects? Check out <a href="https://github.com/ErikBjare/are-copilots-local-yet">Are Copilots Local Yet?</a></p>
-<h2 id="-links">🔗 Links</h2>
+<h3 id="package-running-in-a-sandbox">📦 Running in a sandbox</h3>
+<p>For extensive testing, it'd be good to run it in a simple sandbox to
+prevent it from doing anything harmful.</p>
+<h2 id="twisted_rightwards_arrows-alternatives">🔀 Alternatives</h2>
+<p>Looking for other similar projects? Check out <a
+href="https://github.com/ErikBjare/are-copilots-local-yet">Are Copilots
+Local Yet?</a></p>
+<h2 id="link-links">🔗 Links</h2>
 <ul>
-<li><a href="https://twitter.com/ErikBjare/status/1699097896451289115">Twitter announcement</a></li>
-<li><a href="https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/">Reddit announcement</a></li>
-<li><a href="https://news.ycombinator.com/item?id=37394845">HN announcement (2023 aug)</a></li>
-<li><a href="https://news.ycombinator.com/item?id=41204256">HN announcement (2024 aug)</a></li>
+<li><a
+href="https://twitter.com/ErikBjare/status/1699097896451289115">Twitter
+announcement</a></li>
+<li><a
+href="https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/">Reddit
+announcement</a></li>
+<li><a href="https://news.ycombinator.com/item?id=37394845">HN
+announcement (2023 aug)</a></li>
+<li><a href="https://news.ycombinator.com/item?id=41204256">HN
+announcement (2024 aug)</a></li>
 </ul>
 </body>
 </html>
