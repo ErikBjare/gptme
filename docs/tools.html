@@ -362,7 +362,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shell">Shell</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmux">Tmux</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
@@ -390,7 +390,7 @@ document.write(`
 <ul>
 <li><p><a class="reference internal" href="#shell"><span class="std std-ref">Shell</span></a></p></li>
 <li><p><a class="reference internal" href="#python"><span class="std std-ref">Python</span></a></p></li>
-<li><p><a class="reference internal" href="#terminal"><span class="std std-ref">Terminal</span></a></p></li>
+<li><p><span class="xref std std-ref">Terminal</span></p></li>
 </ul>
 </li>
 <li><p>filesystem</p>
@@ -613,9 +613,9 @@ Results of the last expression will be displayed, IPython-style:</p>
 </dd></dl>
 
 </section>
-<section id="terminal">
-<h2>Terminal<a class="headerlink" href="#terminal" title="Permalink to this heading">#</a></h2>
-<p>You can use the terminal tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.</p>
+<section id="tmux">
+<h2>Tmux<a class="headerlink" href="#tmux" title="Permalink to this heading">#</a></h2>
+<p>You can use the tmux tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.</p>
 <p>This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
 It allows for inspecting pane contents and sending input.</p>
@@ -631,8 +631,8 @@ It allows for inspecting pane contents and sending input.</p>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! To start the dev server we should use the terminal tool to run it in a tmux session:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">new_session npm run dev
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! To start the dev server we should use tmux:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">tmux</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">new_session 'npm run dev'
 </pre></div></pre>
   </td>
 </tr>
@@ -797,8 +797,8 @@ Scaffolding project in ./fancy-project...
 </tr>
 </table><dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.terminal.</span></span><span class="sig-name descname"><span class="pre">execute_terminal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Executes a terminal command and returns the output.</p>
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tmux.</span></span><span class="sig-name descname"><span class="pre">execute_tmux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Executes a command in tmux and returns the output.</p>
 </dd></dl>
 
 </section>
@@ -1119,7 +1119,7 @@ Will always pick the first few system messages.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shell">Shell</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminal">Terminal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmux">Tmux</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
