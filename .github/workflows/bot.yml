@@ -6,6 +6,7 @@ on:
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
 # Set permissions on GITHUB_TOKEN
 # It seems we cannot set `workflows: write`, yet it's needed to allow modifying workflow files
