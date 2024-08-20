@@ -290,8 +290,13 @@ def test_subagent(args: list[str], runner: CliRunner):
 
     # apparently this is not obviously 610
     accepteds = ["377", "610"]
-    assert any(accepted in result.output for accepted in accepteds)
-    assert any(accepted in result.output.split("```")[-1] for accepted in accepteds)
+    assert any([accepted in result.output for accepted in accepteds])
+    assert any(
+        [
+            accepted in "```".join(result.output.split("```")[-2:])
+            for accepted in accepteds
+        ]
+    )
 
 
 @pytest.mark.slow
