@@ -23,6 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt update && sudo apt install pandoc
           python -m pip install --upgrade poetry
           poetry install -E browser
 
