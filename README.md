@@ -2,7 +2,7 @@
   <img src="./media/logo.png" width=150/>
 </p>
 
-<h1 align="center">GPTMe</h1>
+<h1 align="center">gptme</h1>
 
 <p align="center">
 <i>/ʤiː piː tiː miː/</i>
@@ -40,9 +40,12 @@
 
 📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
 
-A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local model is used).
+A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local models are used).
 
 ## 🎥 Demos
+
+> [!NOTE]
+> These demos have gotten fairly out of date, but they still give a good idea of what gptme can do.
 
 <table>
   <tr>
@@ -132,10 +135,12 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
   - Supports making incremental changes with a patch mechanism.
 - 🌐 Search and browse the web.
   - Equipped with a browser via Playwright.
+- 👀 Vision
+  - Can see images whose paths you reference in prompts.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM providers
-  - Use OpenAI, Azure, Anthropic, or serve locally with `llama.cpp`
+  - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
 - ✨ Many smaller features to ensure a great experience
   - → Tab completion
   - 📝 Automatic naming of conversations
