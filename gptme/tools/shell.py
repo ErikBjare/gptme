@@ -1,7 +1,6 @@
 """
 The assistant can execute shell commands by outputting code blocks with `bash` or `sh` as the language.
 """
-
 import atexit
 import functools
 import logging

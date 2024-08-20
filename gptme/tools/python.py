@@ -3,7 +3,6 @@ The assistant can execute Python code blocks.
 
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
-
 import functools
 import re
 from collections.abc import Callable, Generator
@@ -65,7 +64,7 @@ examples = """
 #### Results of the last expression will be displayed, IPython-style:
 User: What is 2 + 2?
 Assistant:
-```python
+```ipython
 2 + 2
 ```
 System: Executed code block.
@@ -208,5 +207,5 @@ tool = ToolSpec(
     examples=examples,
     init=init_python,
     execute=execute_python,
-    block_types=["python"],
+    block_types=["ipython"],
 )

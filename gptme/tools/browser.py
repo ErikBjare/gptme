@@ -39,7 +39,7 @@ examples = """
 ### Answer question from URL with browsing
 User: find out which is the latest ActivityWatch version from superuserlabs.org
 Assistant: Let's browse the site.
-```python
+```ipython
 read_url("https://superuserlabs.org/")
 ```
 System:
@@ -49,7 +49,7 @@ System:
 ...
 ```
 Assistant: Couldn't find the answer on the page. Following link to the ActivityWatch website.
-```python
+```ipython
 read_url("https://activitywatch.net/")
 ```
 System:
@@ -63,7 +63,7 @@ Assistant: The latest version of ActivityWatch is v0.12.2
 ### Searching
 User: who is the founder of ActivityWatch?
 Assistant: Let's search for that.
-```python
+```ipython
 search("ActivityWatch founder")
 ```
 System:
@@ -72,7 +72,7 @@ System:
 ...
 ```
 Assistant: Following link to the ActivityWatch website.
-```python
+```ipython
 read_url("https://activitywatch.net/")
 ```
 System:

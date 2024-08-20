@@ -39,7 +39,7 @@ def test_get_codeblocks():
     # single codeblock only
     msg = Message(
         "system",
-        """```python
+        """```ipython
 def test():
     print("Hello world!")
 ```""",
@@ -54,7 +54,7 @@ def test():
 ```bash
 echo "Hello world!"
 ```
-```python
+```ipython
 print("Hello world!")
 ```
 That's all folks!

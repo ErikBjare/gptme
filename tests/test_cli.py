@@ -88,7 +88,7 @@ def test_command_summarize(args: list[str], runner: CliRunner):
 @pytest.mark.slow
 def test_command_save(args: list[str], runner: CliRunner):
     # tests the /save command
-    args.append(f"{CMDFIX}impersonate ```python\nprint('hello')\n```")
+    args.append(f"{CMDFIX}impersonate ```ipython\nprint('hello')\n```")
     args.append(MULTIPROMPT_SEPARATOR)
     args.append(f"{CMDFIX}save output.txt")
     print(f"running: gptme {' '.join(args)}")
