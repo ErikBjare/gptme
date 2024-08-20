@@ -139,14 +139,13 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 ## 🌟 Features
 
 - 💻 Code execution
-  - Directly execute code (shell and Python) in your local environment.
-  - Executed code maintains state in a REPL-like manner.
+  - Executes code in your local environment with bash and IPython tools.
 - 🧩 Read, write, and change files
-  - Supports making incremental changes with a patch mechanism.
+  - Makes incremental changes with a patch mechanism.
 - 🌐 Search and browse the web.
   - Equipped with a browser via Playwright.
 - 👀 Vision
-  - Can see images whose paths you reference in prompts.
+  - Can see images whose paths are referenced in prompts.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM providers
@@ -158,7 +157,7 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
     - Passing a filename as an argument will read the file and include it as context.
   - 💬 Optional basic Web UI and REST API
 
-🛠  Developer perks:
+### 🛠  Developer perks
 
 - 🧰 Easy to extend
   - Most functionality is implemented as [tools](https://erik.bjareholt.com/gptme/docs/tools.html), making it easy to add new features.
@@ -168,7 +167,7 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
 
-🚧 In progress:
+### 🚧 In progress
 
 - 📝 Handle long contexts intelligently through summarization, truncation, pinning, and subagents.
 - 🌐 Interact with and automate the web.
@@ -315,11 +314,8 @@ If fine-tuned, I would expect improvements in:
 - how it structures commands
 - how it recovers from errors
 - reducing the length of the system prompt
+- reducing refusals
 - and more...
-
-### 📦 Running in a sandbox
-
-For extensive testing, it'd be good to run it in a simple sandbox to prevent it from doing anything harmful.
 
 ## 🔀 Alternatives
 
