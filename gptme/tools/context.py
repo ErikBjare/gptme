@@ -37,9 +37,12 @@ def _gitignore():
     """Read the gitignore, return a list of ignored patterns."""
 
     project_root = Path(".")
-    with open(project_root / ".gitignore") as f:
-        gitignore = f.read()
+    git_ignore = project_root / ".gitignore"
+    if not git_ignore.exists():
+        return []
 
+    with git_ignore.open("r") as f:
+        gitignore = f.read()
     ignored = []
     for line in gitignore.splitlines():
         if not line.startswith("#"):
