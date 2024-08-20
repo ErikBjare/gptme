@@ -204,7 +204,7 @@ gptme
 ```
 
 > [!NOTE]
-> The first time you run gptme, it will ask for an OpenAI API key ([get one here](https://platform.openai.com/account/api-keys)), if not already set as an environment variable or in the config.
+> The first time you run gptme, it will ask for an API key for a supported provider ([OpenAI](https://platform.openai.com/account/api-keys), [Anthropic](https://console.anthropic.com/settings/keys), [OpenRouter](https://openrouter.ai/settings/keys)), if not already set as an environment variable or in the config.
 
 For more, see the [Getting Started guide](https://erik.bjareholt.com/gptme/docs/getting-started.html) in the documentation.
 
@@ -314,7 +314,7 @@ If fine-tuned, I would expect improvements in:
 
 - how it structures commands
 - how it recovers from errors
-- doesn't need special prompts to get rid of "I can't execute commands on the local machine".
+- reducing the length of the system prompt
 - and more...
 
 ### 📦 Running in a sandbox
@@ -327,6 +327,9 @@ Looking for other similar projects? Check out [Are Copilots Local Yet?](https://
 
 ## 🔗 Links
 
+ - [Website](https://erik.bjareholt.com/gptme/)
+ - [Documentation](https://erik.bjareholt.com/gptme/docs/)
+ - [GitHub](https://github.com/ErikBjare/gptme)
  - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)
  - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
  - [HN announcement (2023 aug)](https://news.ycombinator.com/item?id=37394845)
