@@ -92,3 +92,7 @@ gptme 'render mandelbrot set to mandelbrot.png'
 
 # very heavy! run by hand
 # gptme 'render a zooming mandelbrot video to mandelbrot.mp4, use a colorful gradient, write scripts to file'
+
+# make sure it can build basic web apps from scratch
+# NOTE: hard! often messes up tools use
+gptme 'create a new vue project with typescript and pinia named "habit tracker", iterate on it for a few times to create a daily habit-tracker with 3-state buttons (completed, missed, unset) and a comment field for each entry. The UI should be table-looking, with one row per day and one column per habit. Make sure the UI is clean and modern.' --model anthropic
