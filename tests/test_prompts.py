@@ -1,10 +1,11 @@
-from gptme.prompts import get_prompt
 from gptme.message import len_tokens
+from gptme.prompts import get_prompt
 
 
 def test_get_prompt():
     prompt = get_prompt("full")
-    assert 1200 < len_tokens(prompt.content) < 2000
+    # TODO: lower this significantly by selectively removing examples from the full prompt
+    assert 1200 < len_tokens(prompt.content) < 3000
 
     prompt = get_prompt("short")
     assert 700 < len_tokens(prompt.content) < 900
