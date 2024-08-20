@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./media/logo.png" width=150/>
+  <img src="./media/logo.png" width=150 />
 </p>
 
 <h1 align="center">gptme</h1>
@@ -8,6 +8,16 @@
 <i>/ʤiː piː tiː miː/</i>
 </p>
 
+<!-- Links -->
+<p align="center">
+  <a href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting Started</a>
+  •
+  <a href="https://erik.bjareholt.com/gptme/">Website</a>
+  •
+  <a href="https://erik.bjareholt.com/gptme/docs/">Documentation</a>
+</p>
+
+<!-- Badges -->
 <p align="center">
   <a href="https://github.com/ErikBjare/gptme/actions/workflows/build.yml">
     <img src="https://github.com/ErikBjare/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
