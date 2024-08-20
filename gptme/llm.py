@@ -6,6 +6,8 @@ from typing import Literal
 
 from rich import print
 
+from .config import get_config
+from .constants import PROMPT_ASSISTANT
 from .llm_anthropic import chat as chat_anthropic
 from .llm_anthropic import get_client as get_anthropic_client
 from .llm_anthropic import init as init_anthropic
@@ -14,8 +16,6 @@ from .llm_openai import chat as chat_openai
 from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
-from .config import get_config
-from .constants import PROMPT_ASSISTANT
 from .message import Message, len_tokens
 from .models import MODELS, get_summary_model
 from .util import extract_codeblocks
@@ -101,10 +101,6 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
                 if is_supported_codeblock_tool(lang):
                     print("\nFound codeblock, breaking")
                     break
-                else:
-                    logger.warning(
-                        "Code block not supported by tools, continuing generation"
-                    )
     except KeyboardInterrupt:
         return Message("assistant", output + "... ^C Interrupted")
     finally:
