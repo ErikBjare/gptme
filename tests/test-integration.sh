@@ -47,16 +47,6 @@ set -e
 #       if you want to run it, copy the line into your terminal
 # echo "The project mascot is a flying pig" | gptme "What is the project mascot?"
 
-# test load context from file
-echo "The project mascot is a flying pig" > mascot.txt
-gptme "What is the project mascot?" mascot.txt
-
-# test python command
-gptme "/python print('hello world')"
-
-# test shell command
-gptme "/shell echo 'hello world'"
-
 # test write small game
 gptme 'write a snake game with curses to snake.py'
 # works!
@@ -75,10 +65,6 @@ gptme 'plot up to the 5rd degree taylor expansion of sin(x), save to sin.png'
 
 # ask it to manipulate sin.png with imagemagick
 gptme 'rotate sin.png 90 degrees clockwise with imagemagick'
-# works!
-
-# make sure that it doesn't stop after the first command
-gptme 'write a hello.py script then run it'
 # works!
 
 # ask it to manipulate sin.png with PIL
