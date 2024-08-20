@@ -46,6 +46,17 @@ docs/.clean: docs/conf.py
 docs: docs/conf.py docs/*.rst docs/.clean
 	poetry run make -C docs html
 
+.PHONY: site
+site: site/dist/index.html site/dist/docs
+
+site/dist/index.html: README.md
+	mkdir -p site/dist
+	pandoc -s -f gfm -t html5 -o $@ $< --metadata title=" "
+	cp -r media site/dist
+
+site/dist/docs: docs
+	cp -r docs/_build/html site/dist/docs
+
 version:
 	@./scripts/bump_version.sh
 
@@ -64,7 +75,10 @@ release: dist/CHANGELOG.md
 		read -p "Press enter to continue" && \
 		gh release create $${VERSION} -t $${VERSION} -F dist/CHANGELOG.md
 
-clean: clean-docs
+clean: clean-docs clean-site clean-test
+
+clean-site: 
+	rm -rf site/dist
 
 clean-docs:
 	poetry run make -C docs clean
