@@ -505,6 +505,36 @@ main.py
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">The project is...</pre>
   </td>
 </tr>
+</table><p>Create vue project</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Create a new vue project with typescript and pinia named fancy-project</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">npm init vue@latest fancy-project --yes -- --typescript --pinia
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">> npx
+> create-vue
+
+Vue.js - The Progressive JavaScript Framework
+
+Scaffolding project in ./fancy-project...
+</pre></div></pre>
+  </td>
+</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.shell.</span></span><span class="sig-name descname"><span class="pre">execute_shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
@@ -587,7 +617,7 @@ Results of the last expression will be displayed, IPython-style:</p>
 <h2>Terminal<a class="headerlink" href="#terminal" title="Permalink to this heading">#</a></h2>
 <p>You can use the terminal tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.</p>
 <p>This tool is suitable to run long-running commands or interactive applications that require user input.
-Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">create</span> <span class="pre">vue&#64;latest</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
+Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
 It allows for inspecting pane contents and sending input.</p>
 <p>Managing a dev server</p>
 <table style="width: 100%; margin-bottom: 1em">
@@ -641,13 +671,13 @@ It allows for inspecting pane contents and sending input.</p>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Can you stop the dev server?</pre>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Stop the dev server</pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll send 'Ctrl+C' to the pane to stop the server:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll send 'Ctrl+C' to the pane to stop the server:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">send_keys 0 C-c
 </pre></div></pre>
   </td>
@@ -698,69 +728,20 @@ It allows for inspecting pane contents and sending input.</p>
 </pre></div></pre>
   </td>
 </tr>
-</table><p>Interactive process</p>
+</table><p>Create vue project</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Create a new vue project with typescript</pre>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Create a new vue project with typescript and pinia named fancy-project</pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sure! Let's create a new vue project in a tmux session:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">new_session 'npm create vue@latest'
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Running 'npm create vue@latest' in session 0<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">> npx
-> create-vue
-
-Vue.js - The Progressive JavaScript Framework
-
-? Project name: › vue-project
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">vue-project is a placeholder we can fill in. What would you like to name your project?</pre>
-  </td>
-</tr>
-</table><table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">fancy-project</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">send_keys 0 fancy-project Enter
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sent 'fancy-project Enter' to pane 0</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Lets check that the name was set and move on<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">inspect_pane 0
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">npm init vue@latest fancy-project --yes -- --typescript --pinia
 </pre></div></pre>
   </td>
 </tr>
@@ -768,23 +749,13 @@ Vue.js - The Progressive JavaScript Framework
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">? Project name: › fancy-project
-? Add TypeScript? › No / Yes
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">> npx
+> create-vue
+
+Vue.js - The Progressive JavaScript Framework
+
+Scaffolding project in ./fancy-project...
 </pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">The project name has been set, now we choose TypeScript<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">terminal</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">send_keys 0 Right Enter
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sent 'Right Enter' to pane 0</pre>
   </td>
 </tr>
 </table><p>Ending a session</p>
