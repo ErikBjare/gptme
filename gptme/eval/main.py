@@ -8,6 +8,7 @@ import csv
 import inspect
 import io
 import logging
+import os
 import signal
 import subprocess
 import sys
@@ -56,6 +57,8 @@ ProcessResult = Union[ProcessSuccess, ProcessError]
 
 def act_process(agent, files, prompt, queue: "Queue[ProcessResult]"):
     # Runs in a process for each eval
+    # each eval has a process group, so we can kill all child processes
+    os.setpgrp()
 
     # redirect stdout and stderr to streams
     stdout, stderr = io.StringIO(), io.StringIO()
@@ -67,6 +70,8 @@ def act_process(agent, files, prompt, queue: "Queue[ProcessResult]"):
         sys.stdout, sys.stderr = stdout_orig, stderr_orig
         print(f"Error: {e}")
         queue.put(ProcessError(str(e), stdout.getvalue(), stderr.getvalue(), duration))
+        # kill child processes
+        os.killpg(0, signal.SIGKILL)
         sys.exit(1)
 
     # handle SIGTERM
@@ -98,7 +103,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     Executes the code for a specific model with a timeout.
     """
     print(
-        f"Running test {test['name']} with prompt: {test['prompt']} for model: {agent.model}"
+        f'Running "{test["name"]}" with prompt "{test["prompt"]}" for model: {agent.model}'
     )
 
     queue: Queue[ProcessResult] = Queue()
@@ -114,7 +119,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     if p.is_alive():
         print("Timeout reached, terminating process")
         p.terminate()
-        p.join()
+        p.join(timeout=1)
         status = "timeout"
         time_gen = timeout
 
@@ -129,7 +134,9 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
             "stderr": "",
         }
 
-    result = queue.get()
+    logger.info("Getting result from queue")
+    result = queue.get(timeout=1)
+    logger.info("Got result")
     if status == "success":
         time_gen = result.duration
     stdout, stderr = result.stdout, result.stderr
@@ -150,6 +157,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     run_start = time.time()
     env = SimpleExecutionEnv()
     env.upload(files)
+    logger.info(f"Running check: {test['run']}")
     stdout_run, stderr_run, exit_code = env.run(test["run"])
     time_run = time.time() - run_start
 

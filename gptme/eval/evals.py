@@ -36,6 +36,22 @@ def check_output_hello_ask(ctx):
     return "Hello, Erik!" in ctx.stdout
 
 
+def check_package_json(ctx):
+    return "package.json" in ctx.files
+
+
+def check_output_compiled_successfully(ctx):
+    return "Compiled successfully" in ctx.stdout
+
+
+def check_output_erik(ctx):
+    return "Erik" in ctx.stdout
+
+
+def check_cargo_toml(ctx):
+    return "Cargo.toml" in ctx.files
+
+
 tests: list["ExecTest"] = [
     {
         "name": "hello",
@@ -86,6 +102,34 @@ tests: list["ExecTest"] = [
             "clean working tree": check_clean_working_tree,
             "main.py exists": check_main_py_exists,
             "we have a commit": check_commit_exists,
+        },
+    },
+    {
+        "name": "init-react",
+        "files": {},
+        "run": "npm run build",
+        "prompt": "create a react project in the current directory, try to build it, but dont start the server and dont use git",
+        "expect": {
+            "package.json exists": check_package_json,
+            "builds successfully": check_output_compiled_successfully,
+        },
+    },
+    {
+        "name": "init-rust",
+        "files": {},
+        "run": "cargo build",
+        "prompt": "create a Rust project in the current directory",
+        "expect": {
+            "Cargo.toml exists": check_cargo_toml,
+        },
+    },
+    {
+        "name": "whois-superuserlabs-ceo",
+        "files": {},
+        "run": "cat answer.txt",
+        "prompt": "who is the CEO of Superuser Labs? write the answer to answer.txt",
+        "expect": {
+            "correct output": check_output_erik,
         },
     },
     # Fails, gets stuck on interactive stuff
