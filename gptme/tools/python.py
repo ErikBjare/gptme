@@ -3,6 +3,7 @@ The assistant can execute Python code blocks.
 
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
+
 import functools
 import re
 from collections.abc import Callable, Generator
@@ -207,5 +208,8 @@ tool = ToolSpec(
     examples=examples,
     init=init_python,
     execute=execute_python,
-    block_types=["ipython"],
+    block_types=[
+        "python",
+        "ipython",
+    ],  # ideally, models should use `ipython` and not `python`, but they don't
 )
