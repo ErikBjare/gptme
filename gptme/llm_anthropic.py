@@ -1,25 +1,28 @@
 from collections.abc import Generator
-from typing import Literal, TypedDict
-from typing_extensions import Required
+from typing import TYPE_CHECKING, Literal, TypedDict
 
-from anthropic import Anthropic
+from typing_extensions import Required
 
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, len_tokens, msgs2dicts
 
-anthropic: Anthropic | None = None
+if TYPE_CHECKING:
+    from anthropic import Anthropic
+
+anthropic: "Anthropic | None" = None
 
 
 def init(config):
     global anthropic
     api_key = config.get_env_required("ANTHROPIC_API_KEY")
+    from anthropic import Anthropic  # fmt: skip
     anthropic = Anthropic(
         api_key=api_key,
         max_retries=5,
     )
 
 
-def get_client() -> Anthropic | None:
+def get_client() -> "Anthropic | None":
     return anthropic
 
 

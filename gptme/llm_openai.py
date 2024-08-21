@@ -1,12 +1,14 @@
 import logging
 from collections.abc import Generator
-
-from openai import AzureOpenAI, OpenAI
+from typing import TYPE_CHECKING
 
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
 
-openai: OpenAI | None = None
+if TYPE_CHECKING:
+    from openai import OpenAI
+
+openai: "OpenAI | None" = None
 logger = logging.getLogger(__name__)
 
 
@@ -19,6 +21,7 @@ openrouter_headers = {
 
 def init(llm: str, config):
     global openai
+    from openai import AzureOpenAI, OpenAI  # fmt: skip
 
     if llm == "openai":
         api_key = config.get_env_required("OPENAI_API_KEY")
@@ -44,7 +47,7 @@ def init(llm: str, config):
     assert openai, "LLM not initialized"
 
 
-def get_client() -> OpenAI | None:
+def get_client() -> "OpenAI | None":
     return openai
 
 

@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Generator
 from dataclasses import dataclass
+from typing import Callable
 from xml.etree import ElementTree
 
 from ..message import Message
@@ -9,8 +10,9 @@ from .base import ToolSpec
 from .browser import tool as browser_tool
 from .gh import tool as gh_tool
 from .patch import tool as patch_tool
-from .python import execute_python, register_function
-from .python import tool as python_tool
+from .python import execute_python
+from .python import get_tool as get_python_tool
+from .python import register_function
 from .read import tool as tool_read
 from .save import execute_save, tool_append, tool_save
 from .shell import execute_shell
@@ -33,22 +35,17 @@ __all__ = [
     "all_tools",
 ]
 
-
-all_tools: list[ToolSpec] = [
-    tool
-    for tool in [
-        tool_read,
-        tool_save,
-        tool_append,
-        patch_tool,
-        python_tool,
-        shell_tool,
-        subagent_tool,
-        tmux_tool,
-        browser_tool,
-        gh_tool,
-    ]
-    if tool.available
+all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
+    tool_read,
+    tool_save,
+    tool_append,
+    patch_tool,
+    get_python_tool,
+    shell_tool,
+    subagent_tool,
+    tmux_tool,
+    browser_tool,
+    gh_tool,
 ]
 loaded_tools: list[ToolSpec] = []
 
@@ -69,6 +66,10 @@ class ToolUse:
 def init_tools() -> None:
     """Runs initialization logic for tools."""
     for tool in all_tools:
+        if not isinstance(tool, ToolSpec):
+            tool = tool()
+        if not tool.available:
+            continue
         if tool in loaded_tools:
             continue
         load_tool(tool)
@@ -204,7 +205,7 @@ def get_tooluse_xml(content: str) -> Generator[ToolUse, None, None]:
 
 def get_tool(tool_name: str) -> ToolSpec:
     """Returns a tool by name."""
-    for tool in all_tools:
+    for tool in loaded_tools:
         if tool.name == tool_name:
             return tool
     raise ValueError(f"Tool '{tool_name}' not found")
