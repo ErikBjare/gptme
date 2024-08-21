@@ -14,6 +14,9 @@ SRCFILES = $(shell find ${SRCDIRS} -name '*.py' $(foreach EXCLUDE,$(EXCLUDES),-n
 build:
 	poetry install
 
+build-docker:
+	docker build -t gptme .
+
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
 	poetry run pytest ${SRCDIRS} -v --log-level INFO --durations=5 \
@@ -77,7 +80,7 @@ release: dist/CHANGELOG.md
 
 clean: clean-docs clean-site clean-test
 
-clean-site: 
+clean-site:
 	rm -rf site/dist
 
 clean-docs:
