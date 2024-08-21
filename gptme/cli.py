@@ -102,6 +102,12 @@ The chat offers some commands that can be used to interact with the system:
     help="Show hidden system messages.",
 )
 @click.option(
+    "-r",
+    "--resume",
+    is_flag=True,
+    help="Load last conversation",
+)
+@click.option(
     "--version",
     is_flag=True,
     help="Show version and configuration information",
@@ -117,6 +123,7 @@ def main(
     interactive: bool,
     show_hidden: bool,
     version: bool,
+    resume: bool,
 ):
     """Main entrypoint for the CLI."""
     if version:
@@ -159,6 +166,10 @@ def main(
                 logger.warning(
                     "Failed to switch to interactive mode, continuing in non-interactive mode"
                 )
+
+    # if resume
+    if resume:
+        name = "resume"  # magic string to load last conversation
 
     # join prompts, grouped by `-` if present, since that's the separator for multiple-round prompts
     sep = "\n\n" + MULTIPROMPT_SEPARATOR
@@ -344,18 +355,23 @@ def get_name(name: str) -> Path:
     return logpath
 
 
-def get_logfile(name: str, interactive=True) -> Path:
+def get_logfile(name: str | Literal["random", "resume"], interactive=True) -> Path:
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
     NEW_CONV = "New conversation"
     prev_conv_files = list(reversed(_conversations()))
 
-    def is_test(name: str) -> bool:
-        return "-test-" in name or name.startswith("test-")
+    if name == "resume":
+        if prev_conv_files:
+            return prev_conv_files[0].parent / "conversation.jsonl"
+        else:
+            raise ValueError("No previous conversations to resume")
 
     # filter out test conversations
     # TODO: save test convos to different folder instead
+    # def is_test(name: str) -> bool:
+    #     return "-test-" in name or name.startswith("test-")
     # prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
     NEWLINE = "\n"
