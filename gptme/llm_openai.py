@@ -10,6 +10,13 @@ openai: OpenAI | None = None
 logger = logging.getLogger(__name__)
 
 
+# Shows in rankings on openrouter.ai
+openrouter_headers = {
+    "HTTP-Referer": "https://github.com/ErikBjare/gptme",
+    "X-Title": "gptme",
+}
+
+
 def init(llm: str, config):
     global openai
 
@@ -50,6 +57,9 @@ def chat(messages: list[Message], model: str) -> str:
         messages=msgs2dicts(messages, openai=True),  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
+        extra_headers=(
+            openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
+        ),
     )
     content = response.choices[0].message.content
     assert content
@@ -68,6 +78,9 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
         max_tokens=1000 if not model.startswith("gpt-") else 4096,
+        extra_headers=(
+            openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
+        ),
     ):
         if not chunk.choices:  # type: ignore
             # Got a chunk with no choices, Azure always sends one of these at the start

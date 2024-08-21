@@ -54,7 +54,7 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 
 def _chat_complete(messages: list[Message], model: str) -> str:
     provider = _client_to_provider()
-    if provider == "openai":
+    if provider in ["openai", "azure", "openrouter"]:
         return chat_openai(messages, model)
     elif provider == "anthropic":
         return chat_anthropic(messages, model)
@@ -64,7 +64,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _stream(messages: list[Message], model: str) -> Iterator[str]:
     provider = _client_to_provider()
-    if provider == "openai":
+    if provider in ["openai", "azure", "openrouter"]:
         return stream_openai(messages, model)
     elif provider == "anthropic":
         return stream_anthropic(messages, model)
