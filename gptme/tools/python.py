@@ -10,77 +10,12 @@ from collections.abc import Callable, Generator
 from logging import getLogger
 from typing import Literal, TypeVar, get_origin
 
-from IPython.terminal.embed import InteractiveShellEmbed
-from IPython.utils.capture import capture_output
-
 from ..message import Message
 from ..util import ask_execute, print_preview, transform_examples_to_chat_directives
 from .base import ToolSpec
 
 logger = getLogger(__name__)
 
-
-@functools.lru_cache
-def get_installed_python_libraries() -> set[str]:
-    """Check if a select list of Python libraries are installed."""
-    candidates = [
-        "numpy",
-        "pandas",
-        "matplotlib",
-        "seaborn",
-        "scipy",
-        "scikit-learn",
-        "statsmodels",
-        "pillow",
-    ]
-    installed = set()
-    for candidate in candidates:
-        try:
-            __import__(candidate)
-            installed.add(candidate)
-        except ImportError:
-            pass
-    return installed
-
-
-python_libraries = get_installed_python_libraries()
-python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
-
-
-instructions = f"""
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
-
-The following libraries are available:
-{python_libraries_str}
-""".strip()
-
-# TODO: get this working again (needs to run get_functions_prompt() after all functions are registered)
-_unused = """
-The following functions are available in the REPL:
-{get_functions_prompt()}
-"""
-
-examples = """
-#### Results of the last expression will be displayed, IPython-style:
-User: What is 2 + 2?
-Assistant:
-```ipython
-2 + 2
-```
-System: Executed code block.
-```stdout
-4
-```
-
-#### The user can also run Python code with the /python command:
-
-User: /python 2 + 2
-System: Executed code block.
-```stdout
-4
-```
-""".strip()
 
 # IPython instance
 _ipython = None
@@ -131,6 +66,7 @@ def get_functions_prompt() -> str:
 
 def _get_ipython():
     global _ipython
+    from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
     if _ipython is None:
         _ipython = InteractiveShellEmbed()
         _ipython.push(registered_functions)
@@ -156,6 +92,7 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
     _ipython = _get_ipython()
 
     # Capture the standard output and error streams
+    from IPython.utils.capture import capture_output  # fmt: skip
     with capture_output() as captured:
         # Execute the code
         result = _ipython.run_cell(code, silent=False, store_history=False)
@@ -186,6 +123,29 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
     yield Message("system", "Executed code block.\n\n" + output)
 
 
+@functools.lru_cache
+def get_installed_python_libraries() -> set[str]:
+    """Check if a select list of Python libraries are installed."""
+    candidates = [
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "seaborn",
+        "scipy",
+        "scikit-learn",
+        "statsmodels",
+        "pillow",
+    ]
+    installed = set()
+    for candidate in candidates:
+        try:
+            __import__(candidate)
+            installed.add(candidate)
+        except ImportError:
+            pass
+    return installed
+
+
 def check_available_packages():
     """Checks that essentials like numpy, pandas, matplotlib are available."""
     expected = ["numpy", "pandas", "matplotlib"]
@@ -199,17 +159,57 @@ def check_available_packages():
         )
 
 
+examples = """
+#### Results of the last expression will be displayed, IPython-style:
+User: What is 2 + 2?
+Assistant:
+```ipython
+2 + 2
+```
+System: Executed code block.
+```stdout
+4
+```
+
+#### The user can also run Python code with the /python command:
+
+User: /python 2 + 2
+System: Executed code block.
+```stdout
+4
+```
+""".strip()
+
 __doc__ += transform_examples_to_chat_directives(examples)
 
-tool = ToolSpec(
-    name="python",
-    desc="Execute Python code",
-    instructions=instructions,
-    examples=examples,
-    init=init_python,
-    execute=execute_python,
-    block_types=[
-        "python",
-        "ipython",
-    ],  # ideally, models should use `ipython` and not `python`, but they don't
-)
+
+def get_tool() -> ToolSpec:
+    python_libraries = get_installed_python_libraries()
+    python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+
+    instructions = f"""
+    When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+    Python will respond with the output of the execution.
+
+    The following libraries are available:
+    {python_libraries_str}
+    """.strip()
+
+    # TODO: get this working again (needs to run get_functions_prompt() after all functions are registered)
+    _unused = """
+    The following functions are available in the REPL:
+    {get_functions_prompt()}
+    """
+
+    return ToolSpec(
+        name="python",
+        desc="Execute Python code",
+        instructions=instructions,
+        examples=examples,
+        init=init_python,
+        execute=execute_python,
+        block_types=[
+            "python",
+            "ipython",
+        ],  # ideally, models should use `ipython` and not `python`, but they don't
+    )
