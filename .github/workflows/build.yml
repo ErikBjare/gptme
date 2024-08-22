@@ -12,7 +12,7 @@ env:
 
 jobs:
   build:
-    name: Test ${{ matrix.os }} with `${{ matrix.extras }}` on ${{ matrix.provider }}
+    name: Test ${{ matrix.os }} with `${{ matrix.extras }}` on ${{ matrix.model }}
     runs-on: ${{ matrix.os }}
     env:
       RELEASE: false
@@ -21,13 +21,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python_version: ['3.10']
-        extras: ['-E server', '-E browser', '-E all']
-        provider: ['openai']
-        include:
-          - os: ubuntu-latest
-            python_version: '3.10'
-            extras: '-E all'
-            provider: 'anthropic'
+        extras: ['-E all']
+        model: ['openai', 'anthropic']
     steps:
     - uses: actions/checkout@v3
       with:
@@ -37,15 +32,11 @@ jobs:
     - name: Install poetry
       run: |
         pipx install poetry
-        echo "${{ matrix.extras }}" > .extras-cache
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python_version }}
         cache: 'poetry'
-        cache-dependency-path: |
-          poetry.lock
-          .extras-cache
 
     - name: Install dependencies
       run: |
@@ -61,7 +52,7 @@ jobs:
       uses: nick-fields/retry@v2
       env:
         TERM: xterm
-        MODEL: ${{ matrix.provider }}
+        MODEL: ${{ matrix.model }}
       with:
         timeout_minutes: 5
         max_attempts: 1  # favor pytest retries (mark with flaky)
@@ -71,11 +62,11 @@ jobs:
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       env:
-        MODEL: ${{ matrix.provider }}
+        MODEL: ${{ matrix.model }}
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         env_vars: MODEL
-        flags: ${{ matrix.provider }}
+        flags: ${{ matrix.model }}
 
     - name: Upload test results to Codecov
       if: ${{ !cancelled() }}
