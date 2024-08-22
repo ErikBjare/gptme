@@ -28,6 +28,8 @@ COPY media ./media
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi -E server -E browser -E datascience
 
+RUN poetry run playwright install chromium
+
 # Make port 5000 available to the world outside this container
 # (assuming your Flask server runs on port 5000)
 EXPOSE 5000
