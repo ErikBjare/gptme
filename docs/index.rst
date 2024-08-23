@@ -28,6 +28,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    tools
    providers
    webui
+   evals
    finetuning
    cli
    api
