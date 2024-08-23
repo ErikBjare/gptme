@@ -18,8 +18,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
 from multiprocessing import Process, Queue
-from multiprocessing.queues import Empty
 from pathlib import Path
+from queue import Empty
 from typing import Union
 
 import click
