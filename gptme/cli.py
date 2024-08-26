@@ -245,7 +245,7 @@ def chat(
     # check if workspace already exists
     workspace_prompt = get_workspace_prompt(str(workspace_path))
     if workspace_prompt:
-        log.append(Message("system", workspace_prompt))
+        log.append(Message("system", workspace_prompt, hide=True))
 
     # print log
     log.print()
