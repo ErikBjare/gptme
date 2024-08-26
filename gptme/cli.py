@@ -18,6 +18,7 @@ from rich import print  # noqa: F401
 from rich.console import Console
 
 from .commands import CMDFIX, action_descriptions, execute_cmd
+from .config import get_workspace_prompt
 from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
 from .init import init, init_logging
@@ -111,6 +112,11 @@ The chat offers some commands that can be used to interact with the system:
     is_flag=True,
     help="Show version and configuration information",
 )
+@click.option(
+    "--workspace",
+    help="Path to workspace directory.",
+    default=".",
+)
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -123,6 +129,7 @@ def main(
     show_hidden: bool,
     version: bool,
     resume: bool,
+    workspace: str,
 ):
     """Main entrypoint for the CLI."""
     if version:
@@ -146,8 +153,13 @@ def main(
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
 
+    workspace_prompt = get_workspace_prompt(workspace)
+
     # get initial system prompt
     initial_msgs = [get_prompt(prompt_system)]
+    initial_msgs[
+        0
+    ].content += f"\n\nSelected project files, read more with cat: {workspace_prompt}"
 
     # if stdin is not a tty, we're getting piped input, which we should include in the prompt
     if not sys.stdin.isatty():
