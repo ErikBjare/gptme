@@ -65,23 +65,43 @@ class ProcessError:
 ProcessResult = Union[ProcessSuccess, ProcessError]
 
 
+class StreamTee(io.TextIOBase):
+    """Capture stdout or stderr to a stream and optionally keep original streams intact."""
+
+    # NOTE: toggling keep_stream can be useful for debugging
+    def __init__(self, stream, keep_stream=False):
+        self.stream = stream
+        self.captured = io.StringIO()
+        self.keep_stream = keep_stream
+
+    def write(self, message) -> int:
+        self.captured.write(message)
+        if self.keep_stream:
+            self.stream.write(message)
+        return len(message)
+
+    def getvalue(self):
+        return self.captured.getvalue()
+
+
 def act_process(agent, files, prompt, queue: "Queue[ProcessResult]"):
     # Runs in a process for each eval
     # each eval has a process group, so we can kill all child processes
     os.setpgrp()
 
     # redirect stdout and stderr to streams
-    stdout, stderr = io.StringIO(), io.StringIO()
-    stdout_orig, stderr_orig = sys.stdout, sys.stderr
-    sys.stdout, sys.stderr = stdout, stderr
+    stdout = StreamTee(sys.stdout)
+    stderr = StreamTee(sys.stderr)
+    sys.stdout, sys.stderr = stdout, stderr  # type: ignore
 
     def error_handler(e):
         duration = time.time() - start
-        sys.stdout, sys.stderr = stdout_orig, stderr_orig
+        sys.stdout, sys.stderr = stdout.stream, stderr.stream
         print(f"Error: {e}")
         queue.put(ProcessError(str(e), stdout.getvalue(), stderr.getvalue(), duration))
         # kill child processes
         # os.killpg(0, signal.SIGKILL)
+
         sys.exit(1)
 
     # handle SIGTERM
@@ -93,9 +113,9 @@ def act_process(agent, files, prompt, queue: "Queue[ProcessResult]"):
     start = time.time()
     files = agent.act(files, prompt)
     duration = time.time() - start
-    sys.stdout, sys.stderr = stdout_orig, stderr_orig
+    sys.stdout, sys.stderr = stdout.stream, stderr.stream
     queue.put(ProcessSuccess(files, stdout.getvalue(), stderr.getvalue(), duration))
-    print("Process finished")
+    print("Process finished successfully")
     # It seems that adding this prevents the queue from syncing or something, maybe SIGKILL is too harsh...
     # os.killpg(0, signal.SIGKILL)
 
@@ -105,7 +125,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     """
     Executes the code for a specific model with a timeout.
     """
-    print(
+    logger.info(
         f'Running "{test["name"]}" with prompt "{test["prompt"]}" for model: {agent.model}'
     )
 
@@ -120,7 +140,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
 
     status: Status = "success"
     if p.is_alive():
-        print("Timeout reached, terminating process")
+        logger.info("Timeout reached, terminating process")
         p.terminate()
         p.join(timeout=1)
         status = "timeout"
@@ -141,7 +161,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
         }
 
     logger.info("Got result")
-    if status == "success":
+    if status != "timeout":
         time_gen = result.duration
     stdout, stderr = result.stdout, result.stderr
 
@@ -169,7 +189,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
 
     ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
     results: list[CaseResult] = []
-    print(f"\n--- Results for {test['name']} ---")
+    print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
     for name, case in test["expect"].items():
         code = inspect.getsource(case).strip()
         eval_start = time.time()

@@ -114,7 +114,7 @@ The chat offers some commands that can be used to interact with the system:
 )
 @click.option(
     "--workspace",
-    help="Path to workspace directory.",
+    help="Path to workspace directory. Pass '@log' to create a workspace in the log directory.",
     default=".",
 )
 def main(
@@ -153,13 +153,8 @@ def main(
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
 
-    workspace_prompt = get_workspace_prompt(workspace)
-
     # get initial system prompt
     initial_msgs = [get_prompt(prompt_system)]
-    initial_msgs[
-        0
-    ].content += f"\n\nSelected project files, read more with cat: {workspace_prompt}"
 
     # if stdin is not a tty, we're getting piped input, which we should include in the prompt
     if not sys.stdin.isatty():
@@ -196,6 +191,7 @@ def main(
         no_confirm,
         interactive,
         show_hidden,
+        workspace,
     )
 
 
@@ -208,12 +204,14 @@ def chat(
     no_confirm: bool = False,
     interactive: bool = True,
     show_hidden: bool = False,
+    workspace: str = ".",
 ):
     """
     Run the chat loop.
 
     prompt_msgs: list of messages to execute in sequence.
     initial_msgs: list of history messages.
+    workspace: path to workspace directory, or @log to create one in the log directory.
 
     Callable from other modules.
     """
@@ -226,6 +224,28 @@ def chat(
     )
     print(f"Using logdir {logfile.parent}")
     log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
+
+    # change to workspace directory
+    # use if exists, create if @log, or use given path
+    if (logfile.parent / "workspace").exists():
+        assert workspace in ["@log", "."], "Workspace already exists"
+        workspace_path = logfile.parent / "workspace"
+        print(f"Using workspace at {workspace_path}")
+    elif workspace == "@log":
+        workspace_path = logfile.parent / "workspace"
+        print(f"Creating workspace at {workspace_path}")
+        os.makedirs(workspace_path, exist_ok=True)
+    else:
+        workspace_path = Path(workspace)
+        assert (
+            workspace_path.exists()
+        ), f"Workspace path {workspace_path} does not exist"
+    os.chdir(workspace_path)
+
+    # check if workspace already exists
+    workspace_prompt = get_workspace_prompt(str(workspace_path))
+    if workspace_prompt:
+        log.append(Message("system", workspace_prompt))
 
     # print log
     log.print()
@@ -388,8 +408,8 @@ def get_logfile(name: str | Literal["random", "resume"], interactive=True) -> Pa
         for f in prev_conv_files
     ]
 
-    # don't run pick in tests/non-interactive mode
-    if interactive:
+    # don't run pick in tests/non-interactive mode, or if the user specifies a name
+    if interactive and name not in ["random", "ask"]:
         options = [
             NEW_CONV,
         ] + prev_convs

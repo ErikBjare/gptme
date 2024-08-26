@@ -1,1 +1,1 @@
-files = ["README.md", "gptme/cli.py", "docs/*.rst", "docs/*.md"]
+files = ["README.md", "Makefile", "gptme/cli.py", "docs/*.rst", "docs/*.md"]
