@@ -188,18 +188,15 @@ def get_tool() -> ToolSpec:
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
 
     instructions = f"""
-    When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-    Python will respond with the output of the execution.
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
 
-    The following libraries are available:
-    {python_libraries_str}
+The following libraries are available:
+{python_libraries_str}
+
+The following functions are available in the REPL:
+{get_functions_prompt()}
     """.strip()
-
-    # TODO: get this working again (needs to run get_functions_prompt() after all functions are registered)
-    _unused = """
-    The following functions are available in the REPL:
-    {get_functions_prompt()}
-    """
 
     return ToolSpec(
         name="python",

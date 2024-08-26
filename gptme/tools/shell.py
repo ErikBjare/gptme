@@ -1,6 +1,7 @@
 """
 The assistant can execute shell commands by outputting code blocks with `bash` or `sh` as the language.
 """
+
 import atexit
 import functools
 import logging
@@ -376,7 +377,6 @@ tool = ToolSpec(
     desc="Executes shell commands.",
     instructions=instructions,
     examples=examples,
-    init=get_shell,
     execute=execute_shell,
     block_types=["bash", "sh"],
 )

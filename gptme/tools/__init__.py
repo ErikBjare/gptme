@@ -40,12 +40,13 @@ all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
     tool_save,
     tool_append,
     patch_tool,
-    get_python_tool,
     shell_tool,
     subagent_tool,
     tmux_tool,
     browser_tool,
     gh_tool,
+    # python tool is loaded last to ensure all functions are registered
+    get_python_tool,
 ]
 loaded_tools: list[ToolSpec] = []
 

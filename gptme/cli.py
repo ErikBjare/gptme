@@ -28,7 +28,6 @@ from .models import get_model
 from .prompts import get_prompt
 from .tools import execute_msg, get_tool
 from .tools.browser import read_url
-from .tools.shell import ShellSession, set_shell
 from .util import epoch_to_age, generate_name
 
 logger = logging.getLogger(__name__)
@@ -208,9 +207,6 @@ def chat(
     """
     # init
     init(model, interactive)
-
-    # (re)init shell
-    set_shell(ShellSession())
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
     logfile = get_logfile(
