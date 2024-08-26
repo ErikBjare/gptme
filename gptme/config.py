@@ -121,10 +121,6 @@ def set_config_value(key: str, value: str) -> None:
 
 
 def get_workspace_prompt(workspace: str) -> str:
-    if not os.path.exists(workspace):
-        logger.error(f"Workspace directory {workspace} does not exist")
-        exit(1)
-    os.chdir(workspace)
     project_config_paths = [
         p
         for p in (
@@ -148,7 +144,7 @@ def get_workspace_prompt(workspace: str) -> str:
                         f"File {file} specified in project config does not exist"
                     )
                     exit(1)
-        return "\n\nSelected project files, read more with cat:\n" + "\n".join(
+        return "\n\nSelected project files, read more with cat:\n" + "\n\n".join(
             [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
         )
     return ""

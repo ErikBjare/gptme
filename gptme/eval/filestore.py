@@ -6,10 +6,12 @@ from .types import Files
 
 
 class FileStore:
-    def __init__(self):
-        self.working_dir = Path(tempfile.mkdtemp(prefix="gptme-evals-"))
+    def __init__(self, working_dir: Path | None = None):
+        if working_dir:
+            self.working_dir = working_dir
+        else:
+            self.working_dir = Path(tempfile.mkdtemp(prefix="gptme-evals-"))
         self.working_dir.mkdir(parents=True, exist_ok=True)
-        self.id = self.working_dir.name.split("-")[-1]
 
     def upload(self, files: Files):
         for name, content in files.items():
