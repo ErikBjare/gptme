@@ -12,7 +12,11 @@ def test_matches():
     assert ".git/" in _matches("")
     assert _matches(".githu") == [".github/"]
     assert _matches(".github") == [".github/"]
-    assert set(_matches(".github/")) == {".github/workflows/", ".github/actions/", ".github/codecov.yml"}
+    assert set(_matches(".github/")) == {
+        ".github/workflows/",
+        ".github/actions/",
+        ".github/codecov.yml",
+    }
 
     # files
     assert _matches("README") == ["README.md"]

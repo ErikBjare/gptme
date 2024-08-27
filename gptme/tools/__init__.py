@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Generator
 from dataclasses import dataclass
-from typing import Callable
+from collections.abc import Callable
 from xml.etree import ElementTree
 
 from ..message import Message
