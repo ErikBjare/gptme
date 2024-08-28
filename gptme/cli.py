@@ -409,7 +409,7 @@ def get_logfile(name: str | Literal["random", "resume"], interactive=True) -> Pa
     ]
 
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
-    if interactive and name not in ["random", "ask"]:
+    if interactive and name in ["random"]:
         options = [
             NEW_CONV,
         ] + prev_convs
