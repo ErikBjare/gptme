@@ -3,6 +3,8 @@ name: Build
 on:
   push:
     branches: [ master ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ master ]
 
@@ -82,6 +84,19 @@ jobs:
       uses: docker/setup-buildx-action@v3
       with:
         driver: docker
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set lower case owner name
+      run: |
+        echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+      env:
+        OWNER: '${{ github.repository_owner }}'
+
+    # First the base image
     - name: Build Docker image (base)
       uses: docker/build-push-action@v3
       with:
@@ -89,13 +104,28 @@ jobs:
         file: ./Dockerfile
         context: .
         push: false
-    - name: Build Docker image (eval)
+
+    # We push seperately since we need the local gptme:latest tag (which cannot be pushed since we use ghcr.io)
+    - name: Push Docker image (base)
       uses: docker/build-push-action@v3
       with:
-        tags: gptme-eval:latest
+        tags: |
+          ghcr.io/${{ env.OWNER_LC }}/gptme:latest
+          ghcr.io/${{ env.OWNER_LC }}/gptme:${{ github.ref_name }}
+        file: ./Dockerfile
+        context: .
+        push: true
+
+    # Now the eval image
+    - name: Build and push Docker image (eval)
+      uses: docker/build-push-action@v3
+      with:
+        tags: |
+          ghcr.io/${{ env.OWNER_LC }}/gptme-eval:latest
+          ghcr.io/${{ env.OWNER_LC }}/gptme-eval:${{ github.ref_name }}
         file: ./Dockerfile.eval
         context: .
-        push: false
+        push: true
 
   lint:
     runs-on: ubuntu-latest
