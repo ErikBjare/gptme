@@ -74,6 +74,28 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Build Docker image (base)
+      uses: docker/build-push-action@v3
+      with:
+        tags: gptme:latest
+        file: ./Dockerfile
+        context: .
+        load: true
+        push: false
+    - name: Build Docker image (eval)
+      uses: docker/build-push-action@v3
+      with:
+        tags: gptme-eval:latest
+        file: ./Dockerfile.eval
+        context: .
+        push: false
+
   lint:
     runs-on: ubuntu-latest
     steps:
