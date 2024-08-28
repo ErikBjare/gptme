@@ -1,0 +1,22 @@
+# Use the main Dockerfile as the base image
+FROM gptme:latest AS base
+
+# Set build argument for browser
+ARG BROWSER=no
+
+# Switch back to root for installations
+USER root
+
+# Install playwright if browser is enabled
+RUN if [ "$BROWSER" = "yes" ]; then \
+        poetry run playwright install chromium; \
+    fi
+
+# Create eval_results directory
+RUN mkdir ./eval_results; chown appuser:appuser ./eval_results
+
+# Switch back to non-root user
+USER appuser
+
+# Add an entry point for running evals
+ENTRYPOINT ["poetry", "run", "gptme-eval"]

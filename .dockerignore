@@ -1,0 +1,65 @@
+# Environment files
+.env*
+*venv
+.clean
+gptme.toml
+
+# Logs
+*.log
+*logs*
+
+# Build scripts
+scripts
+.github
+
+# Build/test/coverage/docs/prof directories
+dist
+tests
+tests/output
+junit.xml
+.coverage
+coverage.xml
+htmlcov
+prof
+
+# cache
+__pycache__
+.*cache
+
+# docs/demos/projects/evals
+docs
+demos
+projects
+eval_results
+
+# Specific filetypes
+*.csv
+*.jsonl
+*.gif
+*.cast
+*.png
+
+# Docker-specific excludes
+Dockerfile
+Dockerfile.eval
+docker-compose.yml
+
+# Git directory
+.git
+
+# Python bytecode
+*.pyc
+*.pyo
+*.pyd
+
+# Editor directories
+.vscode
+.idea
+
+# Keep these files/directories
+!pyproject.toml
+!poetry.lock
+!README.md
+!gptme
+!static
+!media

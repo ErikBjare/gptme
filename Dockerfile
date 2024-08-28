@@ -1,44 +1,55 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+# Build stage
+FROM python:3.10-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory in the container
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
     gcc \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
 RUN pip install poetry
 
-# Copy the project files into the container
-COPY pyproject.toml poetry.lock* README.md ./
-COPY gptme ./gptme
-COPY static ./static
-COPY media ./media
+# Set the working directory
+WORKDIR /app
 
-# Install project dependencies including eval extras
+# Copy only the files needed for installation
+COPY pyproject.toml poetry.lock* ./
+
+# Install project dependencies
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi -E server -E browser -E datascience
+    && poetry install --no-interaction --no-ansi --no-root -E server -E browser -E datascience
 
-RUN poetry run playwright install chromium
+# Final stage
+FROM python:3.10-slim
 
-# Make port 5000 available to the world outside this container
-# (assuming your Flask server runs on port 5000)
+# Install git and common tools
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /app
+
+# Copy installed packages from builder stage
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy the project files
+#COPY gptme .
+COPY . .
+
+# Create a non-root user and switch to it
+RUN useradd -m appuser
+USER appuser
+
+# Disable virtualenv creation
+RUN poetry config virtualenvs.create false
+
+# Expose port 5000
 EXPOSE 5000
 
-# Set environment variable for eval
-ENV PYTHONPATH=/app
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
 
 # Default command to run the server
-CMD ["poetry", "run", "gptme-server"]
-
-# Add an entry point for running evals
-ENTRYPOINT ["poetry", "run", "python", "-m", "gptme.eval.main"]
+CMD ["poetry", "run", "python", "-m", "gptme.server"]
