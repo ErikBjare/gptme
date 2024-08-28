@@ -75,11 +75,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install ctags
-        run: sudo apt install universal-ctags
+      - name: Pull Docker image
+        run: docker pull ghcr.io/${{ github.repository_owner }}/gptme:latest
 
       - name: Checkout PR branch if comment is on a PR
         id: checkout_branch
@@ -108,25 +112,12 @@ jobs:
           fi
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-          cache: 'poetry'
-
-      - name: Install dependencies
-        run: |
-          make build
-          poetry install -E datascience
-
       - name: Run gptme
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GPTME_COMMAND: ${{ needs.check-comment.outputs.gptme_command }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           gh issue view $ISSUE_NUMBER > issue.md
           gh issue view $ISSUE_NUMBER -c > comments.md
@@ -136,10 +127,16 @@ jobs:
           perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
 
           # install a shim that makes `git commit` a no-op (in case it would get that idea prematurely)
-          source scripts/git-shim.sh
+          # NOTE: no longer effective due to docker
+          # source scripts/git-shim.sh
 
           # Run gptme with the extracted command and save logs
-          poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
+          docker run --rm \
+            -v $(pwd):/workspace \
+            -w /workspace \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            ghcr.io/${{ github.repository_owner }}/gptme:latest \
+            "$GPTME_COMMAND" issue.md comments.md
 
           # remove tmp files so that they do not get committed
           rm issue.md comments.md
@@ -148,9 +145,16 @@ jobs:
           git add -A
 
       - name: Generate commit message
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           # generate commit message
-          poetry run gptme --non-interactive "Run `git diff --staged`, then write a commit message for it to message.txt, following conventional commits. Don't commit."
+          docker run --rm \
+            -v $(pwd):/workspace \
+            -w /workspace \
+            -e OPENAI_API_KEY=$OPENAI_API_KEY \
+            ghcr.io/${{ github.repository_owner }}/gptme:latest \
+            "Run `git diff --staged`, then write a commit message for it to message.txt, following conventional commits. Don't commit."
 
       - name: Commit, push, comment
         env:
