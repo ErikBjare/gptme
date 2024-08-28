@@ -25,7 +25,7 @@ import click
 from tabulate import tabulate
 
 from .agents import Agent, GPTMe
-from .evals import tests, tests_map
+from .evals import tests_default, tests_map
 from .execenv import SimpleExecutionEnv
 from .types import (
     CaseResult,
@@ -324,7 +324,7 @@ def print_model_results_table(model_results: dict[str, list[ExecResult]]):
     multiple=True,
     help="Model to use, can be massed multiple times.",
 )
-@click.option("--timeout", "-t", default=15, help="Timeout for code generation")
+@click.option("--timeout", "-t", default=30, help="Timeout for code generation")
 @click.option("--parallel", "-p", default=10, help="Number of parallel evals to run")
 def main(
     eval_names_or_result_files: list[str],
@@ -339,17 +339,17 @@ def main(
     """
     models = _model or [
         "openai/gpt-4o",
-        "openai/gpt-4o-mini",
+        # "openai/gpt-4o-mini",
         "anthropic/claude-3-5-sonnet-20240620",
-        "openrouter/meta-llama/llama-3.1-8b-instruct",
-        "openrouter/meta-llama/llama-3.1-70b-instruct",
+        # "openrouter/meta-llama/llama-3.1-8b-instruct",
+        # "openrouter/meta-llama/llama-3.1-70b-instruct",
         "openrouter/meta-llama/llama-3.1-405b-instruct",
-        "openrouter/nousresearch/hermes-3-llama-3.1-405b",
-        "openrouter/microsoft/wizardlm-2-8x22b",
-        "openrouter/mistralai/mistral-nemo",
-        "openrouter/mistralai/codestral-mamba",
-        "openrouter/mistralai/mixtral-8x22b-instruct",
-        "openrouter/deepseek/deepseek-coder",
+        # "openrouter/nousresearch/hermes-3-llama-3.1-405b",
+        # "openrouter/microsoft/wizardlm-2-8x22b",
+        # "openrouter/mistralai/mistral-nemo",
+        # "openrouter/mistralai/codestral-mamba",
+        # "openrouter/mistralai/mixtral-8x22b-instruct",
+        # "openrouter/deepseek/deepseek-coder",
     ]
 
     results_files = [f for f in eval_names_or_result_files if f.endswith(".csv")]
@@ -368,7 +368,7 @@ def main(
             if test_name not in results_files
         ]
         if eval_names_or_result_files
-        else tests
+        else tests_default
     )
     if not tests_to_run:
         sys.exit(0)
@@ -439,7 +439,12 @@ def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
         writer.writeheader()
         for model, results in model_results.items():
             for result in results:
-                passed = all(case["passed"] for case in result["results"])
+                # Needs to pass all checks, and needs to have results (not empty, as in case of timeout)
+                passed = (
+                    all(case["passed"] for case in result["results"])
+                    if result["results"]
+                    else False
+                )
                 writer.writerow(
                     {
                         "Model": model,

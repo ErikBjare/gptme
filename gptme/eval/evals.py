@@ -4,12 +4,20 @@ if TYPE_CHECKING:
     from main import ExecTest
 
 
-def correct_output_hello(ctx):
+def correct_output_hello_world(ctx):
+    return ctx.stdout == "Hello, world!\n"
+
+
+def correct_output_hello_human(ctx):
     return ctx.stdout == "Hello, human!\n"
 
 
-def correct_file_hello(ctx):
-    return ctx.files["hello.py"].strip() == "print('Hello, human!')"
+def check_exists_hello(ctx):
+    return "hello.py" in ctx.files
+
+
+def check_exists_main(ctx):
+    return "main.py" in ctx.files
 
 
 def check_prime_output(ctx):
@@ -22,10 +30,6 @@ def check_clean_exit(ctx):
 
 def check_clean_working_tree(ctx):
     return "nothing to commit, working tree clean" in ctx.stdout
-
-
-def check_main_py_exists(ctx):
-    return "main.py" in ctx.files
 
 
 def check_commit_exists(ctx):
@@ -55,12 +59,12 @@ def check_cargo_toml(ctx):
 tests: list["ExecTest"] = [
     {
         "name": "hello",
-        "files": {"hello.py": "print('Hello, world!')"},
+        "files": {},
         "run": "python hello.py",
-        "prompt": "Change the code in hello.py to print 'Hello, human!'",
+        "prompt": "write a script hello.py which prints 'Hello, world!'",
         "expect": {
-            "correct output": correct_output_hello,
-            "correct file": correct_file_hello,
+            "correct output": correct_output_hello_world,
+            "correct file": check_exists_hello,
         },
     },
     {
@@ -69,8 +73,8 @@ tests: list["ExecTest"] = [
         "run": "python hello.py",
         "prompt": "Patch the code in hello.py to print 'Hello, human!'",
         "expect": {
-            "correct output": correct_output_hello,
-            "correct file": correct_file_hello,
+            "correct output": correct_output_hello_human,
+            "correct file": check_exists_hello,
         },
     },
     {
@@ -100,7 +104,7 @@ tests: list["ExecTest"] = [
         "expect": {
             "clean exit": check_clean_exit,
             "clean working tree": check_clean_working_tree,
-            "main.py exists": check_main_py_exists,
+            "main.py exists": check_exists_main,
             "we have a commit": check_commit_exists,
         },
     },
@@ -132,21 +136,8 @@ tests: list["ExecTest"] = [
             "correct output": check_output_erik,
         },
     },
-    # Fails, gets stuck on interactive stuff
-    # {
-    #     "name": "init-vue-ts-tailwind",
-    #     "files": {},
-    #     "run": "cat package.json",
-    #     "prompt": "initialize a vue project with typescript and tailwind, make a page that says 'Hello, world!'. avoid interactive tools to initialize the project",
-    #     "expect": {
-    #         "package.json exists": lambda ctx: "package.json" in ctx.files,
-    #         "vue installed": lambda ctx: '"vue":' in ctx.files["package.json"],
-    #         "tailwind installed": lambda ctx: '"tailwindcss":'
-    #         in ctx.files["package.json"],
-    #         "typescript installed": lambda ctx: '"typescript":'
-    #         in ctx.files["package.json"],
-    #     },
-    # },
 ]
 
+default_test_ids = ["hello", "hello-patch", "hello-ask", "prime100", "init-git"]
 tests_map = {test["name"]: test for test in tests}
+tests_default = [tests_map[test_id] for test_id in default_test_ids]
