@@ -4,7 +4,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 import re
 
 from docutils import nodes
@@ -37,7 +36,6 @@ class ChatDirective(Directive):
                 role, content = line.split(":", 1)
                 msgs.append({"role": role.strip(), "content": content.strip()})
             else:
-                print(line)
                 if msgs:
                     msgs[-1]["content"] += f"\n{line}"
                 else:
