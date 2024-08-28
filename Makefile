@@ -15,7 +15,8 @@ build:
 	poetry install
 
 build-docker:
-	docker build -t gptme .
+	docker build . -t gptme:latest -f Dockerfile
+	docker build . -t gptme-eval:latest -f Dockerfile.eval
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
@@ -27,7 +28,7 @@ test:
 		$(if $(PROFILE), --profile-svg)
 
 eval:
-	poetry run python3 -m gptme.eval
+	poetry run gptme-eval
 
 typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))

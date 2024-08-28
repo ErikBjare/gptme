@@ -3,7 +3,6 @@ Evals for code generation tools.
 
 Inspired by a document by Anton Osika and Axel Theorell.
 """
-
 import csv
 import inspect
 import io
@@ -43,7 +42,7 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
-project_dir = Path(__file__).parent.parent
+project_dir = Path(__file__).parent.parent.parent
 
 
 @dataclass
