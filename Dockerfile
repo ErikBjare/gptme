@@ -18,7 +18,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Install project dependencies
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root -E server -E browser -E datascience
+    && poetry install --no-interaction --no-ansi --no-root --without=dev # -E server -E browser -E datascience
 
 # Final stage
 FROM python:3.10-slim
@@ -36,6 +36,9 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy the project files
 #COPY gptme .
 COPY . .
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
 
 # Create a non-root user and switch to it
 RUN useradd -m appuser
