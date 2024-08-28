@@ -80,13 +80,14 @@ jobs:
     - uses: actions/checkout@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver: docker
     - name: Build Docker image (base)
       uses: docker/build-push-action@v3
       with:
         tags: gptme:latest
         file: ./Dockerfile
         context: .
-        load: true
         push: false
     - name: Build Docker image (eval)
       uses: docker/build-push-action@v3
