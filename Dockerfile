@@ -51,5 +51,8 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
-# Default command to run the server
-CMD ["poetry", "run", "python", "-m", "gptme.server"]
+# TODO: make into separate image
+# CMD ["poetry", "run", "python", "-m", "gptme.server"]
+
+# Entrypoint if prompt/args given, run the CLI
+ENTRYPOINT ["poetry", "run", "python", "-m", "gptme"]
