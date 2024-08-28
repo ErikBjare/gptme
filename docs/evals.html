@@ -361,6 +361,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-run">Example run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>
@@ -382,6 +383,8 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>The evaluation suite is still under development, but the eval harness is mostly complete.</p>
 </div>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
 <p>You can run the simple <code class="docutils literal notranslate"><span class="pre">hello</span></code> eval with gpt-4o like this:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o
 </pre></div>
@@ -390,10 +393,11 @@ document.write(`
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>build-docker
 docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-e<span class="w"> </span><span class="s2">&quot;OPENAI_API_KEY=&lt;your api key&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/eval_results:/app/gptme/eval_results<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>gptme<span class="w"> </span>--timeout<span class="w"> </span><span class="m">60</span><span class="w"> </span><span class="nv">$@</span>
+<span class="w">    </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/eval_results:/app/eval_results<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o
 </pre></div>
 </div>
+</section>
 <section id="example-run">
 <h2>Example run<a class="headerlink" href="#example-run" title="Permalink to this heading">#</a></h2>
 <p>Here’s the output from a run of the eval suite: TODO</p>
@@ -450,6 +454,7 @@ docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</spa
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-run">Example run</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>

@@ -8,6 +8,9 @@ To answer these questions, we have created a evaluation suite that tests the cap
 .. note::
     The evaluation suite is still under development, but the eval harness is mostly complete.
 
+Usage
+-----
+
 You can run the simple ``hello`` eval with gpt-4o like this:
 
 .. code-block:: bash
@@ -21,8 +24,8 @@ However, we recommend running it in Docker to improve isolation and reproducibil
     make build-docker
     docker run \
         -e "OPENAI_API_KEY=<your api key>" \
-        -v $(pwd)/eval_results:/app/gptme/eval_results \
-        gptme --timeout 60 $@
+        -v $(pwd)/eval_results:/app/eval_results \
+        gptme-eval hello --model openai/gpt-4o
 
 
 Example run
