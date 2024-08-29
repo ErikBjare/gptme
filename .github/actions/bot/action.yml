@@ -41,11 +41,13 @@ runs:
     - name: Detect gptme command
       id: detect_command
       shell: bash
+      env:
+        COMMENT_BODY: ${{ inputs.comment_body }}
       run: |
         # Check if the comment starts with "@gptme"
-        if [[ "${{ inputs.comment_body }}" == "@gptme "* ]]; then
+        if [[ "$COMMENT_BODY" == "@gptme "* ]]; then
           # Extract the command
-          GPTME_COMMAND=${{ inputs.comment_body }}#"@gptme "
+          GPTME_COMMAND=${COMMENT_BODY#"@gptme "}
           {
             echo "gptme_command<<EOFMAGIC"
             echo $GPTME_COMMAND
@@ -80,9 +82,10 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.github_token }}
 
     - name: Pull Docker image
+      shell: bash
       run: docker pull ghcr.io/erikbjare/gptme:latest
 
     - name: Checkout PR branch if comment is on a PR
@@ -122,7 +125,6 @@ runs:
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
-        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         gh issue view ${{ inputs.issue_number }} > issue.md
         gh issue view ${{ inputs.issue_number }} -c > comments.md
@@ -226,7 +228,6 @@ runs:
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         REPO_NAME: ${{ inputs.repo_name }}
         USER_NAME: ${{ inputs.user_name }}
-      shell: bash
       run: |
         RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
