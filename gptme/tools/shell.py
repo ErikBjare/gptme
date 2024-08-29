@@ -378,5 +378,5 @@ tool = ToolSpec(
     instructions=instructions,
     examples=examples,
     execute=execute_shell,
-    block_types=["bash", "sh"],
+    block_types=["bash", "sh", "shell"],
 )
