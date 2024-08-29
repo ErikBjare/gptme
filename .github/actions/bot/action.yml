@@ -135,6 +135,9 @@ runs:
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
 
+        # set permissions so the docker container can read and write the workspace files
+        chmod -R o=rwx .
+
         # run gptme with the extracted command and save logs
         timeout 120 docker run --rm \
           -v $(pwd):/workspace \
