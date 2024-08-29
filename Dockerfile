@@ -33,6 +33,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy the project files
 COPY . /app
 
+WORKDIR /app
+RUN poetry config virtualenvs.create false
+RUN poetry install --only-root --no-interaction --no-ansi  # only install the gptme package, no dependencies
+
 # Create a non-root user
 RUN useradd -m appuser
 
