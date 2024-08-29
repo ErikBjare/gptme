@@ -154,7 +154,7 @@ def main(
         logger.warning("Skipping all confirmation prompts.")
 
     # get initial system prompt
-    initial_msgs = [get_prompt(prompt_system)]
+    initial_msgs = [get_prompt(prompt_system, interactive=interactive)]
 
     # if stdin is not a tty, we're getting piped input, which we should include in the prompt
     if not sys.stdin.isatty():
