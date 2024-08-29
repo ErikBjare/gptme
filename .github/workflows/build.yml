@@ -90,9 +90,12 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Set lower case owner name
+    - name: Set environment variables
       run: |
         echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        # Sanitize the ref name to be used as a Docker tag
+        SANITIZED_REF_NAME=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
+        echo "SANITIZED_REF_NAME=${SANITIZED_REF_NAME}" >>${GITHUB_ENV}
       env:
         OWNER: '${{ github.repository_owner }}'
 
@@ -111,7 +114,7 @@ jobs:
       with:
         tags: |
           ghcr.io/${{ env.OWNER_LC }}/gptme:latest
-          ghcr.io/${{ env.OWNER_LC }}/gptme:${{ github.ref_name }}
+          ghcr.io/${{ env.OWNER_LC }}/gptme:${{ env.SANITIZED_REF_NAME }}
         file: ./Dockerfile
         context: .
         push: true
@@ -122,7 +125,7 @@ jobs:
       with:
         tags: |
           ghcr.io/${{ env.OWNER_LC }}/gptme-eval:latest
-          ghcr.io/${{ env.OWNER_LC }}/gptme-eval:${{ github.ref_name }}
+          ghcr.io/${{ env.OWNER_LC }}/gptme-eval:${{ env.SANITIZED_REF_NAME }}
         file: ./Dockerfile.eval
         context: .
         push: true
