@@ -67,7 +67,7 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     # Ask the assistant to generate a test response
     response = client.post(
         f"/api/conversations/{conv}",
-        json={"role": "user", "content": "hello"},
+        json={"role": "user", "content": "hello, just testing"},
     )
     assert response.status_code == 200
 
