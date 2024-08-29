@@ -119,7 +119,6 @@ runs:
 
     - name: Run gptme
       if: steps.detect_command.outputs.gptme_command
-      timeout-minutes: 2
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -137,13 +136,13 @@ runs:
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
 
         # run gptme with the extracted command and save logs
-        docker run --rm \
+        timeout 120 docker run --rm \
           -v $(pwd):/workspace \
           -w /workspace \
           -e OPENAI_API_KEY=$OPENAI_API_KEY \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
-          "$GPTME_COMMAND" issue.md comments.md
+          "$GPTME_COMMAND" issue.md comments.md || echo "TIMEOUT" && exit 1
 
         # remove tmp files so that they do not get committed
         rm issue.md comments.md
