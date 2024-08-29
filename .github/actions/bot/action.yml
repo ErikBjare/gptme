@@ -119,6 +119,7 @@ runs:
 
     - name: Run gptme
       if: steps.detect_command.outputs.gptme_command
+      timeout-minutes: 2
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
