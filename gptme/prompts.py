@@ -11,13 +11,13 @@ from .tools import init_tools, loaded_tools
 PromptType = Literal["full", "short"]
 
 
-def get_prompt(prompt: PromptType | str = "full") -> Message:
+def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> Message:
     """Get the initial system prompt."""
     msgs: Iterable
     if prompt == "full":
-        msgs = prompt_full()
+        msgs = prompt_full(interactive)
     elif prompt == "short":
-        msgs = prompt_short()
+        msgs = prompt_short(interactive)
     else:
         msgs = [Message("system", prompt)]
 
@@ -33,37 +33,50 @@ def join_messages(msgs: Iterable[Message]) -> Message:
     return Message("system", "\n\n".join(m.content for m in msgs))
 
 
-def prompt_full() -> Generator[Message, None, None]:
+def prompt_full(interactive: bool) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
-    yield from prompt_gptme()
+    yield from prompt_gptme(interactive)
     yield from prompt_tools()
     yield from prompt_user()
     yield from prompt_project()
 
 
-def prompt_short() -> Generator[Message, None, None]:
+def prompt_short(interactive: bool) -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
-    yield from prompt_gptme()
+    yield from prompt_gptme(interactive)
     yield from prompt_tools(examples=False)
     yield from prompt_user()
     yield from prompt_project()
 
 
-def prompt_gptme() -> Generator[Message, None, None]:
-    yield Message(
-        "system",
-        """
+def prompt_gptme(interactive: bool) -> Generator[Message, None, None]:
+    base_prompt = """
 You are gptme, an AI assistant CLI tool powered by large language models.
 You can run code and execute terminal commands on their local machine.
-You should show the user how to write code, interact with the system, and access the internet.
-The user can execute the suggested commands so that you see their output.
 All code should be copy-pasteable or saved, and runnable as-is. Do not use placeholders like `$REPO` unless they have been set.
-When the output of a command is of interest, end the code block so that the user can execute it before continuing.
+When the output of a command is of interest, end the code block so that it can be executed before continuing.
 
-Do not suggest the user open a browser or editor, instead show them how to do it in the shell or Python REPL.
+Do not suggest opening a browser or editor, instead show how to do it in the shell or with Python.
 If clarification is needed, ask the user.
-""".strip(),
+""".strip()
+
+    interactive_prompt = """
+You should show the user how you can use your tools to write code, interact with the terminal, and access the internet.
+The user can execute the suggested commands so that you see their output.
+""".strip()
+
+    non_interactive_prompt = """
+All code blocks you suggest will be automatically executed.
+Do not provide examples or ask for permission before running commands.
+Proceed directly with the most appropriate actions to complete the task.
+""".strip()
+
+    full_prompt = (
+        base_prompt
+        + "\n\n"
+        + (interactive_prompt if interactive else non_interactive_prompt)
     )
+    yield Message("system", full_prompt)
 
 
 def prompt_user() -> Generator[Message, None, None]:
