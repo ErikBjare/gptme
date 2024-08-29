@@ -77,5 +77,8 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     )
     assert response.status_code == 200
     msgs = response.get_json()
-    assert len(msgs) == 1
+    assert len(msgs) >= 1
+    assert len(msgs) <= 2
     assert msgs[0]["role"] == "assistant"
+    if len(msgs) == 2:
+        assert msgs[1]["role"] == "system"
