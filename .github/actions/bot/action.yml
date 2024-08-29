@@ -25,14 +25,14 @@ inputs:
   branch_base:
     description: 'Base Branch'
     required: true
-  python_version:
-    description: 'Python Version'
-    required: true
   is_pr:
     description: 'Is Pull Request'
     required: true
   branch_name:
     description: 'Branch Name'
+    required: true
+  allowlist:
+    description: 'Comma-separated list of GitHub usernames allowed to trigger the bot'
     required: true
 
 runs:
@@ -40,43 +40,36 @@ runs:
   steps:
     - name: Detect gptme command
       id: detect_command
+      shell: bash
       run: |
         # Check if the comment starts with "@gptme"
         if [[ "${{ inputs.comment_body }}" == "@gptme "* ]]; then
           # Extract the command
           GPTME_COMMAND=${{ inputs.comment_body }}#"@gptme "
-          # Escape double quotes
-          # GPTME_COMMAND="${GPTME_COMMAND//\"/\\\"}"
-          # Set output
           {
             echo "gptme_command<<EOFMAGIC"
             echo $GPTME_COMMAND
             echo "EOFMAGIC"
           } >> $GITHUB_OUTPUT
         fi
-      shell: bash
 
-    - name: Fail if author not on whitelist
+    - name: Check allowlist
       if: steps.detect_command.outputs.gptme_command
-      run: |
-        WHITELIST=("ErikBjare")  # Add your allowed usernames here
-        COMMENT_AUTHOR="${{ inputs.user_name }}"
-
-        if [[ ! " ${WHITELIST[@]} " =~ " ${COMMENT_AUTHOR} " ]]; then
-          echo "Error: Author ${COMMENT_AUTHOR} is not on the whitelist."
-          exit 1
-        else
-          echo "Author ${COMMENT_AUTHOR} is on the whitelist."
-        fi
       shell: bash
+      run: |
+        IFS=',' read -ra ALLOWLIST <<< "${{ inputs.allowlist }}"
+        if [[ ! " ${ALLOWLIST[@]} " =~ " ${{ inputs.user_name }} " ]]; then
+          echo "Error: Author ${{ inputs.user_name }} is not on the allowlist."
+          exit 1
+        fi
 
     - name: React to comment
       if: steps.detect_command.outputs.gptme_command
-      run: |
-        gh api /repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/issues/comments/${{ inputs.comment_id }}/reactions -X POST -f content='+1'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        gh api /repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/issues/comments/${{ inputs.comment_id }}/reactions -X POST -f content='+1'
 
     - name: Checkout
       if: steps.detect_command.outputs.gptme_command
@@ -95,9 +88,9 @@ runs:
     - name: Checkout PR branch if comment is on a PR
       id: checkout_branch
       if: steps.detect_command.outputs.gptme_command
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-      shell: bash
       run: |
         # Fetch details about the "issue" the comment is on
         DATA=$(gh api /repos/${{ github.repository }}/issues/${{ inputs.issue_number }})
@@ -123,15 +116,17 @@ runs:
 
     - name: Run gptme
       if: steps.detect_command.outputs.gptme_command
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
-      shell: bash
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         gh issue view ${{ inputs.issue_number }} > issue.md
         gh issue view ${{ inputs.issue_number }} -c > comments.md
+        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md comments.md
 
         # strip long <details>...</details> from issue.md and comments.md
         # TODO: upload logs elsewhere and link instead of dumping
@@ -170,16 +165,9 @@ runs:
 
     - name: Commit, push, comment
       if: steps.detect_command.outputs.gptme_command
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
-        ISSUE_TYPE: ${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}
-        REPO_NAME: ${{ inputs.repo_name }}
-        USER_NAME: ${{ inputs.user_name }}
-        BRANCH_NAME: ${{ steps.checkout_branch.outputs.branch_name }}
-        BRANCH_BASE: ${{ inputs.branch_base }}
-      shell: bash
       run: |
         # Read and format log
         ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
@@ -232,6 +220,7 @@ runs:
 
     - name: Report error
       if: failure()
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         ISSUE_NUMBER: ${{ inputs.issue_number }}
@@ -239,8 +228,7 @@ runs:
         USER_NAME: ${{ inputs.user_name }}
       shell: bash
       run: |
-        # reply to the comment that we could not fulfill the request
-        RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
         if [[ -f log.txt ]]; then
           MESSAGE+="
