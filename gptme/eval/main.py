@@ -414,6 +414,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
 def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # get current commit hash and dirty status, like: a8b2ef0-dirty
+    # TODO: don't assume we are in the gptme repo, use other version identifiers if available
     commit_hash = subprocess.run(
         ["git", "describe", "--always", "--dirty", "--exclude", "'*'"],
         text=True,

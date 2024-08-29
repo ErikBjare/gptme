@@ -82,14 +82,22 @@ runs:
       if: steps.detect_command.outputs.gptme_command
       uses: actions/checkout@v3
 
-    - name: Install ctags
-      if: steps.detect_command.outputs.gptme_command
-      run: sudo apt install universal-ctags
-      shell: bash
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pull Docker image
+      run: docker pull ghcr.io/erikbjare/gptme:latest
 
     - name: Checkout PR branch if comment is on a PR
-      if: steps.detect_command.outputs.gptme_command
       id: checkout_branch
+      if: steps.detect_command.outputs.gptme_command
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      shell: bash
       run: |
         # Fetch details about the "issue" the comment is on
         DATA=$(gh api /repos/${{ github.repository }}/issues/${{ inputs.issue_number }})
@@ -112,65 +120,66 @@ runs:
           git checkout -b $BRANCH_NAME
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-
-    - name: Install poetry
-      if: steps.detect_command.outputs.gptme_command
-      run: pipx install poetry
-      shell: bash
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      if: steps.detect_command.outputs.gptme_command
-      with:
-        python-version: ${{ inputs.python_version }}
-        cache: 'poetry'
-
-    - name: Install dependencies
-      if: steps.detect_command.outputs.gptme_command
-      run: |
-        make build
-        poetry install -E datascience
-      shell: bash
 
     - name: Run gptme
       if: steps.detect_command.outputs.gptme_command
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+      shell: bash
       run: |
         gh issue view ${{ inputs.issue_number }} > issue.md
         gh issue view ${{ inputs.issue_number }} -c > comments.md
 
         # strip long <details>...</details> from issue.md and comments.md
+        # TODO: upload logs elsewhere and link instead of dumping
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
 
-        # install a shim that makes `git commit` a no-op (in case it would get that idea prematurely)
-        source scripts/git-shim.sh
-
-        # Run gptme with the extracted command and save logs
-        poetry run gptme --non-interactive "$GPTME_COMMAND" issue.md comments.md
+        # run gptme with the extracted command and save logs
+        docker run --rm \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          -e OPENAI_API_KEY=$OPENAI_API_KEY \
+          ghcr.io/erikbjare/gptme:latest \
+          --non-interactive \
+          "$GPTME_COMMAND" issue.md comments.md
 
         # remove tmp files so that they do not get committed
         rm issue.md comments.md
 
         # stage changes
         git add -A
+
+    - name: Generate commit message
+      if: steps.detect_command.outputs.gptme_command
       shell: bash
+      env:
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+      run: |
+        # generate commit message
+        docker run --rm \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          -e OPENAI_API_KEY=$OPENAI_API_KEY \
+          ghcr.io/erikbjare/gptme:latest \
+          --non-interactive \
+          "Run 'git diff --staged' to inspect what has changed." "-" "Write a commit message for it to 'message.txt'. Use the 'conventional commits' style."
+
+    - name: Commit, push, comment
+      if: steps.detect_command.outputs.gptme_command
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
         ISSUE_NUMBER: ${{ inputs.issue_number }}
-
-    - name: Generate commit message
-      if: steps.detect_command.outputs.gptme_command
-      run: |
-        # generate commit message
-        poetry run gptme --non-interactive "Run `git diff --staged`, then write a commit message for it to message.txt, following conventional commits. Don't commit."
+        ISSUE_TYPE: ${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        USER_NAME: ${{ inputs.user_name }}
+        BRANCH_NAME: ${{ steps.checkout_branch.outputs.branch_name }}
+        BRANCH_BASE: ${{ inputs.branch_base }}
       shell: bash
-
-    - name: Commit, push, comment
-      if: steps.detect_command.outputs.gptme_command
       run: |
         # Read and format log
         ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
@@ -220,19 +229,15 @@ runs:
           # Comment on the issue with the PR link
           echo "A pull request has been created for this issue: $PR_URL" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
         fi
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
-        ISSUE_TYPE: ${{ github.event.issue.pull_request && 'pull_request' || 'issue' }}
-        REPO_NAME: ${{ inputs.repo_name }}
-        USER_NAME: ${{ inputs.user_name }}
-        BRANCH_NAME: ${{ steps.checkout_branch.outputs.branch_name }}
-        BRANCH_BASE: ${{ inputs.branch_base }}
 
     - name: Report error
       if: failure()
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        REPO_NAME: ${{ inputs.repo_name }}
+        USER_NAME: ${{ inputs.user_name }}
+      shell: bash
       run: |
         # reply to the comment that we could not fulfill the request
         RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -245,9 +250,3 @@ runs:
         </details>"
         fi
         echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
-        REPO_NAME: ${{ inputs.repo_name }}
-        USER_NAME: ${{ inputs.user_name }}
