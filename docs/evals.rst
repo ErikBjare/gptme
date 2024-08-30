@@ -31,7 +31,23 @@ However, we recommend running it in Docker to improve isolation and reproducibil
 Example run
 -----------
 
-Here's the output from a run of the eval suite: TODO
+Here's the output from a run of the eval suite:
+
+.. code-block::
+
+   $ gptme-eval eval_results/eval_results_20240830_203143.csv
+   +-----------------------------------------------+-------------+------------+-----------+---------------+------------+
+   | Model                                         | hello-ask   | prime100   | hello     | hello-patch   | init-git   |
+   +===============================================+=============+============+===========+===============+============+
+   | openai/gpt-4o                                 | ✅ 17.89s   | ✅ 18.69s  | ✅ 17.66s | ✅ 13.95s     | ✅ 20.14s  |
+   +-----------------------------------------------+-------------+------------+-----------+---------------+------------+
+   | anthropic/claude-3-5-sonnet-20240620          | ✅ 21.06s   | ✅ 16.46s  | ❌ 0.00s  | ❌ 0.00s      | ❌ 0.00s   |
+   +-----------------------------------------------+-------------+------------+-----------+---------------+------------+
+   | openrouter/meta-llama/llama-3.1-405b-instruct | ✅ 8.68s    | ✅ 15.81s  | ✅ 12.70s | ✅ 12.12s     | ✅ 13.36s  |
+   +-----------------------------------------------+-------------+------------+-----------+---------------+------------+
+
+
+Note that in this particular run, something went wrong with Anthropic. We are working on making the evals more robust and informative, and challenging.
 
 
 Other evals

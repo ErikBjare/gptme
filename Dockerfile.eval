@@ -12,6 +12,8 @@ RUN if [ "$BROWSER" = "yes" ]; then \
         poetry run playwright install chromium; \
     fi
 
+WORKDIR /app
+
 # Create eval_results directory
 RUN mkdir ./eval_results; chown appuser:appuser ./eval_results
 
