@@ -5,22 +5,6 @@ One way to run gptme is as a GitHub bot.
 
 The `gptme-bot` composite action is a GitHub Action that automates the process of running the `gptme`  in response to comments on GitHub issues or pull requests. It is designed to be used for tasks that gptme can perform with a one-shot prompt, such as running commands and committing their results, creating files or making simple changes/additions (like write tests), and (potentially) automating code reviews.
 
-## Inputs
-
-The action has the following inputs:
-
-- `openai_api_key`: The OpenAI API key. Required.
-- `github_token`: The GitHub token. Required.
-- `issue_number`: The number of the issue or pull request the comment is associated with. Required.
-- `comment_body`: The body of the comment. Required.
-- `comment_id`: The ID of the comment. Required.
-- `repo_name`: The name of the repository. Required.
-- `user_name`: The username of the comment author. Required.
-- `branch_base`: The base branch for the pull request. Required.
-- `python_version`: The version of Python to use. Required.
-- `is_pr`: A boolean indicating whether the issue is a pull request. Required.
-- `branch_name`: The name of the branch associated with the pull request. Required.
-
 ## Usage
 
 To use the `gptme-bot` composite action in your repo, you need to create a GitHub Actions workflow file that triggers the action in response to comments on issues or pull requests. 
