@@ -28,6 +28,7 @@ inputs:
   is_pr:
     description: 'Is Pull Request'
     required: true
+    default: 'false'
   branch_name:
     description: 'Branch Name'
     required: true
@@ -100,25 +101,70 @@ runs:
 
         # Extract whether this "issue" is a PR and
         IS_PR=${{ inputs.is_pr }}
+        BRANCH_NAME=${{ inputs.branch_name }}
 
         # If this is a PR, checkout its branch
-        if [[ "$IS_PR" != "null" ]]; then
+        if [[ "$IS_PR" == "true" ]]; then
           # Fetch details about the PR the comment is on
           DATA=$(gh api /repos/${{ github.repository }}/pulls/${{ inputs.issue_number }})
 
-          # Get the PR's branch name
-          BRANCH_NAME=${{ inputs.branch_name }}
+          # Fetch the branch
           git fetch origin $BRANCH_NAME
           git checkout $BRANCH_NAME
         else
           # Create a new branch and push changes
-          BRANCH_NAME="gptme-bot-changes-$(date +'%Y%m%d%H%M%S')"
           git checkout -b $BRANCH_NAME
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
-    - name: Run gptme
+    - name: Determine action type
+      id: determine_action
       if: steps.detect_command.outputs.gptme_command
+      shell: bash
+      env:
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
+      run: |
+        FULL_OUTPUT=$(docker run --rm \
+          -e OPENAI_API_KEY=$OPENAI_API_KEY \
+          ghcr.io/erikbjare/gptme:latest \
+          --non-interactive \
+          "Determine if this command requires changes to be made or just a response. Respond with either 'make_changes' or 'respond'. Command: $GPTME_COMMAND")
+
+        # Extract the last line, which should be the actual response
+        ACTION_TYPE=$(echo "$FULL_OUTPUT" | grep -oE '(make_changes|respond)' | tail -n 1)
+
+        echo "action_type=$ACTION_TYPE" >> $GITHUB_OUTPUT
+
+        # Validate the action type
+        if [[ "$ACTION_TYPE" != "make_changes" && "$ACTION_TYPE" != "respond" ]]; then
+          echo "Error: Invalid action type '$ACTION_TYPE'. Expected 'make_changes' or 'respond'."
+          echo "Full output was:"
+          echo "$FULL_OUTPUT"
+          exit 1
+        fi
+
+    - name: Run gptme for response
+      if: steps.determine_action.outputs.action_type == 'respond'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+      run: |
+        chmod -R o=rwx .  # set permissions so the docker container can read and write the workspace files
+        docker run --rm \
+          -e OPENAI_API_KEY=$OPENAI_API_KEY \
+          -v $(pwd):/workspace \
+          -w /workspace \
+          ghcr.io/erikbjare/gptme:latest \
+          --non-interactive \
+          "$GPTME_COMMAND\n\nWrite the response to 'response.md'"
+        gh issue comment $ISSUE_NUMBER -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=response.md
+
+    - name: Run gptme for changes
+      if: steps.determine_action.outputs.action_type == 'make_changes'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -154,7 +200,7 @@ runs:
         git add -A
 
     - name: Generate commit message
-      if: steps.detect_command.outputs.gptme_command
+      if: steps.determine_action.outputs.action_type == 'make_changes'
       shell: bash
       env:
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
@@ -169,7 +215,7 @@ runs:
           "Run 'git diff --staged' to inspect what has changed." "-" "Write a commit message for it to 'message.txt'. Use the 'conventional commits' style."
 
     - name: Commit, push, comment
-      if: steps.detect_command.outputs.gptme_command
+      if: steps.determine_action.outputs.action_type == 'make_changes'
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -208,19 +254,13 @@ runs:
         # Push changes to the PR branch
         git push -u origin $BRANCH_NAME
 
-        if [[ $ISSUE_TYPE == "pull_request" ]]; then
-          # Comment on the PR
-          echo "Changes have been pushed to this pull request." | gh pr comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+        if [[ ${{ inputs.is_pr }} == "true" ]]; then
+          echo "Changes have been pushed to this pull request." | gh pr comment ${{ inputs.issue_number }} -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=-
         else
           # Some say this helps! https://github.com/cli/cli/issues/2691#issuecomment-1289521962
           sleep 1
-
-          # Create a PR
-          PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo $USER_NAME/$REPO_NAME | grep -o 'https://github.com[^ ]*')
-          # These are redundant/implied: --base $BRANCH_BASE --head $USER_NAME:$BRANCH_NAME
-
-          # Comment on the issue with the PR link
-          echo "A pull request has been created for this issue: $PR_URL" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+          PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo ${{ inputs.user_name }}/${{ inputs.repo_name }} | grep -o 'https://github.com[^ ]*')
+          echo "A pull request has been created for this issue: $PR_URL" | gh issue comment ${{ inputs.issue_number }} -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=-
         fi
 
     - name: Report error
