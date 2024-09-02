@@ -1,11 +1,13 @@
-Web UI
+Server
 ======
 
 .. note::
-   The web UI is still in development and does not have all the features of the CLI.
+   The server and web UI is still in development and does not have all the features of the CLI.
    It does not support streaming, doesn't ask for confirmation before executing, lacks the ability to interrupt generations, etc.
 
-gptme has a very minimalistic web UI, it can be started by running the following command:
+gptme has a minimal REST API with very minimalistic web UI.
+
+It can be started by running the following command:
 
 .. code-block:: bash
 

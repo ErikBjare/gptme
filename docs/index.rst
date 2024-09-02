@@ -22,8 +22,9 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    demos
    tools
    providers
-   webui
+   server
    evals
+   bot
    finetuning
    cli
    api
