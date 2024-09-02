@@ -45,6 +45,8 @@
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Finetuning" href="finetuning.html" />
+    <link rel="prev" title="Evals" href="evals.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -106,8 +108,6 @@
       
       
       
-        
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -154,13 +154,14 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="webui.html">Web UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
@@ -397,30 +398,42 @@ document.write(`
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
-<p>To use the <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> composite action in your workflow, include it as a step:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">on</span><span class="p">:</span>
+<p>To use the <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> composite action in your repo, you need to create a GitHub Actions workflow file that triggers the action in response to comments on issues or pull requests.</p>
+<p>Here is an example workflow file that triggers the action in response to comments on issues:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gptme-bot</span>
+
+<span class="nt">on</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">issue_comment</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">types</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">created</span><span class="p p-Indicator">]</span>
 
-<span class="nt">steps</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run gptme-bot composite action</span>
-<span class="w">    </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./.github/actions/bot-composite</span>
-<span class="w">    </span><span class="nt">with</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">openai_api_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.OPENAI_API_KEY }}</span>
-<span class="w">      </span><span class="nt">github_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.token }}</span>
-<span class="w">      </span><span class="nt">issue_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.number }}</span>
-<span class="w">      </span><span class="nt">comment_body</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.body }}</span>
-<span class="w">      </span><span class="nt">comment_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.id }}</span>
-<span class="w">      </span><span class="nt">repo_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.name }}</span>
-<span class="w">      </span><span class="nt">user_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.owner.login }}</span>
-<span class="w">      </span><span class="nt">branch_base</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;master&quot;</span>
-<span class="w">      </span><span class="nt">python_version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.11&#39;</span>
-<span class="w">      </span><span class="nt">is_pr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.pull_request != null }}</span>
-<span class="w">      </span><span class="nt">branch_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.pull_request.head.ref }}</span>
+<span class="nt">permissions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write-all</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">run-bot</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Checkout</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v3</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">run gptme-bot action</span>
+<span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./.github/actions/bot</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">openai_api_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.OPENAI_API_KEY }}</span>
+<span class="w">          </span><span class="nt">github_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
+<span class="w">          </span><span class="nt">issue_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.number }}</span>
+<span class="w">          </span><span class="nt">comment_body</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.body }}</span>
+<span class="w">          </span><span class="nt">comment_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.id }}</span>
+<span class="w">          </span><span class="nt">repo_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.name }}</span>
+<span class="w">          </span><span class="nt">user_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.owner.login }}</span>
+<span class="w">          </span><span class="nt">branch_base</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.default_branch }}</span>
+<span class="w">          </span><span class="nt">is_pr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.pull_request != null }}</span>
+<span class="w">          </span><span class="nt">branch_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.pull_request.head.ref || format(&#39;gptme/bot-changes-{0}&#39;, github.run_id) }}</span>
+<span class="w">          </span><span class="nt">allowlist</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;erikbjare&quot;</span>
 </pre></div>
 </div>
-<p>Please note that you need to replace the <code class="docutils literal notranslate"><span class="pre">uses</span></code> path with the correct path to your <code class="docutils literal notranslate"><span class="pre">bot-composite.yml</span></code> file. Also, make sure to replace the <code class="docutils literal notranslate"><span class="pre">branch_base</span></code>, <code class="docutils literal notranslate"><span class="pre">python_version</span></code>, <code class="docutils literal notranslate"><span class="pre">is_pr</span></code>, and <code class="docutils literal notranslate"><span class="pre">branch_name</span></code> inputs with the correct values for your use case.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> composite action will then run the <code class="docutils literal notranslate"><span class="pre">gptme</span></code> command-line tool with the command specified in the comment, and perform actions based on the output of the tool. This includes checking out the appropriate branch, installing dependencies, running the <code class="docutils literal notranslate"><span class="pre">gptme</span></code> command, and committing and pushing any changes made by the tool. If the issue is a pull request, the action will push changes directly to the pull request branch. If the issue is not a pull request, the action will create a new pull request with the changes.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> action will then run the <code class="docutils literal notranslate"><span class="pre">gptme</span></code> command-line tool with the command specified in the comment, and perform actions based on the output of the tool.</p>
+<p>If a question was asked, it will simply reply.</p>
+<p>If a request was made it will check out the appropriate branch, install dependencies, run <code class="docutils literal notranslate"><span class="pre">gptme</span></code>, then commit and push any changes made. If the issue is a pull request, the bot will push changes directly to the pull request branch. If the issue is not a pull request, the bot will create a new pull request with the changes.</p>
 </section>
 </section>
 
@@ -435,6 +448,24 @@ document.write(`
                 <footer class="prev-next-footer">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="evals.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Evals</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="finetuning.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Finetuning</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               

@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Web UI &#8212; gptme</title>
+    <title>Server &#8212; gptme</title>
   
   
   
@@ -41,7 +41,7 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'webui';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'server';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -159,8 +159,9 @@
 <li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Web UI</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
@@ -237,7 +238,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/webui.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/server.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -267,7 +268,7 @@
       
       
       
-      <li><a href="_sources/webui.rst" target="_blank"
+      <li><a href="_sources/server.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -351,7 +352,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Web UI</h1>
+    <h1>Server</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -373,14 +374,15 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="web-ui">
-<h1>Web UI<a class="headerlink" href="#web-ui" title="Permalink to this heading">#</a></h1>
+  <section id="server">
+<h1>Server<a class="headerlink" href="#server" title="Permalink to this heading">#</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The web UI is still in development and does not have all the features of the CLI.
+<p>The server and web UI is still in development and does not have all the features of the CLI.
 It does not support streaming, doesn’t ask for confirmation before executing, lacks the ability to interrupt generations, etc.</p>
 </div>
-<p>gptme has a very minimalistic web UI, it can be started by running the following command:</p>
+<p>gptme has a minimal REST API with very minimalistic web UI.</p>
+<p>It can be started by running the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
 </pre></div>
 </div>
