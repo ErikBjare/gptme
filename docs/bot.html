@@ -362,7 +362,6 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inputs">Inputs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 </ul>
             </nav>
@@ -379,23 +378,6 @@ document.write(`
 <h1>GitHub Bot<a class="headerlink" href="#github-bot" title="Permalink to this heading">#</a></h1>
 <p>One way to run gptme is as a GitHub bot.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> composite action is a GitHub Action that automates the process of running the <code class="docutils literal notranslate"><span class="pre">gptme</span></code>  in response to comments on GitHub issues or pull requests. It is designed to be used for tasks that gptme can perform with a one-shot prompt, such as running commands and committing their results, creating files or making simple changes/additions (like write tests), and (potentially) automating code reviews.</p>
-<section id="inputs">
-<h2>Inputs<a class="headerlink" href="#inputs" title="Permalink to this heading">#</a></h2>
-<p>The action has the following inputs:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">openai_api_key</span></code>: The OpenAI API key. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">github_token</span></code>: The GitHub token. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">issue_number</span></code>: The number of the issue or pull request the comment is associated with. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">comment_body</span></code>: The body of the comment. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">comment_id</span></code>: The ID of the comment. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">repo_name</span></code>: The name of the repository. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">user_name</span></code>: The username of the comment author. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">branch_base</span></code>: The base branch for the pull request. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">python_version</span></code>: The version of Python to use. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">is_pr</span></code>: A boolean indicating whether the issue is a pull request. Required.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">branch_name</span></code>: The name of the branch associated with the pull request. Required.</p></li>
-</ul>
-</section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
 <p>To use the <code class="docutils literal notranslate"><span class="pre">gptme-bot</span></code> composite action in your repo, you need to create a GitHub Actions workflow file that triggers the action in response to comments on issues or pull requests.</p>
@@ -482,7 +464,6 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inputs">Inputs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
 </ul>
   </nav></div>
