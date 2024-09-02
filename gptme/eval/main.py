@@ -3,6 +3,7 @@ Evals for code generation tools.
 
 Inspired by a document by Anton Osika and Axel Theorell.
 """
+
 import csv
 import inspect
 import io
@@ -25,8 +26,8 @@ import click
 from tabulate import tabulate
 
 from .agents import Agent, GPTMe
-from .evals import tests_default, tests_map
 from .execenv import SimpleExecutionEnv
+from .suites import suites, tests_default, tests_map
 from .types import (
     CaseResult,
     ExecResult,
@@ -361,17 +362,19 @@ def main(
         else:
             print(f"File {results_file} not found")
 
-    tests_to_run = (
-        [
-            tests_map[test_name]
-            for test_name in eval_names_or_result_files
-            if test_name not in results_files
-        ]
-        if eval_names_or_result_files
-        else tests_default
-    )
+    tests_to_run: list[ExecTest] = []
+    for test_name in eval_names_or_result_files:
+        if test_name in results_files:
+            continue
+        elif test_name in tests_map:
+            tests_to_run.append(tests_map[test_name])
+        elif test_name in suites:
+            tests_to_run.extend(suites[test_name])
+        else:
+            raise ValueError(f"Test {test_name} not found")
+
     if not tests_to_run:
-        sys.exit(0)
+        tests_to_run = tests_default
 
     print("=== Running evals ===")
     model_results = run_evals(tests_to_run, models, timeout, parallel)
