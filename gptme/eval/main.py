@@ -313,7 +313,7 @@ def print_model_results_table(model_results: dict[str, list[ExecResult]]):
                 row.append("❌ N/A")
         table_data.append(row)
 
-    print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    print(tabulate(table_data, headers=headers))
 
 
 @click.command()
