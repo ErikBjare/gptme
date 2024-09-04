@@ -9,7 +9,7 @@ The main tools can be grouped in the following categories:
 
   - :ref:`Shell`
   - :ref:`Python`
-  - :ref:`Terminal`
+  - :ref:`Tmux`
 
 - filesystem
 
