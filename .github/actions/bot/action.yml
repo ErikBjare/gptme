@@ -7,43 +7,33 @@ inputs:
   github_token:
     description: 'GitHub Token'
     required: true
-  issue_number:
-    description: 'Issue Number'
-    required: true
-  comment_body:
-    description: 'Comment Body'
-    required: true
-  comment_id:
-    description: 'Comment ID'
-    required: true
-  repo_name:
-    description: 'Repository Name'
-    required: true
-  user_name:
-    description: 'User Name'
-    required: true
-  branch_base:
-    description: 'Base Branch'
-    required: true
-  is_pr:
-    description: 'Is Pull Request'
-    required: true
-    default: 'false'
-  branch_name:
-    description: 'Branch Name'
-    required: true
   allowlist:
     description: 'Comma-separated list of GitHub usernames allowed to trigger the bot'
     required: true
+    default: 'ErikBjare'
 
 runs:
   using: "composite"
   steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Get PR details
+      id: pr_details
+      if: ${{ github.event.issue.pull_request }}
+      shell: bash
+      run: |
+        PR_NUMBER=${{ github.event.issue.number }}
+        PR_DATA=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
+                   "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER")
+        echo "head_ref=$(echo "$PR_DATA" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+        echo "base_ref=$(echo "$PR_DATA" | jq -r .base.ref)" >> $GITHUB_OUTPUT
+
     - name: Detect gptme command
       id: detect_command
       shell: bash
       env:
-        COMMENT_BODY: ${{ inputs.comment_body }}
+        COMMENT_BODY: ${{ github.event.comment.body }}
       run: |
         # Check if the comment starts with "@gptme"
         if [[ "$COMMENT_BODY" == "@gptme "* ]]; then
@@ -61,8 +51,8 @@ runs:
       shell: bash
       run: |
         IFS=',' read -ra ALLOWLIST <<< "${{ inputs.allowlist }}"
-        if [[ ! " ${ALLOWLIST[@]} " =~ " ${{ inputs.user_name }} " ]]; then
-          echo "Error: Author ${{ inputs.user_name }} is not on the allowlist."
+        if [[ ! " ${ALLOWLIST[@]} " =~ " ${{ github.event.comment.user.login }} " ]]; then
+          echo "Error: Author ${{ github.event.comment.user.login }} is not on the allowlist."
           exit 1
         fi
 
@@ -72,11 +62,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        gh api /repos/${{ inputs.user_name }}/${{ inputs.repo_name }}/issues/comments/${{ inputs.comment_id }}/reactions -X POST -f content='+1'
-
-    - name: Checkout
-      if: steps.detect_command.outputs.gptme_command
-      uses: actions/checkout@v3
+        gh api /repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -X POST -f content='+1'
 
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v3
@@ -96,23 +82,13 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        # Fetch details about the "issue" the comment is on
-        DATA=$(gh api /repos/${{ github.repository }}/issues/${{ inputs.issue_number }})
+        IS_PR=${{ github.event.issue.pull_request != null }}
+        BRANCH_NAME=${{ steps.pr_details.outputs.head_ref || format('gptme/bot-changes-{0}', github.run_id) }}
 
-        # Extract whether this "issue" is a PR and
-        IS_PR=${{ inputs.is_pr }}
-        BRANCH_NAME=${{ inputs.branch_name }}
-
-        # If this is a PR, checkout its branch
         if [[ "$IS_PR" == "true" ]]; then
-          # Fetch details about the PR the comment is on
-          DATA=$(gh api /repos/${{ github.repository }}/pulls/${{ inputs.issue_number }})
-
-          # Fetch the branch
           git fetch origin $BRANCH_NAME
           git checkout $BRANCH_NAME
         else
-          # Create a new branch and push changes
           git checkout -b $BRANCH_NAME
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
@@ -150,7 +126,6 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
       run: |
         chmod -R o=rwx .  # set permissions so the docker container can read and write the workspace files
@@ -161,7 +136,7 @@ runs:
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
           "$GPTME_COMMAND\n\nWrite the response to 'response.md'"
-        gh issue comment $ISSUE_NUMBER -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=response.md
+        gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=response.md
 
     - name: Run gptme for changes
       if: steps.determine_action.outputs.action_type == 'make_changes'
@@ -169,19 +144,12 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
       run: |
-        gh issue view ${{ inputs.issue_number }} > issue.md
-        gh issue view ${{ inputs.issue_number }} -c > comments.md
+        gh issue view ${{ github.event.issue.number }} > issue.md
+        gh issue view ${{ github.event.issue.number }} -c > comments.md
         perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md comments.md
 
-        # strip long <details>...</details> from issue.md and comments.md
-        # TODO: upload logs elsewhere and link instead of dumping
-        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md
-        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' comments.md
-
-        # set permissions so the docker container can read and write the workspace files
         chmod -R o=rwx .
 
         # run gptme with the extracted command and save logs
@@ -224,11 +192,11 @@ runs:
         ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
 
         RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        COMMENT_URL="https://github.com/${{ github.repository }}/issues/${{ inputs.issue_number }}#issuecomment-${{ inputs.comment_id }}"
+        COMMENT_URL="https://github.com/${{ github.repository }}/issues/${{ github.event.issue.number }}#issuecomment-${{ github.event.comment.id }}"
 
         # commit message & description
         COMMIT_MSG="$(cat message.txt || echo 'no commit message')"
-        COMMIT_DESC="\`gptme '$GPTME_COMMAND'\`
+        COMMIT_DESC="\`gptme '${{ steps.detect_command.outputs.gptme_command }}'\`
 
         Triggered by: $COMMENT_URL
         Run: $RUN_URL"
@@ -251,16 +219,15 @@ runs:
 
         git commit -m "$COMMIT_MSG_FULL"
 
-        # Push changes to the PR branch
-        git push -u origin $BRANCH_NAME
+        git push -u origin ${{ steps.checkout_branch.outputs.branch_name }}
 
-        if [[ ${{ inputs.is_pr }} == "true" ]]; then
-          echo "Changes have been pushed to this pull request." | gh pr comment ${{ inputs.issue_number }} -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=-
+        if [[ ${{ github.event.issue.pull_request != null }} == "true" ]]; then
+          echo "Changes have been pushed to this pull request." | gh pr comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=-
         else
           # Some say this helps! https://github.com/cli/cli/issues/2691#issuecomment-1289521962
           sleep 1
-          PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo ${{ inputs.user_name }}/${{ inputs.repo_name }} | grep -o 'https://github.com[^ ]*')
-          echo "A pull request has been created for this issue: $PR_URL" | gh issue comment ${{ inputs.issue_number }} -R ${{ inputs.user_name }}/${{ inputs.repo_name }} --body-file=-
+          PR_URL=$(gh pr create --title "$COMMIT_MSG" --body "$COMMIT_MSG_FULL_WITH_LOG" --repo ${{ github.repository }} | grep -o 'https://github.com[^ ]*')
+          echo "A pull request has been created for this issue: $PR_URL" | gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=-
         fi
 
     - name: Report error
@@ -268,9 +235,6 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        ISSUE_NUMBER: ${{ inputs.issue_number }}
-        REPO_NAME: ${{ inputs.repo_name }}
-        USER_NAME: ${{ inputs.user_name }}
       run: |
         RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         MESSAGE="I'm sorry, I could not fulfill your request. Please check the [log of this run]($RUN_URL) for more information."
@@ -281,4 +245,4 @@ runs:
         <pre>$(cat log.txt)</pre>
         </details>"
         fi
-        echo "$MESSAGE" | gh issue comment $ISSUE_NUMBER -R $USER_NAME/$REPO_NAME --body-file=-
+        echo "$MESSAGE" | gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=-
