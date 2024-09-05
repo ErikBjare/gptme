@@ -142,7 +142,7 @@ runs:
           --non-interactive \
           "$GPTME_COMMAND" "Here is the context from the issue or pull request:" issue.md comments.md \
           "-" "Write the response to 'response.md', it will be posted as a comment." \
-          || echo "TIMEOUT" && exit 1
+          || (echo "TIMEOUT" && exit 1)
 
         # comment with the response
         if [[ -f response.md ]]; then
