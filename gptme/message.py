@@ -1,4 +1,5 @@
 import base64
+import builtins
 import io
 import logging
 import shutil
@@ -264,7 +265,11 @@ def print_msg(
         if m.hide and not show_hidden:
             skipped_hidden += 1
             continue
-        print(s)
+        try:
+            print(s)
+        except Exception:
+            # rich can throw errors, if so then print the raw message
+            builtins.print(s)
     if skipped_hidden:
         print(
             f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
