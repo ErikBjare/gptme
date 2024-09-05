@@ -32,14 +32,6 @@ jobs:
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_number: ${{ github.event.issue.number }}
-          comment_body: ${{ github.event.comment.body }}
-          comment_id: ${{ github.event.comment.id }}
-          repo_name: ${{ github.event.repository.name }}
-          user_name: ${{ github.event.repository.owner.login }}
-          branch_base: ${{ github.event.repository.default_branch }}
-          is_pr: ${{ github.event.issue.pull_request != null }}
-          branch_name: ${{ github.event.pull_request.head.ref || format('gptme/bot-changes-{0}', github.run_id) }}
           allowlist: "erikbjare"
 ```
 

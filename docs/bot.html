@@ -402,14 +402,6 @@ document.write(`
 <span class="w">        </span><span class="nt">with</span><span class="p">:</span>
 <span class="w">          </span><span class="nt">openai_api_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.OPENAI_API_KEY }}</span>
 <span class="w">          </span><span class="nt">github_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GITHUB_TOKEN }}</span>
-<span class="w">          </span><span class="nt">issue_number</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.number }}</span>
-<span class="w">          </span><span class="nt">comment_body</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.body }}</span>
-<span class="w">          </span><span class="nt">comment_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.comment.id }}</span>
-<span class="w">          </span><span class="nt">repo_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.name }}</span>
-<span class="w">          </span><span class="nt">user_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.owner.login }}</span>
-<span class="w">          </span><span class="nt">branch_base</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.repository.default_branch }}</span>
-<span class="w">          </span><span class="nt">is_pr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.issue.pull_request != null }}</span>
-<span class="w">          </span><span class="nt">branch_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ github.event.pull_request.head.ref || format(&#39;gptme/bot-changes-{0}&#39;, github.run_id) }}</span>
 <span class="w">          </span><span class="nt">allowlist</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;erikbjare&quot;</span>
 </pre></div>
 </div>
