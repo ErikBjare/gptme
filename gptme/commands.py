@@ -66,6 +66,7 @@ action_descriptions: dict[Actions, str] = {
     "tools": "Show available tools",
     "help": "Show this help message",
     "exit": "Exit the program",
+    "export": "Export the conversation log to HTML",
 }
 COMMANDS = list(action_descriptions.keys())
 
@@ -169,6 +170,14 @@ def handle_cmd(
     tokens (example): {len_tokens(tool.examples)}
                       """.strip()
                 )
+        case "export":
+            log.undo(1, quiet=True)
+            output_path = args[0] if args else input("Output file path (e.g., conversation.html): ")
+            output_path = Path(output_path)
+            if output_path.suffix != '.html':
+                output_path = output_path.with_suffix('.html')
+            log.export_to_html(output_path)
+            print(f"Exported conversation log to {output_path}")
         case _:
             if log.log[-1].content != f"{CMDFIX}help":
                 print("Unknown command")
