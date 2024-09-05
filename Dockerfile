@@ -24,7 +24,7 @@ RUN poetry config virtualenvs.create false \
 FROM python:3.10-slim
 
 # Install git and common tools
-RUN apt-get update && apt-get install -y make git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y make git tmux curl && rm -rf /var/lib/apt/lists/*
 
 # Copy installed packages from builder stage
 COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
