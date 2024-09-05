@@ -22,7 +22,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Get PR details
       id: pr_details
@@ -146,8 +146,6 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
-        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
       run: |
         gh issue view ${{ github.event.issue.number }} > issue.md
         gh issue view ${{ github.event.issue.number }} -c > comments.md
@@ -155,10 +153,12 @@ runs:
 
         chmod -R o=rwx .
 
+        echo $GITHUB_WORKSPACE
+
         # run gptme with the extracted command and save logs
         timeout 120 docker run --rm \
           -v ~/.config/gptme:/home/appuser/.config/gptme \
-          -v $(pwd):/workspace \
+          -v $GITHUB_WORKSPACE:/workspace \
           -w /workspace \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
@@ -182,13 +182,11 @@ runs:
     - name: Generate commit message
       if: steps.determine_action.outputs.action_type == 'make_changes'
       shell: bash
-      env:
-        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
       run: |
         # generate commit message
         docker run --rm \
           -v ~/.config/gptme:/home/appuser/.config/gptme \
-          -v $(pwd):/workspace \
+          -v $GITHUB_WORKSPACE:/workspace \
           -w /workspace \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
