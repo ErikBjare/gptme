@@ -120,26 +120,7 @@ runs:
           exit 1
         fi
 
-    - name: Run gptme for response
-      if: steps.determine_action.outputs.action_type == 'respond'
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
-        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
-      run: |
-        chmod -R o=rwx .  # set permissions so the docker container can read and write the workspace files
-        docker run --rm \
-          -e OPENAI_API_KEY=$OPENAI_API_KEY \
-          -v $(pwd):/workspace \
-          -w /workspace \
-          ghcr.io/erikbjare/gptme:latest \
-          --non-interactive \
-          "$GPTME_COMMAND\n\nWrite the response to 'response.md'"
-        gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=response.md
-
-    - name: Run gptme for changes
-      if: steps.determine_action.outputs.action_type == 'make_changes'
+    - name: Run gptme
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -159,7 +140,16 @@ runs:
           -e OPENAI_API_KEY=$OPENAI_API_KEY \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
-          "$GPTME_COMMAND" issue.md comments.md || echo "TIMEOUT" && exit 1
+          "$GPTME_COMMAND" "Here is the context from the issue or pull request:" issue.md comments.md \
+          "-" "Write the response to 'response.md', it will be posted as a comment." \
+          || echo "TIMEOUT" && exit 1
+
+        # comment with the response
+        if [[ -f response.md ]]; then
+          gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body-file=response.md
+        else
+          echo "No response was generated."
+        fi
 
         # remove tmp files so that they do not get committed
         rm issue.md comments.md
@@ -180,7 +170,8 @@ runs:
           -e OPENAI_API_KEY=$OPENAI_API_KEY \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
-          "Run 'git diff --staged' to inspect what has changed." "-" "Write a commit message for it to 'message.txt'. Use the 'conventional commits' style."
+          "Run 'git diff --staged' to inspect what has changed." \
+          "-" "Write a commit message for it to 'message.txt'. Use the 'conventional commits' style."
 
     - name: Commit, push, comment
       if: steps.determine_action.outputs.action_type == 'make_changes'
