@@ -27,7 +27,7 @@ from .logmanager import LogManager, _conversations
 from .message import Message
 from .models import get_model
 from .prompts import get_prompt
-from .tools import execute_msg, get_tool
+from .tools import execute_msg, has_tool
 from .tools.browser import read_url
 from .util import epoch_to_age, generate_name
 
@@ -578,7 +578,7 @@ def _parse_prompt(prompt: str) -> str | None:
     for path in paths:
         result += _parse_prompt(path) or ""
 
-    if get_tool("browser") is None:
+    if not has_tool("browser"):
         logger.warning("Browser tool not available, skipping URL read")
     else:
         for url in urls:

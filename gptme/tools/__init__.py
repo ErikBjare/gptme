@@ -1,7 +1,6 @@
 import logging
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from collections.abc import Callable
 from xml.etree import ElementTree
 
 from ..message import Message
@@ -210,3 +209,10 @@ def get_tool(tool_name: str) -> ToolSpec:
         if tool.name == tool_name:
             return tool
     raise ValueError(f"Tool '{tool_name}' not found")
+
+
+def has_tool(tool_name: str) -> bool:
+    for tool in loaded_tools:
+        if tool.name == tool_name:
+            return True
+    return False
