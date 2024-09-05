@@ -3,7 +3,13 @@ description: 'A composite action for the gptme-bot workflow'
 inputs:
   openai_api_key:
     description: 'OpenAI API Key'
-    required: true
+    required: false
+  anthropic_api_key:
+    description: 'Anthropic API Key'
+    required: false
+  model:
+    description: 'Model to use'
+    required: false
   github_token:
     description: 'GitHub Token'
     required: true
@@ -93,16 +99,31 @@ runs:
         fi
         echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
 
+    - name: Write gptme config.toml
+      shell: bash
+      run: |
+        mkdir -p ~/.config/gptme
+        cat > ~/.config/gptme/config.toml << EOF
+        [prompt]
+        about_user = "I am a bot executing commands from GitHub comments."
+        response_preference = "Don't explain basic concepts"
+
+        [env]
+        MODEL = "${{ inputs.model }}"
+        OPENAI_API_KEY = "${{ inputs.openai_api_key }}"
+        ANTHROPIC_API_KEY = "${{ inputs.anthropic_api_key }}"
+        EOF
+
+
     - name: Determine action type
       id: determine_action
       if: steps.detect_command.outputs.gptme_command
       shell: bash
       env:
-        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
       run: |
         FULL_OUTPUT=$(docker run --rm \
-          -e OPENAI_API_KEY=$OPENAI_API_KEY \
+          -v ~/.config/gptme:/home/appuser/.config/gptme \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
           "Determine if this command requires changes to be made or just a response. Respond with either 'make_changes' or 'respond'. Command: $GPTME_COMMAND")
@@ -126,6 +147,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
         OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
       run: |
         gh issue view ${{ github.event.issue.number }} > issue.md
         gh issue view ${{ github.event.issue.number }} -c > comments.md
@@ -135,9 +157,9 @@ runs:
 
         # run gptme with the extracted command and save logs
         timeout 120 docker run --rm \
+          -v ~/.config/gptme:/home/appuser/.config/gptme \
           -v $(pwd):/workspace \
           -w /workspace \
-          -e OPENAI_API_KEY=$OPENAI_API_KEY \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
           "$GPTME_COMMAND" "Here is the context from the issue or pull request:" issue.md comments.md \
@@ -165,9 +187,9 @@ runs:
       run: |
         # generate commit message
         docker run --rm \
+          -v ~/.config/gptme:/home/appuser/.config/gptme \
           -v $(pwd):/workspace \
           -w /workspace \
-          -e OPENAI_API_KEY=$OPENAI_API_KEY \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
           "Run 'git diff --staged' to inspect what has changed." \
