@@ -71,6 +71,7 @@ runs:
         gh api /repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions -X POST -f content='+1'
 
     - name: Log in to GitHub Container Registry
+      if: steps.detect_command.outputs.gptme_command
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
@@ -78,6 +79,7 @@ runs:
         password: ${{ inputs.github_token }}
 
     - name: Pull Docker image
+      if: steps.detect_command.outputs.gptme_command
       shell: bash
       run: docker pull ghcr.io/erikbjare/gptme:latest
 
@@ -142,6 +144,7 @@ runs:
         fi
 
     - name: Run gptme
+      if: steps.detect_command.outputs.gptme_command
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
@@ -179,9 +182,11 @@ runs:
         # stage changes
         git add -A
 
-    - name: Generate commit message
-      if: steps.determine_action.outputs.action_type == 'make_changes'
+    - name: Commit, push, comment
+      if: steps.detect_command.outputs.gptme_command && steps.determine_action.outputs.action_type == 'make_changes'
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         # generate commit message
         docker run --rm \
@@ -193,12 +198,6 @@ runs:
           "Run 'git diff --staged' to inspect what has changed." \
           "-" "Write a commit message for it to 'message.txt'. Use the 'conventional commits' style."
 
-    - name: Commit, push, comment
-      if: steps.determine_action.outputs.action_type == 'make_changes'
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-      run: |
         # Read and format log
         ./scripts/format_log.sh ~/.local/share/gptme/logs/*/conversation.jsonl > log.txt
 
