@@ -19,7 +19,7 @@ Example:
 
 Inspired by aider.
 """
-
+# TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
 import re
 from collections.abc import Generator
 from pathlib import Path
@@ -32,7 +32,7 @@ instructions = """
 To patch/modify files, we can use an adapted version of git conflict markers.
 
 This can be used to make changes to files we have written in the past, without having to rewrite the whole file.
-Only one Patches should written one per codeblock. Do not continue the codeblock after the UPDATED marker.
+Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible.
 
 We can also append to files by prefixing the filename with `append`."""
