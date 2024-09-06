@@ -1,16 +1,21 @@
 """
-Tools to let the assistant control a browser, including reading webpages and searching.
+Tools to let the assistant control a browser, including:
+ - loading pages
+ - reading their contents
+ - viewing them through screenshots
+ - searching
 
 .. note::
 
     This is an experimental feature. It needs some work to be more robust and useful.
 """
-
 import importlib.util
 import logging
+import os
 import re
 import shutil
 import subprocess
+import tempfile
 from typing import Literal
 
 from ..util import transform_examples_to_chat_directives
@@ -32,7 +37,7 @@ logger = logging.getLogger(__name__)
 EngineType = Literal["google", "duckduckgo"]
 
 instructions = """
-To browse the web, you can use the `read_url` and `search` functions in Python.
+To browse the web, you can use the `read_url`, `search`, and `screenshot_url` functions in Python.
 """.strip()
 
 examples = """
@@ -82,6 +87,17 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 ...
 ```
 Assistant: The founder of ActivityWatch is Erik Bjäreholt.
+
+### Take screenshot of page
+User: take a screenshot of the ActivityWatch website
+Assistant: Certainly! I'll use the browser tool to screenshot the ActivityWatch website.
+```ipython
+screenshot_url("https://activitywatch.net")
+```
+System:
+```
+Screenshot saved to screenshot.png
+```
 """.strip()
 
 
@@ -111,6 +127,23 @@ def search(query: str, engine: EngineType = "google") -> str:
         return search_duckduckgo(query)
     else:
         raise ValueError(f"Unknown search engine: {engine}")
+
+
+def screenshot_url(url: str, filename: str | None = None) -> str:
+    """Take a screenshot of a webpage and save it to a file."""
+    logger.info(f"Taking screenshot of '{url}' and saving to '{filename}'")
+    page = load_page(url)
+
+    if filename is None:
+        filename = tempfile.mktemp(suffix=".png")
+    else:
+        # create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    # Take the screenshot
+    page.screenshot(path=filename)
+
+    return f"Screenshot saved to {filename}"
 
 
 def html_to_markdown(html):
@@ -163,6 +196,6 @@ tool = ToolSpec(
     desc="Browse the web",
     instructions=instructions,
     examples=examples,
-    functions=[read_url, search],
+    functions=[read_url, search, screenshot_url],
     available=has_browser_tool(),
 )

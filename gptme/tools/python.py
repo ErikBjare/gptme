@@ -3,9 +3,9 @@ The assistant can execute Python code blocks.
 
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
-
 import functools
 import re
+import types
 from collections.abc import Callable, Generator
 from logging import getLogger
 from typing import Literal, TypeVar, get_origin
@@ -36,10 +36,14 @@ def register_function(func: T) -> T:
     return func
 
 
+# TODO: there must be a better way?
 def derive_type(t) -> str:
     if get_origin(t) == Literal:
         v = ", ".join(f'"{a}"' for a in t.__args__)
         return f"Literal[{v}]"
+    elif get_origin(t) == types.UnionType:
+        v = ", ".join(derive_type(a) for a in t.__args__)
+        return f"Union[{v}]"
     else:
         return t.__name__
 
