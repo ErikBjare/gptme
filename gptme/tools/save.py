@@ -12,6 +12,7 @@ Example:
     ```
     System: Saved to hello.py
 """
+
 from collections.abc import Generator
 from pathlib import Path
 

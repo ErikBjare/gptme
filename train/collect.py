@@ -125,7 +125,7 @@ def collect(model: str):
         "text-generation",
         model=model,
         torch_dtype=torch.bfloat16,  # was bfloat16, but erring on MPS
-        trust_remote_code=True
+        trust_remote_code=True,
         # device_map="auto",
         # offload="offload",
         # offload_folder="offload",

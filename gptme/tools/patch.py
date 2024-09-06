@@ -19,6 +19,7 @@ Example:
 
 Inspired by aider.
 """
+
 # TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
 import re
 from collections.abc import Generator

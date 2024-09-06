@@ -3,6 +3,7 @@ The assistant can execute Python code blocks.
 
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
+
 import functools
 import re
 import types
