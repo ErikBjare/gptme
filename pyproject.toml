@@ -31,14 +31,11 @@ platformdirs = "^3.11.0"
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
+playwright = {version = "^1.37.0", optional=true}
 
 # llm-providers
 openai = "^1.0"
 anthropic = "^0.34.0"
-
-# optionals
-playwright = {version = "^1.37.0", optional=true}
-jedi = {version = "^0.19.0", optional=true}
 
 # datascience essentials
 matplotlib = {version = "*", optional=true}
