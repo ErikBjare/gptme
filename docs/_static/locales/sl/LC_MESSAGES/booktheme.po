@@ -8,59 +8,32 @@ msgstr ""
 "Language: sl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Prenesite izvorno datoteko"
-
-msgid "suggest edit"
-msgstr "predlagajte urejanje"
-
-msgid "Toggle navigation"
-msgstr "Preklopi navigacijo"
-
-msgid "open issue"
-msgstr "odprto vprašanje"
-
-msgid "Download notebook file"
-msgstr "Prenesite datoteko zvezka"
-
-msgid "repository"
-msgstr "odlagališče"
+msgid "Print to PDF"
+msgstr "Natisni v PDF"
 
 msgid "Theme by the"
 msgstr "Tema avtorja"
 
-msgid "Print to PDF"
-msgstr "Natisni v PDF"
+msgid "Download source file"
+msgstr "Prenesite izvorno datoteko"
 
-msgid "Download this page"
-msgstr "Prenesite to stran"
-
-msgid "Copyright"
-msgstr "avtorske pravice"
-
-msgid "Last updated on"
-msgstr "Nazadnje posodobljeno dne"
-
-msgid "Launch"
-msgstr "Kosilo"
-
-msgid "Open an issue"
-msgstr "Odprite številko"
-
-msgid "Fullscreen mode"
-msgstr "Celozaslonski način"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema knjige Sphinx"
+msgid "open issue"
+msgstr "odprto vprašanje"
 
 msgid "Contents"
 msgstr "Vsebina"
 
-msgid "Edit this page"
-msgstr "Uredite to stran"
+msgid "previous page"
+msgstr "Prejšnja stran"
 
-msgid "next page"
-msgstr "Naslednja stran"
+msgid "Download notebook file"
+msgstr "Prenesite datoteko zvezka"
+
+msgid "Copyright"
+msgstr "avtorske pravice"
+
+msgid "Download this page"
+msgstr "Prenesite to stran"
 
 msgid "Source repository"
 msgstr "Izvorno skladišče"
@@ -68,8 +41,35 @@ msgstr "Izvorno skladišče"
 msgid "By"
 msgstr "Avtor"
 
+msgid "repository"
+msgstr "odlagališče"
+
+msgid "Last updated on"
+msgstr "Nazadnje posodobljeno dne"
+
+msgid "Toggle navigation"
+msgstr "Preklopi navigacijo"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema knjige Sphinx"
+
+msgid "suggest edit"
+msgstr "predlagajte urejanje"
+
+msgid "Open an issue"
+msgstr "Odprite številko"
+
+msgid "Launch"
+msgstr "Kosilo"
+
+msgid "Fullscreen mode"
+msgstr "Celozaslonski način"
+
+msgid "Edit this page"
+msgstr "Uredite to stran"
+
 msgid "By the"
 msgstr "Avtor"
 
-msgid "previous page"
-msgstr "Prejšnja stran"
+msgid "next page"
+msgstr "Naslednja stran"

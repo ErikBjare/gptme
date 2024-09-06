@@ -8,59 +8,32 @@ msgstr ""
 "Language: tr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Kaynak dosyayı indirin"
-
-msgid "suggest edit"
-msgstr "düzenleme öner"
-
-msgid "Toggle navigation"
-msgstr "Gezinmeyi değiştir"
-
-msgid "open issue"
-msgstr "Açık konu"
-
-msgid "Download notebook file"
-msgstr "Defter dosyasını indirin"
-
-msgid "repository"
-msgstr "depo"
+msgid "Print to PDF"
+msgstr "PDF olarak yazdır"
 
 msgid "Theme by the"
 msgstr "Tarafından tema"
 
-msgid "Print to PDF"
-msgstr "PDF olarak yazdır"
+msgid "Download source file"
+msgstr "Kaynak dosyayı indirin"
 
-msgid "Download this page"
-msgstr "Bu sayfayı indirin"
-
-msgid "Copyright"
-msgstr "Telif hakkı"
-
-msgid "Last updated on"
-msgstr "Son güncelleme tarihi"
-
-msgid "Launch"
-msgstr "Başlatmak"
-
-msgid "Open an issue"
-msgstr "Bir sorunu açın"
-
-msgid "Fullscreen mode"
-msgstr "Tam ekran modu"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfenks Kitap Teması"
+msgid "open issue"
+msgstr "Açık konu"
 
 msgid "Contents"
 msgstr "İçindekiler"
 
-msgid "Edit this page"
-msgstr "Bu sayfayı düzenle"
+msgid "previous page"
+msgstr "önceki sayfa"
 
-msgid "next page"
-msgstr "sonraki Sayfa"
+msgid "Download notebook file"
+msgstr "Defter dosyasını indirin"
+
+msgid "Copyright"
+msgstr "Telif hakkı"
+
+msgid "Download this page"
+msgstr "Bu sayfayı indirin"
 
 msgid "Source repository"
 msgstr "Kaynak kod deposu"
@@ -68,8 +41,35 @@ msgstr "Kaynak kod deposu"
 msgid "By"
 msgstr "Tarafından"
 
+msgid "repository"
+msgstr "depo"
+
+msgid "Last updated on"
+msgstr "Son güncelleme tarihi"
+
+msgid "Toggle navigation"
+msgstr "Gezinmeyi değiştir"
+
+msgid "Sphinx Book Theme"
+msgstr "Sfenks Kitap Teması"
+
+msgid "suggest edit"
+msgstr "düzenleme öner"
+
+msgid "Open an issue"
+msgstr "Bir sorunu açın"
+
+msgid "Launch"
+msgstr "Başlatmak"
+
+msgid "Fullscreen mode"
+msgstr "Tam ekran modu"
+
+msgid "Edit this page"
+msgstr "Bu sayfayı düzenle"
+
 msgid "By the"
 msgstr "Tarafından"
 
-msgid "previous page"
-msgstr "önceki sayfa"
+msgid "next page"
+msgstr "sonraki Sayfa"

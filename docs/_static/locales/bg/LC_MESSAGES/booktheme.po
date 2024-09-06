@@ -8,59 +8,32 @@ msgstr ""
 "Language: bg\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Изтеглете изходния файл"
-
-msgid "suggest edit"
-msgstr "предложи редактиране"
-
-msgid "Toggle navigation"
-msgstr "Превключване на навигацията"
-
-msgid "open issue"
-msgstr "отворен брой"
-
-msgid "Download notebook file"
-msgstr "Изтеглете файла на бележника"
-
-msgid "repository"
-msgstr "хранилище"
+msgid "Print to PDF"
+msgstr "Печат в PDF"
 
 msgid "Theme by the"
 msgstr "Тема от"
 
-msgid "Print to PDF"
-msgstr "Печат в PDF"
+msgid "Download source file"
+msgstr "Изтеглете изходния файл"
 
-msgid "Download this page"
-msgstr "Изтеглете тази страница"
-
-msgid "Copyright"
-msgstr "Авторско право"
-
-msgid "Last updated on"
-msgstr "Последна актуализация на"
-
-msgid "Launch"
-msgstr "Стартиране"
-
-msgid "Open an issue"
-msgstr "Отворете проблем"
-
-msgid "Fullscreen mode"
-msgstr "Режим на цял екран"
-
-msgid "Sphinx Book Theme"
-msgstr "Тема на книгата Sphinx"
+msgid "open issue"
+msgstr "отворен брой"
 
 msgid "Contents"
 msgstr "Съдържание"
 
-msgid "Edit this page"
-msgstr "Редактирайте тази страница"
+msgid "previous page"
+msgstr "предишна страница"
 
-msgid "next page"
-msgstr "Следваща страница"
+msgid "Download notebook file"
+msgstr "Изтеглете файла на бележника"
+
+msgid "Copyright"
+msgstr "Авторско право"
+
+msgid "Download this page"
+msgstr "Изтеглете тази страница"
 
 msgid "Source repository"
 msgstr "Хранилище на източника"
@@ -68,8 +41,35 @@ msgstr "Хранилище на източника"
 msgid "By"
 msgstr "От"
 
+msgid "repository"
+msgstr "хранилище"
+
+msgid "Last updated on"
+msgstr "Последна актуализация на"
+
+msgid "Toggle navigation"
+msgstr "Превключване на навигацията"
+
+msgid "Sphinx Book Theme"
+msgstr "Тема на книгата Sphinx"
+
+msgid "suggest edit"
+msgstr "предложи редактиране"
+
+msgid "Open an issue"
+msgstr "Отворете проблем"
+
+msgid "Launch"
+msgstr "Стартиране"
+
+msgid "Fullscreen mode"
+msgstr "Режим на цял екран"
+
+msgid "Edit this page"
+msgstr "Редактирайте тази страница"
+
 msgid "By the"
 msgstr "По"
 
-msgid "previous page"
-msgstr "предишна страница"
+msgid "next page"
+msgstr "Следваща страница"

@@ -8,59 +8,32 @@ msgstr ""
 "Language: ro\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Descărcați fișierul sursă"
-
-msgid "suggest edit"
-msgstr "sugerează editare"
-
-msgid "Toggle navigation"
-msgstr "Comutare navigare"
-
-msgid "open issue"
-msgstr "problema deschisă"
-
-msgid "Download notebook file"
-msgstr "Descărcați fișierul notebook"
-
-msgid "repository"
-msgstr "repertoriu"
+msgid "Print to PDF"
+msgstr "Imprimați în PDF"
 
 msgid "Theme by the"
 msgstr "Tema de"
 
-msgid "Print to PDF"
-msgstr "Imprimați în PDF"
+msgid "Download source file"
+msgstr "Descărcați fișierul sursă"
 
-msgid "Download this page"
-msgstr "Descarcă această pagină"
-
-msgid "Copyright"
-msgstr "Drepturi de autor"
-
-msgid "Last updated on"
-msgstr "Ultima actualizare la"
-
-msgid "Launch"
-msgstr "Lansa"
-
-msgid "Open an issue"
-msgstr "Deschideți o problemă"
-
-msgid "Fullscreen mode"
-msgstr "Modul ecran întreg"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema Sphinx Book"
+msgid "open issue"
+msgstr "problema deschisă"
 
 msgid "Contents"
 msgstr "Cuprins"
 
-msgid "Edit this page"
-msgstr "Editați această pagină"
+msgid "previous page"
+msgstr "pagina anterioară"
 
-msgid "next page"
-msgstr "pagina următoare"
+msgid "Download notebook file"
+msgstr "Descărcați fișierul notebook"
+
+msgid "Copyright"
+msgstr "Drepturi de autor"
+
+msgid "Download this page"
+msgstr "Descarcă această pagină"
 
 msgid "Source repository"
 msgstr "Depozit sursă"
@@ -68,8 +41,35 @@ msgstr "Depozit sursă"
 msgid "By"
 msgstr "De"
 
+msgid "repository"
+msgstr "repertoriu"
+
+msgid "Last updated on"
+msgstr "Ultima actualizare la"
+
+msgid "Toggle navigation"
+msgstr "Comutare navigare"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema Sphinx Book"
+
+msgid "suggest edit"
+msgstr "sugerează editare"
+
+msgid "Open an issue"
+msgstr "Deschideți o problemă"
+
+msgid "Launch"
+msgstr "Lansa"
+
+msgid "Fullscreen mode"
+msgstr "Modul ecran întreg"
+
+msgid "Edit this page"
+msgstr "Editați această pagină"
+
 msgid "By the"
 msgstr "Langa"
 
-msgid "previous page"
-msgstr "pagina anterioară"
+msgid "next page"
+msgstr "pagina următoare"

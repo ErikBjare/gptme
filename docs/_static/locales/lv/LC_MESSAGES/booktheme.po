@@ -8,59 +8,32 @@ msgstr ""
 "Language: lv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Lejupielādēt avota failu"
-
-msgid "suggest edit"
-msgstr "ieteikt rediģēt"
-
-msgid "Toggle navigation"
-msgstr "Pārslēgt navigāciju"
-
-msgid "open issue"
-msgstr "atklāts jautājums"
-
-msgid "Download notebook file"
-msgstr "Lejupielādēt piezīmju grāmatiņu"
-
-msgid "repository"
-msgstr "krātuve"
+msgid "Print to PDF"
+msgstr "Drukāt PDF formātā"
 
 msgid "Theme by the"
 msgstr "Autora tēma"
 
-msgid "Print to PDF"
-msgstr "Drukāt PDF formātā"
+msgid "Download source file"
+msgstr "Lejupielādēt avota failu"
 
-msgid "Download this page"
-msgstr "Lejupielādējiet šo lapu"
-
-msgid "Copyright"
-msgstr "Autortiesības"
-
-msgid "Last updated on"
-msgstr "Pēdējoreiz atjaunināts"
-
-msgid "Launch"
-msgstr "Uzsākt"
-
-msgid "Open an issue"
-msgstr "Atveriet problēmu"
-
-msgid "Fullscreen mode"
-msgstr "Pilnekrāna režīms"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinksa grāmatas tēma"
+msgid "open issue"
+msgstr "atklāts jautājums"
 
 msgid "Contents"
 msgstr "Saturs"
 
-msgid "Edit this page"
-msgstr "Rediģēt šo lapu"
+msgid "previous page"
+msgstr "iepriekšējā lapa"
 
-msgid "next page"
-msgstr "nākamā lapaspuse"
+msgid "Download notebook file"
+msgstr "Lejupielādēt piezīmju grāmatiņu"
+
+msgid "Copyright"
+msgstr "Autortiesības"
+
+msgid "Download this page"
+msgstr "Lejupielādējiet šo lapu"
 
 msgid "Source repository"
 msgstr "Avota krātuve"
@@ -68,8 +41,35 @@ msgstr "Avota krātuve"
 msgid "By"
 msgstr "Autors"
 
+msgid "repository"
+msgstr "krātuve"
+
+msgid "Last updated on"
+msgstr "Pēdējoreiz atjaunināts"
+
+msgid "Toggle navigation"
+msgstr "Pārslēgt navigāciju"
+
+msgid "Sphinx Book Theme"
+msgstr "Sfinksa grāmatas tēma"
+
+msgid "suggest edit"
+msgstr "ieteikt rediģēt"
+
+msgid "Open an issue"
+msgstr "Atveriet problēmu"
+
+msgid "Launch"
+msgstr "Uzsākt"
+
+msgid "Fullscreen mode"
+msgstr "Pilnekrāna režīms"
+
+msgid "Edit this page"
+msgstr "Rediģēt šo lapu"
+
 msgid "By the"
 msgstr "Ar"
 
-msgid "previous page"
-msgstr "iepriekšējā lapa"
+msgid "next page"
+msgstr "nākamā lapaspuse"

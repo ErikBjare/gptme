@@ -8,50 +8,29 @@ msgstr ""
 "Language: ca\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Baixeu el fitxer font"
-
-msgid "suggest edit"
-msgstr "suggerir edició"
-
-msgid "Toggle navigation"
-msgstr "Commuta la navegació"
-
-msgid "open issue"
-msgstr "número obert"
-
-msgid "Download notebook file"
-msgstr "Descarregar fitxer de quadern"
+msgid "Print to PDF"
+msgstr "Imprimeix a PDF"
 
 msgid "Theme by the"
 msgstr "Tema del"
 
-msgid "Print to PDF"
-msgstr "Imprimeix a PDF"
+msgid "Download source file"
+msgstr "Baixeu el fitxer font"
 
-msgid "Download this page"
-msgstr "Descarregueu aquesta pàgina"
+msgid "open issue"
+msgstr "número obert"
+
+msgid "previous page"
+msgstr "Pàgina anterior"
+
+msgid "Download notebook file"
+msgstr "Descarregar fitxer de quadern"
 
 msgid "Copyright"
 msgstr "Copyright"
 
-msgid "Last updated on"
-msgstr "Darrera actualització el"
-
-msgid "Launch"
-msgstr "Llançament"
-
-msgid "Open an issue"
-msgstr "Obriu un número"
-
-msgid "Sphinx Book Theme"
-msgstr "Tema del llibre Esfinx"
-
-msgid "Edit this page"
-msgstr "Editeu aquesta pàgina"
-
-msgid "next page"
-msgstr "pàgina següent"
+msgid "Download this page"
+msgstr "Descarregueu aquesta pàgina"
 
 msgid "Source repository"
 msgstr "Dipòsit de fonts"
@@ -59,8 +38,29 @@ msgstr "Dipòsit de fonts"
 msgid "By"
 msgstr "Per"
 
+msgid "Last updated on"
+msgstr "Darrera actualització el"
+
+msgid "Toggle navigation"
+msgstr "Commuta la navegació"
+
+msgid "Sphinx Book Theme"
+msgstr "Tema del llibre Esfinx"
+
+msgid "suggest edit"
+msgstr "suggerir edició"
+
+msgid "Open an issue"
+msgstr "Obriu un número"
+
+msgid "Launch"
+msgstr "Llançament"
+
+msgid "Edit this page"
+msgstr "Editeu aquesta pàgina"
+
 msgid "By the"
 msgstr "Per la"
 
-msgid "previous page"
-msgstr "Pàgina anterior"
+msgid "next page"
+msgstr "pàgina següent"

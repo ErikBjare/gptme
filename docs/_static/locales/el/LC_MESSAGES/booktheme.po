@@ -8,59 +8,32 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Λήψη αρχείου προέλευσης"
-
-msgid "suggest edit"
-msgstr "προτείνω επεξεργασία"
-
-msgid "Toggle navigation"
-msgstr "Εναλλαγή πλοήγησης"
-
-msgid "open issue"
-msgstr "ανοιχτό ζήτημα"
-
-msgid "Download notebook file"
-msgstr "Λήψη αρχείου σημειωματάριου"
-
-msgid "repository"
-msgstr "αποθήκη"
+msgid "Print to PDF"
+msgstr "Εκτύπωση σε PDF"
 
 msgid "Theme by the"
 msgstr "Θέμα από το"
 
-msgid "Print to PDF"
-msgstr "Εκτύπωση σε PDF"
+msgid "Download source file"
+msgstr "Λήψη αρχείου προέλευσης"
 
-msgid "Download this page"
-msgstr "Λήψη αυτής της σελίδας"
-
-msgid "Copyright"
-msgstr "Πνευματική ιδιοκτησία"
-
-msgid "Last updated on"
-msgstr "Τελευταία ενημέρωση στις"
-
-msgid "Launch"
-msgstr "Εκτόξευση"
-
-msgid "Open an issue"
-msgstr "Ανοίξτε ένα ζήτημα"
-
-msgid "Fullscreen mode"
-msgstr "ΛΕΙΤΟΥΡΓΙΑ ΠΛΗΡΟΥΣ ΟΘΟΝΗΣ"
-
-msgid "Sphinx Book Theme"
-msgstr "Θέμα βιβλίου Sphinx"
+msgid "open issue"
+msgstr "ανοιχτό ζήτημα"
 
 msgid "Contents"
 msgstr "Περιεχόμενα"
 
-msgid "Edit this page"
-msgstr "Επεξεργαστείτε αυτήν τη σελίδα"
+msgid "previous page"
+msgstr "προηγούμενη σελίδα"
 
-msgid "next page"
-msgstr "επόμενη σελίδα"
+msgid "Download notebook file"
+msgstr "Λήψη αρχείου σημειωματάριου"
+
+msgid "Copyright"
+msgstr "Πνευματική ιδιοκτησία"
+
+msgid "Download this page"
+msgstr "Λήψη αυτής της σελίδας"
 
 msgid "Source repository"
 msgstr "Αποθήκη πηγής"
@@ -68,8 +41,35 @@ msgstr "Αποθήκη πηγής"
 msgid "By"
 msgstr "Με"
 
+msgid "repository"
+msgstr "αποθήκη"
+
+msgid "Last updated on"
+msgstr "Τελευταία ενημέρωση στις"
+
+msgid "Toggle navigation"
+msgstr "Εναλλαγή πλοήγησης"
+
+msgid "Sphinx Book Theme"
+msgstr "Θέμα βιβλίου Sphinx"
+
+msgid "suggest edit"
+msgstr "προτείνω επεξεργασία"
+
+msgid "Open an issue"
+msgstr "Ανοίξτε ένα ζήτημα"
+
+msgid "Launch"
+msgstr "Εκτόξευση"
+
+msgid "Fullscreen mode"
+msgstr "ΛΕΙΤΟΥΡΓΙΑ ΠΛΗΡΟΥΣ ΟΘΟΝΗΣ"
+
+msgid "Edit this page"
+msgstr "Επεξεργαστείτε αυτήν τη σελίδα"
+
 msgid "By the"
 msgstr "Από το"
 
-msgid "previous page"
-msgstr "προηγούμενη σελίδα"
+msgid "next page"
+msgstr "επόμενη σελίδα"

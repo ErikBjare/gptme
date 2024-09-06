@@ -8,59 +8,32 @@ msgstr ""
 "Language: et\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Download source file"
-msgstr "Laadige alla lähtefail"
-
-msgid "suggest edit"
-msgstr "soovita muuta"
-
-msgid "Toggle navigation"
-msgstr "Lülita navigeerimine sisse"
-
-msgid "open issue"
-msgstr "avatud küsimus"
-
-msgid "Download notebook file"
-msgstr "Laadige sülearvuti fail alla"
-
-msgid "repository"
-msgstr "hoidla"
+msgid "Print to PDF"
+msgstr "Prindi PDF-i"
 
 msgid "Theme by the"
 msgstr "Teema"
 
-msgid "Print to PDF"
-msgstr "Prindi PDF-i"
+msgid "Download source file"
+msgstr "Laadige alla lähtefail"
 
-msgid "Download this page"
-msgstr "Laadige see leht alla"
-
-msgid "Copyright"
-msgstr "Autoriõigus"
-
-msgid "Last updated on"
-msgstr "Viimati uuendatud"
-
-msgid "Launch"
-msgstr "Käivitage"
-
-msgid "Open an issue"
-msgstr "Avage probleem"
-
-msgid "Fullscreen mode"
-msgstr "Täisekraanirežiim"
-
-msgid "Sphinx Book Theme"
-msgstr "Sfinksiraamatu teema"
+msgid "open issue"
+msgstr "avatud küsimus"
 
 msgid "Contents"
 msgstr "Sisu"
 
-msgid "Edit this page"
-msgstr "Muutke seda lehte"
+msgid "previous page"
+msgstr "eelmine leht"
 
-msgid "next page"
-msgstr "järgmine leht"
+msgid "Download notebook file"
+msgstr "Laadige sülearvuti fail alla"
+
+msgid "Copyright"
+msgstr "Autoriõigus"
+
+msgid "Download this page"
+msgstr "Laadige see leht alla"
 
 msgid "Source repository"
 msgstr "Allikahoidla"
@@ -68,8 +41,35 @@ msgstr "Allikahoidla"
 msgid "By"
 msgstr "Kõrval"
 
+msgid "repository"
+msgstr "hoidla"
+
+msgid "Last updated on"
+msgstr "Viimati uuendatud"
+
+msgid "Toggle navigation"
+msgstr "Lülita navigeerimine sisse"
+
+msgid "Sphinx Book Theme"
+msgstr "Sfinksiraamatu teema"
+
+msgid "suggest edit"
+msgstr "soovita muuta"
+
+msgid "Open an issue"
+msgstr "Avage probleem"
+
+msgid "Launch"
+msgstr "Käivitage"
+
+msgid "Fullscreen mode"
+msgstr "Täisekraanirežiim"
+
+msgid "Edit this page"
+msgstr "Muutke seda lehte"
+
 msgid "By the"
 msgstr "Autor"
 
-msgid "previous page"
-msgstr "eelmine leht"
+msgid "next page"
+msgstr "järgmine leht"
