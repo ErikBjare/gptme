@@ -34,10 +34,10 @@ typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
 lint:
-	poetry run ruff ${SRCDIRS}
+	poetry run ruff check ${SRCDIRS}
 
 format:
-	poetry run ruff --fix-only ${SRCDIRS}
+	poetry run ruff check --fix-only ${SRCDIRS}
 	poetry run pyupgrade --py310-plus --exit-zero-even-if-changed ${SRCFILES}
 	poetry run black ${SRCDIRS}
 
