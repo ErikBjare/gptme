@@ -249,7 +249,7 @@ def chat(
         and workspace_prompt not in [m.content for m in log]
         and "user" not in [m.role for m in log]
     ):
-        log.append(Message("system", workspace_prompt, hide=True))
+        log.append(Message("system", workspace_prompt, hide=True, quiet=True))
 
     # print log
     log.print()
