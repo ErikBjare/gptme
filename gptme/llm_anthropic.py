@@ -36,9 +36,10 @@ class MessagePart(TypedDict, total=False):
 def chat(messages: list[Message], model: str) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
+    messages_dicts = msgs2dicts(messages, anthropic=True)
     response = anthropic.beta.prompt_caching.messages.create(
         model=model,
-        messages=msgs2dicts(messages, anthropic=True),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
@@ -51,11 +52,12 @@ def chat(messages: list[Message], model: str) -> str:
 
 
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
-    messages, system_messages = _transform_system_messages(messages)
     assert anthropic, "LLM not initialized"
+    messages, system_messages = _transform_system_messages(messages)
+    messages_dicts = msgs2dicts(messages, anthropic=True)
     with anthropic.beta.prompt_caching.messages.stream(
         model=model,
-        messages=msgs2dicts(messages, anthropic=True),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
@@ -79,16 +81,18 @@ def _transform_system_messages(
             messages[i] = Message(
                 "user",
                 content=f"<system>{message.content}</system>",
+                files=message.files,  # type: ignore
             )
 
-    # find consecutive user role messages and merge them into a single <system> message
+    # find consecutive user role messages and merge them together
     messages_new: list[Message] = []
     while messages:
         message = messages.pop(0)
-        if messages_new and messages_new[-1].role == "user":
+        if messages_new and messages_new[-1].role == "user" and message.role == "user":
             messages_new[-1] = Message(
                 "user",
-                content=f"{messages_new[-1].content}\n{message.content}",
+                content=f"{messages_new[-1].content}\n\n{message.content}",
+                files=messages_new[-1].files + message.files,  # type: ignore
             )
         else:
             messages_new.append(message)

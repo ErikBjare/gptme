@@ -51,7 +51,7 @@ class Message:
         # This is not persisted to the log file.
         self.quiet = quiet
         # Files attached to the message, could e.g. be images for vision.
-        self.files = (
+        self.files: list[Path] = (
             [Path(f) if isinstance(f, str) else f for f in files] if files else []
         )
 
@@ -123,12 +123,12 @@ class Message:
     def to_dict(self, keys=None, openai=False, anthropic=False) -> dict:
         """Return a dict representation of the message, serializable to JSON."""
         content: str | list[dict[str, Any]]
-        if not anthropic and not openai:
-            # storage/wire format should keep the content as a string
-            content = self.content
-        else:
+        if anthropic or openai:
             # OpenAI format or Anthropic format should include files in the content
             content = self._content_files_list(openai=openai, anthropic=anthropic)
+        else:
+            # storage/wire format should keep the content as a string
+            content = self.content
 
         d = {
             "role": self.role,
