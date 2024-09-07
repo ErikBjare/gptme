@@ -1,6 +1,7 @@
 import logging
 import random
 import re
+import sys
 import textwrap
 from datetime import datetime, timedelta
 
@@ -133,6 +134,7 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
     choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
     # answer = None
     # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
+    print_bell()  # Ring the bell just before asking for input
     answer = console.input(
         f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
     )
@@ -194,3 +196,9 @@ def extract_codeblocks(markdown: str) -> list[tuple[str, str]]:
             current_block.append(line)
 
     return codeblocks
+
+
+def print_bell():
+    """Ring the terminal bell."""
+    sys.stdout.write("\a")
+    sys.stdout.flush()
