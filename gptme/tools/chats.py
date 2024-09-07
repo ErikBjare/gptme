@@ -53,9 +53,9 @@ def _summarize_conversation(log_manager, include_summary: bool) -> list[str]:
     return summary_lines
 
 
-def list_chats(max_results: int = 5, include_summary: bool = True) -> None:
+def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
     """
-    List recent chat conversations and optionally summarize them.
+    List recent chat conversations and optionally summarize them using an LLM.
 
     Args:
         max_results (int): Maximum number of conversations to display.
