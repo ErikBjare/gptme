@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from gptme.message import Message, len_tokens
-from gptme.tools.reduce import reduce_log, truncate_msg
+from gptme.reduce import reduce_log, truncate_msg
 
 # Project root
 root = Path(__file__).parent.parent

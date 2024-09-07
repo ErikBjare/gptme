@@ -23,15 +23,12 @@ from .tools import (
     execute_shell,
     loaded_tools,
 )
-from .tools.context import gen_context_msg
-from .tools.summarize import summarize
-from .tools.useredit import edit_text_with_editor
+from .useredit import edit_text_with_editor
 from .util import ask_execute
 
 logger = logging.getLogger(__name__)
 
 Actions = Literal[
-    "summarize",
     "log",
     "edit",
     "rename",
@@ -114,16 +111,13 @@ def handle_cmd(
         case "summarize":
             msgs = log.prepare_messages()
             msgs = [m for m in msgs if not m.hide]
-            summary = summarize(msgs)
+            summary = llm.summarize(msgs)
             print(f"Summary: {summary}")
         case "edit":
             # edit previous messages
             # first undo the '/edit' command itself
             log.undo(1, quiet=True)
             yield from edit(log)
-        case "context":
-            # print context msg
-            yield gen_context_msg()
         case "undo":
             # undo the '/undo' command itself
             log.undo(1, quiet=True)
