@@ -412,7 +412,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_python"><code class="docutils literal notranslate"><span class="pre">execute_python()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_save"><code class="docutils literal notranslate"><span class="pre">execute_save()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_shell"><code class="docutils literal notranslate"><span class="pre">execute_shell()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.summarize"><code class="docutils literal notranslate"><span class="pre">summarize()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.shell">gptme.tools.shell</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.shell.execute_shell"><code class="docutils literal notranslate"><span class="pre">execute_shell()</span></code></a></li>
 </ul>
@@ -424,11 +423,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.python.register_function"><code class="docutils literal notranslate"><span class="pre">register_function()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.context">gptme.tools.context</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.context.ctags"><code class="docutils literal notranslate"><span class="pre">ctags()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.context.gen_context_msg"><code class="docutils literal notranslate"><span class="pre">gen_context_msg()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-tools-context">gptme.tools.context</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.save">gptme.tools.save</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.save.execute_append"><code class="docutils literal notranslate"><span class="pre">execute_append()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.save.execute_save"><code class="docutils literal notranslate"><span class="pre">execute_save()</span></code></a></li>
@@ -667,12 +662,6 @@ If you want to keep the old log, use fork()</p>
 <dd><p>Executes a shell command and returns the output.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="gptme.tools.summarize">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">summarize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">gptme.message.Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.tools.summarize" title="Permalink to this definition">#</a></dt>
-<dd><p>Uses a cheap LLM to summarize long outputs.</p>
-</dd></dl>
-
 <section id="module-gptme.tools.shell">
 <span id="gptme-tools-shell"></span><h3>gptme.tools.shell<a class="headerlink" href="#module-gptme.tools.shell" title="Permalink to this heading">#</a></h3>
 <p>The assistant can execute shell commands by outputting code blocks with <cite>bash</cite> or <cite>sh</cite> as the language.</p>
@@ -873,22 +862,8 @@ Results of the last expression will be displayed, IPython-style:</p>
 </dd></dl>
 
 </section>
-<section id="module-gptme.tools.context">
-<span id="gptme-tools-context"></span><h3>gptme.tools.context<a class="headerlink" href="#module-gptme.tools.context" title="Permalink to this heading">#</a></h3>
-<p>Generate context information for a conversation.</p>
-<p>Can include the current working directory, git status, and ctags output.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="gptme.tools.context.ctags">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">ctags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.tools.context.ctags" title="Permalink to this definition">#</a></dt>
-<dd><p>Generate ctags output for project in working dir.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="gptme.tools.context.gen_context_msg">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">gen_context_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.tools.context.gen_context_msg" title="Permalink to this definition">#</a></dt>
-<dd><p>Generate a message with context information from output of <cite>pwd</cite> and <cite>git status</cite>.</p>
-</dd></dl>
-
+<section id="gptme-tools-context">
+<h3>gptme.tools.context<a class="headerlink" href="#gptme-tools-context" title="Permalink to this heading">#</a></h3>
 </section>
 <section id="module-gptme.tools.save">
 <span id="gptme-tools-save"></span><h3>gptme.tools.save<a class="headerlink" href="#module-gptme.tools.save" title="Permalink to this heading">#</a></h3>
@@ -1061,7 +1036,6 @@ print(f"hello {name}")
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_python"><code class="docutils literal notranslate"><span class="pre">execute_python()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_save"><code class="docutils literal notranslate"><span class="pre">execute_save()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_shell"><code class="docutils literal notranslate"><span class="pre">execute_shell()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.summarize"><code class="docutils literal notranslate"><span class="pre">summarize()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.shell">gptme.tools.shell</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.shell.execute_shell"><code class="docutils literal notranslate"><span class="pre">execute_shell()</span></code></a></li>
 </ul>
@@ -1073,11 +1047,7 @@ print(f"hello {name}")
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.python.register_function"><code class="docutils literal notranslate"><span class="pre">register_function()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.context">gptme.tools.context</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.context.ctags"><code class="docutils literal notranslate"><span class="pre">ctags()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.context.gen_context_msg"><code class="docutils literal notranslate"><span class="pre">gen_context_msg()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-tools-context">gptme.tools.context</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#module-gptme.tools.save">gptme.tools.save</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.save.execute_append"><code class="docutils literal notranslate"><span class="pre">execute_append()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.save.execute_save"><code class="docutils literal notranslate"><span class="pre">execute_save()</span></code></a></li>

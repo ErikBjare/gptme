@@ -371,10 +371,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit">Edit</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduce">Reduce</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#context">Context</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summarize">Summarize</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 </ul>
             </nav>
         </div>
@@ -411,10 +408,7 @@ document.write(`
 </li>
 <li><p>chat management</p>
 <ul>
-<li><p><a class="reference internal" href="#edit"><span class="std std-ref">Edit</span></a></p></li>
-<li><p><a class="reference internal" href="#reduce"><span class="std std-ref">Reduce</span></a></p></li>
-<li><p><a class="reference internal" href="#context"><span class="std std-ref">Context</span></a></p></li>
-<li><p><a class="reference internal" href="#summarize"><span class="std std-ref">Summarize</span></a></p></li>
+<li><p><a class="reference internal" href="#chats"><span class="std std-ref">Chats</span></a></p></li>
 </ul>
 </li>
 </ul>
@@ -1051,66 +1045,50 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 </dd></dl>
 
 </section>
-<section id="edit">
-<h2>Edit<a class="headerlink" href="#edit" title="Permalink to this heading">#</a></h2>
-<p>Tool that lets the user edit something in a temporary file using their $EDITOR.</p>
-<p>This is typically used to edit a conversation log with /edit.</p>
-<dl class="py function">
+<section id="chats">
+<h2>Chats<a class="headerlink" href="#chats" title="Permalink to this heading">#</a></h2>
+<p>List, search, and summarize past conversation logs.</p>
+<p>Search for a specific topic in past conversations</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Can you find any mentions of "python" in our past conversations?</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll search our past conversations for mentions of "python" using the search_chats function.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">python</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">search_chats("python")
+</pre></div></pre>
+  </td>
+</tr>
+</table><dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.useredit.</span></span><span class="sig-name descname"><span class="pre">edit_text_with_editor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
-<dd><p>Edit some text in a temporary file using the user’s $EDITOR.</p>
-</dd></dl>
-
-</section>
-<section id="reduce">
-<h2>Reduce<a class="headerlink" href="#reduce" title="Permalink to this heading">#</a></h2>
-<p>Tools to reduce a log to a smaller size.</p>
-<p>Typically used when the log exceeds a token limit and needs to be shortened.</p>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.reduce.</span></span><span class="sig-name descname"><span class="pre">limit_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">gptme.message.Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">gptme.message.Message</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Picks messages until the total number of tokens exceeds limit,
-then removes the last message to get below the limit.
-Will always pick the first few system messages.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.reduce.</span></span><span class="sig-name descname"><span class="pre">reduce_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">gptme.message.Message</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Reduces log until it is below <cite>limit</cite> tokens by continually summarizing the longest messages until below the limit.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.reduce.</span></span><span class="sig-name descname"><span class="pre">truncate_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_pre</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines_post</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span></dt>
-<dd><p>Truncates message codeblocks to the first and last <cite>lines_pre</cite> and <cite>lines_post</cite> lines, keeping the rest as <cite>[…]</cite>.</p>
-</dd></dl>
-
-</section>
-<section id="context">
-<h2>Context<a class="headerlink" href="#context" title="Permalink to this heading">#</a></h2>
-<p>Generate context information for a conversation.</p>
-<p>Can include the current working directory, git status, and ctags output.</p>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">ctags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
-<dd><p>Generate ctags output for project in working dir.</p>
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.chats.</span></span><span class="sig-name descname"><span class="pre">list_chats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>List recent chat conversations and optionally summarize them.</p>
+<dl>
+<dt>Args:</dt><dd><p>max_results (int): Maximum number of conversations to display.
+include_summary (bool): Whether to include a summary of each conversation.</p>
+<blockquote>
+<div><p>If True, uses an LLM to generate a comprehensive summary.
+If False, uses a simple strategy showing snippets of the first and last messages.</p>
+</div></blockquote>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.context.</span></span><span class="sig-name descname"><span class="pre">gen_context_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span></dt>
-<dd><p>Generate a message with context information from output of <cite>pwd</cite> and <cite>git status</cite>.</p>
-</dd></dl>
-
-</section>
-<section id="summarize">
-<h2>Summarize<a class="headerlink" href="#summarize" title="Permalink to this heading">#</a></h2>
-<p>A tool to summarize long outputs.</p>
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.summarize.</span></span><span class="sig-name descname"><span class="pre">summarize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">gptme.message.Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span></dt>
-<dd><p>Uses a cheap LLM to summarize long outputs.</p>
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.chats.</span></span><span class="sig-name descname"><span class="pre">search_chats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Search past conversation logs for the given query and print a summary of the results.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>query (str): The search query.
+max_results (int): Maximum number of conversations to display.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -1167,10 +1145,7 @@ Will always pick the first few system messages.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit">Edit</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduce">Reduce</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#context">Context</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summarize">Summarize</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 </ul>
   </nav></div>
 
