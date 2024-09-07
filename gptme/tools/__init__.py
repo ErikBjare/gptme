@@ -7,6 +7,7 @@ from ..message import Message
 from ..util import extract_codeblocks
 from .base import ToolSpec
 from .browser import tool as browser_tool
+from .chats import tool as chats_tool
 from .gh import tool as gh_tool
 from .patch import tool as patch_tool
 from .python import execute_python
@@ -14,11 +15,9 @@ from .python import get_tool as get_python_tool
 from .python import register_function
 from .read import tool as tool_read
 from .save import execute_save, tool_append, tool_save
-from .search_chats import tool as search_chats_tool
 from .shell import execute_shell
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
-from .summarize import summarize
 from .tmux import tool as tmux_tool
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,6 @@ __all__ = [
     "execute_python",
     "execute_shell",
     "execute_save",
-    "summarize",
     "ToolSpec",
     "ToolUse",
     "all_tools",
@@ -45,7 +43,7 @@ all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
     tmux_tool,
     browser_tool,
     gh_tool,
-    search_chats_tool,
+    chats_tool,
     # python tool is loaded last to ensure all functions are registered
     get_python_tool,
 ]
