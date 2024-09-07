@@ -14,6 +14,7 @@ from .python import get_tool as get_python_tool
 from .python import register_function
 from .read import tool as tool_read
 from .save import execute_save, tool_append, tool_save
+from .search_chats import tool as search_chats_tool
 from .shell import execute_shell
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
@@ -44,6 +45,7 @@ all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
     tmux_tool,
     browser_tool,
     gh_tool,
+    search_chats_tool,
     # python tool is loaded last to ensure all functions are registered
     get_python_tool,
 ]
