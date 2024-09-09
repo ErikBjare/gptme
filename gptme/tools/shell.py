@@ -360,12 +360,13 @@ def split_commands(script: str) -> list[str]:
                     command_parts.append(script[start:end])
                 command = " ".join(command_parts)
                 commands.append(command)
-        elif part.kind == "function":
-            commands.append(script[part.pos[0] : part.pos[1]])
-        elif part.kind == "pipeline":
+        elif part.kind in ["function", "pipeline", "list"]:
             commands.append(script[part.pos[0] : part.pos[1]])
         else:
-            logger.warning(f"Unknown shell script part of kind '{part.kind}', skipping")
+            logger.warning(
+                f"Unknown shell script part of kind '{part.kind}', hoping this works"
+            )
+            commands.append(script[part.pos[0] : part.pos[1]])
     return commands
 
 
