@@ -36,9 +36,6 @@ class ToolSpec:
         """Returns a string about the tool to be appended to the __doc__ string of the module."""
         if _doc:
             _doc += "\n\n"
-        _doc += f"ToolSpec: {self.name}\n{self.desc}"
-        if self.instructions:
-            _doc += f"\n\n# Instructions\n\n{self.instructions}"
         if self.examples:
             _doc += f"\n\n# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
         return _doc
