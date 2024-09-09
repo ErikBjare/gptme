@@ -6,66 +6,32 @@ Here is the API reference for ``gptme``.
 .. toctree::
    :maxdepth: 2
 
-gptme package
-^^^^^^^^^^^^^
+core
+----
 
-Some of the main classes in ``gptme``.
+Some of the core classes in ``gptme``.
 
-gptme.message
--------------
-
-.. automodule:: gptme.message
+.. autoclass:: gptme.message.Message
    :members:
 
-gptme.logmanager
-----------------
+.. automodule:: gptme.codeblock
+   :members:
 
 .. automodule:: gptme.logmanager
    :members:
 
-gptme.server
-^^^^^^^^^^^^
+tools
+-----
 
-Endpoint functions for the server.
-
-.. automodule:: gptme.server
-   :members:
-   :undoc-members:
-
-gptme.tools
-^^^^^^^^^^^
-
-Tools available to gptme.
+Supporting classes and functions for creating and using tools.
 
 .. automodule:: gptme.tools
    :members:
 
-gptme.tools.shell
------------------
-
-.. automodule:: gptme.tools.shell
-   :members:
-
-Python
+server
 ------
 
-.. automodule:: gptme.tools.python
-   :members:
+See `Server <server.html>`_ for more information.
 
-gptme.tools.context
--------------------
-
-.. automodule:: gptme.tools.context
-   :members:
-
-gptme.tools.save
-----------------
-
-.. automodule:: gptme.tools.save
-   :members:
-
-gptme.tools.patch
------------------
-
-.. automodule:: gptme.tools.patch
+.. automodule:: gptme.server
    :members:

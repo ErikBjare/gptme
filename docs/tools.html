@@ -415,6 +415,7 @@ document.write(`
 <section id="shell">
 <h2>Shell<a class="headerlink" href="#shell" title="Permalink to this heading">#</a></h2>
 <p>The assistant can execute shell commands by outputting code blocks with <cite>bash</cite> or <cite>sh</cite> as the language.</p>
+<p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -544,8 +545,9 @@ Scaffolding project in ./fancy-project...
 <section id="python">
 <h2>Python<a class="headerlink" href="#python" title="Permalink to this heading">#</a></h2>
 <p>The assistant can execute Python code blocks.</p>
-<p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
-Results of the last expression will be displayed, IPython-style:</p>
+<p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.</p>
+<p># Examples</p>
+<p>Results of the last expression will be displayed, IPython-style:</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -618,6 +620,7 @@ Results of the last expression will be displayed, IPython-style:</p>
 <p>This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
 It allows for inspecting pane contents and sending input.</p>
+<p># Examples</p>
 <p>Managing a dev server</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -727,73 +730,6 @@ It allows for inspecting pane contents and sending input.</p>
 </pre></div></pre>
   </td>
 </tr>
-</table><p>Create vue project</p>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Create a new vue project with typescript and pinia named fancy-project</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">bash</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">npm init vue@latest fancy-project --yes -- --typescript --pinia
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">> npx
-> create-vue
-
-Vue.js - The Progressive JavaScript Framework
-
-Scaffolding project in ./fancy-project...
-</pre></div></pre>
-  </td>
-</tr>
-</table><p>Ending a session</p>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I changed my mind</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">No problem! Let's kill the session and start over:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">tmux</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">list_sessions
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Active tmux sessions [0]</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">tmux</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">kill_session 0
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Killed tmux session with ID 0</pre>
-  </td>
-</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.tmux.</span></span><span class="sig-name descname"><span class="pre">execute_tmux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
@@ -804,27 +740,39 @@ Scaffolding project in ./fancy-project...
 <section id="save">
 <h2>Save<a class="headerlink" href="#save" title="Permalink to this heading">#</a></h2>
 <p>Gives the assistant the ability to save code to a file.</p>
-<p>Example:</p>
+<p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">write hello world to hello.py</pre>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">write a Hello world script to hello.py<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("Hello world")
+</pre></div>
+Saved to `hello.py`.</pre>
+  </td>
+</tr>
+</table><p># Examples</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">append a print "Hello world" to hello.py</pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("hello world")
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">append hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("Hello world")
 </pre></div></pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to hello.py</pre>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Appended to `hello.py`.</pre>
   </td>
 </tr>
 </table><dl class="py function">
@@ -842,8 +790,8 @@ Scaffolding project in ./fancy-project...
 </section>
 <section id="patch">
 <h2>Patch<a class="headerlink" href="#patch" title="Permalink to this heading">#</a></h2>
-<p>Gives the LLM agent the ability to patch files, by using a adapted version git conflict markers.</p>
-<p>Example:</p>
+<p>Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.</p>
+<p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -855,14 +803,16 @@ Scaffolding project in ./fancy-project...
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch hello.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;"><<<<<<< ORIGINAL
-print("Hello world")
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">```patch
+<<<<<<< ORIGINAL
+    print("Hello world")
 =======
-name = input("What is your name? ")
-print(f"hello {name}")
+    name = input("What is your name? ")
+    print(f"Hello {name}")
 >>>>>>> UPDATED
-</pre></div></pre>
+
+hello.py
+```</pre>
   </td>
 </tr>
 <tr>
@@ -871,8 +821,51 @@ print(f"hello {name}")
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Patch applied</pre>
   </td>
 </tr>
-</table><p>Inspired by aider.</p>
-<dl class="py function">
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">change the codeblock to append to the file</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">```patch
+<<<<<<< ORIGINAL<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">=======
+</pre></div>append hello.py
+>>>>>>> UPDATED
+
+patch.py
+```</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">run the function when the script is run</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">```append
+<<<<<<< ORIGINAL
+    print("Hello world")
+=======
+    name = input("What is your name? ")
+    print(f"Hello {name}")
+>>>>>>> UPDATED
+
+hello.py
+```</pre>
+  </td>
+</tr>
+</table><dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.patch.</span></span><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codeblock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
 <dd><p>Applies the patch in <code class="docutils literal notranslate"><span class="pre">codeblock</span></code> to <code class="docutils literal notranslate"><span class="pre">content</span></code>.</p>
@@ -900,6 +893,7 @@ print(f"hello {name}")
 <p class="admonition-title">Note</p>
 <p>This is an experimental feature. It needs some work to be more robust and useful.</p>
 </div>
+<p># Examples</p>
 <p>Answer question from URL with browsing</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -1048,6 +1042,7 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 <section id="chats">
 <h2>Chats<a class="headerlink" href="#chats" title="Permalink to this heading">#</a></h2>
 <p>List, search, and summarize past conversation logs.</p>
+<p># Examples</p>
 <p>Search for a specific topic in past conversations</p>
 <table style="width: 100%; margin-bottom: 1em">
   

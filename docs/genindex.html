@@ -298,6 +298,7 @@ document.write(`
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -453,10 +454,6 @@ document.write(`
       <li><a href="api.html#gptme.logmanager.LogManager.append">append() (gptme.logmanager.LogManager method)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.tools.patch.apply">apply() (in module gptme.tools.patch)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
@@ -470,7 +467,7 @@ document.write(`
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.tools.python.check_available_packages">check_available_packages() (in module gptme.tools.python)</a>
+      <li><a href="api.html#gptme.codeblock.Codeblock">Codeblock (class in gptme.codeblock)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -488,34 +485,12 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.edit">edit() (gptme.logmanager.LogManager method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.tools.ToolUse.execute">execute() (gptme.tools.ToolUse method)</a>
-</li>
-      <li><a href="api.html#gptme.tools.save.execute_append">execute_append() (in module gptme.tools.save)</a>
 </li>
       <li><a href="api.html#gptme.tools.execute_codeblock">execute_codeblock() (in module gptme.tools)</a>
 </li>
-      <li><a href="api.html#gptme.tools.patch.execute_patch">execute_patch() (in module gptme.tools.patch)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.tools.execute_python">execute_python() (in module gptme.tools)</a>
-
-      <ul>
-        <li><a href="api.html#gptme.tools.python.execute_python">(in module gptme.tools.python)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#gptme.tools.execute_save">execute_save() (in module gptme.tools)</a>
-
-      <ul>
-        <li><a href="api.html#gptme.tools.save.execute_save">(in module gptme.tools.save)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#gptme.tools.execute_shell">execute_shell() (in module gptme.tools)</a>
-
-      <ul>
-        <li><a href="api.html#gptme.tools.shell.execute_shell">(in module gptme.tools.shell)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -524,11 +499,13 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.fork">fork() (gptme.logmanager.LogManager method)</a>
 </li>
+      <li><a href="api.html#gptme.tools.ToolUse.from_codeblock">from_codeblock() (gptme.tools.ToolUse class method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.message.format_msgs">format_msgs() (in module gptme.message)</a>
-</li>
       <li><a href="api.html#gptme.message.Message.from_toml">from_toml() (gptme.message.Message class method)</a>
+</li>
+      <li><a href="api.html#gptme.codeblock.Codeblock.from_xml">from_xml() (gptme.codeblock.Codeblock class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -538,9 +515,9 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.message.Message.get_codeblocks">get_codeblocks() (gptme.message.Message method)</a>
 </li>
-      <li><a href="api.html#gptme.tools.python.get_installed_python_libraries">get_installed_python_libraries() (in module gptme.tools.python)</a>
+      <li><a href="api.html#gptme.tools.ToolSpec.get_doc">get_doc() (gptme.tools.ToolSpec method)</a>
 </li>
-      <li><a href="api.html#gptme.logmanager.LogManager.get_last_code_block">get_last_code_block() (gptme.logmanager.LogManager method)</a>
+      <li><a href="api.html#gptme.logmanager.LogManager.get_last_codeblock">get_last_codeblock() (gptme.logmanager.LogManager method)</a>
 </li>
       <li>
     gptme command line option
@@ -599,17 +576,17 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    gptme.codeblock
+
+      <ul>
+        <li><a href="api.html#module-gptme.codeblock">module</a>
+</li>
+      </ul></li>
+      <li>
     gptme.logmanager
 
       <ul>
         <li><a href="api.html#module-gptme.logmanager">module</a>
-</li>
-      </ul></li>
-      <li>
-    gptme.message
-
-      <ul>
-        <li><a href="api.html#module-gptme.message">module</a>
 </li>
       </ul></li>
       <li>
@@ -626,46 +603,24 @@ document.write(`
         <li><a href="api.html#module-gptme.tools">module</a>
 </li>
       </ul></li>
-      <li>
-    gptme.tools.patch
+  </ul></td>
+</tr></table>
 
-      <ul>
-        <li><a href="api.html#module-gptme.tools.patch">module</a>
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.tools.ToolUse.iter_from_xml">iter_from_xml() (gptme.tools.ToolUse class method)</a>
 </li>
-      </ul></li>
-      <li>
-    gptme.tools.python
-
-      <ul>
-        <li><a href="api.html#module-gptme.tools.python">module</a>
-</li>
-      </ul></li>
-      <li>
-    gptme.tools.save
-
-      <ul>
-        <li><a href="api.html#module-gptme.tools.save">module</a>
-</li>
-      </ul></li>
-      <li>
-    gptme.tools.shell
-
-      <ul>
-        <li><a href="api.html#module-gptme.tools.shell">module</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.message.len_tokens">len_tokens() (in module gptme.message)</a>
+      <li><a href="api.html#gptme.logmanager.LogManager.load">load() (gptme.logmanager.LogManager class method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.logmanager.LogManager.load">load() (gptme.logmanager.LogManager class method)</a>
-</li>
       <li><a href="api.html#gptme.logmanager.LogManager">LogManager (class in gptme.logmanager)</a>
 </li>
   </ul></td>
@@ -680,29 +635,15 @@ document.write(`
     module
 
       <ul>
-        <li><a href="api.html#module-gptme.logmanager">gptme.logmanager</a>
+        <li><a href="api.html#module-gptme.codeblock">gptme.codeblock</a>
 </li>
-        <li><a href="api.html#module-gptme.message">gptme.message</a>
+        <li><a href="api.html#module-gptme.logmanager">gptme.logmanager</a>
 </li>
         <li><a href="api.html#module-gptme.server">gptme.server</a>
 </li>
         <li><a href="api.html#module-gptme.tools">gptme.tools</a>
 </li>
-        <li><a href="api.html#module-gptme.tools.patch">gptme.tools.patch</a>
-</li>
-        <li><a href="api.html#module-gptme.tools.python">gptme.tools.python</a>
-</li>
-        <li><a href="api.html#module-gptme.tools.save">gptme.tools.save</a>
-</li>
-        <li><a href="api.html#module-gptme.tools.shell">gptme.tools.shell</a>
-</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.message.msgs2dicts">msgs2dicts() (in module gptme.message)</a>
-</li>
-      <li><a href="api.html#gptme.message.msgs_to_toml">msgs_to_toml() (in module gptme.message)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -710,8 +651,6 @@ document.write(`
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.prepare_messages">prepare_messages() (gptme.logmanager.LogManager method)</a>
-</li>
-      <li><a href="api.html#gptme.message.print_msg">print_msg() (in module gptme.message)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -728,10 +667,6 @@ document.write(`
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.tools.python.register_function">register_function() (in module gptme.tools.python)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.rename">rename() (gptme.logmanager.LogManager method)</a>
 </li>
   </ul></td>
@@ -746,11 +681,9 @@ document.write(`
         <li><a href="api.html#gptme.message.Message.to_dict">(gptme.message.Message method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#gptme.message.Message.to_toml">to_toml() (gptme.message.Message method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.message.toml_to_msgs">toml_to_msgs() (in module gptme.message)</a>
+      <li><a href="api.html#gptme.message.Message.to_toml">to_toml() (gptme.message.Message method)</a>
 </li>
       <li><a href="api.html#gptme.tools.ToolSpec">ToolSpec (class in gptme.tools)</a>
 </li>
