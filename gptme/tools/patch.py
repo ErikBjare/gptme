@@ -1,40 +1,8 @@
 """
 Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.
-
-The format is suitable for small changes to files we have written in the past, without having to rewrite the whole file.
-
-
-Format:
-
-.. code-block:: patch
-
-    ```patch <filename>
-    <<<<<<< ORIGINAL
-    original code
-    =======
-    modified code
-    >>>>>>> UPDATED
-    ```
-
-Example:
-
-.. chat::
-
-    User: edit `hello.py` to ask for the name to greet
-    Assistant:
-    ```patch hello.py
-    <<<<<<< ORIGINAL
-    print("Hello world")
-    =======
-    name = input("What is your name? ")
-    print(f"Hello {name}")
-    >>>>>>> UPDATED
-    ```
-    System: Patch applied
 """
 
 # TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
-
 import re
 from collections.abc import Generator
 from pathlib import Path
@@ -90,6 +58,7 @@ examples = f"""
     print(f"Hello {name}")
 >>>>>>> UPDATED
 ''')}
+> System: Patch applied
 
 > User: change the codeblock to append to the file
 > Assistant: {patch_to_output("patch.py", '''

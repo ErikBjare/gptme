@@ -11,7 +11,7 @@ def hello():
 More text
 """
     assert Codeblock.iter_from_markdown(markdown) == [
-        ("python", 'def hello():\n    print("Hello, World!")')
+        Codeblock("python", 'def hello():\n    print("Hello, World!")')
     ]
 
 
@@ -31,11 +31,11 @@ def greet(name):
 ```
 """
     assert Codeblock.iter_from_markdown(markdown) == [
-        (
+        Codeblock(
             "java",
             'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Java!");\n    }\n}',
         ),
-        ("python", 'def greet(name):\n    return f"Hello, {name}!"'),
+        Codeblock("python", 'def greet(name):\n    return f"Hello, {name}!"'),
     ]
 
 
@@ -51,7 +51,7 @@ callme()
 ```
 """
     assert Codeblock.iter_from_markdown(markdown) == [
-        (
+        Codeblock(
             "python",
             "def print_readme():\n    print('''Usage:\n```javascript\ncallme()\n```\n''')",
         )
@@ -77,5 +77,5 @@ def hello():
 ```
 """
     assert Codeblock.iter_from_markdown(markdown) == [
-        ("", 'def hello():\n    print("Hello, World!")')
+        Codeblock("", 'def hello():\n    print("Hello, World!")')
     ]

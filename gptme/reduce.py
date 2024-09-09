@@ -8,7 +8,7 @@ import logging
 from collections.abc import Generator
 from copy import copy
 
-from ..codeblock import Codeblock
+from .codeblock import Codeblock
 from .message import Message, len_tokens
 from .models import get_model
 
