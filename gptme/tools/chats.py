@@ -8,7 +8,6 @@ from textwrap import indent
 
 from ..llm import summarize as llm_summarize
 from ..message import Message
-from ..util import transform_examples_to_chat_directives
 from .base import ToolSpec
 
 logger = logging.getLogger(__name__)

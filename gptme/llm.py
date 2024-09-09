@@ -93,13 +93,13 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             sys.stdout.flush()
 
             # pause inference on finished code-block, letting user run the command before continuing
-            if codeblocks := Codeblock.extract_codeblocks(output):
-                lang, _ = codeblocks[0]
+            if codeblocks := Codeblock.iter_from_markdown(output):
+                codeblock = codeblocks[0]
                 # noreorder
-                from .tools import is_supported_codeblock_tool  # fmt: skip
+                from .tools import is_supported_langtag  # fmt: skip
 
                 # if closing a code block supported by tools, abort generation to let them run
-                if is_supported_codeblock_tool(lang):
+                if is_supported_langtag(codeblock.lang):
                     print("\nFound codeblock, breaking")
                     break
     except KeyboardInterrupt:

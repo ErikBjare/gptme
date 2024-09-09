@@ -142,10 +142,7 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     # get all markdown code blocks
     for codeblock in Codeblock.iter_from_markdown(msg.content):
         try:
-            if get_tool_for_langtag(codeblock.lang):
-                yield from ToolUse.from_codeblock(codeblock).execute(ask)
-            else:
-                logger.info(f"Codeblock not supported: {codeblock.lang}")
+            yield from execute_codeblock(codeblock, ask)
         except Exception as e:
             logger.exception(e)
             yield Message(
@@ -160,14 +157,16 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
 
 
 def execute_codeblock(
-    lang: str, codeblock: str, ask: bool
+    codeblock: Codeblock, ask: bool
 ) -> Generator[Message, None, None]:
     """Executes a codeblock and returns the output."""
-    if tool := get_tool_for_langtag(lang):
+    ToolUse.from_codeblock(codeblock)
+    if tool := get_tool_for_langtag(codeblock.lang):
         if tool.execute:
-            args = lang.split(" ")[1:]
-            yield from tool.execute(codeblock, ask, args)
-    logger.debug("Unknown codeblock, neither supported language or filename.")
+            args = codeblock.lang.split(" ")[1:]
+            yield from tool.execute(codeblock.content, ask, args)
+    else:
+        logger.info(f"Codeblock not supported: {codeblock.lang}")
 
 
 def get_tool_for_langtag(lang: str) -> ToolSpec | None:
@@ -180,6 +179,10 @@ def get_tool_for_langtag(lang: str) -> ToolSpec | None:
         # NOTE: special case
         return tool_save
     return None
+
+
+def is_supported_langtag(lang: str) -> bool:
+    return bool(get_tool_for_langtag(lang))
 
 
 def get_tool(tool_name: str) -> ToolSpec:

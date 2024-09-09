@@ -2,7 +2,6 @@ from datetime import datetime
 
 from gptme.util import (
     epoch_to_age,
-    extract_codeblocks,
     generate_name,
     is_generated_name,
     transform_examples_to_chat_directives,
@@ -57,80 +56,3 @@ def test_transform_examples_to_chat_directives_tricky():
    Assistant: lol"""
 
     assert transform_examples_to_chat_directives(src, strict=True) == expected
-
-
-def test_extract_codeblocks_basic():
-    markdown = """
-Some text
-```python
-def hello():
-    print("Hello, World!")
-```
-More text
-"""
-    assert extract_codeblocks(markdown) == [
-        ("python", 'def hello():\n    print("Hello, World!")')
-    ]
-
-
-def test_extract_codeblocks_multiple():
-    markdown = """
-```java
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, Java!");
-    }
-}
-```
-Some text
-```python
-def greet(name):
-    return f"Hello, {name}!"
-```
-"""
-    assert extract_codeblocks(markdown) == [
-        (
-            "java",
-            'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Java!");\n    }\n}',
-        ),
-        ("python", 'def greet(name):\n    return f"Hello, {name}!"'),
-    ]
-
-
-def test_extract_codeblocks_nested():
-    markdown = """
-```python
-def print_readme():
-    print('''Usage:
-```javascript
-callme()
-```
-''')
-```
-"""
-    assert extract_codeblocks(markdown) == [
-        (
-            "python",
-            "def print_readme():\n    print('''Usage:\n```javascript\ncallme()\n```\n''')",
-        )
-    ]
-
-
-def test_extract_codeblocks_empty():
-    assert extract_codeblocks("") == []
-
-
-def test_extract_codeblocks_text_only():
-    assert extract_codeblocks("Just some regular text\nwithout any code blocks.") == []
-
-
-def test_extract_codeblocks_no_language():
-    markdown = """
-```
-def hello():
-    print("Hello, World!")
-```
-"""
-    assert extract_codeblocks(markdown) == [
-        ("", 'def hello():\n    print("Hello, World!")')
-    ]

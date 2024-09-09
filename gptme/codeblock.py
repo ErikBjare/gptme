@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generator
+from collections.abc import Generator
 from xml.etree import ElementTree
 
 
@@ -13,6 +13,12 @@ class Codeblock:
     def __post_init__(self):
         if self.path is None and self.is_filename:
             self.path = self.lang
+
+    def to_markdown(self) -> str:
+        return f"```{self.lang}\n{self.content}\n```"
+
+    def to_xml(self) -> str:
+        return f'<codeblock lang="{self.lang}" path="{self.path}">\n{self.content}\n</codeblock>'
 
     @classmethod
     def from_markdown(cls, content: str) -> "Codeblock":
@@ -32,7 +38,7 @@ class Codeblock:
           </codeblock>
         """
         root = ElementTree.fromstring(content)
-        return cls(root.attrib["lang"], root.text or "", root.attrib.get("filename"))
+        return cls(root.attrib["lang"], root.text or "", root.attrib.get("path"))
 
     @property
     def is_filename(self) -> bool:

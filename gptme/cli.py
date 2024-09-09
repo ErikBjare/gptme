@@ -273,13 +273,12 @@ def chat(
         # then exit
         elif not interactive:
             # noreorder
-            from .tools import is_supported_codeblock_tool  # fmt: skip
+            from .tools import is_supported_langtag  # fmt: skip
 
             # continue if we can run tools on the last message
             runnable = False
-            if codeblock := log.get_last_code_block("assistant", history=1):
-                lang, _ = codeblock
-                if is_supported_codeblock_tool(lang):
+            if codeblock := log.get_last_codeblock("assistant", history=1):
+                if is_supported_langtag(codeblock.lang):
                     runnable = True
             if not runnable:
                 logger.info("Non-interactive and exhausted prompts, exiting")
