@@ -8,7 +8,6 @@ from textwrap import indent
 
 from ..llm import summarize as llm_summarize
 from ..message import Message
-from ..util import transform_examples_to_chat_directives
 from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
@@ -156,8 +155,6 @@ search_chats("python")
 ```
 """
 
-__doc__ += transform_examples_to_chat_directives(examples)
-
 tool = ToolSpec(
     name="chats",
     desc="List, search, and summarize past conversation logs",
@@ -165,3 +162,5 @@ tool = ToolSpec(
     examples=examples,
     functions=[list_chats, search_chats],
 )
+
+__doc__ = tool.get_doc(__doc__)

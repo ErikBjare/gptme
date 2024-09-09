@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, TypeAlias
 
 from ..message import Message
+from ..util import transform_examples_to_chat_directives
 
 InitFunc: TypeAlias = Callable[[], Any]
 
@@ -10,7 +11,8 @@ InitFunc: TypeAlias = Callable[[], Any]
 class ExecuteFunc(Protocol):
     def __call__(
         self, code: str, ask: bool, args: list[str]
-    ) -> Generator[Message, None, None]: ...
+    ) -> Generator[Message, None, None]:
+        ...
 
 
 @dataclass
@@ -30,3 +32,13 @@ class ToolSpec:
     execute: ExecuteFunc | None = None
     block_types: list[str] = field(default_factory=list)
     available: bool = True
+
+    def get_doc(self, doc="") -> str:
+        """Returns an updated docstring with examples."""
+        if doc:
+            doc += "\n\n"
+        if self.examples:
+            doc += (
+                f"# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
+            )
+        return doc

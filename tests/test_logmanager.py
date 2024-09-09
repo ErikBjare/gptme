@@ -1,7 +1,8 @@
+from gptme.codeblock import Codeblock
 from gptme.logmanager import LogManager, Message
 
 
-def test_get_last_code_block():
+def test_get_last_codeblock():
     # tests that the last code block is indeed returned, with the correct formatting
     log = LogManager()
     log.append(
@@ -18,7 +19,7 @@ print('world')
 """,
         )
     )
-    assert ("python", "print('world')") == log.get_last_code_block()
+    assert Codeblock("python", "print('world')") == log.get_last_codeblock()
 
 
 def test_branch():

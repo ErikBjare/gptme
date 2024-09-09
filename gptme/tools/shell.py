@@ -16,7 +16,7 @@ from collections.abc import Generator
 import bashlex
 
 from ..message import Message
-from ..util import ask_execute, print_preview, transform_examples_to_chat_directives
+from ..util import ask_execute, print_preview
 from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
@@ -370,9 +370,6 @@ def split_commands(script: str) -> list[str]:
     return commands
 
 
-__doc__ += transform_examples_to_chat_directives(examples)
-
-
 tool = ToolSpec(
     name="shell",
     desc="Executes shell commands.",
@@ -381,3 +378,4 @@ tool = ToolSpec(
     execute=execute_shell,
     block_types=["bash", "sh", "shell"],
 )
+__doc__ = tool.get_doc(__doc__)

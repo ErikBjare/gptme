@@ -12,13 +12,13 @@ from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
-from ..util import transform_examples_to_chat_directives
 from .base import ToolSpec
 from .python import register_function
 
 if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
+
 
 logger = logging.getLogger(__name__)
 
@@ -163,8 +163,6 @@ subagent_wait("fib-69")
 ```
 """
 
-__doc__ += transform_examples_to_chat_directives(examples)
-
 
 tool = ToolSpec(
     name="subagent",
@@ -172,3 +170,4 @@ tool = ToolSpec(
     examples=examples,
     functions=[subagent, subagent_status, subagent_wait],
 )
+__doc__ = tool.get_doc(__doc__)

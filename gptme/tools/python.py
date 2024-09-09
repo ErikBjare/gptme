@@ -4,6 +4,7 @@ The assistant can execute Python code blocks.
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
 
+import dataclasses
 import functools
 import re
 import types
@@ -12,7 +13,7 @@ from logging import getLogger
 from typing import Literal, TypeVar, get_origin
 
 from ..message import Message
-from ..util import ask_execute, print_preview, transform_examples_to_chat_directives
+from ..util import ask_execute, print_preview
 from .base import ToolSpec
 
 logger = getLogger(__name__)
@@ -188,16 +189,35 @@ System: Executed code block.
 ```
 """.strip()
 
-__doc__ += transform_examples_to_chat_directives(examples)
+
+instructions = """
+When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
+Python will respond with the output of the execution.
+"""
+
+
+# only used for doc generation, use get_tool() in the code
+tool = ToolSpec(
+    name="python",
+    desc="Execute Python code",
+    instructions=instructions,
+    examples=examples,
+    init=init_python,
+    execute=execute_python,
+    block_types=[
+        "python",
+        "ipython",
+        "py",
+    ],
+)
+__doc__ = tool.get_doc(__doc__)
 
 
 def get_tool() -> ToolSpec:
     python_libraries = get_installed_python_libraries()
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
 
-    instructions = f"""
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
+    _instructions = f"""{instructions}
 
 The following libraries are available:
 {python_libraries_str}
@@ -206,15 +226,5 @@ The following functions are available in the REPL:
 {get_functions_prompt()}
     """.strip()
 
-    return ToolSpec(
-        name="python",
-        desc="Execute Python code",
-        instructions=instructions,
-        examples=examples,
-        init=init_python,
-        execute=execute_python,
-        block_types=[
-            "python",
-            "ipython",
-        ],  # ideally, models should use `ipython` and not `python`, but they don't
-    )
+    # create a copy with the updated instructions
+    return dataclasses.replace(tool, instructions=_instructions)
