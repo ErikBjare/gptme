@@ -143,9 +143,9 @@ def handle_cmd(
             for tool in loaded_tools:
                 print(
                     f"""
-- {tool.name}  ({tool.desc.rstrip(".")})
-    tokens (example): {len_tokens(tool.examples)}
-                      """.strip()
+  # {tool.name}
+    {tool.desc.rstrip(".")}
+    tokens (example): {len_tokens(tool.examples)}"""
                 )
         case _:
             # the case for python, shell, and other block_types supported by tools
@@ -211,8 +211,8 @@ def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
         yield "  /<langtag> <code>"
         yield ""
         yield "Example:"
-        yield "  /sh <code>"
-        yield "  /python <code>"
+        yield "  /sh echo hello"
+        yield "  /python print('hello')"
         yield ""
         yield "Supported langtags:"
         for tool in loaded_tools:
