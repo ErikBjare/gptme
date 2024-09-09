@@ -84,9 +84,29 @@ def apply(codeblock: str, content: str) -> str:
 
     # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
     #       and then replace these with the original chunks?
+    re_placeholder = re.compile(r"^[ \t]*# \.\.\. ?.*$", re.MULTILINE)
+    if re_placeholder.search(original) or re_placeholder.search(modified):
+        # raise ValueError("placeholders in modified chunk")
+        # split them by lines starting with "# ..."
+        originals = re_placeholder.split(original)
+        modifieds = re_placeholder.split(modified)
+        if len(originals) != len(modifieds):
+            raise ValueError(
+                "different number of placeholders in original and modified chunks"
+                f"\n{originals}\n{modifieds}"
+            )
+        new = content
+        for orig, mod in zip(originals, modifieds):
+            if orig == mod:
+                continue
+            new = new.replace(orig, mod)
+    else:
+        if original not in content:  # pragma: no cover
+            raise ValueError("original chunk not found in file", original)
 
-    # replace the original chunk with the modified chunk
-    new = content.replace(original, modified)
+        # replace the original chunk with the modified chunk
+        new = content.replace(original, modified)
+
     if new == content:  # pragma: no cover
         raise ValueError("patch did not change the file")
 
