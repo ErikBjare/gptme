@@ -30,7 +30,6 @@ mode: Literal["markdown", "xml"] = "markdown"
 
 def patch_to_markdown(patch: str, filename: str, append: bool = False) -> str:
     _tool = "patch" if not append else "append"
-    patch = patch.replace("```", "\\`\\`\\`")
     return f"```{_tool} {filename}\n{patch}\n```"
 
 
