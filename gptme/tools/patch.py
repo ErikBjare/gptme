@@ -84,7 +84,7 @@ def apply(codeblock: str, content: str) -> str:
 
     # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
     #       and then replace these with the original chunks?
-    re_placeholder = re.compile(r"^[ \t]*# \.\.\. ?.*$", re.MULTILINE)
+    re_placeholder = re.compile(r"^[ \t]*(#|//) \.\.\. ?.*$", re.MULTILINE)
     if re_placeholder.search(original) or re_placeholder.search(modified):
         # raise ValueError("placeholders in modified chunk")
         # split them by lines starting with "# ..."
