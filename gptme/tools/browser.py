@@ -19,7 +19,6 @@ import subprocess
 import tempfile
 from typing import Literal
 
-from ..util import transform_examples_to_chat_directives
 from .base import ToolSpec
 
 has_playwright = importlib.util.find_spec("playwright") is not None
@@ -190,8 +189,6 @@ def html_to_markdown(html):
     return markdown
 
 
-__doc__ += transform_examples_to_chat_directives(examples)
-
 tool = ToolSpec(
     name="browser",
     desc="Browse the web",
@@ -200,3 +197,4 @@ tool = ToolSpec(
     functions=[read_url, search, screenshot_url],
     available=has_browser_tool(),
 )
+__doc__ += tool.get_doc(__doc__)

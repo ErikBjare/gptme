@@ -156,8 +156,6 @@ search_chats("python")
 ```
 """
 
-__doc__ += transform_examples_to_chat_directives(examples)
-
 tool = ToolSpec(
     name="chats",
     desc="List, search, and summarize past conversation logs",
@@ -165,3 +163,5 @@ tool = ToolSpec(
     examples=examples,
     functions=[list_chats, search_chats],
 )
+
+__doc__ += tool.get_doc(__doc__)
