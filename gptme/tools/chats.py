@@ -164,4 +164,4 @@ tool = ToolSpec(
     functions=[list_chats, search_chats],
 )
 
-__doc__ += tool.get_doc(__doc__)
+__doc__ = tool.get_doc(__doc__)

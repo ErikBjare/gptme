@@ -282,4 +282,4 @@ tool = ToolSpec(
     block_types=["tmux"],
     available=shutil.which("tmux") is not None,
 )
-__doc__ += tool.get_doc(__doc__)
+__doc__ = tool.get_doc(__doc__)

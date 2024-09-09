@@ -229,4 +229,4 @@ tool_placeholder = ToolSpec(
     instructions=instructions,
     examples=examples,
 )
-__doc__ += tool_placeholder.get_doc()
+__doc__ = tool_placeholder.get_doc(__doc__)

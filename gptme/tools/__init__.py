@@ -203,7 +203,7 @@ class Codeblock:
           </codeblock>
         """
         root = ElementTree.fromstring(content)
-        return cls(root.attrib["lang"], root.text or "", root.attrib.get("filename"))
+        return cls(root.attrib["lang"], root.text or "", root.attrib.get("path"))
 
     @property
     def is_filename(self) -> bool:
