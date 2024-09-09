@@ -143,6 +143,39 @@ def search_chats(query: str, max_results: int = 5) -> None:
             )
 
 
+def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> None:
+    """
+    Read a specific conversation log.
+
+    Args:
+        conversation (str): The name of the conversation to read.
+        max_results (int): Maximum number of messages to display.
+        incl_system (bool): Whether to include system messages.
+    """
+    # noreorder
+    from ..logmanager import LogManager, get_conversations  # fmt: skip
+
+    conversations = list(get_conversations())
+
+    for conv in conversations:
+        if conv["name"] == conversation:
+            log_path = Path(conv["path"])
+            logmanager = LogManager.load(log_path)
+            print(f"Reading conversation: {conversation}")
+            i = 0
+            for msg in logmanager.log:
+                if msg.role != "system" or incl_system:
+                    print(f"{i}. {_format_message_snippet(msg)}")
+                    i += 1
+                else:
+                    print(f"{i}. (system message)")
+                if i >= max_results:
+                    break
+            break
+    else:
+        print(f"Conversation '{conversation}' not found.")
+
+
 instructions = """
 The chats tool allows you to list, search, and summarize past conversation logs.
 """
@@ -163,5 +196,5 @@ tool = ToolSpec(
     desc="List, search, and summarize past conversation logs",
     instructions=instructions,
     examples=examples,
-    functions=[list_chats, search_chats],
+    functions=[list_chats, search_chats, read_chat],
 )
