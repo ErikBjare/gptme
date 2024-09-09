@@ -16,8 +16,9 @@ from rich.syntax import Syntax
 from tomlkit._utils import escape_string
 from typing_extensions import Self
 
+from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .util import extract_codeblocks, get_tokenizer
+from .util import get_tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -188,9 +189,9 @@ timestamp = "{self.timestamp.isoformat()}"
             timestamp=datetime.fromisoformat(msg["timestamp"]),
         )
 
-    def get_codeblocks(self) -> list[tuple[str, str]]:
+    def get_codeblocks(self) -> list[Codeblock]:
         """
-        Get all codeblocks from the message content, as a list of tuples (lang, content).
+        Get all codeblocks from the message content.
         """
         content_str = self.content
 
@@ -203,7 +204,7 @@ timestamp = "{self.timestamp.isoformat()}"
         if backtick_count < 2:
             return []
 
-        return extract_codeblocks(content_str)
+        return Codeblock.iter_from_markdown(content_str)
 
 
 def format_msgs(
