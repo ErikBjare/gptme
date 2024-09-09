@@ -54,9 +54,6 @@ def _extract_codeblocks(markdown: str) -> Generator[Codeblock, None, None]:
     backtick_count = markdown.count("```")
     if backtick_count < 2:
         return
-    # check that end tick has a newline (no language tag)
-    # if not markdown.count("```\n"):
-    #     return
 
     lines = markdown.split("\n")
     stack: list[str] = []
