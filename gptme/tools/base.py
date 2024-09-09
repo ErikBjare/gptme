@@ -11,7 +11,8 @@ InitFunc: TypeAlias = Callable[[], Any]
 class ExecuteFunc(Protocol):
     def __call__(
         self, code: str, ask: bool, args: list[str]
-    ) -> Generator[Message, None, None]: ...
+    ) -> Generator[Message, None, None]:
+        ...
 
 
 @dataclass
@@ -32,10 +33,12 @@ class ToolSpec:
     block_types: list[str] = field(default_factory=list)
     available: bool = True
 
-    def get_doc(self, _doc="") -> str:
-        """Returns a string about the tool to be appended to the __doc__ string of the module."""
-        if _doc:
-            _doc += "\n\n"
+    def get_doc(self, doc="") -> str:
+        """Returns an updated docstring with examples."""
+        if doc:
+            doc += "\n\n"
         if self.examples:
-            _doc += f"\n\n# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
-        return _doc
+            doc += (
+                f"# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
+            )
+        return doc

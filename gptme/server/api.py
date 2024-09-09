@@ -144,12 +144,14 @@ def favicon():
     return flask.send_from_directory(static_path.parent / "media", "logo.png")
 
 
-def create_app():
+def create_app() -> flask.Flask:
+    """Create the Flask app."""
     app = flask.Flask(__name__, static_folder=static_path)
     app.register_blueprint(api)
     return app
 
 
-def main():
+def main() -> None:
+    """Run the Flask app."""
     app = create_app()
     app.run(debug=True)
