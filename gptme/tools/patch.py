@@ -20,7 +20,7 @@ Example:
 
 .. chat::
 
-    User: edit the file `hello.py` to ask for the name to greet
+    User: edit `hello.py` to ask for the name to greet
     Assistant:
     ```patch hello.py
     <<<<<<< ORIGINAL
@@ -189,4 +189,4 @@ tool = ToolSpec(
     execute=execute_patch,
     block_types=["patch"],
 )
-__doc__ += tool.get_doc(__doc__)
+__doc__ = tool.get_doc(__doc__)
