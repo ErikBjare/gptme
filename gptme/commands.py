@@ -2,7 +2,6 @@ import logging
 import re
 import sys
 from collections.abc import Generator
-from pathlib import Path
 from time import sleep
 from typing import Literal
 
@@ -35,7 +34,6 @@ Actions = Literal[
     "fork",
     "summarize",
     "context",
-    "save",
     "shell",
     "python",
     "replay",
@@ -54,7 +52,6 @@ action_descriptions: dict[Actions, str] = {
     "rename": "Rename the conversation",
     "fork": "Create a copy of the conversation with a new name",
     "summarize": "Summarize the conversation",
-    "save": "Save the last code block to a file",
     "shell": "Execute shell code",
     "python": "Execute Python code",
     "replay": "Re-execute codeblocks in the conversation, wont store output in log",
@@ -124,11 +121,6 @@ def handle_cmd(
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
             log.undo(n)
-        case "save":
-            # undo
-            log.undo(1, quiet=True)
-            filename = args[0] if args else input("Filename: ")
-            save(log, filename)
         case "exit":
             sys.exit(0)
         case "replay":
@@ -191,22 +183,6 @@ def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
     # now we need to redraw the log so the user isn't seeing stale messages in their buffer
     # log.print()
     print("Applied edited messages, write /log to see the result")
-
-
-# TODO: remove?
-def save(log: LogManager, filename: str):
-    # save the most recent code block to a file
-    codeblock = log.get_last_codeblock()
-    if not codeblock:
-        print("No code block found")
-        return
-    if Path(filename).exists():
-        confirm = ask_execute("File already exists, overwrite?", default=False)
-        if not confirm:
-            return
-    with open(filename, "w") as f:
-        f.write(codeblock.content)
-    print(f"Saved code block to {filename}")
 
 
 def rename(log: LogManager, new_name: str, ask: bool = True):
