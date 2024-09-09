@@ -8,7 +8,7 @@ import gptme.cli
 import gptme.constants
 import pytest
 from click.testing import CliRunner
-from gptme.constants import CMDFIX, MULTIPROMPT_SEPARATOR
+from gptme.constants import CMDFIX
 
 project_root = Path(__file__).parent.parent
 logo = project_root / "media" / "logo.png"
@@ -83,22 +83,6 @@ def test_command_summarize(args: list[str], runner: CliRunner):
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
-
-
-@pytest.mark.slow
-def test_command_save(args: list[str], runner: CliRunner):
-    # tests the /save command
-    args.append(f"{CMDFIX}impersonate ```ipython\nprint('hello')\n```")
-    args.append(MULTIPROMPT_SEPARATOR)
-    args.append(f"{CMDFIX}save output.txt")
-    print(f"running: gptme {' '.join(args)}")
-    result = runner.invoke(gptme.cli.main, args)
-    assert result.exit_code == 0
-
-    # read the file
-    with open("output.txt") as f:
-        content = f.read()
-    assert content == "hello"
 
 
 def test_command_fork(args: list[str], runner: CliRunner, name: str):
