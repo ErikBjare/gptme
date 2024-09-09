@@ -7,6 +7,7 @@ from typing import Literal
 
 from rich import print
 
+from .codeblock import Codeblock
 from .config import get_config
 from .constants import PROMPT_ASSISTANT
 from .llm_anthropic import chat as chat_anthropic
@@ -19,7 +20,6 @@ from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
 from .message import Message, format_msgs, len_tokens
 from .models import MODELS, get_summary_model
-from .util import extract_codeblocks
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             sys.stdout.flush()
 
             # pause inference on finished code-block, letting user run the command before continuing
-            if codeblocks := extract_codeblocks(output):
+            if codeblocks := Codeblock.extract_codeblocks(output):
                 lang, _ = codeblocks[0]
                 # noreorder
                 from .tools import is_supported_codeblock_tool  # fmt: skip

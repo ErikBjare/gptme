@@ -3,8 +3,8 @@ from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from xml.etree import ElementTree
 
+from ..codeblock import Codeblock
 from ..message import Message
-from ..util import extract_codeblocks
 from .base import ToolSpec
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
@@ -63,7 +63,7 @@ class ToolUse:
             yield from tool.execute(self.content, ask, self.args)
 
     @classmethod
-    def from_codeblock(cls, codeblock) -> "ToolUse":
+    def from_codeblock(cls, codeblock: Codeblock) -> "ToolUse":
         """Parses a codeblock into a ToolUse. Codeblock must be a supported type.
 
         Example:
@@ -71,7 +71,7 @@ class ToolUse:
           content
           ```
         """
-        if tool := get_tool_for_codeblock(codeblock.lang):
+        if tool := get_tool_for_langtag(codeblock.lang):
             # NOTE: special case
             args = (
                 codeblock.lang.split(" ")[1:]
@@ -80,7 +80,6 @@ class ToolUse:
             )
             return ToolUse(tool.name, args, codeblock.content)
         else:
-            assert not is_supported_codeblock_tool(codeblock.lang)
             raise ValueError(
                 f"Unknown codeblock type '{codeblock.lang}', neither supported language or filename."
             )
@@ -141,13 +140,12 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     # get all markdown code blocks
-    for lang, content in extract_codeblocks(msg.content):
+    for codeblock in Codeblock.iter_from_markdown(msg.content):
         try:
-            if is_supported_codeblock_tool(lang):
-                codeblock = Codeblock(lang, content)
+            if get_tool_for_langtag(codeblock.lang):
                 yield from ToolUse.from_codeblock(codeblock).execute(ask)
             else:
-                logger.info(f"Codeblock not supported: {lang}")
+                logger.info(f"Codeblock not supported: {codeblock.lang}")
         except Exception as e:
             logger.exception(e)
             yield Message(
@@ -165,59 +163,14 @@ def execute_codeblock(
     lang: str, codeblock: str, ask: bool
 ) -> Generator[Message, None, None]:
     """Executes a codeblock and returns the output."""
-    if tool := get_tool_for_codeblock(lang):
+    if tool := get_tool_for_langtag(lang):
         if tool.execute:
             args = lang.split(" ")[1:]
             yield from tool.execute(codeblock, ask, args)
-    assert not is_supported_codeblock_tool(codeblock)
     logger.debug("Unknown codeblock, neither supported language or filename.")
 
 
-# TODO: use this instead of passing around codeblocks as strings (with or without ```)
-@dataclass
-class Codeblock:
-    lang: str
-    content: str
-    path: str | None = None
-
-    # init path in __post_init__ if path is None and lang is pathy
-    def __post_init__(self):
-        if self.path is None and self.is_filename:
-            self.path = self.lang
-
-    @classmethod
-    def from_markdown(cls, content: str) -> "Codeblock":
-        if content.strip().startswith("```"):
-            content = content[3:]
-        if content.strip().endswith("```"):
-            content = content[:-3]
-        lang = content.splitlines()[0].strip()
-        return cls(lang, content[len(lang) :])
-
-    @classmethod
-    def from_xml(cls, content: str) -> "Codeblock":
-        """
-        Example:
-          <codeblock lang="python" path="example.py">
-          print("Hello, world!")
-          </codeblock>
-        """
-        root = ElementTree.fromstring(content)
-        return cls(root.attrib["lang"], root.text or "", root.attrib.get("path"))
-
-    @property
-    def is_filename(self) -> bool:
-        return "." in self.lang or "/" in self.lang
-
-    @property
-    def is_supported(self) -> bool:
-        return is_supported_codeblock_tool(self.lang)
-
-    def execute(self, ask: bool) -> Generator[Message, None, None]:
-        return execute_codeblock(self.lang, self.content, ask)
-
-
-def get_tool_for_codeblock(lang: str) -> ToolSpec | None:
+def get_tool_for_langtag(lang: str) -> ToolSpec | None:
     block_type = lang.split(" ")[0]
     for tool in loaded_tools:
         if block_type in tool.block_types:
@@ -227,13 +180,6 @@ def get_tool_for_codeblock(lang: str) -> ToolSpec | None:
         # NOTE: special case
         return tool_save
     return None
-
-
-def is_supported_codeblock_tool(lang: str) -> bool:
-    if get_tool_for_codeblock(lang):
-        return True
-    else:
-        return False
 
 
 def get_tool(tool_name: str) -> ToolSpec:
