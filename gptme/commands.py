@@ -6,6 +6,7 @@ from time import sleep
 from typing import Literal
 
 from . import llm
+from .codeblock import Codeblock
 from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
@@ -17,9 +18,9 @@ from .message import (
 )
 from .models import get_model
 from .tools import (
+    execute_codeblock,
     execute_msg,
-    execute_python,
-    execute_shell,
+    is_supported_langtag,
     loaded_tools,
 )
 from .useredit import edit_text_with_editor
@@ -34,8 +35,6 @@ Actions = Literal[
     "fork",
     "summarize",
     "context",
-    "shell",
-    "python",
     "replay",
     "undo",
     "impersonate",
@@ -52,8 +51,6 @@ action_descriptions: dict[Actions, str] = {
     "rename": "Rename the conversation",
     "fork": "Create a copy of the conversation with a new name",
     "summarize": "Summarize the conversation",
-    "shell": "Execute shell code",
-    "python": "Execute Python code",
     "replay": "Re-execute codeblocks in the conversation, wont store output in log",
     "impersonate": "Impersonate the assistant",
     "tokens": "Show the number of tokens used",
@@ -86,11 +83,6 @@ def handle_cmd(
     name, *args = re.split(r"[\n\s]", cmd)
     full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
     match name:
-        # TODO: rewrite to auto-register tools using block_types
-        case "bash" | "sh" | "shell":
-            yield from execute_shell(full_args, ask=not no_confirm, args=[])
-        case "python" | "py":
-            yield from execute_python(full_args, ask=not no_confirm, args=[])
         case "log":
             log.undo(1, quiet=True)
             log.print(show_hidden="--hidden" in args)
@@ -156,12 +148,18 @@ def handle_cmd(
                       """.strip()
                 )
         case _:
-            if log.log[-1].content != f"{CMDFIX}help":
-                print("Unknown command")
-            # undo the '/help' command itself
-            log.undo(1, quiet=True)
-            log.write()
-            help()
+            # the case for python, shell, and other block_types supported by tools
+            if is_supported_langtag(name):
+                yield from execute_codeblock(
+                    Codeblock(name, full_args), ask=not no_confirm
+                )
+            else:
+                if log.log[-1].content != f"{CMDFIX}help":
+                    print("Unknown command")
+                # undo the '/help' command itself
+                log.undo(1, quiet=True)
+                log.write()
+                help()
 
 
 def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
@@ -201,8 +199,31 @@ def rename(log: LogManager, new_name: str, ask: bool = True):
     print(f"Renamed conversation to {log.logfile.parent}")
 
 
-def help():
-    longest_cmd = max(len(cmd) for cmd in COMMANDS)
-    print("Available commands:")
+def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
+    yield "Available commands:"
+    max_cmdlen = max(len(cmd) for cmd in COMMANDS)
     for cmd, desc in action_descriptions.items():
-        print(f"  /{cmd.ljust(longest_cmd)}  {desc}")
+        yield f"  /{cmd.ljust(max_cmdlen)}  {desc}"
+
+    if incl_langtags:
+        yield ""
+        yield "To execute code with supported tools, use the following syntax:"
+        yield "  /<langtag> <code>"
+        yield ""
+        yield "Example:"
+        yield "  /sh <code>"
+        yield "  /python <code>"
+        yield ""
+        yield "Supported langtags:"
+        for tool in loaded_tools:
+            if tool.block_types:
+                yield f"  - {tool.block_types[0]}" + (
+                    f"  (alias: {', '.join(tool.block_types[1:])})"
+                    if len(tool.block_types) > 1
+                    else ""
+                )
+
+
+def help():
+    for line in _gen_help():
+        print(line)

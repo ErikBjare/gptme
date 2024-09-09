@@ -10,12 +10,10 @@ from .browser import tool as browser_tool
 from .chats import tool as chats_tool
 from .gh import tool as gh_tool
 from .patch import tool as patch_tool
-from .python import execute_python
 from .python import get_tool as get_python_tool
 from .python import register_function
 from .read import tool as tool_read
-from .save import execute_save, tool_append, tool_save
-from .shell import execute_shell
+from .save import tool_append, tool_save
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
 from .tmux import tool as tmux_tool
@@ -25,9 +23,6 @@ logger = logging.getLogger(__name__)
 
 __all__ = [
     "execute_codeblock",
-    "execute_python",
-    "execute_shell",
-    "execute_save",
     "ToolSpec",
     "ToolUse",
     "all_tools",

@@ -4,6 +4,7 @@ The assistant can execute Python code blocks.
 It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.
 """
 
+import dataclasses
 import functools
 import re
 import types
@@ -195,6 +196,23 @@ Python will respond with the output of the execution.
 """
 
 
+# only used for doc generation, use get_tool() in the code
+tool = ToolSpec(
+    name="python",
+    desc="Execute Python code",
+    instructions=instructions,
+    examples=examples,
+    init=init_python,
+    execute=execute_python,
+    block_types=[
+        "python",
+        "ipython",
+        "py",
+    ],
+)
+__doc__ = tool.get_doc(__doc__)
+
+
 def get_tool() -> ToolSpec:
     python_libraries = get_installed_python_libraries()
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
@@ -208,25 +226,5 @@ The following functions are available in the REPL:
 {get_functions_prompt()}
     """.strip()
 
-    return ToolSpec(
-        name="python",
-        desc="Execute Python code",
-        instructions=_instructions,
-        examples=examples,
-        init=init_python,
-        execute=execute_python,
-        block_types=[
-            "python",
-            "ipython",
-        ],  # ideally, models should use `ipython` and not `python`, but they don't
-    )
-
-
-# only used for doc generation, use get_tool() in the code
-tool_placeholder = ToolSpec(
-    name="python",
-    desc="Execute Python code",
-    instructions=instructions,
-    examples=examples,
-)
-__doc__ = tool_placeholder.get_doc(__doc__)
+    # create a copy with the updated instructions
+    return dataclasses.replace(tool, instructions=_instructions)

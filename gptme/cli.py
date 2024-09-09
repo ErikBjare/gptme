@@ -17,7 +17,12 @@ from pick import pick
 from rich import print  # noqa: F401
 from rich.console import Console
 
-from .commands import CMDFIX, action_descriptions, execute_cmd
+from .commands import (
+    CMDFIX,
+    _gen_help,
+    action_descriptions,
+    execute_cmd,
+)
 from .config import get_workspace_prompt
 from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
@@ -34,15 +39,9 @@ from .util import epoch_to_age, generate_name, print_bell
 logger = logging.getLogger(__name__)
 print_builtin = __builtins__["print"]  # type: ignore
 
-# TODO: these are a bit redundant/incorrect
-LLMChoice = Literal["openai", "anthropic", "local"]
-ModelChoice = Literal["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]
-
 
 script_path = Path(os.path.realpath(__file__))
-action_readme = "\n".join(
-    f"  {CMDFIX}{cmd:11s}  {desc}." for cmd, desc in action_descriptions.items()
-)
+commands_help = "\n".join(_gen_help(incl_langtags=False))
 
 
 docstring = f"""
@@ -55,7 +54,7 @@ If one of the PROMPTS is '{MULTIPROMPT_SEPARATOR}', following prompts will run a
 The chat offers some commands that can be used to interact with the system:
 
 \b
-{action_readme}"""
+{commands_help}"""
 
 
 @click.command(help=docstring)
@@ -121,7 +120,7 @@ def main(
     prompts: list[str],
     prompt_system: str,
     name: str,
-    model: ModelChoice,
+    model: str,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
