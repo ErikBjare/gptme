@@ -197,4 +197,4 @@ tool = ToolSpec(
     functions=[read_url, search, screenshot_url],
     available=has_browser_tool(),
 )
-__doc__ += tool.get_doc(__doc__)
+__doc__ = tool.get_doc(__doc__)
