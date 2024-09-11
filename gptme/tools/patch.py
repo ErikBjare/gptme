@@ -39,7 +39,7 @@ def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED
-''')}
+'''.strip())}
 > System: Patch applied
 """
 
