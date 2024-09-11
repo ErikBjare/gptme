@@ -15,6 +15,7 @@ from .save import tool_append, tool_save
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
 from .tmux import tool as tmux_tool
+from .youtube import tool as youtube_tool
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
     browser_tool,
     gh_tool,
     chats_tool,
+    youtube_tool,
     # python tool is loaded last to ensure all functions are registered
     get_python_tool,
 ]
