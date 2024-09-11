@@ -242,23 +242,22 @@ Usage: gptme [OPTIONS] [PROMPTS]...
   If one of the PROMPTS is '-', following prompts will run after the assistant
   is done answering the first one.
 
-  The chat offers some commands that can be used to interact with the system:
+  The interface provides user commands that can be used to interact with the
+  system.
 
-    /undo         Undo the last action.
-    /log          Show the conversation log.
-    /edit         Edit the conversation in your editor.
-    /rename       Rename the conversation.
-    /fork         Create a copy of the conversation with a new name.
-    /summarize    Summarize the conversation.
-    /save         Save the last code block to a file.
-    /shell        Execute shell code.
-    /python       Execute Python code.
-    /replay       Re-execute codeblocks in the conversation, wont store output in log.
-    /impersonate  Impersonate the assistant.
-    /tokens       Show the number of tokens used.
-    /tools        Show available tools.
-    /help         Show this help message.
-    /exit         Exit the program.
+  Available commands:
+    /undo         Undo the last action
+    /log          Show the conversation log
+    /edit         Edit the conversation in your editor
+    /rename       Rename the conversation
+    /fork         Create a copy of the conversation with a new name
+    /summarize    Summarize the conversation
+    /replay       Re-execute codeblocks in the conversation, wont store output in log
+    /impersonate  Impersonate the assistant
+    /tokens       Show the number of tokens used
+    /tools        Show available tools
+    /help         Show this help message
+    /exit         Exit the program
 
 Options:
   --prompt-system TEXT            System prompt. Can be 'full', 'short', or
@@ -278,7 +277,10 @@ Options:
                                   interactive implies --no-confirm, and is
                                   used in testing.
   --show-hidden                   Show hidden system messages.
-  --version                       Show version.
+  -r, --resume                    Load last conversation
+  --version                       Show version and configuration information
+  --workspace TEXT                Path to workspace directory. Pass '@log' to
+                                  create a workspace in the log directory.
   --help                          Show this message and exit.
 ```
 
