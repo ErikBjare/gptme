@@ -3586,6 +3586,20 @@ files = [
     {file = "windows_curses-2.3.3-cp39-cp39-win_amd64.whl", hash = "sha256:23b71f3a44cc5a5b92e12d3a519e840e54f8252ff3ef867b630963d5fe7124dd"},
 ]
 
+[[package]]
+name = "youtube-transcript-api"
+version = "0.6.2"
+description = "This is an python API which allows you to get the transcripts/subtitles for a given YouTube video. It also works for automatically generated subtitles, supports translating subtitles and it does not require a headless browser, like other selenium based solutions do!"
+optional = true
+python-versions = "*"
+files = [
+    {file = "youtube_transcript_api-0.6.2-py3-none-any.whl", hash = "sha256:019dbf265c6a68a0591c513fff25ed5a116ce6525832aefdfb34d4df5567121c"},
+    {file = "youtube_transcript_api-0.6.2.tar.gz", hash = "sha256:cad223d7620633cec44f657646bffc8bbc5598bd8e70b1ad2fa8277dec305eb7"},
+]
+
+[package.dependencies]
+requests = "*"
+
 [extras]
 all = ["flask", "matplotlib", "numpy", "pandas", "pillow", "playwright", "torch", "transformers"]
 browser = ["playwright"]
@@ -3596,4 +3610,4 @@ training = ["torch", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "df5a8e446b099649784af5be88df0a7531cb0421899cabb9e13ee623b98c7f54"
+content-hash = "a47dbcddd50026b7f57fd6c03990d1b2ccb98fb57b0bc9db623316d3356799a3"
