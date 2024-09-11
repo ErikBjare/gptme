@@ -342,9 +342,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -360,14 +358,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -390,27 +380,6 @@ It does not support streaming, doesn’t ask for confirmation before executing, 
 </pre></div>
 </div>
 <p>You can then access the web UI by visiting <a class="reference external" href="http://localhost:5000">http://localhost:5000</a> in your browser.</p>
-<section id="gptme-server">
-<h2>gptme-server<a class="headerlink" href="#gptme-server" title="Permalink to this heading">#</a></h2>
-<p>Starts a server and web UI for gptme.</p>
-<p>Note that this is very much a work in progress, and is not yet ready for normal use.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-server<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</pre></div>
-</div>
-<p class="rubric">Options</p>
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server-v">
-<span id="cmdoption-gptme-server-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-v" title="Permalink to this definition">#</a></dt>
-<dd><p>Verbose output.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-server-model">
-<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-model" title="Permalink to this definition">#</a></dt>
-<dd><p>Model to use by default, can be overridden in each request.</p>
-</dd></dl>
-
-</section>
 </section>
 
 
@@ -448,21 +417,6 @@ It does not support streaming, doesn’t ask for confirmation before executing, 
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
