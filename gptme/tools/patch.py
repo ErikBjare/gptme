@@ -28,21 +28,21 @@ UPDATED = "\n>>>>>>> UPDATED"
 mode: Literal["markdown", "xml"] = "markdown"
 
 
-def patch_to_markdown(patch: str, filename: str, append: bool = False) -> str:
+def patch_to_markdown(filename: str, patch: str, append: bool = False) -> str:
     _tool = "patch" if not append else "append"
     return f"```{_tool} {filename}\n{patch}\n```"
 
 
-def patch_to_xml(patch: str, filename: str, append: bool = False) -> str:
+def patch_to_xml(filename: str, patch: str, append: bool = False) -> str:
     _tool = "patch" if not append else "append"
     return f"<{_tool} filename='{filename}'>\n{patch}\n</patch>"
 
 
-def patch_to_output(patch: str, filename: str, append: bool = False) -> str:
+def patch_to_output(filename: str, patch: str, append: bool = False) -> str:
     if mode == "markdown":
-        return patch_to_markdown(patch, filename, append)
+        return patch_to_markdown(filename, patch, append)
     elif mode == "xml":
-        return patch_to_xml(patch, filename, append)
+        return patch_to_xml(filename, patch, append)
     else:
         raise ValueError(f"Invalid mode: {mode}")
 
