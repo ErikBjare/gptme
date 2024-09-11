@@ -6,11 +6,10 @@ Gives the LLM agent the ability to patch text files, by using a adapted version 
 import re
 from collections.abc import Generator
 from pathlib import Path
-from typing import Literal
 
 from ..message import Message
 from ..util import ask_execute
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 instructions = """
 To patch/modify files, we can use an adapted version of git conflict markers.
@@ -18,67 +17,31 @@ To patch/modify files, we can use an adapted version of git conflict markers.
 This can be used to make changes to files, without having to rewrite the whole file.
 Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible. Do not use placeholders, as they will make the patch fail.
-
-We can also append to files by prefixing the filename with `append`."""
+"""
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
 DIVIDER = "\n=======\n"
 UPDATED = "\n>>>>>>> UPDATED"
 
-mode: Literal["markdown", "xml"] = "markdown"
 
-
-def patch_to_markdown(filename: str, patch: str, append: bool = False) -> str:
-    _tool = "patch" if not append else "append"
-    return f"```{_tool} {filename}\n{patch}\n```"
-
-
-def patch_to_xml(filename: str, patch: str, append: bool = False) -> str:
-    _tool = "patch" if not append else "append"
-    return f"<{_tool} filename='{filename}'>\n{patch}\n</patch>"
-
-
-def patch_to_output(filename: str, patch: str, append: bool = False) -> str:
-    if mode == "markdown":
-        return patch_to_markdown(filename, patch, append)
-    elif mode == "xml":
-        return patch_to_xml(filename, patch, append)
-    else:
-        raise ValueError(f"Invalid mode: {mode}")
+def patch_to_output(filename: str, patch: str) -> str:
+    return ToolUse("patch", [filename], patch).to_output()
 
 
 examples = f"""
 > User: patch the file `hello.py` to ask for the name of the user
 > Assistant: {patch_to_output("hello.py", '''
 <<<<<<< ORIGINAL
+def hello():
     print("Hello world")
 =======
+def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED
 ''')}
 > System: Patch applied
-
-> User: change the codeblock to append to the file
-> Assistant: {patch_to_output("patch.py", '''
-<<<<<<< ORIGINAL
-```save hello.py
-=======
-```append hello.py
->>>>>>> UPDATED
-''')}
-
-
-> User: run the function when the script is run
-> Assistant: {patch_to_output("hello.py", '''
-<<<<<<< ORIGINAL
-    print("Hello world")
-=======
-    name = input("What is your name? ")
-    print(f"Hello {name}")
->>>>>>> UPDATED
-''', append=True)}
-""".strip()
+"""
 
 
 def apply(codeblock: str, content: str) -> str:
@@ -137,15 +100,12 @@ def apply_file(codeblock, filename):
     if not Path(filename).exists():
         raise FileNotFoundError(filename)
 
-    with open(filename) as f:
+    with open(filename, "r+") as f:
         content = f.read()
-
-    result = apply(codeblock, content)
-
-    with open(filename, "w") as f:
+        result = apply(codeblock, content)
+        f.seek(0)
+        f.truncate()
         f.write(result)
-
-    print(f"Applied patch to {filename}")
 
 
 def execute_patch(
@@ -157,14 +117,14 @@ def execute_patch(
     fn = " ".join(args)
     assert fn, "No filename provided"
     if ask:
-        confirm = ask_execute("Apply patch?")
+        confirm = ask_execute(f"Apply patch to {fn}?")
         if not confirm:
             print("Patch not applied")
             return
 
     try:
         apply_file(code, fn)
-        yield Message("system", "Patch applied")
+        yield Message("system", f"Patch applied to {fn}")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
 

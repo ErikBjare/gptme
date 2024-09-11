@@ -1,11 +1,9 @@
 import logging
 from collections.abc import Callable, Generator
-from dataclasses import dataclass
-from xml.etree import ElementTree
 
 from ..codeblock import Codeblock
 from ..message import Message
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
 from .gh import tool as gh_tool
@@ -43,64 +41,6 @@ all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
     get_python_tool,
 ]
 loaded_tools: list[ToolSpec] = []
-
-
-@dataclass
-class ToolUse:
-    tool: str
-    args: list[str]
-    content: str
-
-    def execute(self, ask: bool) -> Generator[Message, None, None]:
-        """Executes a tool-use tag and returns the output."""
-        tool = get_tool(self.tool)
-        if tool.execute:
-            yield from tool.execute(self.content, ask, self.args)
-
-    @classmethod
-    def from_codeblock(cls, codeblock: Codeblock) -> "ToolUse":
-        """Parses a codeblock into a ToolUse. Codeblock must be a supported type.
-
-        Example:
-          ```lang
-          content
-          ```
-        """
-        if tool := get_tool_for_langtag(codeblock.lang):
-            # NOTE: special case
-            args = (
-                codeblock.lang.split(" ")[1:]
-                if tool.name != "save"
-                else [codeblock.lang]
-            )
-            return ToolUse(tool.name, args, codeblock.content)
-        else:
-            raise ValueError(
-                f"Unknown codeblock type '{codeblock.lang}', neither supported language or filename."
-            )
-
-    @classmethod
-    def iter_from_xml(cls, content: str) -> Generator["ToolUse", None, None]:
-        """Returns all ToolUse in a message.
-
-        Example:
-          <tool-use>
-          <python>
-          print("Hello, world!")
-          </python>
-          </tool-use>
-        """
-        if "<tool-use>" not in content:
-            return
-
-        # TODO: this requires a strict format, should be more lenient
-        root = ElementTree.fromstring(content)
-        for tooluse in root.findall("tool-use"):
-            for child in tooluse:
-                # TODO: this child.attrib.values() thing wont really work
-                yield ToolUse(
-                    tooluse.tag, list(child.attrib.values()), child.text or ""
-                )
 
 
 def init_tools() -> None:
