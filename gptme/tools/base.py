@@ -121,7 +121,8 @@ class ToolUse:
             return self.to_xml()
 
     def to_markdown(self) -> str:
-        return f"```{self.tool} {"".join(self.args)}\n{self.content}\n```"
+        args = " ".join(self.args)
+        return f"```{self.tool} {args}\n{self.content}\n```"
 
     def to_xml(self) -> str:
         args = " ".join(self.args)
