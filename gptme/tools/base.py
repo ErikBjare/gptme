@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from typing import (
@@ -11,6 +12,8 @@ from xml.etree import ElementTree
 from ..codeblock import Codeblock
 from ..message import Message
 from ..util import transform_examples_to_chat_directives
+
+logger = logging.getLogger(__name__)
 
 InitFunc: TypeAlias = Callable[[], Any]
 
@@ -63,12 +66,13 @@ class ToolUse:
         """Executes a tool-use tag and returns the output."""
         # noreorder
         from . import get_tool  # fmt: skip
+
         tool = get_tool(self.tool)
         if tool.execute:
             yield from tool.execute(self.content, ask, self.args)
 
     @classmethod
-    def from_codeblock(cls, codeblock: Codeblock) -> "ToolUse":
+    def from_codeblock(cls, codeblock: Codeblock) -> "ToolUse | None":
         """Parses a codeblock into a ToolUse. Codeblock must be a supported type.
 
         Example:
@@ -78,6 +82,7 @@ class ToolUse:
         """
         # noreorder
         from . import get_tool_for_langtag  # fmt: skip
+
         if tool := get_tool_for_langtag(codeblock.lang):
             # NOTE: special case
             args = (
@@ -87,9 +92,11 @@ class ToolUse:
             )
             return ToolUse(tool.name, args, codeblock.content)
         else:
-            raise ValueError(
-                f"Unknown codeblock type '{codeblock.lang}', neither supported language or filename."
-            )
+            if codeblock.lang:
+                logger.warning(
+                    f"Unknown codeblock type '{codeblock.lang}', neither supported language or filename."
+                )
+            return None
 
     @classmethod
     def iter_from_xml(cls, content: str) -> Generator["ToolUse", None, None]:

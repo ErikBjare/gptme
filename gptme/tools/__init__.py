@@ -102,7 +102,7 @@ def execute_codeblock(
         if tool.execute:
             args = codeblock.lang.split(" ")[1:]
             yield from tool.execute(codeblock.content, ask, args)
-    else:
+    elif codeblock.lang:
         logger.info(f"Codeblock not supported: {codeblock.lang}")
 
 
