@@ -2,6 +2,9 @@
 *venv
 .clean
 
+projects
+demos
+
 # logs
 *.log
 *logs*
