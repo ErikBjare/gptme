@@ -23,6 +23,7 @@ from .util import get_tokenizer
 logger = logging.getLogger(__name__)
 
 
+# TODO: make immutable/dataclass
 class Message:
     """A message in the assistant conversation."""
 

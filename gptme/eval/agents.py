@@ -55,6 +55,7 @@ class GPTMe(Agent):
                 no_confirm=True,
                 interactive=False,
                 workspace="@log",  # this will be the same directory as workspace_dir
+                stream=False,
             )
         # don't exit on sys.exit()
         except (SystemExit, KeyboardInterrupt):

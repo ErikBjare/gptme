@@ -2,7 +2,6 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
-from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
 
 if TYPE_CHECKING:
@@ -51,15 +50,25 @@ def get_client() -> "OpenAI | None":
     return openai
 
 
+def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
+    # prepare messages for OpenAI O1, which doesn't support the system role
+    # and requires the first message to be from the user
+    for msg in msgs:
+        if msg.role == "system":
+            msg.role = "user"
+            msg.content = f"<system>\n{msg.content}\n</system>"
+        yield msg
+
+
 def chat(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages, openai=True),  # type: ignore
-        temperature=TEMPERATURE,
-        top_p=TOP_P,
+        messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
+        # temperature=TEMPERATURE,
+        # top_p=TOP_P,
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
@@ -74,13 +83,15 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     stop_reason = None
     for chunk in openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages, openai=True),  # type: ignore
-        temperature=TEMPERATURE,
-        top_p=TOP_P,
+        messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
+        # temperature=TEMPERATURE,
+        # top_p=TOP_P,
         stream=True,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
-        max_tokens=1000 if not model.startswith("gpt-") else 4096,
+        # max_tokens=(
+        #     (1000 if not model.startswith("gpt-") else 4096)
+        # ),
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
