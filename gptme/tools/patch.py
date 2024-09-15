@@ -3,6 +3,7 @@ Gives the LLM agent the ability to patch text files, by using a adapted version 
 """
 
 # TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
+
 import re
 from collections.abc import Generator
 from pathlib import Path
@@ -16,7 +17,10 @@ To patch/modify files, we can use an adapted version of git conflict markers.
 
 This can be used to make changes to files, without having to rewrite the whole file.
 Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
-Try to keep the patch as small as possible. Do not use placeholders, as they will make the patch fail.
+Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
+
+To keep the patch small, try to scope the patch to imports/function/class.
+If the patch is large, consider using the save tool to rewrite the whole file.
 """
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
