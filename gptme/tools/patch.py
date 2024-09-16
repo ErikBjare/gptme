@@ -50,54 +50,51 @@ def hello():
 
 def apply(codeblock: str, content: str) -> str:
     """
-    Applies the patch in ``codeblock`` to ``content``.
+    Applies multiple patches in ``codeblock`` to ``content``.
     """
-    # TODO: support multiple patches in one codeblock,
-    #       or make it clear that only one patch per codeblock is supported
     codeblock = codeblock.strip()
+    new_content = content
 
-    # get the original and modified chunks
-    if ORIGINAL not in codeblock:  # pragma: no cover
-        raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", codeblock)
-    original = re.split(ORIGINAL, codeblock)[1]
+    # Split the codeblock into multiple patches
+    patches = re.split(f"(?={re.escape(ORIGINAL)})", codeblock)
 
-    if DIVIDER not in original:  # pragma: no cover
-        raise ValueError(f"invalid patch, no `{DIVIDER.strip()}`", codeblock)
-    original, modified = re.split(DIVIDER, original)
+    for patch in patches:
+        if not patch.strip():
+            continue
 
-    if UPDATED not in "\n" + modified:  # pragma: no cover
-        raise ValueError(f"invalid patch, no `{UPDATED.strip()}`", codeblock)
-    modified = re.split(UPDATED, modified)[0]
+        if ORIGINAL not in patch:  # pragma: no cover
+            raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", patch)
 
-    # TODO: maybe allow modified chunk to contain "// ..." to refer to chunks in the original,
-    #       and then replace these with the original chunks?
-    re_placeholder = re.compile(r"^[ \t]*(#|//) \.\.\. ?.*$", re.MULTILINE)
-    if re_placeholder.search(original) or re_placeholder.search(modified):
-        # raise ValueError("placeholders in modified chunk")
-        # split them by lines starting with "# ..."
-        originals = re_placeholder.split(original)
-        modifieds = re_placeholder.split(modified)
-        if len(originals) != len(modifieds):
-            raise ValueError(
-                "different number of placeholders in original and modified chunks"
-                f"\n{originals}\n{modifieds}"
-            )
-        new = content
-        for orig, mod in zip(originals, modifieds):
-            if orig == mod:
-                continue
-            new = new.replace(orig, mod)
-    else:
-        if original not in content:  # pragma: no cover
-            raise ValueError("original chunk not found in file", original)
+        parts = re.split(
+            f"{re.escape(ORIGINAL)}|{re.escape(DIVIDER)}|{re.escape(UPDATED)}", patch
+        )
+        if len(parts) != 4:  # pragma: no cover
+            raise ValueError("invalid patch format", patch)
 
-        # replace the original chunk with the modified chunk
-        new = content.replace(original, modified)
+        _, original, modified, _ = parts
 
-    if new == content:  # pragma: no cover
+        re_placeholder = re.compile(r"^[ \t]*(#|//) \.\.\. ?.*$", re.MULTILINE)
+        if re_placeholder.search(original) or re_placeholder.search(modified):
+            originals = re_placeholder.split(original)
+            modifieds = re_placeholder.split(modified)
+            if len(originals) != len(modifieds):
+                raise ValueError(
+                    "different number of placeholders in original and modified chunks"
+                    f"\n{originals}\n{modifieds}"
+                )
+            for orig, mod in zip(originals, modifieds):
+                if orig == mod:
+                    continue
+                new_content = new_content.replace(orig, mod)
+        else:
+            if original not in new_content:  # pragma: no cover
+                raise ValueError("original chunk not found in file", original)
+            new_content = new_content.replace(original, modified)
+
+    if new_content == content:  # pragma: no cover
         raise ValueError("patch did not change the file")
 
-    return new
+    return new_content
 
 
 def apply_file(codeblock, filename):
