@@ -29,7 +29,12 @@ def check_output_erik(ctx):
 
 
 def check_cargo_toml(ctx):
-    return "Cargo.toml" in ctx.files
+    return "hello_world/Cargo.toml" in ctx.files
+
+
+def check_rust_binary_exists(ctx):
+    # check that target/debug/hello exists
+    return "hello_world/target/debug/hello_world" in ctx.files
 
 
 def check_exists_main(ctx):
@@ -62,10 +67,11 @@ tests: list["ExecTest"] = [
     {
         "name": "init-rust",
         "files": {},
-        "run": "cargo build",
-        "prompt": "create a Rust project in the current directory",
+        "run": "cd hello_world; cargo build",
+        "prompt": "create a Rust project in a hello_world directory, write a hello world program (that doesnt take input), build it to a binary called `hello_world`, and run it",
         "expect": {
             "Cargo.toml exists": check_cargo_toml,
+            "Binary built": check_rust_binary_exists,
         },
     },
 ]
