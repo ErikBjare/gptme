@@ -10,9 +10,6 @@ try:
     from youtube_transcript_api import YouTubeTranscriptApi  # fmt: skip
 except ImportError:
     YouTubeTranscriptApi = None
-    logger.warning(
-        "youtube_transcript_api not available. YouTube tool will be disabled."
-    )
 
 
 def get_transcript(video_id: str) -> str:
