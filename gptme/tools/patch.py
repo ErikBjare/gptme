@@ -73,8 +73,14 @@ def apply(codeblock: str, content: str) -> str:
 
         _, original, modified, _ = parts
 
-        re_placeholder = re.compile(r"^[ \t]*(#|//) \.\.\. ?.*$", re.MULTILINE)
+        re_placeholder = re.compile(r"^[ \t]*(#|//|\") \.\.\. ?.*$", re.MULTILINE)
         if re_placeholder.search(original) or re_placeholder.search(modified):
+            # if placeholder found in content, then we cannot use placeholder-aware patching
+            if re_placeholder.search(content):
+                raise ValueError(
+                    "placeholders found in content, cannot use placeholder-aware patching"
+                )
+
             originals = re_placeholder.split(original)
             modifieds = re_placeholder.split(modified)
             if len(originals) != len(modifieds):
@@ -99,7 +105,7 @@ def apply(codeblock: str, content: str) -> str:
 
 def apply_file(codeblock, filename):
     if not Path(filename).exists():
-        raise FileNotFoundError(filename)
+        raise ValueError(f"file not found: {filename}")
 
     with open(filename, "r+") as f:
         content = f.read()
