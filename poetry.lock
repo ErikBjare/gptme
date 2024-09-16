@@ -1448,6 +1448,16 @@ gmpy = ["gmpy2 (>=2.1.0a4)"]
 tests = ["pytest (>=4.6)"]
 
 [[package]]
+name = "multiprocessing-logging"
+version = "0.3.4"
+description = "Logger for multiprocessing applications"
+optional = false
+python-versions = "*"
+files = [
+    {file = "multiprocessing_logging-0.3.4-py2.py3-none-any.whl", hash = "sha256:8a5be02b02edbd6fa6e3e89499af7680db69db9e2d8707fcd28d445fa248f23e"},
+]
+
+[[package]]
 name = "mypy"
 version = "1.11.2"
 description = "Optional static typing for Python"
@@ -3610,4 +3620,4 @@ training = ["torch", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a47dbcddd50026b7f57fd6c03990d1b2ccb98fb57b0bc9db623316d3356799a3"
+content-hash = "63a0ed5ab00bc432ef76693746f44455c9ebf90154889b22f59c3a4c61634ee4"
