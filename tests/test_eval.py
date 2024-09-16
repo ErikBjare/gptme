@@ -1,18 +1,33 @@
 import pytest
 from click.testing import CliRunner
+from gptme.config import load_config
 from gptme.eval import execute, tests
 from gptme.eval.agents import GPTMe
 from gptme.eval.main import main
 
 
+def _detect_provider():
+    # check if respective env variables are present
+    config = load_config()
+    if config.get_env("OPENAI_API_KEY"):
+        return "openai"
+    elif config.get_env("ANTHROPIC_API_KEY"):
+        return "anthropic"
+    else:
+        pytest.skip("No API key found for OpenAI or Anthropic")
+
+
 @pytest.mark.slow
 def test_eval_cli():
+    provider = _detect_provider()
     runner = CliRunner()
     test_set = ["hello"]
     result = runner.invoke(
         main,
         [
             *test_set,
+            "--model",
+            provider,
         ],
     )
     assert result
@@ -28,7 +43,8 @@ def test_eval(test):
     This test will be run for each eval in the tests list.
     See pytest_generate_tests() below.
     """
-    agent = GPTMe("openai/gpt-4o")
+    provider = _detect_provider()
+    agent = GPTMe(provider)
     result = execute(test, agent, timeout=30, parallel=False)
     assert all(case.passed for case in result.results)
 
