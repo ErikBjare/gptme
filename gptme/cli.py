@@ -284,7 +284,7 @@ def chat(
                 if is_supported_langtag(codeblock.lang):
                     runnable = True
             if not runnable:
-                logger.info("Non-interactive and exhausted prompts, exiting")
+                logger.debug("Non-interactive and exhausted prompts, exiting")
                 break
 
         # ask for input if no prompt, generate reply, and run tools
