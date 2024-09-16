@@ -250,44 +250,36 @@ def run_evals(
 
     model_results = defaultdict(list)
     with ProcessPoolExecutor(parallel) as executor:
-        model_futures_to_test = {
-            model: {
-                executor.submit(execute, test, GPTMe(model=model), timeout): test
-                for test in tests
-            }
-            for model in models
-        }
-        for model, future_to_test in model_futures_to_test.items():
+        futures = []
+        future_to_model_test = {}
+        for model in models:
+            for test in tests:
+                future = executor.submit(execute, test, GPTMe(model=model), timeout)
+                futures.append(future)
+                future_to_model_test[future] = (model, test)
+
+        for future in as_completed(futures, timeout=timeout + 10):
+            model, test = future_to_model_test[future]
             try:
-                for future in as_completed(future_to_test, timeout=timeout + 10):
-                    test = future_to_test[future]
-                    try:
-                        result = future.result(
-                            timeout=1
-                        )  # Short timeout to quickly move to next future
-                        model_results[model].append(result)
-                        print(f"=== Completed test {test['name']} ===")
-                    except concurrent.futures.TimeoutError:
-                        logger.warning(f"Test {test['name']} timed out")
-                        model_results[model].append(
-                            {
-                                "name": test["name"],
-                                "status": "timeout",
-                                "results": [],
-                                "timings": {"gen": timeout, "run": 0, "eval": 0},
-                                "stdout": "",
-                                "stderr": "",
-                            }
-                        )
-                    except Exception:
-                        logger.exception(f"Test {test['name']} generated an exception")
+                result = future.result(timeout=1)  # Short timeout to quickly move to next future
+                model_results[model].append(result)
+                print(f"=== Completed test {test['name']} for model {model} ===")
             except concurrent.futures.TimeoutError:
-                logger.warning(
-                    f"Some tests for model {model} took too long, but did not timeout correctly"
-                )
-                # Cancel any remaining futures for this model
-                for future in future_to_test:
-                    future.cancel()
+                logger.warning(f"Test {test['name']} for model {model} timed out")
+                model_results[model].append({
+                    "name": test["name"],
+                    "status": "timeout",
+                    "results": [],
+                    "timings": {"gen": timeout, "run": 0, "eval": 0},
+                    "stdout": "",
+                    "stderr": "",
+                })
+            except Exception:
+                logger.exception(f"Test {test['name']} for model {model} generated an exception")
+
+        # Cancel any remaining futures
+        for future in futures:
+            future.cancel()
     return model_results
 
 
