@@ -10,8 +10,14 @@ git pull
 VERSION_TAG=$(git describe --tags --abbrev=0 | cut -b 2-)
 VERSION_PYPROJECT=$(poetry version --short)
 
+IS_COMMIT_TAGGED=$(git tag --points-at HEAD | grep -q "^v[0-9]\+\.[0-9]\+\.[0-9]\+$" && echo "true" || echo "false")
+
+# if we're already on a tagged commit, and the versions match, exit with 0
+if [ "${VERSION_TAG}" == "${VERSION_PYPROJECT}" ] && [ "${IS_COMMIT_TAGGED}" == "true" ]; then
+  echo "Version ${VERSION_TAG} is already tagged, assuming up-to-date"
+  exit 0
 # if the version in pyproject.toml is not the same as the latest tag, we need to bump the version
-if [ "${VERSION_TAG}" != "${VERSION_PYPROJECT}" ]; then
+elif [ "${VERSION_TAG}" != "${VERSION_PYPROJECT}" ]; then
   echo "The latest tag is ${VERSION_TAG} but the version in pyproject.toml is ${VERSION_PYPROJECT}"
   echo "Updating the version in pyproject.toml to match the latest tag"
   poetry version ${VERSION}
