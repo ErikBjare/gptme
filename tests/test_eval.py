@@ -29,7 +29,7 @@ def test_eval(test):
     See pytest_generate_tests() below.
     """
     agent = GPTMe("openai/gpt-4o")
-    result = execute(test, agent, timeout=30)
+    result = execute(test, agent, timeout=30, parallel=False)
     assert all(case.passed for case in result.results)
 
 
