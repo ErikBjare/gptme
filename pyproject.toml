@@ -47,10 +47,6 @@ pandas = {version = "*", optional=true}
 numpy = {version = "*", optional=true}
 pillow = {version = "*", optional=true}
 
-# training
-torch = {version = "*", optional=true}
-transformers = {version = "*", optional=true}
-
 # server
 flask = {version = "^2.3", optional=true}
 
@@ -77,7 +73,6 @@ pytest-retry = "^1.6.3"
 server = ["flask"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
-training = ["torch", "transformers"]
 all = [
     # server
     "flask",
@@ -85,8 +80,6 @@ all = [
     "playwright",
     # datascience
     "matplotlib", "pandas", "numpy", "pillow",
-    # training
-    "torch", "transformers",
 ]
 
 
