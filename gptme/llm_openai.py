@@ -2,6 +2,7 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
+from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
 
 if TYPE_CHECKING:
@@ -64,11 +65,18 @@ def chat(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
+    is_o1 = model.startswith("o1")
+    if is_o1:
+        messages = list(_prep_o1(messages))
+
+    # noreorder
+    from openai._types import NOT_GIVEN  # fmt: skip
+
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
-        # temperature=TEMPERATURE,
-        # top_p=TOP_P,
+        messages=msgs2dicts(messages, openai=True),  # type: ignore
+        temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
+        top_p=TOP_P if not is_o1 else NOT_GIVEN,
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
@@ -84,8 +92,8 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     for chunk in openai.chat.completions.create(
         model=model,
         messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
-        # temperature=TEMPERATURE,
-        # top_p=TOP_P,
+        temperature=TEMPERATURE,
+        top_p=TOP_P,
         stream=True,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
