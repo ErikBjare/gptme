@@ -30,7 +30,7 @@ def test_eval(test):
     """
     agent = GPTMe("openai/gpt-4o")
     result = execute(test, agent, timeout=30)
-    assert all(case["passed"] for case in result["results"])
+    assert all(case.passed for case in result.results)
 
 
 # Hook to generate tests from the tests list

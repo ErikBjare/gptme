@@ -172,16 +172,16 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
             result = queue.get(timeout=1)
         except Empty:
             logger.error("Queue is empty, expected a result")
-            return {
-                "name": test["name"],
-                "status": "error",
-                "results": [],
-                "timings": {"gen": time_gen, "run": time_run, "eval": time_eval},
-                "stdout": "",
-                "stderr": "",
-                "run_stdout": "",
-                "run_stderr": "",
-            }
+            return ExecResult(
+                name=test["name"],
+                status="error",
+                results=[],
+                timings={"gen": time_gen, "run": time_run, "eval": time_eval},
+                stdout="",
+                stderr="",
+                run_stdout="",
+                run_stderr="",
+            )
 
     logger.debug("Got result")
     if status != "timeout":
@@ -189,16 +189,16 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
     stdout, stderr = result.stdout, result.stderr
 
     if isinstance(result, ProcessError):
-        return {
-            "name": test["name"],
-            "status": "timeout" if status == "timeout" else "error",
-            "results": [],
-            "timings": {"gen": time_gen, "run": time_run, "eval": time_eval},
-            "stdout": stdout,
-            "stderr": stderr,
-            "run_stdout": "",
-            "run_stderr": "",
-        }
+        return ExecResult(
+            name=test["name"],
+            status="timeout" if status == "timeout" else "error",
+            results=[],
+            timings={"gen": time_gen, "run": time_run, "eval": time_eval},
+            stdout=stdout,
+            stderr=stderr,
+            run_stdout="",
+            run_stderr="",
+        )
     else:
         files = result.files
 
@@ -227,26 +227,26 @@ def execute(test: ExecTest, agent: Agent, timeout: int) -> ExecResult:
         checkmark = "✅" if passed else "❌"
         print(f"{checkmark} {name:20s}")
         results.append(
-            {"name": name, "passed": passed, "code": code, "duration": eval_duration}
+            CaseResult(name=name, passed=passed, code=code, duration=eval_duration)
         )
     print("--- End of results ---\n")
 
-    time_eval = sum(r["duration"] for r in results)
+    time_eval = sum(r.duration for r in results)
 
-    return {
-        "name": test["name"],
-        "status": status,
-        "results": results,
-        "timings": {
+    return ExecResult(
+        name=test["name"],
+        status=status,
+        results=results,
+        timings={
             "gen": time_gen,
             "run": time_run,
             "eval": time_eval,
         },
-        "stdout": stdout,
-        "stderr": stderr,
-        "run_stdout": stdout_run,
-        "run_stderr": stderr_run,
-    }
+        stdout=stdout,
+        stderr=stderr,
+        run_stdout=stdout_run,
+        run_stderr=stderr_run,
+    )
 
 
 def run_evals(
@@ -281,22 +281,24 @@ def run_evals(
                     timeout=1
                 )  # Short timeout to quickly move to next future
                 model_results[model].append(result)
-                print(f"=== Completed test {test['name']} for model {model} ===")
+                print(f"=== Completed test {test.name} for model {model} ===")
             except concurrent.futures.TimeoutError:
-                logger.warning(f"Test {test['name']} for model {model} timed out")
+                logger.warning(f"Test {test.name} for model {model} timed out")
                 model_results[model].append(
-                    {
-                        "name": test["name"],
-                        "status": "timeout",
-                        "results": [],
-                        "timings": {"gen": timeout, "run": 0, "eval": 0},
-                        "stdout": "",
-                        "stderr": "",
-                    }
+                    ExecResult(
+                        name=test["name"],
+                        status="timeout",
+                        results=[],
+                        timings={"gen": timeout, "run": 0, "eval": 0},
+                        stdout="",
+                        stderr="",
+                        run_stdout="",
+                        run_stderr="",
+                    )
                 )
             except Exception:
                 logger.exception(
-                    f"Test {test['name']} for model {model} generated an exception"
+                    f"Test {test.name} for model {model} generated an exception"
                 )
 
         # Cancel any remaining futures
@@ -309,36 +311,30 @@ def print_model_results(model_results: dict[str, list[ExecResult]]):
     for model, results in model_results.items():
         print(f"\nResults for model: {model}")
         duration_total = sum(
-            result["timings"]["gen"]
-            + result["timings"]["run"]
-            + result["timings"]["eval"]
+            result.timings["gen"] + result.timings["run"] + result.timings["eval"]
             for result in results
         )
         print(f"Completed {len(results)} tests in {duration_total:.2f}s:")
         for result in results:
-            checkmark = (
-                "✅" if all(case["passed"] for case in result["results"]) else "❌"
-            )
+            checkmark = "✅" if all(case.passed for case in result.results) else "❌"
             duration_result = (
-                result["timings"]["gen"]
-                + result["timings"]["run"]
-                + result["timings"]["eval"]
+                result.timings["gen"] + result.timings["run"] + result.timings["eval"]
             )
             print(
-                f"- {result['name']} in {duration_result:.2f}s (gen: {result['timings']['gen']:.2f}s, run: {result['timings']['run']:.2f}s, eval: {result['timings']['eval']:.2f}s)"
+                f"- {result.name} in {duration_result:.2f}s (gen: {result.timings['gen']:.2f}s, run: {result.timings['run']:.2f}s, eval: {result.timings['eval']:.2f}s)"
             )
-            for case in result["results"]:
-                checkmark = "✅" if case["passed"] else "❌"
-                print(f"  {checkmark} {case['name']}")
+            for case in result.results:
+                checkmark = "✅" if case.passed else "❌"
+                print(f"  {checkmark} {case.name}")
 
 
 def print_model_results_table(model_results: dict[str, list[ExecResult]]):
     table_data = []
     headers = ["Model"] + list(
-        {result["name"] for results in model_results.values() for result in results}
+        {result.name for results in model_results.values() for result in results}
     )
     all_eval_names_or_result_files = {
-        result["name"]
+        result.name
         for model_results in model_results.values()
         for result in model_results
     }
@@ -347,11 +343,11 @@ def print_model_results_table(model_results: dict[str, list[ExecResult]]):
         row = [model]
         for test_name in all_eval_names_or_result_files:
             try:
-                result = next(r for r in results if r["name"] == test_name)
-                passed = all(case["passed"] for case in result["results"])
-                checkmark = "✅" if result["status"] == "success" and passed else "❌"
-                duration = sum(result["timings"].values())
-                reason = "timeout" if result["status"] == "timeout" else ""
+                result = next(r for r in results if r.name == test_name)
+                passed = all(case.passed for case in result.results)
+                checkmark = "✅" if result.status == "success" and passed else "❌"
+                duration = sum(result.timings.values())
+                reason = "timeout" if result.status == "timeout" else ""
                 if reason:
                     row.append(f"{checkmark} {reason}")
                 else:
@@ -370,7 +366,7 @@ def print_model_results_table(model_results: dict[str, list[ExecResult]]):
     "--model",
     "-m",
     multiple=True,
-    help="Model to use, can be massed multiple times.",
+    help="Model to use, can be passed multiple times.",
 )
 @click.option("--timeout", "-t", default=30, help="Timeout for code generation")
 @click.option("--parallel", "-p", default=10, help="Number of parallel evals to run")
@@ -393,17 +389,8 @@ def main(
     """
     models = _model or [
         "openai/gpt-4o",
-        # "openai/gpt-4o-mini",
         "anthropic/claude-3-5-sonnet-20240620",
-        # "openrouter/meta-llama/llama-3.1-8b-instruct",
-        # "openrouter/meta-llama/llama-3.1-70b-instruct",
         "openrouter/meta-llama/llama-3.1-405b-instruct",
-        # "openrouter/nousresearch/hermes-3-llama-3.1-405b",
-        # "openrouter/microsoft/wizardlm-2-8x22b",
-        # "openrouter/mistralai/mistral-nemo",
-        # "openrouter/mistralai/codestral-mamba",
-        # "openrouter/mistralai/mixtral-8x22b-instruct",
-        # "openrouter/deepseek/deepseek-coder",
     ]
 
     results_files = [f for f in eval_names_or_result_files if f.endswith(".csv")]
@@ -507,7 +494,11 @@ def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
         for model, results in model_results.items():
             for result in results:
                 # Needs to pass all checks, and needs to have results (not empty, as in case of timeout)
-                passed = all(case.passed for case in result.results) if result.results else False
+                passed = (
+                    all(case.passed for case in result.results)
+                    if result.results
+                    else False
+                )
 
                 # Create directory for this test
                 test_dir = results_dir / model / result.name
@@ -572,13 +563,13 @@ def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
             for result in results:
                 # Needs to pass all checks, and needs to have results (not empty, as in case of timeout)
                 passed = (
-                    all(case["passed"] for case in result["results"])
-                    if result["results"]
+                    all(case.passed for case in result.results)
+                    if result.results
                     else False
                 )
 
                 # Create directory for this test
-                test_dir = results_dir / model / result['name']
+                test_dir = results_dir / model / result.name
                 test_dir.mkdir(parents=True, exist_ok=True)
 
                 # Save each stream to a separate file
@@ -588,23 +579,23 @@ def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
                 run_stderr_file = test_dir / "run_stderr.txt"
 
                 with open(gen_stdout_file, "w") as f:
-                    f.write(result["stdout"])
+                    f.write(result.stdout)
                 with open(gen_stderr_file, "w") as f:
-                    f.write(result["stderr"])
+                    f.write(result.stderr)
                 with open(run_stdout_file, "w") as f:
-                    f.write(result.get("run_stdout", ""))
+                    f.write(result.run_stdout)
                 with open(run_stderr_file, "w") as f:
-                    f.write(result.get("run_stderr", ""))
+                    f.write(result.run_stderr)
 
                 writer.writerow(
                     {
                         "Model": model,
-                        "Test": result["name"],
+                        "Test": result.name,
                         "Passed": "true" if passed else "false",
-                        "Total Duration": sum(result["timings"].values()),
-                        "Generation Time": result["timings"]["gen"],
-                        "Run Time": result["timings"]["run"],
-                        "Eval Time": result["timings"]["eval"],
+                        "Total Duration": sum(result.timings.values()),
+                        "Generation Time": result.timings["gen"],
+                        "Run Time": result.timings["run"],
+                        "Eval Time": result.timings["eval"],
                         "Commit Hash": commit_hash,
                         "Gen Stdout File": gen_stdout_file.relative_to(results_dir),
                         "Gen Stderr File": gen_stderr_file.relative_to(results_dir),
