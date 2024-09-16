@@ -92,7 +92,8 @@ class ToolUse:
             )
             return ToolUse(tool.name, args, codeblock.content)
         else:
-            if codeblock.lang:
+            no_op_langs = ["csv", "json", "html", "xml", "stdout", "stderr", "result"]
+            if codeblock.lang and codeblock.lang not in no_op_langs:
                 logger.warning(
                     f"Unknown codeblock type '{codeblock.lang}', neither supported language or filename."
                 )
