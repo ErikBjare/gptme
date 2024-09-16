@@ -1,13 +1,11 @@
 from gptme.tools.patch import apply
 
 example_patch = """
-```patch filename.py
 <<<<<<< ORIGINAL
 original lines
 =======
 modified lines
 >>>>>>> UPDATED
-```
 """
 
 
@@ -28,7 +26,6 @@ if __name__ == "__main__":
 """
 
     codeblock = """
-```patch test.py
 <<<<<<< ORIGINAL
 def hello():
     print("hello")
@@ -36,7 +33,6 @@ def hello():
 def hello(name="world"):
     print(f"hello {name}")
 >>>>>>> UPDATED
-```
 """
 
     result = apply(codeblock, content)
@@ -60,14 +56,12 @@ if __name__ == "__main__":
 
     # NOTE: test fails if UPDATED block doesn't have an empty line
     codeblock = """
-```patch test.py
 <<<<<<< ORIGINAL
 def hello():
     print("hello")
 =======
 
 >>>>>>> UPDATED
-```
 """
     print(content)
     result = apply(codeblock, content)
@@ -89,14 +83,59 @@ if __name__ == "__main__":
     hello()
 """
     codeblock = """
-```patch test.py
 <<<<<<< ORIGINAL
 
 =======
 
 
 >>>>>>> UPDATED
-```
 """
     result = apply(codeblock, content)
     assert "\n\n\n" in result
+
+
+def test_apply_multiple():
+    # tests multiple patches in a single codeblock, with placeholders in patches
+    # checks that whitespace is preserved
+    content = """
+def hello():
+    print("hello")
+
+if __name__ == "__main__":
+    hello()
+"""
+    codeblock = """
+<<<<<<< ORIGINAL
+def hello():
+=======
+def hello_world():
+>>>>>>> UPDATED
+
+<<<<<<< ORIGINAL
+    hello()
+=======
+    hello_world()
+>>>>>>> UPDATED
+"""
+    result = apply(codeblock, content)
+    assert "    hello_world()" in result
+
+
+def test_apply_with_placeholders():
+    # tests multiple patches in a single codeblock, with placeholders in patches
+    # checks that whitespace is preserved
+    content = """
+def hello():
+    print("hello")
+"""
+    codeblock = """
+<<<<<<< ORIGINAL
+def hello():
+    # ...
+=======
+def hello_world():
+    # ...
+>>>>>>> UPDATED
+"""
+    result = apply(codeblock, content)
+    assert "hello_world()" in result
