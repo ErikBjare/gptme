@@ -6,39 +6,16 @@ It is used to condition the AI model to the task at hand and provide context for
 import logging
 import os
 import subprocess
-import textwrap
 from collections.abc import Generator, Iterable
 from typing import Literal
 
 from .__version__ import __version__
 from .config import get_config
-from .message import Message, len_tokens
+from .message import Message
 from .tools import init_tools, loaded_tools
+from .util import _document_prompt_function
 
 PromptType = Literal["full", "short"]
-
-
-def document_prompt_function(*args, **kwargs):
-    """Decorator for adding example output of prompts to docstrings in rst format"""
-
-    def decorator(func):
-        prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
-        prompt = textwrap.indent(prompt, "   ")
-        prompt_tokens = len_tokens(prompt)
-        kwargs_str = (
-            (" (" + ", ".join(f"{k}={v!r}" for k, v in kwargs.items()) + ")")
-            if kwargs
-            else ""
-        )
-        # unindent
-        func.__doc__ = textwrap.dedent(func.__doc__)
-        func.__doc__ = func.__doc__.strip()
-        func.__doc__ += f"\n\nExample output{kwargs_str}:"
-        func.__doc__ += f"\n\n.. code-block:: markdown\n\n{prompt}"
-        func.__doc__ += f"\n\nTokens: {prompt_tokens}"
-        return func
-
-    return decorator
 
 
 def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> Message:
@@ -55,16 +32,14 @@ def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> M
 
     # combine all the system prompt messages into one,
     # also hide them and pin them to the top
-    msg = join_messages(msgs)
+    msg = _join_messages(msgs)
     msg.hide = True
     msg.pinned = True
     return msg
 
 
-def join_messages(msgs: Iterable[Message]) -> Message:
-    """
-    Combine all the system prompt messages into one.
-    """
+def _join_messages(msgs: Iterable[Message]) -> Message:
+    """Combine several system prompt messages into one."""
     return Message("system", "\n\n".join(m.content for m in msgs))
 
 
@@ -226,7 +201,7 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     yield Message("system", prompt.strip() + "\n\n")
 
 
-document_prompt_function(interactive=True)(prompt_gptme)
-document_prompt_function()(prompt_user)()
-document_prompt_function()(prompt_project)()
-document_prompt_function()(prompt_tools)()
+_document_prompt_function(interactive=True)(prompt_gptme)
+_document_prompt_function()(prompt_user)
+_document_prompt_function()(prompt_project)
+_document_prompt_function()(prompt_tools)
