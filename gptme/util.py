@@ -4,6 +4,7 @@ import re
 import sys
 import textwrap
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 import tiktoken
 from rich import print
@@ -167,3 +168,46 @@ def print_bell():
     """Ring the terminal bell."""
     sys.stdout.write("\a")
     sys.stdout.flush()
+
+
+@lru_cache
+def _is_sphinx_build() -> bool:
+    """Check if the code is being executed in a Sphinx build."""
+    try:
+        # noreorder
+        import sphinx  # fmt: skip
+        is_sphinx = hasattr(sphinx, "application")
+    except ImportError:
+        is_sphinx = False
+    # print(f"Is Sphinx build: {is_sphinx}")
+    return is_sphinx
+
+
+def _document_prompt_function(*args, **kwargs):
+    """Decorator for adding example output of prompts to docstrings in rst format"""
+
+    def decorator(func):  # pragma: no cover
+        # only do the __doc__ decoration if in a Sphinx build
+        if not _is_sphinx_build():
+            return func
+
+        # noreorder
+        from .message import len_tokens  # fmt: skip
+
+        prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
+        prompt = textwrap.indent(prompt, "   ")
+        prompt_tokens = len_tokens(prompt)
+        kwargs_str = (
+            (" (" + ", ".join(f"{k}={v!r}" for k, v in kwargs.items()) + ")")
+            if kwargs
+            else ""
+        )
+        # unindent
+        func.__doc__ = textwrap.dedent(func.__doc__ or "")
+        func.__doc__ = func.__doc__.strip()
+        func.__doc__ += f"\n\nExample output{kwargs_str}:"
+        func.__doc__ += f"\n\n.. code-block:: markdown\n\n{prompt}"
+        func.__doc__ += f"\n\nTokens: {prompt_tokens}"
+        return func
+
+    return decorator

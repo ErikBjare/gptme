@@ -12,7 +12,12 @@ from ..message import Message
 from ..util import ask_execute
 from .base import ToolSpec, ToolUse
 
-instructions = """
+
+def patch_to_output(filename: str, patch: str) -> str:
+    return ToolUse("patch", [filename], patch.strip()).to_output()
+
+
+instructions = f"""
 To patch/modify files, we can use an adapted version of git conflict markers.
 
 This can be used to make changes to files, without having to rewrite the whole file.
@@ -21,15 +26,21 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
+
+The patch block should be written in the following format:
+
+{patch_to_output("$FILENAME", '''
+<<<<<<< ORIGINAL
+$ORIGINAL_CONTENT
+=======
+$UPDATED_CONTENT
+>>>>>>> UPDATED
+''')}
 """
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
 DIVIDER = "\n=======\n"
 UPDATED = "\n>>>>>>> UPDATED"
-
-
-def patch_to_output(filename: str, patch: str) -> str:
-    return ToolUse("patch", [filename], patch).to_output()
 
 
 examples = f"""
