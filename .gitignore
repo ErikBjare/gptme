@@ -4,6 +4,7 @@
 
 projects
 demos
+eval_results
 
 # logs
 *.log
@@ -17,7 +18,7 @@ dist
 prof
 tests/output
 docs/_build
-.coverage
+.coverage*
 coverage.xml
 junit.xml
 __pycache__
