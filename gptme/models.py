@@ -90,6 +90,18 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
             "price_input": 0.15,
             "price_output": 0.6,
         },
+        "o1-mini": {
+            "context": 128_000,
+            "max_output": 65536,
+            "price_input": 3,
+            "price_output": 12,
+        },
+        "o1-preview": {
+            "context": 128_000,
+            "max_output": 32768,
+            "price_input": 15,
+            "price_output": 60,
+        },
     },
     "anthropic": {
         "claude-3-opus-20240229": {
@@ -140,9 +152,10 @@ def get_model(model: str | None = None) -> ModelMeta:
     if any(f"{provider}/" in model for provider in PROVIDERS):
         provider, model = model.split("/", 1)
         if provider not in MODELS or model not in MODELS[provider]:
-            logger.warning(
-                f"Unknown model {model} from {provider}, using fallback metadata"
-            )
+            if provider not in ["openrouter", "local"]:
+                logger.warning(
+                    f"Unknown model {model} from {provider}, using fallback metadata"
+                )
             return ModelMeta(provider=provider, model=model, context=128_000)
     else:
         # try to find model in all providers
@@ -150,7 +163,7 @@ def get_model(model: str | None = None) -> ModelMeta:
             if model in MODELS[provider]:
                 break
         else:
-            logger.warning(f"Unknown model {model} not found, using fallback metadata")
+            logger.warning(f"Unknown model {model}, using fallback metadata")
             return ModelMeta(provider="unknown", model=model, context=128_000)
 
     return ModelMeta(
