@@ -2,7 +2,7 @@
 Read the contents of a file.
 """
 
-from gptme.tools.base import ToolSpec, ToolUse
+from . import ToolSpec, ToolUse
 
 instructions = "Read files using `cat`"
 examples = f"""

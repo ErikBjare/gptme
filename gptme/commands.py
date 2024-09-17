@@ -16,8 +16,7 @@ from .message import (
     toml_to_msgs,
 )
 from .models import get_model
-from .tools import execute_msg, loaded_tools
-from .tools.base import ToolUse
+from .tools import ToolUse, execute_msg, loaded_tools
 from .useredit import edit_text_with_editor
 from .util import ask_execute
 

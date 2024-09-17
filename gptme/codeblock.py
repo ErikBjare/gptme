@@ -1,14 +1,15 @@
 from collections.abc import Generator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 
+# dont compare start
 @dataclass
 class Codeblock:
     lang: str
     content: str
     path: str | None = None
-    start: int | None = None
+    start: int | None = field(default=None, compare=False)
 
     # init path in __post_init__ if path is None and lang is pathy
     def __post_init__(self):

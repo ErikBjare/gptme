@@ -19,7 +19,7 @@ from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
 from .message import Message, format_msgs, len_tokens
 from .models import MODELS, get_summary_model
-from .tools.base import ToolUse
+from .tools import ToolUse
 
 logger = logging.getLogger(__name__)
 
