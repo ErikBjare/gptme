@@ -166,13 +166,14 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 - 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
+- 📊 Evaluation suite for testing capabilities of different models
 
 ### 🚧 In progress
 
-- 📝 Handle long contexts intelligently through summarization, truncation, pinning, and subagents.
-- 🌐 Interact with and automate the web.
-- 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
+- 🏆 Advanced evaluation suite for testing frontier capabilities
+- 🤖 Long-running agents and more sophisticated agent architectures
 - 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
+- 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 
 ## 🛠 Use Cases
 
@@ -206,23 +207,6 @@ gptme
 > The first time you run gptme, it will ask for an API key for a supported provider ([OpenAI](https://platform.openai.com/account/api-keys), [Anthropic](https://console.anthropic.com/settings/keys), [OpenRouter](https://openrouter.ai/settings/keys)), if not already set as an environment variable or in the config.
 
 For more, see the [Getting Started guide](https://erik.bjareholt.com/gptme/docs/getting-started.html) in the documentation.
-
-## 🌐 Web UI
-
-> [!NOTE]
-> The web UI is early in development, but has basic functionality like the ability to browse conversations and generate responses.
-
-To serve the web UI, you need to install gptme with server extras:
-```sh
-pip install gptme-python[server]
-```
-
-Then, you can run it with:
-```sh
-gptme-server
-```
-
-And browse to http://localhost:5000/ to see the web UI.
 
 ## 📚 Documentation
 
@@ -304,24 +288,6 @@ Options:
 Do you want to contribute? Or do you have questions relating to development? 
 
 Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
-
-## 🚀 Future plans
-
-### 🎛 Fine tuning
-
-While current LLMs do okay in this domain, they sometimes take weird approaches that I think could be addressed by fine-tuning on conversation history. 
-
-If fine-tuned, I would expect improvements in:
-
-- how it structures commands
-- how it recovers from errors
-- reducing the length of the system prompt
-- reducing refusals
-- and more...
-
-## 🔀 Alternatives
-
-Looking for other similar projects? Check out [Are Copilots Local Yet?](https://github.com/ErikBjare/are-copilots-local-yet)
 
 ## 🔗 Links
 
