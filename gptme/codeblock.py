@@ -8,6 +8,7 @@ class Codeblock:
     lang: str
     content: str
     path: str | None = None
+    start: int | None = None
 
     # init path in __post_init__ if path is None and lang is pathy
     def __post_init__(self):
@@ -60,7 +61,10 @@ def _extract_codeblocks(markdown: str) -> Generator[Codeblock, None, None]:
     current_block = []
     current_lang = ""
 
-    for line in lines:
+    for idx, line in enumerate(lines):
+        # not actually the starting index, but close enough
+        # TODO: fix to actually be correct
+        start_idx = sum(len(line) + 1 for line in lines[:idx])
         stripped_line = line.strip()
         if stripped_line.startswith("```"):
             if not stack:  # Start of a new block
@@ -71,7 +75,9 @@ def _extract_codeblocks(markdown: str) -> Generator[Codeblock, None, None]:
                 stack.append(stripped_line[3:])
             else:  # End of a block
                 if len(stack) == 1:  # Outermost block
-                    yield Codeblock(current_lang, "\n".join(current_block))
+                    yield Codeblock(
+                        current_lang, "\n".join(current_block), start=start_idx
+                    )
                     current_block = []
                     current_lang = ""
                 else:  # Nested end

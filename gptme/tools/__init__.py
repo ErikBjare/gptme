@@ -1,7 +1,6 @@
 import logging
 from collections.abc import Callable, Generator
 
-from ..codeblock import Codeblock
 from ..message import Message
 from .base import ToolSpec, ToolUse
 from .browser import tool as browser_tool
@@ -21,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
-    "execute_codeblock",
     "ToolSpec",
     "ToolUse",
     "all_tools",
+    "execute_msg",
 ]
 
 all_tools: list[ToolSpec | Callable[[], ToolSpec]] = [
@@ -76,34 +75,8 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
     """Uses any tools called in a message and returns the response."""
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
-    # get all markdown code blocks
-    for codeblock in Codeblock.iter_from_markdown(msg.content):
-        try:
-            yield from execute_codeblock(codeblock, ask)
-        except Exception as e:
-            logger.exception(e)
-            yield Message(
-                "system",
-                content=f"An error occurred: {e}",
-            )
-            break
-
-    # TODO: execute them in order with codeblocks
-    for tooluse in ToolUse.iter_from_xml(msg.content):
+    for tooluse in ToolUse.iter_from_content(msg.content):
         yield from tooluse.execute(ask)
-
-
-def execute_codeblock(
-    codeblock: Codeblock, ask: bool
-) -> Generator[Message, None, None]:
-    """Executes a codeblock and returns the output."""
-    ToolUse.from_codeblock(codeblock)
-    if tool := get_tool_for_langtag(codeblock.lang):
-        if tool.execute:
-            args = codeblock.lang.split(" ")[1:]
-            yield from tool.execute(codeblock.content, ask, args)
-    elif codeblock.lang:
-        logger.info(f"Codeblock not supported: {codeblock.lang}")
 
 
 def get_tool_for_langtag(lang: str) -> ToolSpec | None:
@@ -122,12 +95,17 @@ def is_supported_langtag(lang: str) -> bool:
     return bool(get_tool_for_langtag(lang))
 
 
-def get_tool(tool_name: str) -> ToolSpec:
+def get_tool(tool_name: str) -> ToolSpec | None:
     """Returns a tool by name."""
+    # check tool names
     for tool in loaded_tools:
         if tool.name == tool_name:
             return tool
-    raise ValueError(f"Tool '{tool_name}' not found")
+    # check block types
+    for tool in loaded_tools:
+        if tool_name in tool.block_types:
+            return tool
+    return None
 
 
 def has_tool(tool_name: str) -> bool:

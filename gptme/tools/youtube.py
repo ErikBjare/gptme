@@ -1,6 +1,5 @@
 import logging
 
-from ..llm import summarize
 from .base import ToolSpec
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,10 @@ def get_transcript(video_id: str) -> str:
 
 
 def summarize_transcript(transcript: str) -> str:
-    return summarize(transcript).content
+    # noreorder
+    from ..llm import summarize as llm_summarize  # fmt: skip
+
+    return llm_summarize(transcript).content
 
 
 tool: ToolSpec = ToolSpec(

@@ -113,7 +113,7 @@ def act_process(
 
     def error_handler(e):
         duration = time.time() - start
-        subprocess_logger.error(f"Error in {test_name}: {e}")
+        subprocess_logger.error(f'Failed: "{test_name}" for {agent.model}: {e}')
         queue.put(ProcessError(str(e), stdout.getvalue(), stderr.getvalue(), duration))
 
         # kill child processes
@@ -126,14 +126,12 @@ def act_process(
     signal.signal(signal.SIGTERM, sigterm_handler)
 
     start = time.time()
-    subprocess_logger.info(
-        f"Starting execution for {test_name} with model {agent.model}"
-    )
+    subprocess_logger.info(f'Started: "{test_name}" for {agent.model}')
     files = agent.act(files, prompt)
 
     duration = time.time() - start
     queue.put(ProcessSuccess(files, stdout.getvalue(), stderr.getvalue(), duration))
-    subprocess_logger.info(f"Process finished successfully for {test_name}")
+    subprocess_logger.info(f'Success: "{test_name}" for {agent.model}')
 
     # kill child processes
     os.killpg(pgrp, signal.SIGKILL)
@@ -145,7 +143,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
     Executes the code for a specific model with a timeout.
     """
     logger.info(
-        f'Running "{test["name"]}" with prompt "{test["prompt"]}" for model: {agent.model}'
+        f'Running "{test["name"]}" for {agent.model} with (prompt="{test["prompt"]}")'
     )
 
     with Manager() as manager:

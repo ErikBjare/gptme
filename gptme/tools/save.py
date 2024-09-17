@@ -7,18 +7,16 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 instructions = """
 To save code to a file, use a code block with the filepath as the language.
 """.strip()
 
-examples = """
+examples = f"""
 > User: write a Hello world script to hello.py
-```save hello.py
-print("Hello world")
-```
-Saved to `hello.py`.
+{ToolUse("save", ["hello.py"], "print('Hello world')").to_output()}
+> System: Saved to `hello.py`
 """.strip()
 
 
@@ -133,13 +131,11 @@ instructions_append = """
 To append code to a file, use a code block with the language: append <filepath>
 """.strip()
 
-examples_append = """
+examples_append = f"""
 > User: append a print "Hello world" to hello.py
 > Assistant:
-```append hello.py
-print("Hello world")
-```
-> System: Appended to `hello.py`.
+{ToolUse("append", ["hello.py"], "print('Hello world')").to_output()}
+> System: Appended to `hello.py`
 """.strip()
 
 tool_append = ToolSpec(

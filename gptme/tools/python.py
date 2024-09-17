@@ -14,7 +14,7 @@ from typing import Literal, TypeVar, get_origin
 
 from ..message import Message
 from ..util import ask_execute, print_preview
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 logger = getLogger(__name__)
 
@@ -151,13 +151,11 @@ def get_installed_python_libraries() -> set[str]:
     return installed
 
 
-examples = """
+examples = f"""
 #### Results of the last expression will be displayed, IPython-style:
 User: What is 2 + 2?
 Assistant:
-```ipython
-2 + 2
-```
+{ToolUse("python", [], "2 + 2").to_output()}
 System: Executed code block.
 ```stdout
 4

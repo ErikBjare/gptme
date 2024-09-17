@@ -11,7 +11,6 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
-from .codeblock import Codeblock
 from .constants import CMDFIX
 from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
@@ -215,28 +214,6 @@ class LogManager:
         if not msgs:
             msgs = initial_msgs
         return cls(msgs, logdir=logdir, branch=branch, **kwargs)
-
-    def get_last_codeblock(
-        self,
-        role: RoleLiteral | None = None,
-        history: int | None = None,
-    ) -> Codeblock | None:
-        """Returns the last code block in the log, if any.
-
-        If `role` set, only check that role.
-        If `history` set, only check n messages back.
-        """
-        msgs = self.log
-        if role:
-            msgs = [msg for msg in msgs if msg.role == role]
-        if history:
-            msgs = msgs[-history:]
-
-        for msg in msgs[::-1]:
-            codeblocks = msg.get_codeblocks()
-            if codeblocks:
-                return codeblocks[-1]
-        return None
 
     def branch(self, name: str) -> None:
         """Switches to a branch."""

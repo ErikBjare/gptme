@@ -14,7 +14,7 @@ from time import sleep
 
 from ..message import Message
 from ..util import ask_execute, print_preview
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
@@ -199,21 +199,18 @@ Available commands:
 - list_sessions: Show all active tmux sessions
 """
 # TODO: implement smart-wait, where we wait for n seconds and then until output is stable
+# TODO: change the "commands" to Python functions registered with the Python tool?
 
-examples = """
+examples = f"""
 #### Managing a dev server
 User: Start the dev server
 Assistant: Certainly! To start the dev server we should use tmux:
-```tmux
-new_session 'npm run dev'
-```
+{ToolUse("tmux", [], "new_session 'npm run dev'").to_output()}
 System: Running `npm run dev` in session 0
 
 User: Can you show me the current content of the pane?
 Assistant: Of course! Let's inspect the pane content:
-```tmux
-inspect_pane 0
-```
+{ToolUse("tmux", [], "inspect_pane 0").to_output()}
 System:
 ```output
 Server is running on localhost:5600
@@ -221,9 +218,7 @@ Server is running on localhost:5600
 
 User: Stop the dev server
 Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
-```tmux
-send_keys 0 C-c
-```
+{ToolUse("tmux", [], "send_keys 0 C-c").to_output()}
 System: Sent 'C-c' to pane 0
 
 #### Get info from ncurses applications
@@ -237,37 +232,15 @@ Assistant: The load is...
 #### Background process
 User: Start the dev server
 Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
-```tmux
-new_session 'npm run dev'
-```
-
-#### Create vue project
-User: Create a new vue project with typescript and pinia named fancy-project
-Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
-```bash
-npm init vue@latest fancy-project --yes -- --typescript --pinia
-```
-System:
-```output
-> npx
-> create-vue
-
-Vue.js - The Progressive JavaScript Framework
-
-Scaffolding project in ./fancy-project...
-```
+{ToolUse("tmux", [], "new_session 'npm run dev'").to_output()}
 
 #### Ending a session
 User: I changed my mind
 Assistant: No problem! Let's kill the session and start over:
-```tmux
-list_sessions
-```
+{ToolUse("tmux", [], "list_session 0").to_output()}
 System: Active tmux sessions [0]
 Assistant:
-```tmux
-kill_session 0
-```
+{ToolUse("tmux", [], "kill_session 0").to_output()}
 System: Killed tmux session with ID 0
 """
 
