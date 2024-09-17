@@ -140,7 +140,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     # read the file
     with open("hello.py") as f:
         content = f.read()
-    assert content == 'print("hello")\nprint("world")\n'
+    assert content == "print('hello')\nprint('world')\n"
 
     # test write file to directory that doesn't exist
     tooluse = ToolUse("save", ["hello/hello.py"], 'print("hello")')
@@ -151,7 +151,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
     # test patch on file in directory
-    patch = "<<<<<<< ORIGINAL\nprint('hello')\n=======\nprint('hello world')\n>>>>>>> UPDATED"
+    patch = '<<<<<<< ORIGINAL\nprint("hello")\n=======\nprint("hello world")\n>>>>>>> UPDATED'
     tooluse = ToolUse("patch", ["hello/hello.py"], patch)
     args = args_orig.copy()
     args.append(f"{CMDFIX}impersonate {tooluse.to_output()}")
@@ -162,7 +162,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     # read the file
     with open("hello/hello.py") as f:
         content = f.read()
-    assert content == "print('hello world')\n"
+    assert content == 'print("hello world")\n'
 
 
 def test_shell(args: list[str], runner: CliRunner):
