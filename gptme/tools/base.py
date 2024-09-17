@@ -19,8 +19,9 @@ logger = logging.getLogger(__name__)
 InitFunc: TypeAlias = Callable[[], Any]
 
 # tooluse format mode
-mode: Literal["markdown", "xml"] = "xml"
-exclusive_mode = True
+# TODO: make configurable
+mode: Literal["markdown", "xml"] = "markdown"
+exclusive_mode = False
 
 
 class ExecuteFunc(Protocol):
