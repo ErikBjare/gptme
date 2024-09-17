@@ -9,6 +9,7 @@ import gptme.constants
 import pytest
 from click.testing import CliRunner
 from gptme.constants import CMDFIX
+from gptme.tools import ToolUse
 
 project_root = Path(__file__).parent.parent
 logo = project_root / "media" / "logo.png"
@@ -117,7 +118,8 @@ def test_fileblock(args: list[str], runner: CliRunner):
     args_orig = args.copy()
 
     # tests saving with a ```filename.txt block
-    args.append(f"{CMDFIX}impersonate ```hello.py\nprint('hello')\n```")
+    tooluse = ToolUse("save", ["hello.py"], "print('hello')")
+    args.append(f"{CMDFIX}impersonate {tooluse.to_output()}")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
@@ -129,7 +131,8 @@ def test_fileblock(args: list[str], runner: CliRunner):
 
     # test append
     args = args_orig.copy()
-    args.append(f"{CMDFIX}impersonate ```append hello.py\nprint('world')\n```")
+    tooluse = ToolUse("append", ["hello.py"], "print('world')")
+    args.append(f"{CMDFIX}impersonate {tooluse.to_output()}")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
@@ -140,17 +143,18 @@ def test_fileblock(args: list[str], runner: CliRunner):
     assert content == "print('hello')\nprint('world')\n"
 
     # test write file to directory that doesn't exist
+    tooluse = ToolUse("save", ["hello/hello.py"], 'print("hello")')
     args = args_orig.copy()
-    args.append(f"{CMDFIX}impersonate ```hello/hello.py\nprint('hello')\n```")
+    args.append(f"{CMDFIX}impersonate {tooluse.to_output()}")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
     # test patch on file in directory
+    patch = '<<<<<<< ORIGINAL\nprint("hello")\n=======\nprint("hello world")\n>>>>>>> UPDATED'
+    tooluse = ToolUse("patch", ["hello/hello.py"], patch)
     args = args_orig.copy()
-    args.append(
-        f"{CMDFIX}impersonate ```patch hello/hello.py\n<<<<<<< ORIGINAL\nprint('hello')\n=======\nprint('hello world')\n>>>>>>> UPDATED\n```"
-    )
+    args.append(f"{CMDFIX}impersonate {tooluse.to_output()}")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
@@ -158,7 +162,7 @@ def test_fileblock(args: list[str], runner: CliRunner):
     # read the file
     with open("hello/hello.py") as f:
         content = f.read()
-    assert content == "print('hello world')\n"
+    assert content == 'print("hello world")\n'
 
 
 def test_shell(args: list[str], runner: CliRunner):

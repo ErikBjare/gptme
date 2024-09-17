@@ -6,10 +6,13 @@ from gptme.eval.agents import GPTMe
 from gptme.eval.main import main
 
 
-def _detect_provider():
-    # check if respective env variables are present
+def _detect_model():
+    # detect which model is configured
+    # TODO: isn't there already a get_default_model() helper?
     config = load_config()
-    if config.get_env("OPENAI_API_KEY"):
+    if model := config.get_env("MODEL"):
+        return model
+    elif config.get_env("OPENAI_API_KEY"):
         return "openai"
     elif config.get_env("ANTHROPIC_API_KEY"):
         return "anthropic"
@@ -19,7 +22,7 @@ def _detect_provider():
 
 @pytest.mark.slow
 def test_eval_cli():
-    provider = _detect_provider()
+    model = _detect_model()
     runner = CliRunner()
     test_set = ["hello"]
     result = runner.invoke(
@@ -27,7 +30,7 @@ def test_eval_cli():
         [
             *test_set,
             "--model",
-            provider,
+            model,
         ],
     )
     assert result
@@ -43,7 +46,7 @@ def test_eval(test):
     This test will be run for each eval in the tests list.
     See pytest_generate_tests() below.
     """
-    provider = _detect_provider()
+    provider = _detect_model()
     agent = GPTMe(provider)
     result = execute(test, agent, timeout=30, parallel=False)
     assert all(case.passed for case in result.results)

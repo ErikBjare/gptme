@@ -2,15 +2,19 @@
 Read the contents of a file.
 """
 
-from gptme.tools.base import ToolSpec
+from . import ToolSpec, ToolUse
+
+instructions = "Read files using `cat`"
+examples = f"""
+> Assistant:
+{ToolUse("bash", [], "cat file.txt").to_output()}
+"""
 
 # Note: this isn't actually a tool, it only serves prompting purposes
 tool = ToolSpec(
     name="read",
     desc="Read the contents of a file",
-    instructions="""Read files using `cat`.""",
-    examples="""```bash
-cat file.txt
-```""",
+    instructions=instructions,
+    examples=examples,
 )
 __doc__ = tool.get_doc(__doc__)

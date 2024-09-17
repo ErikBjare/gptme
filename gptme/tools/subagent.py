@@ -12,13 +12,12 @@ from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 from .python import register_function
 
 if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
-
 
 logger = logging.getLogger(__name__)
 
@@ -150,17 +149,13 @@ def subagent_wait(agent_id: str) -> dict:
     return asdict(status)
 
 
-examples = """
+examples = f"""
 User: compute fib 69 using a subagent
 Assistant: Starting a subagent to compute the 69th Fibonacci number.
-```ipython
-subagent("compute the 69th Fibonacci number", "fib-69")
-```
+{ToolUse("python", [], 'subagent("compute the 69th Fibonacci number", "fib-69")').to_output()}
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-```ipython
-subagent_wait("fib-69")
-```
+{ToolUse("python", [], 'subagent_wait("fib-69")').to_output()}
 """
 
 

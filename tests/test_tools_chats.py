@@ -1,3 +1,4 @@
+import pytest
 from gptme.tools.chats import list_chats, search_chats
 
 
@@ -7,6 +8,7 @@ def test_list_chats(capsys):
     assert "1." in captured.out
 
 
+@pytest.mark.slow
 def test_search_chats(capsys):
     search_chats("python")
     captured = capsys.readouterr()

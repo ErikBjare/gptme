@@ -43,7 +43,8 @@ from .types import (
 # Configure logging, including fully-qualified module names
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(name)s - %(processName)s - %(message)s",
+    # helpful in debugging: %(processName)s
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
 )
 multiprocessing_logging.install_mp_handler()
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -98,7 +99,7 @@ def act_process(
     parallel: bool,
 ):
     # Configure logging for this subprocess
-    subprocess_logger = logging.getLogger(f"eval:{agent.model}@{test_name}")
+    subprocess_logger = logging.getLogger(f"gptme.eval:{agent.model}@{test_name}")
     subprocess_logger.setLevel(logging.INFO)
 
     # Runs in a process for each eval
@@ -113,7 +114,7 @@ def act_process(
 
     def error_handler(e):
         duration = time.time() - start
-        subprocess_logger.error(f"Error in {test_name}: {e}")
+        subprocess_logger.error(f"Error: {e}")
         queue.put(ProcessError(str(e), stdout.getvalue(), stderr.getvalue(), duration))
 
         # kill child processes
@@ -126,14 +127,12 @@ def act_process(
     signal.signal(signal.SIGTERM, sigterm_handler)
 
     start = time.time()
-    subprocess_logger.info(
-        f"Starting execution for {test_name} with model {agent.model}"
-    )
+    subprocess_logger.info("Started")
     files = agent.act(files, prompt)
 
     duration = time.time() - start
     queue.put(ProcessSuccess(files, stdout.getvalue(), stderr.getvalue(), duration))
-    subprocess_logger.info(f"Process finished successfully for {test_name}")
+    subprocess_logger.info("Success")
 
     # kill child processes
     os.killpg(pgrp, signal.SIGKILL)
@@ -144,9 +143,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
     """
     Executes the code for a specific model with a timeout.
     """
-    logger.info(
-        f'Running "{test["name"]}" with prompt "{test["prompt"]}" for model: {agent.model}'
-    )
+    logger.info(f'Running "{test["name"]}" for {agent.model}')
 
     with Manager() as manager:
         queue = manager.Queue()

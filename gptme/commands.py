@@ -6,7 +6,6 @@ from time import sleep
 from typing import Literal
 
 from . import llm
-from .codeblock import Codeblock
 from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
@@ -17,12 +16,7 @@ from .message import (
     toml_to_msgs,
 )
 from .models import get_model
-from .tools import (
-    execute_codeblock,
-    execute_msg,
-    is_supported_langtag,
-    loaded_tools,
-)
+from .tools import ToolUse, execute_msg, loaded_tools
 from .useredit import edit_text_with_editor
 from .util import ask_execute
 
@@ -149,10 +143,9 @@ def handle_cmd(
                 )
         case _:
             # the case for python, shell, and other block_types supported by tools
-            if is_supported_langtag(name):
-                yield from execute_codeblock(
-                    Codeblock(name, full_args), ask=not no_confirm
-                )
+            tooluse = ToolUse(name, [], full_args)
+            if tooluse.is_runnable:
+                yield from tooluse.execute(ask=not no_confirm)
             else:
                 if log.log[-1].content != f"{CMDFIX}help":
                     print("Unknown command")

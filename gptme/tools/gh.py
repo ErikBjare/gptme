@@ -1,6 +1,6 @@
 import shutil
 
-from gptme.tools.base import ToolSpec
+from . import ToolSpec
 
 
 def has_gh_tool() -> bool:
