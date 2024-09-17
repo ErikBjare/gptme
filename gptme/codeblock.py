@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 
-# dont compare start
 @dataclass
 class Codeblock:
     lang: str

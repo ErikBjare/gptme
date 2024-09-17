@@ -36,11 +36,12 @@ class SimpleExecutionEnv(FileStore, ExecutionEnv):
     upload() and download() are inherited from FileStore.
     """
 
-    def run(self, command) -> tuple[str, str, int]:
+    def run(self, command, silent=True) -> tuple[str, str, int]:
         os.chdir(self.working_dir)
 
         start = time.time()
-        print("\n--- Start of run ---")
+        if not silent:
+            print("\n--- Start of run ---")
         # while running, also print the stdout and stderr
         p = subprocess.Popen(
             command,
@@ -50,7 +51,8 @@ class SimpleExecutionEnv(FileStore, ExecutionEnv):
             text=True,
             shell=True,
         )
-        print("$", command)
+        if not silent:
+            print("$", command)
         stdout_full, stderr_full = "", ""
         while p.poll() is None or p.stdout or p.stderr:
             assert p.stdout is not None
@@ -58,16 +60,20 @@ class SimpleExecutionEnv(FileStore, ExecutionEnv):
             stdout = p.stdout.readline()
             stderr = p.stderr.readline()
             if stdout:
-                print(stdout, end="")
+                if not silent:
+                    print(stdout, end="")
                 stdout_full += stdout
             if stderr:
-                print(stderr, end="")
+                if not silent:
+                    print(stderr, end="")
                 stderr_full += stderr
             if not stdout and not stderr and p.poll() is not None:
                 break
             if time.time() - start > 30:
-                print("Timeout!")
+                if not silent:
+                    print("Timeout!")
                 p.kill()
                 break
-        print("--- Finished run ---\n")
+        if not silent:
+            print("--- Finished run ---\n")
         return stdout_full, stderr_full, p.returncode

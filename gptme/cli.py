@@ -218,7 +218,7 @@ def chat(
     init(model, interactive)
 
     if model and model.startswith("openai/o1") and stream:
-        logger.info("Disabled streaming for OpenAI's O1 (streaming not supported)")
+        logger.info("Disabled streaming for OpenAI's O1 (not supported)")
         stream = False
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
