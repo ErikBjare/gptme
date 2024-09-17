@@ -34,7 +34,7 @@ typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
 lint:
-	poetry run ruff check ${SRCDIRS}
+	poetry run ruff check ${SRCDIRS} $(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE))
 
 format:
 	poetry run ruff check --fix-only ${SRCDIRS}
