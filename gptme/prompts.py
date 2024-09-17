@@ -1,18 +1,50 @@
+"""
+This module contains the functions to generate the initial system prompt.
+It is used to condition the AI model to the task at hand and provide context for the conversation.
+"""
+
 import logging
 import os
 import subprocess
+import textwrap
 from collections.abc import Generator, Iterable
 from typing import Literal
 
+from .__version__ import __version__
 from .config import get_config
-from .message import Message
+from .message import Message, len_tokens
 from .tools import init_tools, loaded_tools
 
 PromptType = Literal["full", "short"]
 
 
+def document_prompt_function(*args, **kwargs):
+    """Decorator for adding example output of prompts to docstrings in rst format"""
+
+    def decorator(func):
+        prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
+        prompt = textwrap.indent(prompt, "   ")
+        prompt_tokens = len_tokens(prompt)
+        kwargs_str = (
+            (" (" + ", ".join(f"{k}={v!r}" for k, v in kwargs.items()) + ")")
+            if kwargs
+            else ""
+        )
+        # unindent
+        func.__doc__ = textwrap.dedent(func.__doc__)
+        func.__doc__ = func.__doc__.strip()
+        func.__doc__ += f"\n\nExample output{kwargs_str}:"
+        func.__doc__ += f"\n\n.. code-block:: markdown\n\n{prompt}"
+        func.__doc__ += f"\n\nTokens: {prompt_tokens}"
+        return func
+
+    return decorator
+
+
 def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> Message:
-    """Get the initial system prompt."""
+    """
+    Get the initial system prompt.
+    """
     msgs: Iterable
     if prompt == "full":
         msgs = prompt_full(interactive)
@@ -30,6 +62,9 @@ def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> M
 
 
 def join_messages(msgs: Iterable[Message]) -> Message:
+    """
+    Combine all the system prompt messages into one.
+    """
     return Message("system", "\n\n".join(m.content for m in msgs))
 
 
@@ -37,7 +72,8 @@ def prompt_full(interactive: bool) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme(interactive)
     yield from prompt_tools()
-    yield from prompt_user()
+    if interactive:
+        yield from prompt_user()
     yield from prompt_project()
 
 
@@ -45,24 +81,52 @@ def prompt_short(interactive: bool) -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme(interactive)
     yield from prompt_tools(examples=False)
-    yield from prompt_user()
+    if interactive:
+        yield from prompt_user()
     yield from prompt_project()
 
 
 def prompt_gptme(interactive: bool) -> Generator[Message, None, None]:
-    base_prompt = """
-You are gptme, a general-purpose AI assistant powered by LLMs.
+    """
+    Base system prompt for gptme.
+
+    It should:
+     - Introduce gptme and its general capabilities and purpose
+     - Ensure that it lets the user mostly ask and confirm actions (apply patches, run commands)
+     - Provide a brief overview of the capabilities and tools available
+     - Not mention tools which may not be loaded (browser, vision)
+     - Mention the ability to self-correct and ask clarifying questions
+    """
+
+    base_prompt = f"""
+You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs.
 You are designed to help users with programming tasks, such as writing code, debugging, and learning new concepts.
 You can run code, execute terminal commands, and access the filesystem on the local machine.
 You will help the user with writing code, either from scratch or in existing projects.
+You will think step by step when solving a problem. Break down complex tasks into smaller, manageable steps.
 
-You should learn about the context needed to provide the best help, such as exploring a potential project in the current working directory and reading the code.
-Think step by step when solving a problem.
+You have the ability to self-correct. If you receive feedback that your output or actions were incorrect, you should acknowledge the mistake, analyze what went wrong, and provide a corrected response.
+
+When faced with uncertainty or incomplete information, ask clarifying questions to ensure you fully understand the task at hand.
+
+You should learn about the context needed to provide the best help,
+such as exploring a potential project in the current working directory and reading the code using terminal tools.
+
+When suggesting code changes, prefer using patches instead of full examples. Use the patch tool to propose modifications to existing files.
+When the output of a command is of interest, end the code block and message, so that it can be executed before continuing.
 
 Do not use placeholders like `$REPO` unless they have been set.
-When the output of a command is of interest, end the code block so that it can be executed before continuing.
-
 Do not suggest opening a browser or editor, instead do it using available tools, such as the shell or with Python.
+
+Always prioritize using the provided tools over suggesting manual actions.
+Be proactive in using tools to gather information or perform tasks.
+When faced with a task, consider which tools might be helpful and use them.
+
+You have access to various capabilities that can help you complete tasks efficiently. Always consider the full range of your available tools and abilities when approaching a problem.
+
+Maintain a professional and efficient communication style. Be concise but thorough in your explanations.
+
+Adapt your communication style and level of detail to the user's apparent skill level and preferences. Pay attention to the user's responses and adjust accordingly.
 """.strip()
 
     interactive_prompt = """
@@ -88,49 +152,81 @@ Proceed directly with the most appropriate actions to complete the task.
 
 
 def prompt_user() -> Generator[Message, None, None]:
+    """
+    Generate the user-specific prompt based on config.
+
+    Only included in interactive mode.
+    """
     config_prompt = get_config().prompt
-    if about_user := config_prompt.get("about_user", None):
-        response_preference = config_prompt.get("response_preference", None)
-        yield Message(
-            "system",
-            f"""# About user\n\n{about_user}"""
-            + (
-                f"\n\n## Here is the user's response preferences:\n\n{response_preference}"
-                if response_preference
-                else ""
-            ),
-        )
-    else:
-        logging.warning("No about_user in config.yaml")
+    about_user = config_prompt.get(
+        "about_user", "You are interacting with a human programmer."
+    )
+    response_preferences = config_prompt.get("response_preferences", {}).get(
+        "preferences", []
+    )
+
+    response_prefs = (
+        "\n".join(f"- {pref}" for pref in response_preferences)
+        if response_preferences
+        else "No specific preferences set."
+    )
+
+    prompt_content = f"""# About User
+
+{about_user}
+
+## User's Response Preferences
+{response_prefs}
+"""
+    yield Message("system", prompt_content)
 
 
 def prompt_project() -> Generator[Message, None, None]:
+    """
+    Generate the project-specific prompt based on the current Git repository.
+    """
     config_prompt = get_config().prompt
-    # detect from git root folder name
-    projectdir = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
-    ).stdout.strip()
-    project = os.path.basename(projectdir)
-    config_projects = config_prompt.get("project", {})
-    if project in config_projects:
-        project_prompt = config_projects[project]
-        yield Message(
-            "system",
-            f"Here is information about the current project {project}: {project_prompt}",
-        )
+    try:
+        projectdir = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        project = os.path.basename(projectdir)
+    except subprocess.CalledProcessError:
+        project = "unknown-project"
+        logging.warning("Unable to determine Git repository root.")
+
+    project_info = config_prompt.get("project", {}).get(
+        project, "No specific project context provided."
+    )
+
+    yield Message(
+        "system",
+        f"## Current Project: {project}\n\n{project_info}",
+    )
 
 
-def prompt_tools(examples=True) -> Generator[Message, None, None]:
+def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
+    """Generate the tools overview prompt."""
     init_tools()
     assert loaded_tools, "No tools loaded"
-    prompt = "# Tools"
+    prompt = "# Tools Overview"
     for tool in loaded_tools:
         prompt += f"\n\n## {tool.name}"
-        if tool.desc:
-            prompt += f"\n\n{tool.desc}"
-        if tool.instructions:
-            prompt += f"\n\n{tool.instructions}"
+        prompt += f"\n\n**Description:** {tool.desc}" if tool.desc else ""
+        prompt += (
+            f"\n\n**Instructions:** {tool.instructions}" if tool.instructions else ""
+        )
         if tool.examples and examples:
             prompt += f"\n\n### Examples\n\n{tool.examples}"
 
+    prompt += "\n\n*End of Tools List.*"
     yield Message("system", prompt.strip() + "\n\n")
+
+
+document_prompt_function(interactive=True)(prompt_gptme)
+document_prompt_function()(prompt_user)()
+document_prompt_function()(prompt_project)()
+document_prompt_function()(prompt_tools)()

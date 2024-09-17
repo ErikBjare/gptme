@@ -9,7 +9,7 @@ Here is the API reference for ``gptme``.
 core
 ----
 
-Some of the core classes in ``gptme``.
+Some of the core classes and functions in ``gptme``.
 
 .. autoclass:: gptme.message.Message
    :members:
@@ -18,6 +18,13 @@ Some of the core classes in ``gptme``.
    :members:
 
 .. automodule:: gptme.logmanager
+   :members:
+
+
+prompts
+-------
+
+.. automodule:: gptme.prompts
    :members:
 
 tools
