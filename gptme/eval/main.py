@@ -9,9 +9,9 @@ import logging
 import subprocess
 import sys
 from collections import defaultdict
+from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
-from collections.abc import Generator
 
 import click
 import multiprocessing_logging
@@ -55,10 +55,10 @@ def print_model_results(model_results: dict[str, list[ExecResult]]):
             run_tokens = len_tokens(result.run_stdout)
             result_total_tokens = gen_tokens + run_tokens
             print(
-                f"{checkmark} {result.name}: {duration_result:.2f}s/{result_total_tokens}tok "
-                f"(gen: {result.timings['gen']:.2f}s/{gen_tokens}tok, "
-                f"run: {result.timings['run']:.2f}s/{run_tokens}tok, "
-                f"eval: {result.timings['eval']:.2f}s)"
+                f"{checkmark} {result.name}: {duration_result:.0f}s/{result_total_tokens}tok "
+                f"(gen: {result.timings['gen']:.0f}s/{gen_tokens}tok, "
+                f"run: {result.timings['run']:.0f}s/{run_tokens}tok, "
+                f"eval: {result.timings['eval']:.0f}s)"
             )
             for case in cases:
                 checkmark = "✅" if case.passed else "❌"
@@ -92,7 +92,7 @@ def print_model_results_table(model_results: dict[str, list[ExecResult]]):
                     row.append(f"{checkmark} {reason}")
                 else:
                     row.append(
-                        f"{checkmark} {duration:.2f}s/{gen_tokens+run_tokens}tok"
+                        f"{checkmark} {duration:.0f}s/{gen_tokens+run_tokens}tok"
                     )
             except StopIteration:
                 row.append("❌ N/A")
