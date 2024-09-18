@@ -23,13 +23,13 @@ def _format_message_snippet(msg: Message, max_length: int = 100) -> str:
     )
 
 
-def _get_matching_messages(log_manager, query: str) -> list[Message]:
+def _get_matching_messages(log_manager, query: str, system=False) -> list[Message]:
     """Get messages matching the query."""
     return [
         msg
         for msg in log_manager.log
         if query.lower() in msg.content.lower()
-        if msg.role != "system"
+        if msg.role != "system" or system
     ]
 
 
@@ -91,13 +91,14 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
         print("\n".join(summary_lines))
 
 
-def search_chats(query: str, max_results: int = 5) -> None:
+def search_chats(query: str, max_results: int = 5, system=False) -> None:
     """
     Search past conversation logs for the given query and print a summary of the results.
 
     Args:
         query (str): The search query.
         max_results (int): Maximum number of conversations to display.
+        system (bool): Whether to include system messages in the search.
     """
     # noreorder
     from ..logmanager import LogManager, get_conversations  # fmt: skip
@@ -107,7 +108,7 @@ def search_chats(query: str, max_results: int = 5) -> None:
         log_path = Path(conv["path"])
         log_manager = LogManager.load(log_path)
 
-        matching_messages = _get_matching_messages(log_manager, query)
+        matching_messages = _get_matching_messages(log_manager, query, system)
 
         if matching_messages:
             results.append(
