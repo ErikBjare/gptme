@@ -13,6 +13,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import Manager, Process
 from typing import TypedDict, Union
 
+from tqdm import tqdm
+
 from .agents import Agent, GPTMe
 from .execenv import SimpleExecutionEnv
 from .types import (
@@ -113,7 +115,12 @@ def run_evals(
         try:
             # worse-case run time
             max_timeout = timeout * len(tests) / parallel + 10
-            for future in as_completed(futures, timeout=max_timeout):
+            for future in tqdm(
+                as_completed(futures, timeout=max_timeout),
+                total=n_runs,
+                unit="eval",
+                desc="Progress",
+            ):
                 _handle_future(future)
         except concurrent.futures.TimeoutError:
             logger.warning("Timeout reached, cancelling remaining futures")
