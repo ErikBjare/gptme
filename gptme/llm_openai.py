@@ -57,8 +57,9 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
     # and requires the first message to be from the user
     for msg in msgs:
         if msg.role == "system":
-            msg.role = "user"
-            msg.content = f"<system>\n{msg.content}\n</system>"
+            msg = msg.replace(
+                role="user", content=f"<system>\n{msg.content}\n</system>"
+            )
         yield msg
 
 

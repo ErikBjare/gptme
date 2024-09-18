@@ -101,7 +101,10 @@ def subagent(prompt: str, agent_id: str):
     status: 'success' | 'failure',
 }
 ```"""
-        initial_msgs[0].content += "\n\n" + return_prompt
+        init_msg = initial_msgs[0]
+        initial_msgs[0] = init_msg.replace(
+            content=init_msg.content + "\n\n" + return_prompt
+        )
 
         chat(
             prompt_msgs,

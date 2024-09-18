@@ -28,19 +28,21 @@ def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> M
     elif prompt == "short":
         msgs = prompt_short(interactive)
     else:
-        msgs = [Message("system", prompt)]
+        return Message("system", prompt)
 
     # combine all the system prompt messages into one,
     # also hide them and pin them to the top
-    msg = _join_messages(msgs)
-    msg.hide = True
-    msg.pinned = True
-    return msg
+    return _join_messages(list(msgs)).replace(hide=True, pinned=True)
 
 
-def _join_messages(msgs: Iterable[Message]) -> Message:
+def _join_messages(msgs: list[Message]) -> Message:
     """Combine several system prompt messages into one."""
-    return Message("system", "\n\n".join(m.content for m in msgs))
+    return Message(
+        "system",
+        "\n\n".join(m.content for m in msgs),
+        hide=any(m.hide for m in msgs),
+        pinned=any(m.pinned for m in msgs),
+    )
 
 
 def prompt_full(interactive: bool) -> Generator[Message, None, None]:
