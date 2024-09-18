@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
+from .models import ModelMeta
 
 if TYPE_CHECKING:
     from openai import OpenAI
