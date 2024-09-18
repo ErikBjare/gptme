@@ -49,6 +49,9 @@ class Message:
     timestamp: datetime = field(default_factory=datetime.now)
     files: list[Path] = field(default_factory=list)
 
+    def __post_init__(self):
+        assert isinstance(self.timestamp, datetime)
+
     def __repr__(self):
         content = textwrap.shorten(self.content, 20, placeholder="...")
         return f"<Message role={self.role} content={content}>"
