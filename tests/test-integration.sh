@@ -90,6 +90,9 @@ fi
 # generate a mandelbrot set
 gptme 'render mandelbrot set to mandelbrot.png'
 
+# particle effect
+gptme 'write a web app to particles.html which shows off an impressive and colorful particle effect using three.js'
+
 # very heavy! run by hand
 # gptme 'render a zooming mandelbrot video to mandelbrot.mp4, use a colorful gradient, write scripts to file'
 
