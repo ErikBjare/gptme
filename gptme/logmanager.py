@@ -4,6 +4,7 @@ import shutil
 import textwrap
 from collections.abc import Generator
 from copy import copy
+from datetime import datetime
 from itertools import zip_longest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -306,8 +307,15 @@ def _conversations() -> list[Path]:
 
 def get_conversations() -> Generator[dict, None, None]:
     for conv_fn in _conversations():
+        msgs = []
         with open(conv_fn) as file:
-            msgs = [Message(**json.loads(line)) for line in file.readlines()]
+            for line in file.readlines():
+                json_data = json.loads(line)
+                if "timestamp" in json_data:
+                    json_data["timestamp"] = datetime.fromisoformat(
+                        json_data["timestamp"]
+                    )
+                msgs.append(Message(**json_data))
         modified = conv_fn.stat().st_mtime
         first_timestamp = msgs[0].timestamp.timestamp() if msgs else modified
         yield {

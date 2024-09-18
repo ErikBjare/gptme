@@ -527,7 +527,7 @@ def _include_paths(msg: Message) -> Message:
 
     # append the message with the file contents
     if append_msg:
-        msg.replace(content=msg.content + append_msg)
+        msg = msg.replace(content=msg.content + append_msg)
 
     return msg
 

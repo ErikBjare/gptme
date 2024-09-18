@@ -140,6 +140,9 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
     Executes the code for a specific model with a timeout.
     """
     logger.info(f'Running "{test["name"]}" for {agent.model}')
+    time_gen = 0.0
+    time_run = 0.0
+    time_eval = 0.0
 
     with Manager() as manager:
         result_dict = manager.dict()
@@ -154,14 +157,10 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
                 parallel,
             ),
         )
+
         p.start()
         try:
             p.join(timeout)
-
-            time_gen = 0.0
-            time_run = 0.0
-            time_eval = 0.0
-
             status: Status = "success"
             if p.is_alive():
                 logger.info("Timeout reached, terminating process")
@@ -169,143 +168,80 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
                 p.join(timeout=1)
                 status = "timeout"
                 time_gen = timeout
-
-            if "result" in result_dict:
-                result = result_dict["result"]
-                time_gen = result.get("duration", 0.0)
-                status = result.get("status", "success")
-                files = result.get("files", {})
-                gen_stdout = result.get("stdout", "")
-                gen_stderr = result.get("stderr", "")
-            else:
-                logger.error("No result in shared dictionary")
-                return ExecResult(
-                    name=test["name"],
-                    status="error",
-                    results=[],
-                    timings={"gen": time_gen, "run": time_run, "eval": time_eval},
-                    gen_stdout="",
-                    gen_stderr="",
-                    run_stdout="",
-                    run_stderr="",
-                )
-
-            logger.debug("Got result")
-
-            if status != "timeout" and status != "error":
-                # check and collect results
-                run_start = time.time()
-                env = SimpleExecutionEnv()
-                env.upload(files)
-                logger.debug(f"Running check: {test['run']}")
-                stdout_run, stderr_run, exit_code = env.run(test["run"])
-                time_run = time.time() - run_start
-
-                files = env.download()
-
-                ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
-                results: list[CaseResult] = []
-                print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
-                for name, case in test["expect"].items():
-                    code = inspect.getsource(case).strip()
-                    eval_start = time.time()
-                    try:
-                        passed = case(ctx)
-                    except Exception as e:
-                        print(f"Error while checking {name}: {e}")
-                        passed = False
-                    eval_duration = time.time() - eval_start
-                    checkmark = "✅" if passed else "❌"
-                    print(f"{checkmark} {name:20s}")
-                    results.append(
-                        CaseResult(
-                            name=name, passed=passed, code=code, duration=eval_duration
-                        )
-                    )
-                print("--- End of results ---\n")
-
-                time_eval = sum(r.duration for r in results)
-            else:
-                results = []
-                stdout_run, stderr_run = "", ""
-
-            return ExecResult(
-                name=test["name"],
-                status=status,
-                results=results,
-                timings={"gen": time_gen, "run": time_run, "eval": time_eval},
-                gen_stdout=gen_stdout,
-                gen_stderr=gen_stderr,
-                run_stdout=stdout_run,
-                run_stderr=stderr_run,
-            )
         finally:
             if p.is_alive():
                 p.terminate()
                 p.join(timeout=1)
-    if status != "timeout":
-        time_gen = result.duration
-    stdout, stderr = result.stdout, result.stderr
 
-    if isinstance(result, ProcessError):
+        if "result" in result_dict:
+            result = result_dict["result"]
+            time_gen = max(result.get("duration", 0.0), time_gen)
+            status = result.get("status", "success")
+            files = result.get("files", {})
+            gen_stdout = result.get("stdout", "")
+            gen_stderr = result.get("stderr", "")
+        else:
+            logger.error("No result in shared dictionary")
+            return ExecResult(
+                name=test["name"],
+                status="error",
+                results=[],
+                timings={"gen": time_gen, "run": time_run, "eval": time_eval},
+                gen_stdout="",
+                gen_stderr="",
+                run_stdout="",
+                run_stderr="",
+            )
+
+        logger.debug("Got result")
+
+        if status != "timeout" and status != "error":
+            # check and collect results
+            run_start = time.time()
+            env = SimpleExecutionEnv()
+            env.upload(files)
+            logger.debug(f"Running check: {test['run']}")
+            stdout_run, stderr_run, exit_code = env.run(test["run"])
+            time_run = time.time() - run_start
+
+            files = env.download()
+
+            ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
+            results: list[CaseResult] = []
+            print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
+            for name, case in test["expect"].items():
+                code = inspect.getsource(case).strip()
+                eval_start = time.time()
+                try:
+                    passed = case(ctx)
+                except Exception as e:
+                    print(f"Error while checking {name}: {e}")
+                    passed = False
+                eval_duration = time.time() - eval_start
+                checkmark = "✅" if passed else "❌"
+                print(f"{checkmark} {name:20s}")
+                results.append(
+                    CaseResult(
+                        name=name, passed=passed, code=code, duration=eval_duration
+                    )
+                )
+            print("--- End of results ---\n")
+
+            time_eval = sum(r.duration for r in results)
+        else:
+            results = []
+            stdout_run, stderr_run = "", ""
+
         return ExecResult(
             name=test["name"],
-            status="timeout" if status == "timeout" else "error",
-            results=[],
+            status=status,
+            results=results,
             timings={"gen": time_gen, "run": time_run, "eval": time_eval},
-            gen_stdout=stdout,
-            gen_stderr=stderr,
-            run_stdout="",
-            run_stderr="",
+            gen_stdout=gen_stdout,
+            gen_stderr=gen_stderr,
+            run_stdout=stdout_run,
+            run_stderr=stderr_run,
         )
-    else:
-        files = result.files
-
-    # check and collect results
-    run_start = time.time()
-    env = SimpleExecutionEnv()
-    env.upload(files)
-    logger.debug(f"Running check: {test['run']}")
-    stdout_run, stderr_run, exit_code = env.run(test["run"])
-    time_run = time.time() - run_start
-
-    files = env.download()
-
-    ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
-    results: list[CaseResult] = []
-    print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
-    for name, case in test["expect"].items():
-        code = inspect.getsource(case).strip()
-        eval_start = time.time()
-        try:
-            passed = case(ctx)
-        except Exception as e:
-            print(f"Error while checking {name}: {e}")
-            passed = False
-        eval_duration = time.time() - eval_start
-        checkmark = "✅" if passed else "❌"
-        print(f"{checkmark} {name:20s}")
-        results.append(
-            CaseResult(name=name, passed=passed, code=code, duration=eval_duration)
-        )
-    print("--- End of results ---\n")
-
-    time_eval = sum(r.duration for r in results)
-
-    return ExecResult(
-        name=test["name"],
-        status=status,
-        results=results,
-        timings={
-            "gen": time_gen,
-            "run": time_run,
-            "eval": time_eval,
-        },
-        gen_stdout=stdout,
-        gen_stderr=stderr,
-        run_stdout=stdout_run,
-        run_stderr=stderr_run,
-    )
 
 
 class StreamTee(io.TextIOBase):
