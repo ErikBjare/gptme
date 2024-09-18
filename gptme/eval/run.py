@@ -125,6 +125,8 @@ def run_evals(
                 total=n_runs,
                 unit="eval",
                 desc="Progress",
+                # ensures it's disabled in non-TTY (such as pytest) and non-parallel
+                disable=(None if parallel > 1 else False),
             ):
                 _handle_future(future)
                 completed.add(future)
