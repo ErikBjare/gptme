@@ -1,10 +1,12 @@
 import base64
 import builtins
+import dataclasses
 import io
 import logging
 import shutil
 import sys
 import textwrap
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -23,39 +25,29 @@ from .util import get_tokenizer
 logger = logging.getLogger(__name__)
 
 
-# TODO: make immutable/dataclass
+@dataclass(frozen=True, eq=False)
 class Message:
-    """A message in the assistant conversation."""
+    """
+    A message in the assistant conversation.
 
-    def __init__(
-        self,
-        role: Literal["system", "user", "assistant"],
-        content: str,
-        pinned: bool = False,
-        hide: bool = False,
-        quiet: bool = False,
-        timestamp: datetime | str | None = None,
-        files: list[Path | str] | None = None,
-    ):
-        assert role in ["system", "user", "assistant"]
-        self.role = role
-        self.content = content.strip()
-        if isinstance(timestamp, str):
-            self.timestamp = datetime.fromisoformat(timestamp)
-        else:
-            self.timestamp = timestamp or datetime.now()
+    Attributes:
+        role: The role of the message sender (system, user, or assistant).
+        content: The content of the message.
+        pinned: Whether this message should be pinned to the top of the chat, and never context-trimmed.
+        hide: Whether this message should be hidden from the chat output (but still be sent to the assistant).
+        quiet: Whether this message should be printed on execution (will still print on resume, unlike hide).
+               This is not persisted to the log file.
+        timestamp: The timestamp of the message.
+        files: Files attached to the message, could e.g. be images for vision.
+    """
 
-        # Wether this message should be pinned to the top of the chat, and never context-trimmed.
-        self.pinned = pinned
-        # Wether this message should be hidden from the chat output (but still be sent to the assistant)
-        self.hide = hide
-        # Wether this message should be printed on execution (will still print on resume, unlike hide)
-        # This is not persisted to the log file.
-        self.quiet = quiet
-        # Files attached to the message, could e.g. be images for vision.
-        self.files: list[Path] = (
-            [Path(f) if isinstance(f, str) else f for f in files] if files else []
-        )
+    role: Literal["system", "user", "assistant"]
+    content: str
+    pinned: bool = False
+    hide: bool = False
+    quiet: bool = False
+    timestamp: datetime = field(default_factory=datetime.now)
+    files: list[Path] = field(default_factory=list)
 
     def __repr__(self):
         content = textwrap.shorten(self.content, 20, placeholder="...")
@@ -70,6 +62,10 @@ class Message:
             and self.content == other.content
             and self.timestamp == other.timestamp
         )
+
+    def replace(self, **kwargs) -> Self:
+        """Replace attributes of the message."""
+        return dataclasses.replace(self, **kwargs)
 
     def _content_files_list(
         self, openai: bool = False, anthropic: bool = False

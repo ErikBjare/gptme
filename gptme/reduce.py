@@ -6,7 +6,6 @@ Typically used when the log exceeds a token limit and needs to be shortened.
 
 import logging
 from collections.abc import Generator
-from copy import copy
 
 from .codeblock import Codeblock
 from .message import Message, len_tokens
@@ -95,9 +94,7 @@ def truncate_msg(msg: Message, lines_pre=10, lines_post=10) -> Message | None:
         assert full_block not in content_staged
 
     if content_staged != msg.content:
-        msg_new = copy(msg)
-        msg_new.content = content_staged
-        return msg_new
+        return msg.replace(content=content_staged)
     else:
         return None
 
