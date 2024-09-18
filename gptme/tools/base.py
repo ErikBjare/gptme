@@ -135,7 +135,7 @@ class ToolUse:
         """Returns all markdown-style ToolUse in a message.
 
         Example:
-          ```python
+          ```ipython
           print("Hello, world!")
           ```
         """
@@ -149,9 +149,9 @@ class ToolUse:
 
         Example:
           <tool-use>
-          <python>
+          <ipython>
           print("Hello, world!")
-          </python>
+          </ipython>
           </tool-use>
         """
         if "<tool-use>" not in content:
