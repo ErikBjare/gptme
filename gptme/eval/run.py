@@ -3,6 +3,7 @@ import concurrent.futures
 import inspect
 import io
 import logging
+import multiprocessing
 import os
 import signal
 import sys
@@ -10,8 +11,7 @@ import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-from multiprocessing import Manager, Process, Queue
-from queue import Empty
+from multiprocessing import Manager, Process
 from typing import Union
 
 from .agents import Agent, GPTMe
@@ -96,8 +96,8 @@ def run_evals(
                         status="timeout",
                         results=[],
                         timings={"gen": timeout, "run": 0, "eval": 0},
-                        stdout="",
-                        stderr="",
+                        gen_stdout="",
+                        gen_stderr="",
                         run_stdout="",
                         run_stderr="",
                     )
@@ -119,6 +119,11 @@ def run_evals(
                 _handle_future(future)
                 future.cancel()
 
+    # Ensure all processes are terminated
+    for process in multiprocessing.active_children():
+        process.terminate()
+        process.join()
+
     # sort model_results by test order
     for model in model_results:
         model_results[model] = sorted(
@@ -137,43 +142,107 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
     logger.info(f'Running "{test["name"]}" for {agent.model}')
 
     with Manager() as manager:
-        queue = manager.Queue()
+        result_dict = manager.dict()
         p = Process(
             target=act_process,
-            args=(agent, test["files"], test["prompt"], queue, test["name"], parallel),
+            args=(
+                agent,
+                test["files"],
+                test["prompt"],
+                result_dict,
+                test["name"],
+                parallel,
+            ),
         )
         p.start()
-        p.join(timeout)
-
-        time_gen = 0.0
-        time_run = 0.0
-        time_eval = 0.0
-
-        status: Status = "success"
-        if p.is_alive():
-            logger.info("Timeout reached, terminating process")
-            p.terminate()
-            p.join(timeout=1)
-            status = "timeout"
-            time_gen = timeout
-
-        logger.debug("Getting result from queue")
         try:
-            result = queue.get(timeout=1)
-        except Empty:
-            logger.error("Queue is empty, expected a result")
+            p.join(timeout)
+
+            time_gen = 0.0
+            time_run = 0.0
+            time_eval = 0.0
+
+            status: Status = "success"
+            if p.is_alive():
+                logger.info("Timeout reached, terminating process")
+                p.terminate()
+                p.join(timeout=1)
+                status = "timeout"
+                time_gen = timeout
+
+            if "result" in result_dict:
+                result = result_dict["result"]
+                time_gen = result.get("duration", 0.0)
+                status = result.get("status", "success")
+                files = result.get("files", {})
+                gen_stdout = result.get("stdout", "")
+                gen_stderr = result.get("stderr", "")
+            else:
+                logger.error("No result in shared dictionary")
+                return ExecResult(
+                    name=test["name"],
+                    status="error",
+                    results=[],
+                    timings={"gen": time_gen, "run": time_run, "eval": time_eval},
+                    gen_stdout="",
+                    gen_stderr="",
+                    run_stdout="",
+                    run_stderr="",
+                )
+
+            logger.debug("Got result")
+
+            if status != "timeout" and status != "error":
+                # check and collect results
+                run_start = time.time()
+                env = SimpleExecutionEnv()
+                env.upload(files)
+                logger.debug(f"Running check: {test['run']}")
+                stdout_run, stderr_run, exit_code = env.run(test["run"])
+                time_run = time.time() - run_start
+
+                files = env.download()
+
+                ctx = ResultContext(files, stdout_run, stderr_run, exit_code)
+                results: list[CaseResult] = []
+                print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
+                for name, case in test["expect"].items():
+                    code = inspect.getsource(case).strip()
+                    eval_start = time.time()
+                    try:
+                        passed = case(ctx)
+                    except Exception as e:
+                        print(f"Error while checking {name}: {e}")
+                        passed = False
+                    eval_duration = time.time() - eval_start
+                    checkmark = "✅" if passed else "❌"
+                    print(f"{checkmark} {name:20s}")
+                    results.append(
+                        CaseResult(
+                            name=name, passed=passed, code=code, duration=eval_duration
+                        )
+                    )
+                print("--- End of results ---\n")
+
+                time_eval = sum(r.duration for r in results)
+            else:
+                results = []
+                stdout_run, stderr_run = "", ""
+
             return ExecResult(
                 name=test["name"],
-                status="error",
-                results=[],
+                status=status,
+                results=results,
                 timings={"gen": time_gen, "run": time_run, "eval": time_eval},
-                stdout="",
-                stderr="",
-                run_stdout="",
-                run_stderr="",
+                gen_stdout=gen_stdout,
+                gen_stderr=gen_stderr,
+                run_stdout=stdout_run,
+                run_stderr=stderr_run,
             )
-
-    logger.debug("Got result")
+        finally:
+            if p.is_alive():
+                p.terminate()
+                p.join(timeout=1)
     if status != "timeout":
         time_gen = result.duration
     stdout, stderr = result.stdout, result.stderr
@@ -184,8 +253,8 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
             status="timeout" if status == "timeout" else "error",
             results=[],
             timings={"gen": time_gen, "run": time_run, "eval": time_eval},
-            stdout=stdout,
-            stderr=stderr,
+            gen_stdout=stdout,
+            gen_stderr=stderr,
             run_stdout="",
             run_stderr="",
         )
@@ -232,8 +301,8 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
             "run": time_run,
             "eval": time_eval,
         },
-        stdout=stdout,
-        stderr=stderr,
+        gen_stdout=stdout,
+        gen_stderr=stderr,
         run_stdout=stdout_run,
         run_stderr=stderr_run,
     )
@@ -261,7 +330,7 @@ def act_process(
     agent: Agent,
     files,
     prompt,
-    queue: "Queue[ProcessResult]",
+    result_dict: dict,
     test_name: str,
     parallel: bool,
 ):
@@ -285,7 +354,13 @@ def act_process(
         duration = time.time() - start
         if not isinstance(e, KeyboardInterrupt):
             subprocess_logger.error(f"Error: {e}")
-        queue.put(ProcessError(str(e), stdout.getvalue(), stderr.getvalue(), duration))
+        result_dict["result"] = {
+            "status": "error",
+            "message": str(e),
+            "stdout": stdout.getvalue(),
+            "stderr": stderr.getvalue(),
+            "duration": duration,
+        }
 
         # kill child processes
         os.killpg(pgrp, signal.SIGKILL)
@@ -304,7 +379,13 @@ def act_process(
         return
 
     duration = time.time() - start
-    queue.put(ProcessSuccess(files, stdout.getvalue(), stderr.getvalue(), duration))
+    result_dict["result"] = {
+        "status": "success",
+        "files": files,
+        "stdout": stdout.getvalue(),
+        "stderr": stderr.getvalue(),
+        "duration": duration,
+    }
     subprocess_logger.info("Success")
 
     # kill child processes

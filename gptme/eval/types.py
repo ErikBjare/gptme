@@ -40,8 +40,8 @@ class ExecResult:
     status: Status
     results: list[CaseResult]
     timings: dict[str, float]
-    stdout: str
-    stderr: str
+    gen_stdout: str
+    gen_stderr: str
     run_stdout: str
     run_stderr: str
 
