@@ -28,7 +28,7 @@ def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> M
     elif prompt == "short":
         msgs = prompt_short(interactive)
     else:
-        return Message("system", prompt)
+        msgs = [Message("system", prompt)]
 
     # combine all the system prompt messages into one,
     # also hide them and pin them to the top
