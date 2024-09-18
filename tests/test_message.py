@@ -6,8 +6,7 @@ def test_toml():
     msg = Message(
         "system",
         '''Hello world!
-"""Difficult to handle string"""
-''',
+"""Difficult to handle string"""''',
     )
     t = msg.to_toml()
     print(t)

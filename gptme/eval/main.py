@@ -6,13 +6,12 @@ Inspired by a document by Anton Osika and Axel Theorell.
 
 import csv
 import logging
-import multiprocessing
-import multiprocessing.resource_tracker
 import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+from collections.abc import Generator
 
 import click
 import multiprocessing_logging
@@ -21,15 +20,7 @@ from tabulate import tabulate
 from ..message import len_tokens
 from .run import run_evals
 from .suites import suites, tests_default, tests_map
-from .types import ExecResult, ExecTest
-
-# Suppress the specific warning about leaked semaphore objects
-# NOTE: this doesn't actually work due to multiprocessing quirks
-# warnings.filterwarnings(
-#     "ignore",
-#     category=UserWarning,
-#     message=r"resource_tracker:.*",
-# )
+from .types import CaseResult, ExecResult, ExecTest
 
 # Configure logging, including fully-qualified module names
 logging.basicConfig(
@@ -42,24 +33,18 @@ logger = logging.getLogger(__name__)
 
 project_dir = Path(__file__).parent.parent.parent
 
+
 def print_model_results(model_results: dict[str, list[ExecResult]]):
     total_tests = 0
-    total_duration = 0.0
     total_tokens = 0
 
     for model, results in model_results.items():
         print(f"\nResults for model: {model}")
-        duration_total = sum(
-            result.timings["gen"] + result.timings["run"] + result.timings["eval"]
-            for result in results
-        )
         model_total_tokens = sum(
             len_tokens(result.gen_stdout) + len_tokens(result.run_stdout)
             for result in results
         )
-        print(
-            f"Completed {len(results)} tests in {duration_total:.2f}s/{model_total_tokens}tok:"
-        )
+        print(f"Completed {len(results)} tests in {model_total_tokens}tok:")
         for result in results:
             cases = result.results
             checkmark = "✅" if cases and all(case.passed for case in cases) else "❌"
@@ -80,11 +65,9 @@ def print_model_results(model_results: dict[str, list[ExecResult]]):
                 print(f"   {checkmark} {case.name}")
 
         total_tests += len(results)
-        total_duration += duration_total
         total_tokens += model_total_tokens
-
     print("\nTotal across all models:")
-    print(f"Completed {total_tests} tests in {total_duration:.2f}s/{total_tokens}tok")
+    print(f"Completed {total_tests} tests in {total_tokens}tok")
 
 
 def print_model_results_table(model_results: dict[str, list[ExecResult]]):
@@ -188,9 +171,37 @@ def main(
     print_model_results_table(model_results)
 
     # Write results to CSV
-    write_results_to_csv(model_results)
+    write_results(model_results)
 
     sys.exit(0)
+
+
+def _read_case_results(cases_file: Path) -> Generator[CaseResult, None, None]:
+    if cases_file.exists():
+        with open(cases_file, newline="") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                yield CaseResult(
+                    name=row["Case"],
+                    passed=row["Passed"] == "true",
+                    code=row["Code"],
+                    duration=float(row["Duration"]),
+                )
+
+
+def _write_case_results(cases_file: Path, results: list[CaseResult]):
+    with open(cases_file, "w", newline="") as csvfile:
+        fieldnames = ["Model", "Test", "Case", "Passed", "Code", "Duration"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for result in results:
+            row = {
+                "Case": result.name,
+                "Passed": "true" if result.passed else "false",
+                "Code": result.code,
+                "Duration": result.duration,
+            }
+            writer.writerow(row)
 
 
 def read_log_file(file_path: Path) -> str:
@@ -212,7 +223,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
             result = ExecResult(
                 name=row["Test"],
                 status="success" if row["Passed"] == "true" else "error",
-                results=[],  # We don't have detailed results in the CSV
+                results=list(_read_case_results(test_dir / "cases.csv")),
                 timings={
                     "gen": float(row["Generation Time"]),
                     "run": float(row["Run Time"]),
@@ -227,7 +238,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
     return dict(model_results)
 
 
-def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
+def write_results(model_results: dict[str, list[ExecResult]]):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # get current commit hash and dirty status, like: a8b2ef0-dirty
     # TODO: don't assume we are in the gptme repo, use other version identifiers if available
@@ -261,104 +272,38 @@ def write_results_to_csv(model_results: dict[str, list[ExecResult]]):
         writer.writeheader()
         for model, results in model_results.items():
             for result in results:
-                # Needs to pass all checks, and needs to have results (not empty, as in case of timeout)
                 passed = (
                     all(case.passed for case in result.results)
                     if result.results
                     else False
                 )
 
-                # Create directory for this test
                 test_dir = results_dir / model / result.name
                 test_dir.mkdir(parents=True, exist_ok=True)
 
-                # Save each stream to a separate file
-                gen_stdout_file = test_dir / "gen_stdout.txt"
-                gen_stderr_file = test_dir / "gen_stderr.txt"
-                run_stdout_file = test_dir / "run_stdout.txt"
-                run_stderr_file = test_dir / "run_stderr.txt"
-
-                with open(gen_stdout_file, "w") as f:
-                    f.write(result.gen_stdout)
-                with open(gen_stderr_file, "w") as f:
-                    f.write(result.gen_stderr)
-                with open(run_stdout_file, "w") as f:
-                    f.write(result.run_stdout)
-                with open(run_stderr_file, "w") as f:
-                    f.write(result.run_stderr)
-
-                writer.writerow(
-                    {
-                        "Model": model,
-                        "Test": result.name,
-                        "Passed": "true" if passed else "false",
-                        "Total Duration": sum(result.timings.values()),
-                        "Generation Time": result.timings["gen"],
-                        "Run Time": result.timings["run"],
-                        "Eval Time": result.timings["eval"],
-                        "Commit Hash": commit_hash,
-                        "Gen Stdout File": gen_stdout_file.relative_to(results_dir),
-                        "Gen Stderr File": gen_stderr_file.relative_to(results_dir),
-                        "Run Stdout File": run_stdout_file.relative_to(results_dir),
-                        "Run Stderr File": run_stderr_file.relative_to(results_dir),
-                    }
-                )
-
-    print(f"\nResults saved to {csv_filename.resolve()}")
-    print(f"Output files saved in {results_dir.resolve()}")
-
-    csv_filename = results_dir / "eval_results.csv"
-
-    with open(csv_filename, "w", newline="") as csvfile:
-        fieldnames = [
-            "Model",
-            "Test",
-            "Passed",
-            "Total Duration",
-            "Generation Time",
-            "Run Time",
-            "Eval Time",
-            "Commit Hash",
-            "Gen Stdout File",
-            "Gen Stderr File",
-            "Run Stdout File",
-            "Run Stderr File",
-        ]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-        writer.writeheader()
-        for model, results in model_results.items():
-            for result in results:
-                # Needs to pass all checks, and needs to have results (not empty, as in case of error/timeout)
-                passed = (
-                    all(case.passed for case in result.results)
-                    if result.results
-                    else False
-                )
-
-                # Create directory for this test
-                test_dir = results_dir / model / result.name
-                test_dir.mkdir(parents=True, exist_ok=True)
-
-                # Save each stream to a separate file
                 streams = ["gen_stdout", "gen_stderr", "run_stdout", "run_stderr"]
                 for stream in streams:
                     stream_file = test_dir / f"{stream}.txt"
                     with open(stream_file, "w") as f:
                         f.write(getattr(result, stream))
 
-                writer.writerow(
-                    {
-                        "Model": model,
-                        "Test": result.name,
-                        "Passed": "true" if passed else "false",
-                        "Total Duration": sum(result.timings.values()),
-                        "Generation Time": result.timings["gen"],
-                        "Run Time": result.timings["run"],
-                        "Eval Time": result.timings["eval"],
-                        "Commit Hash": commit_hash,
-                    }
-                )
+                test_dir_rel = test_dir.relative_to(results_dir)
+                row = {
+                    "Model": model,
+                    "Test": result.name,
+                    "Passed": "true" if passed else "false",
+                    "Total Duration": sum(result.timings.values()),
+                    "Generation Time": result.timings["gen"],
+                    "Run Time": result.timings["run"],
+                    "Eval Time": result.timings["eval"],
+                    "Commit Hash": commit_hash,
+                    "Gen Stdout File": (test_dir_rel / "gen_stdout.txt"),
+                    "Gen Stderr File": (test_dir_rel / "gen_stderr.txt"),
+                    "Run Stdout File": (test_dir_rel / "run_stdout.txt"),
+                    "Run Stderr File": (test_dir_rel / "run_stderr.txt"),
+                }
+                writer.writerow(row)
+                _write_case_results(test_dir / "cases.csv", result.results)
 
     print(f"\nResults saved to {csv_filename.resolve()}")
     print(f"Output files saved in {results_dir.resolve()}")
