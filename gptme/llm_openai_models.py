@@ -1,11 +1,13 @@
 from typing import TypedDict
 from typing_extensions import NotRequired
 
+
 class _ModelDictMeta(TypedDict):
     context: int
     max_output: NotRequired[int]
     price_input: NotRequired[float]
     price_output: NotRequired[float]
+
 
 OPENAI_MODELS: dict[str, _ModelDictMeta] = {
     # GPT-4o
