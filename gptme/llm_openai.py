@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
-from .models import ModelMeta
+from .models import ModelMeta, get_model
 
 if TYPE_CHECKING:
     from openai import OpenAI
@@ -50,6 +50,26 @@ def init(llm: str, config):
 
 def get_client() -> "OpenAI | None":
     return openai
+
+
+def _get_provider_name() -> str:
+    client = get_client()
+    assert client, "LLM not initialized"
+    providers = ["openai", "openrouter", "azure"]
+    for provider in providers:
+        if provider in str(client.base_url):
+            return provider
+    return "unknown"
+
+
+# WIP: maybe remove/move elsewhere? move to models.py?
+def list_models() -> Generator[ModelMeta, None, None]:
+    client = get_client()
+    if not client:
+        return
+    provider = _get_provider_name()
+    for model in client.models.list():
+        yield get_model(f"{provider}/{model}")
 
 
 def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:

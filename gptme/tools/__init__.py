@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable, Generator
+from functools import lru_cache
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
@@ -79,6 +80,9 @@ def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
         yield from tooluse.execute(ask)
 
 
+# Called often when checking streaming output for executable blocks,
+# so we cache the result.
+@lru_cache
 def get_tool_for_langtag(lang: str) -> ToolSpec | None:
     block_type = lang.split(" ")[0]
     for tool in loaded_tools:
