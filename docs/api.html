@@ -368,6 +368,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.from_toml"><code class="docutils literal notranslate"><span class="pre">Message.from_toml()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.get_codeblocks"><code class="docutils literal notranslate"><span class="pre">Message.get_codeblocks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.replace"><code class="docutils literal notranslate"><span class="pre">Message.replace()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.to_dict"><code class="docutils literal notranslate"><span class="pre">Message.to_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.to_toml"><code class="docutils literal notranslate"><span class="pre">Message.to_toml()</span></code></a></li>
 </ul>
@@ -437,8 +438,21 @@ document.write(`
 <p>Some of the core classes and functions in <code class="docutils literal notranslate"><span class="pre">gptme</span></code>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gptme.message.Message">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'system'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'user'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'assistant'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pinned</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gptme.message.Message" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.message.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">role:</span> <span class="pre">~typing.Literal['system',</span> <span class="pre">'user',</span> <span class="pre">'assistant'],</span> <span class="pre">content:</span> <span class="pre">str,</span> <span class="pre">pinned:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">hide:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">quiet:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">timestamp:</span> <span class="pre">~datetime.datetime</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">files:</span> <span class="pre">list[pathlib.Path]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gptme.message.Message" title="Permalink to this definition">#</a></dt>
 <dd><p>A message in the assistant conversation.</p>
+<dl>
+<dt>Attributes:</dt><dd><p>role: The role of the message sender (system, user, or assistant).
+content: The content of the message.
+pinned: Whether this message should be pinned to the top of the chat, and never context-trimmed.
+hide: Whether this message should be hidden from the chat output (but still be sent to the assistant).
+quiet: Whether this message should be printed on execution (will still print on resume, unlike hide).</p>
+<blockquote>
+<div><p>This is not persisted to the log file.</p>
+</div></blockquote>
+<p>timestamp: The timestamp of the message.
+files: Files attached to the message, could e.g. be images for vision.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="gptme.message.Message.from_toml">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_toml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#gptme.message.Message.from_toml" title="Permalink to this definition">#</a></dt>
@@ -450,6 +464,12 @@ document.write(`
 <dt class="sig sig-object py" id="gptme.message.Message.get_codeblocks">
 <span class="sig-name descname"><span class="pre">get_codeblocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.codeblock.Codeblock" title="gptme.codeblock.Codeblock"><span class="pre">gptme.codeblock.Codeblock</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.message.Message.get_codeblocks" title="Permalink to this definition">#</a></dt>
 <dd><p>Get all codeblocks from the message content.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.message.Message.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#gptme.message.Message.replace" title="Permalink to this definition">#</a></dt>
+<dd><p>Replace attributes of the message.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -747,10 +767,10 @@ def hello():
 
 <span class="sb">These programs are available, among others:</span>
 <span class="sb">- apt-get</span>
-<span class="sb">- git</span>
-<span class="sb">- convert</span>
 <span class="sb">- docker</span>
 <span class="sb">- pandoc</span>
+<span class="sb">- git</span>
+<span class="sb">- convert</span>
 
 <span class="sb">### Examples</span>
 
@@ -1002,7 +1022,7 @@ The chats tool allows you to list, search, and summarize past conversation logs.
 <span class="gu">### Search for a specific topic in past conversations</span>
 User: Can you find any mentions of &quot;python&quot; in our past conversations?
 Assistant: Certainly! I&#39;ll search our past conversations for mentions of &quot;python&quot; using the search_chats function.
-<span class="sb">```python</span>
+<span class="sb">```ipython</span>
 <span class="n">search_chats</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 
@@ -1040,6 +1060,7 @@ The following functions are available in the REPL:
     Args:
         query (str): The search query.
         max_results (int): Maximum number of conversations to display.
+        system (bool): Whether to include system messages in the search.
 
 <span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int): 
     Read a specific conversation log.
@@ -1073,7 +1094,7 @@ System: Executed code block.
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 2731</p>
+<p>Tokens: 2746</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1180,6 +1201,7 @@ No specific preferences set.
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.from_toml"><code class="docutils literal notranslate"><span class="pre">Message.from_toml()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.get_codeblocks"><code class="docutils literal notranslate"><span class="pre">Message.get_codeblocks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.replace"><code class="docutils literal notranslate"><span class="pre">Message.replace()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.to_dict"><code class="docutils literal notranslate"><span class="pre">Message.to_dict()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.to_toml"><code class="docutils literal notranslate"><span class="pre">Message.to_toml()</span></code></a></li>
 </ul>
