@@ -41,6 +41,10 @@ format:
 	poetry run pyupgrade --py310-plus --exit-zero-even-if-changed ${SRCFILES}
 	poetry run black ${SRCDIRS}
 
+update-models:
+	wayback_url=$$(curl "https://archive.org/wayback/available?url=openai.com/api/pricing/" | jq -r '.archived_snapshots.closest.url') && \
+		gptme 'update the model metadata from this page' gptme/models.py gptme/llm_openai_models.py "$${wayback_url}" --non-interactive
+
 precommit: format lint typecheck test
 
 docs/.clean: docs/conf.py

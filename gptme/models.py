@@ -4,6 +4,8 @@ from typing import TypedDict
 
 from typing_extensions import NotRequired
 
+from .llm_openai_models import OPENAI_MODELS
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,71 +40,7 @@ DEFAULT_MODEL: ModelMeta | None = None
 # known models metadata
 # TODO: can we get this from the API?
 MODELS: dict[str, dict[str, _ModelDictMeta]] = {
-    "openai": {
-        # gpt-3.5
-        "gpt-3.5-turbo": {
-            "context": 4097,
-            "price_input": 1,
-            "price_output": 2,
-        },
-        "gpt-3.5-turbo-16k": {
-            "context": 16385,
-        },
-        "gpt-3.5-turbo-1106": {
-            "context": 16385,
-        },
-        # gpt-4
-        "gpt-4": {
-            "context": 8193,
-            "price_input": 30,
-            "price_output": 60,
-        },
-        "gpt-4-32k": {
-            "context": 32769,
-            "price_input": 60,
-            "price_output": 120,
-        },
-        # gpt-4-turbo
-        # https://openai.com/blog/new-models-and-developer-products-announced-at-devday
-        "gpt-4-1106-preview": {
-            "context": 128_000,
-        },
-        "gpt-4-vision-preview": {
-            "context": 128_000,
-        },
-        "gpt-4-turbo": {
-            "context": 128_000,
-            "price_input": 10,
-            "price_output": 30,
-        },
-        "gpt-4o": {
-            "context": 128_000,
-            "price_input": 5,
-            "price_output": 15,
-        },
-        "gpt-4o-2024-08-06": {
-            "context": 128_000,
-            "price_input": 2.5,
-            "price_output": 10,
-        },
-        "gpt-4o-mini": {
-            "context": 128_000,
-            "price_input": 0.15,
-            "price_output": 0.6,
-        },
-        "o1-mini": {
-            "context": 128_000,
-            "max_output": 65536,
-            "price_input": 3,
-            "price_output": 12,
-        },
-        "o1-preview": {
-            "context": 128_000,
-            "max_output": 32768,
-            "price_input": 15,
-            "price_output": 60,
-        },
-    },
+    "openai": OPENAI_MODELS,
     "anthropic": {
         "claude-3-opus-20240229": {
             "context": 200_000,
