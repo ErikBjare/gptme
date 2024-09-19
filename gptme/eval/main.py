@@ -20,7 +20,7 @@ from tabulate import tabulate
 from ..message import len_tokens
 from .run import run_evals
 from .suites import suites, tests_default, tests_map
-from .types import CaseResult, ExecResult, ExecTest
+from .types import CaseResult, EvalResult, EvalSpec
 
 # Configure logging, including fully-qualified module names
 logging.basicConfig(
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 project_dir = Path(__file__).parent.parent.parent
 
 
-def print_model_results(model_results: dict[str, list[ExecResult]]):
+def print_model_results(model_results: dict[str, list[EvalResult]]):
     total_tests = 0
     total_tokens = 0
 
@@ -70,7 +70,7 @@ def print_model_results(model_results: dict[str, list[ExecResult]]):
     print(f"Completed {total_tests} tests in {total_tokens}tok")
 
 
-def print_model_results_table(model_results: dict[str, list[ExecResult]]):
+def print_model_results_table(model_results: dict[str, list[EvalResult]]):
     test_names = {
         result.name for results in model_results.values() for result in results
     }
@@ -120,19 +120,23 @@ def main(
 ):
     """
     Run evals for gptme.
+    Pass eval or suite names to run, or result files to print.
 
-    Pass test names to run, or result files to print.
+    Output from evals will be captured, unless a single eval is run, and saved to the results directory.
     """
     # init
     multiprocessing_logging.install_mp_handler()
 
     models = _model or [
         "openai/gpt-4o",
+        "openai/gpt-4o-mini",
         "anthropic/claude-3-5-sonnet-20240620",
+        "anthropic/claude-3-haiku-20240307",
         "openrouter/meta-llama/llama-3.1-405b-instruct",
     ]
 
     results_files = [f for f in eval_names_or_result_files if f.endswith(".csv")]
+    eval_names = [f for f in eval_names_or_result_files if f not in results_files]
     if results_files:
         for results_file in results_files:
             p = Path(results_file)
@@ -148,20 +152,20 @@ def main(
                 sys.exit(1)
         sys.exit(0)
 
-    tests_to_run: list[ExecTest] = []
-    for test_name in eval_names_or_result_files:
-        if test_name in tests_map:
-            tests_to_run.append(tests_map[test_name])
-        elif test_name in suites:
-            tests_to_run.extend(suites[test_name])
+    evals_to_run: list[EvalSpec] = []
+    for eval_name in eval_names:
+        if test := tests_map.get(eval_name):
+            evals_to_run.append(test)
+        elif suite := suites.get(eval_name) or suites.get(eval_name.replace("-", "_")):
+            evals_to_run.extend(suite)
         else:
-            raise ValueError(f"Test {test_name} not found")
+            raise ValueError(f"Test {eval_name} not found")
 
-    if not tests_to_run:
-        tests_to_run = tests_default
+    if not evals_to_run:
+        evals_to_run = tests_default
 
     print("=== Running evals ===")
-    model_results = run_evals(tests_to_run, models, timeout, parallel)
+    model_results = run_evals(evals_to_run, models, timeout, parallel)
     print("\n=== Finished ===\n")
 
     print("\n=== Model Results ===")
@@ -211,7 +215,7 @@ def read_log_file(file_path: Path) -> str:
     return ""
 
 
-def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
+def read_results_from_csv(filename: str) -> dict[str, list[EvalResult]]:
     model_results = defaultdict(list)
     results_dir = Path(filename).parent
     with open(filename, newline="") as csvfile:
@@ -220,7 +224,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
             model = row["Model"]
             test_dir = results_dir / model / row["Test"]
 
-            result = ExecResult(
+            result = EvalResult(
                 name=row["Test"],
                 status="success" if row["Passed"] == "true" else "error",
                 results=list(_read_case_results(test_dir / "cases.csv")),
@@ -238,7 +242,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[ExecResult]]:
     return dict(model_results)
 
 
-def write_results(model_results: dict[str, list[ExecResult]]):
+def write_results(model_results: dict[str, list[EvalResult]]):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # get current commit hash and dirty status, like: a8b2ef0-dirty
     # TODO: don't assume we are in the gptme repo, use other version identifiers if available

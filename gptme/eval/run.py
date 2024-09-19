@@ -19,8 +19,8 @@ from .agents import Agent, GPTMe
 from .execenv import SimpleExecutionEnv
 from .types import (
     CaseResult,
-    ExecResult,
-    ExecTest,
+    EvalResult,
+    EvalSpec,
     ResultContext,
     Status,
 )
@@ -52,8 +52,8 @@ class SyncedDict(TypedDict):
 
 
 def run_evals(
-    tests: list[ExecTest], models: list[str], timeout: int, parallel: int
-) -> dict[str, list[ExecResult]]:
+    evals: list[EvalSpec], models: list[str], timeout: int, parallel: int
+) -> dict[str, list[EvalResult]]:
     """
     Run evals for a list of tests.
     """
@@ -67,14 +67,14 @@ def run_evals(
     else:
         cleanup_on_sigterm()
 
-    n_runs = len(tests) * len(models)
-    model_results: dict[str, dict[str, ExecResult]] = defaultdict(dict)
+    n_runs = len(evals) * len(models)
+    model_results: dict[str, dict[str, EvalResult]] = defaultdict(dict)
     parallel = min(n_runs, parallel)
     with ProcessPoolExecutor(parallel) as executor:
         futures = []
         future_to_model_test = {}
         for model in models:
-            for test in tests:
+            for test in evals:
                 future = executor.submit(
                     execute,
                     test,
@@ -103,7 +103,7 @@ def run_evals(
                     logger.exception(
                         f"Test {test_name} for model {model} generated an exception when trying to get result"
                     )
-                result = ExecResult(
+                result = EvalResult(
                     name=test_name,
                     status=status,
                     results=[],
@@ -116,7 +116,7 @@ def run_evals(
             model_results[model][test_name] = result
 
         # worse-case run time, with some buffer to account for overhead
-        max_timeout = timeout * len(tests) / parallel + 10
+        max_timeout = timeout * len(evals) / parallel + 10
         completed = set()
         try:
             # TODO: can we do better than this? handle timeouts within futures instead?
@@ -147,19 +147,19 @@ def run_evals(
         process.terminate()
         process.join()
 
-    model_results_final: dict[str, list[ExecResult]] = defaultdict(list)
+    model_results_final: dict[str, list[EvalResult]] = defaultdict(list)
     for model in model_results:
         # sort results by test order
         model_results_final[model] = sorted(
             model_results[model].values(),
-            key=lambda result: [test["name"] for test in tests].index(result.name),
+            key=lambda result: [test["name"] for test in evals].index(result.name),
         )
 
     return model_results_final
 
 
 # TODO: rewrite to run in Docker? Would help with capturing output + process management.
-def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecResult:
+def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalResult:
     """
     Executes the code for a specific model with a timeout.
     """
@@ -206,7 +206,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
             gen_stderr = result.get("stderr", "")
         else:
             logger.error("No result in shared dictionary")
-            return ExecResult(
+            return EvalResult(
                 name=test["name"],
                 status="error",
                 results=[],
@@ -256,7 +256,7 @@ def execute(test: ExecTest, agent: Agent, timeout: int, parallel: bool) -> ExecR
             results = []
             stdout_run, stderr_run = "", ""
 
-        return ExecResult(
+        return EvalResult(
             name=test["name"],
             status=status,
             results=results,

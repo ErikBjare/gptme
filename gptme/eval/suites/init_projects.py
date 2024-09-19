@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gptme.eval.main import ExecTest
+    from gptme.eval.main import EvalSpec
 
 
 def check_clean_exit(ctx):
@@ -41,7 +41,7 @@ def check_exists_main(ctx):
     return "main.py" in ctx.files
 
 
-tests: list["ExecTest"] = [
+tests: list["EvalSpec"] = [
     {
         "name": "init-git",
         "files": {},

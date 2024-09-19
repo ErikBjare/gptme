@@ -225,10 +225,9 @@ def test_block(args: list[str], lang: str, runner: CliRunner):
     assert result.exit_code == 0
 
 
-# TODO: these could be fast if we had a cache
 @pytest.mark.slow
 def test_generate_primes(args: list[str], runner: CliRunner):
-    args.append("print the first 10 prime numbers")
+    args.append("compute the first 10 prime numbers")
     result = runner.invoke(gptme.cli.main, args)
     # check that the 9th and 10th prime is present
     assert "23" in result.output

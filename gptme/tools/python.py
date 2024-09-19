@@ -151,30 +151,43 @@ def get_installed_python_libraries() -> set[str]:
     return installed
 
 
+instructions = """
+To execute Python code in an interactive IPython session, send a codeblock using the `ipython` language tag.
+It will respond with the output and result of the execution.
+Assistant may first write the code in a normal python codeblock, then execute it in an IPython codeblock.
+"""
+
+
 examples = f"""
 #### Results of the last expression will be displayed, IPython-style:
-User: What is 2 + 2?
-Assistant:
-{ToolUse("python", [], "2 + 2").to_output()}
-System: Executed code block.
-```stdout
+> User: What is 2 + 2?
+> Assistant:
+{ToolUse("ipython", [], "2 + 2").to_output()}
+> System: Executed code block.
+```result
 4
 ```
 
-#### The user can also run Python code with the /python command:
-
-User: /python 2 + 2
-System: Executed code block.
-```stdout
-4
+#### It can write an example and then execute it:
+> User: compute fib 10
+> Assistant: To compute the 10th Fibonacci number, we write a recursive function:
+```python
+def fib(n):
+    ...
+```
+Now, let's execute this code to get the 10th Fibonacci number:
+{ToolUse("ipython", [], '''
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+fib(10)
+''').to_output()}
+> System: Executed code block.
+```result
+55
 ```
 """.strip()
-
-
-instructions = """
-When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
-"""
 
 
 # only used for doc generation, use get_tool() in the code
@@ -185,7 +198,7 @@ tool = ToolSpec(
     examples=examples,
     execute=execute_python,
     block_types=[
-        "python",
+        # "python",
         "ipython",
         "py",
     ],

@@ -155,10 +155,10 @@ def subagent_wait(agent_id: str) -> dict:
 examples = f"""
 User: compute fib 69 using a subagent
 Assistant: Starting a subagent to compute the 69th Fibonacci number.
-{ToolUse("python", [], 'subagent("compute the 69th Fibonacci number", "fib-69")').to_output()}
+{ToolUse("ipython", [], 'subagent("compute the 69th Fibonacci number", "fib-69")').to_output()}
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-{ToolUse("python", [], 'subagent_wait("fib-69")').to_output()}
+{ToolUse("ipython", [], 'subagent_wait("fib-69")').to_output()}
 """
 
 
