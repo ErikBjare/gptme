@@ -152,7 +152,7 @@ runs:
       run: |
         # download shorten_details script
         SCRIPTDIR=$(mktemp -d)
-        wget -qO- https://raw.githubusercontent.com/ErikBjare/gptme/main/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
+        curl -s https://raw.githubusercontent.com/ErikBjare/gptme/master/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
         chmod +x $SCRIPTDIR/shorten_details.py
 
         # shorten large details blocks (more than 1000 characters)
