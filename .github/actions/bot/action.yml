@@ -107,7 +107,7 @@ runs:
         mkdir -p ~/.config/gptme
         cat > ~/.config/gptme/config.toml << EOF
         [prompt]
-        about_user = "I am a bot executing commands from GitHub comments."
+        about_user = "The user is talking to the gptme bot through GitHub comments. They have initiated conversation by pinging it with @gptme, triggering a GitHub Action in which gptme now runs."
         response_preference = "Don't explain basic concepts"
 
         [env]
@@ -143,6 +143,39 @@ runs:
           exit 1
         fi
 
+    - name: Get context
+      id: context
+      if: steps.detect_command.outputs.gptme_command
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        # download shorten_details script
+        SCRIPTDIR=$(mktemp -d)
+        curl -s https://raw.githubusercontent.com/ErikBjare/gptme/master/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
+        chmod +x $SCRIPTDIR/shorten_details.py
+
+        NUM=${{ github.event.issue.number }}
+        CTXDIR=$(mktemp -d)
+
+        # if issue
+        if [[ ${{ github.event.issue.pull_request == null }} == "true" ]]; then
+          gh issue view $NUM | $SCRIPTDIR/shorten_details.py 1000 > $CTXDIR/gh-issue.md
+          gh issue view $NUM -c | $SCRIPTDIR/shorten_details.py 1000 > $CTXDIR/gh-comments.md
+        # if PR
+        else
+          gh pr view $NUM | $SCRIPTDIR/shorten_details.py 1000 > $CTXDIR/gh-pr.md
+          gh pr view $NUM -c | $SCRIPTDIR/shorten_details.py 1000 > $CTXDIR/gh-comments.md
+          gh pr diff $NUM > $CTXDIR/gh-diff.md
+          gh pr checks $NUM > $CTXDIR/gh-checks.md
+        fi
+
+        # make sure anyone (even docker) can read/write the context dir
+        chmod -R o=rwx $CTXDIR
+
+        # output context dir
+        echo "dir=$CTXDIR" >> $GITHUB_OUTPUT
+
     - name: Run gptme
       if: steps.detect_command.outputs.gptme_command
       shell: bash
@@ -150,35 +183,26 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
       run: |
-        # download shorten_details script
-        SCRIPTDIR=$(mktemp -d)
-        curl -s https://raw.githubusercontent.com/ErikBjare/gptme/master/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
-        chmod +x $SCRIPTDIR/shorten_details.py
+        echo "Running in $GITHUB_WORKSPACE"
+        CTXDIR=${{ steps.context.outputs.dir }}
 
-        # shorten large details blocks (more than 1000 characters)
-        # if issue
-        if [[ ${{ github.event.issue.pull_request == null }} == "true" ]]; then
-          gh issue view ${{ github.event.issue.number }} | $SCRIPTDIR/shorten_details.py 1000 > issue.md
-          gh issue view ${{ github.event.issue.number }} -c | $SCRIPTDIR/shorten_details.py 1000 > comments.md
-        # if PR
-        else
-          gh pr view ${{ github.event.issue.number }} | $SCRIPTDIR/shorten_details.py 1000 > pr.md
-          gh pr view ${{ github.event.issue.number }} -c | $SCRIPTDIR/shorten_details.py 1000 > comments.md
-          gh pr diff ${{ github.event.issue.number }} > diff.md
-          gh pr checks ${{ github.event.issue.number }} > checks.md
-        fi
-
+        # make sure anyone (even docker) can read/write the workspace
         chmod -R o=rwx .
-        echo $GITHUB_WORKSPACE
 
         # run gptme with the extracted command and save logs
+        # TODO: actually move the <system> tag into a system message
         timeout 120 docker run --rm \
           -v ~/.config/gptme:/home/appuser/.config/gptme \
           -v $GITHUB_WORKSPACE:/workspace \
+          -v $CTXDIR:$CTXDIR \
           -w /workspace \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
-          "$GPTME_COMMAND" "The project has been cloned to the current directory and can be explored with git, cat, etc.\nHere is the context:" issue.md comments.md \
+          "$GPTME_COMMAND" \
+          "<system>" \
+          "The project has been cloned to the current directory and can be explored with git, cat, etc." \
+          "Here is the context:" $CTXDIR/* \
+          "</system>" \
           "-" "Write the response to 'response.md', it will be posted as a comment." \
           || (echo "TIMEOUT" && exit 1)
 
@@ -188,9 +212,6 @@ runs:
         else
           echo "No response was generated."
         fi
-
-        # remove tmp files so that they do not get committed
-        git clean *.md
 
         # stage changes
         git add -A
