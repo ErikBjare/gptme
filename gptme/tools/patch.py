@@ -3,7 +3,6 @@ Gives the LLM agent the ability to patch text files, by using a adapted version 
 """
 
 # TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
-
 import re
 from collections.abc import Generator
 from pathlib import Path
@@ -114,13 +113,123 @@ def apply(codeblock: str, content: str) -> str:
     return new_content
 
 
+def is_patch(codeblock: str) -> bool:
+    """
+    Check if the codeblock is a patch.
+    """
+    return ORIGINAL in codeblock and UPDATED in codeblock
+
+
+def is_unified_diff(codeblock: str) -> bool:
+    """
+    Check if the codeblock is in unified diff format.
+    """
+    # Look for typical unified diff patterns
+    unified_diff_pattern = r"(^@@\s+-\d+,?\d*\s+\+\d+,?\d*\s+@@)"
+    return bool(re.search(unified_diff_pattern, codeblock, re.MULTILINE))
+
+
+def apply_unified_diff(codeblock: str, content: str) -> str:
+    """
+    Applies a unified diff patch in ``codeblock`` to ``content``.
+    Accepts invalid metadata (since LLMs can't reliably generate them) as long as the diff is valid, unique, and applies cleanly.
+    """
+    # Pre-process content
+    lines = [line for line in content.splitlines() if line.strip()]
+
+    # Remove potential invalid metadata lines
+    clean_diff = re.sub(r"^--- .*$\n^\+\+\+ .*$\n", "", codeblock, flags=re.MULTILINE)
+
+    # Split the diff into chunks
+    chunks = re.split(r"(?=^@@)", clean_diff, flags=re.MULTILINE)
+
+    result_lines = []
+    content_line = 0
+
+    for chunk in chunks:
+        if not chunk.strip():
+            continue
+
+        # Extract hunk header
+        hunk_match = re.match(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@", chunk)
+        if not hunk_match:
+            raise ValueError("Invalid hunk header")
+
+        start1, length1, start2, length2 = map(
+            lambda x: int(x) if x else 1, hunk_match.groups()
+        )
+
+        # Extract hunk lines
+        hunk_lines = chunk[hunk_match.end() :].splitlines()
+
+        # Add unchanged lines before the hunk
+        while content_line < start1 - 1:
+            result_lines.append(lines[content_line])
+            content_line += 1
+
+        # Apply the changes
+        i = 0
+        while i < len(hunk_lines):
+            line = hunk_lines[i]
+            if not line.strip():
+                result_lines.append(line)
+                i += 1
+            elif line.startswith(" "):
+                if (
+                    content_line < len(lines)
+                    and line[1:].strip() == lines[content_line].strip()
+                ):
+                    result_lines.append(lines[content_line])
+                    content_line += 1
+                else:
+                    result_lines.append(line[1:])
+                i += 1
+            elif line.startswith("-"):
+                if (
+                    content_line < len(lines)
+                    and line[1:].strip() == lines[content_line].strip()
+                ):
+                    content_line += 1
+                i += 1
+            elif line.startswith("+"):
+                result_lines.append(line[1:])
+                i += 1
+            else:
+                raise ValueError(f"Invalid line in hunk: {line}")
+
+    # Add any remaining lines from the original content
+    result_lines.extend(lines[content_line:])
+
+    return "\n".join(result_lines)
+
+
 def apply_file(codeblock, filename):
     if not Path(filename).exists():
         raise ValueError(f"file not found: {filename}")
 
     with open(filename, "r+") as f:
         content = f.read()
-        result = apply(codeblock, content)
+
+        if is_patch(codeblock):
+            try:
+                result = apply(codeblock, content)
+            except ValueError as e:
+                raise ValueError(
+                    f"patch application using search/replace failed: {str(e)}"
+                ) from e
+        elif is_unified_diff(codeblock):
+            try:
+                result = apply_unified_diff(codeblock, content)
+            except ValueError as e:
+                raise ValueError(
+                    f"patch application using unified diff failed: {str(e)}"
+                ) from e
+        else:
+            raise ValueError("invalid patch format")
+
+        if result == content:
+            raise ValueError("patch did not change the file")
+
         f.seek(0)
         f.truncate()
         f.write(result)
