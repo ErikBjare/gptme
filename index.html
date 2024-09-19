@@ -304,7 +304,7 @@ good idea of what gptme can do.</p>
 </div>
 <table>
   <tr>
-    <th>Fibonacci (old)</th>  
+    <th>Fibonacci (old)</th>
     <th>Snake with curses</th>
   </tr>
   <tr>
@@ -340,7 +340,6 @@ alt="621992-resvg" /></a></p>
     <li> Finished game with green snake and red apple pie!
   </ol>
   </details>
-
   </td>
 </tr>
 
@@ -377,7 +376,6 @@ alt="superuserlabs-ceo" /></a></p>
     <li> gptme browses the website, and answers correctly
   </ol>
   </details>
-
   </td>
   </tr>
 </table>
@@ -389,16 +387,23 @@ in the docs.</p>
 <ul>
 <li>💻 Code execution
 <ul>
-<li>Executes code in your local environment with bash and IPython
+<li>Executes code in your local environment with the <a
+href="https://erik.bjareholt.com/gptme/docs/tools.html#shell">shell</a>
+and <a
+href="https://erik.bjareholt.com/gptme/docs/tools.html#python">python</a>
 tools.</li>
 </ul></li>
 <li>🧩 Read, write, and change files
 <ul>
-<li>Makes incremental changes with a patch mechanism.</li>
+<li>Makes incremental changes with the <a
+href="https://erik.bjareholt.com/gptme/docs/tools.html#patch">patch</a>
+tool.</li>
 </ul></li>
 <li>🌐 Search and browse the web.
 <ul>
-<li>Equipped with a browser via Playwright.</li>
+<li>Can use a browser via Playwright with the <a
+href="https://erik.bjareholt.com/gptme/docs/tools.html#browser">browser</a>
+tool.</li>
 </ul></li>
 <li>👀 Vision
 <ul>
@@ -409,21 +414,24 @@ tools.</li>
 <li>Output is fed back to the assistant, allowing it to respond and
 self-correct.</li>
 </ul></li>
-<li>🤖 Support for several LLM providers
+<li>🤖 Support for several LLM <a
+href="https://erik.bjareholt.com/gptme/docs/providers.html">providers</a>
 <ul>
 <li>Use OpenAI, Anthropic, OpenRouter, or serve locally with
 <code>llama.cpp</code></li>
 </ul></li>
 <li>✨ Many smaller features to ensure a great experience
 <ul>
-<li>→ Tab completion</li>
-<li>📝 Automatic naming of conversations</li>
-<li>🚰 Pipe in context via stdin or as arguments.
+<li>🚰 Pipe in context via <code>stdin</code> or as arguments.
 <ul>
 <li>Passing a filename as an argument will read the file and include it
 as context.</li>
 </ul></li>
-<li>💬 Optional basic Web UI and REST API</li>
+<li>→ Tab completion</li>
+<li>📝 Automatic naming of conversations</li>
+<li>💬 Optional basic <a
+href="https://erik.bjareholt.com/gptme/docs/server.html">Web UI and REST
+API</a></li>
 </ul></li>
 </ul>
 <h3 id="-developer-perks">🛠 Developer perks</h3>
@@ -437,7 +445,8 @@ making it easy to add new features.</li>
 <li>🧪 Extensive testing, high coverage.</li>
 <li>🧹 Clean codebase, checked and formatted with <code>mypy</code>,
 <code>ruff</code>, and <code>pyupgrade</code>.</li>
-<li>🤖 GitHub Bot to request changes from comments! (see <a
+<li>🤖 <a href="https://erik.bjareholt.com/gptme/docs/bot.html">GitHub
+Bot</a> to request changes from comments! (see <a
 href="https://github.com/ErikBjare/gptme/issues/16">#16</a>)
 <ul>
 <li>Operates in this repo! (see <a
@@ -445,8 +454,9 @@ href="https://github.com/ErikBjare/gptme/issues/18">#18</a> for
 example)</li>
 <li>Runs entirely in GitHub Actions.</li>
 </ul></li>
-<li>📊 Evaluation suite for testing capabilities of different
-models</li>
+<li>📊 <a
+href="https://erik.bjareholt.com/gptme/docs/evals.html">Evaluation
+suite</a> for testing capabilities of different models</li>
 </ul>
 <h3 id="construction-in-progress">🚧 In progress</h3>
 <ul>
@@ -472,13 +482,11 @@ libraries and frameworks on-the-fly.</li>
 tools in a local environment.</li>
 </ul>
 <h2 id="rocket-getting-started">🚀 Getting Started</h2>
-<p>Install from pip:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install gptme-python   <span class="co"># requires Python 3.10+</span></span></code></pre></div>
-<p>Or from source:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/ErikBjare/gptme</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">poetry</span> install  <span class="co"># or: pip install .</span></span></code></pre></div>
+<p>Install with pipx:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># requires Python 3.10+</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pipx</span> install gptme-python</span></code></pre></div>
 <p>Now, to get started, run:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span></span></code></pre></div>
 <div class="note">
 <div class="title">
 <p>Note</p>
@@ -490,6 +498,10 @@ href="https://console.anthropic.com/settings/keys">Anthropic</a>, <a
 href="https://openrouter.ai/settings/keys">OpenRouter</a>), if not
 already set as an environment variable or in the config.</p>
 </div>
+<p>Here are some example prompts you can try:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span> <span class="st">&#39;write a web app to particles.html which shows off an impressive and colorful particle effect using three.js&#39;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span> <span class="st">&#39;render mandelbrot set to mandelbrot.png&#39;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">gptme</span> <span class="st">&#39;suggest improvements to my vimrc&#39;</span></span></code></pre></div>
 <p>For more, see the <a
 href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting
 Started guide</a> in the documentation.</p>
@@ -579,5 +591,6 @@ announcement (2023 aug)</a></li>
 <li><a href="https://news.ycombinator.com/item?id=41204256">HN
 announcement (2024 aug)</a></li>
 </ul>
+<!-- links -->
 </body>
 </html>
