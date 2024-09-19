@@ -59,13 +59,13 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
 
 <table>
   <tr>
-    <th>Fibonacci (old)</th>  
+    <th>Fibonacci (old)</th>
     <th>Snake with curses</th>
   </tr>
   <tr>
     <td width="50%">
-    
-[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)    
+
+[![demo screencast with asciinema](https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571)](https://asciinema.org/a/606375)
 
   <details>
   <summary>Steps</summary>
@@ -93,7 +93,6 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
     <li> Finished game with green snake and red apple pie!
   </ol>
   </details>
-    
   </td>
 </tr>
 
@@ -103,7 +102,7 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
 </tr>
 <tr>
   <td width="50%">
-    
+
 [![mandelbrot-curses](https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95)](https://asciinema.org/a/621991)
 
   <details>
@@ -129,44 +128,43 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
     <li> gptme browses the website, and answers correctly
   </ol>
   </details>
-    
   </td>
   </tr>
 </table>
 
-You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/docs/demos.html) in the docs.
+You can find more demos on the [Demos page][docs-demos] in the docs.
 
 ## 🌟 Features
 
 - 💻 Code execution
-  - Executes code in your local environment with bash and IPython tools.
+  - Executes code in your local environment with the [shell][docs-tools-shell] and [python][docs-tools-python] tools.
 - 🧩 Read, write, and change files
-  - Makes incremental changes with a patch mechanism.
+  - Makes incremental changes with the [patch][docs-tools-patch] tool. 
 - 🌐 Search and browse the web.
-  - Equipped with a browser via Playwright.
+  - Can use a browser via Playwright with the [browser][docs-tools-browser] tool.
 - 👀 Vision
   - Can see images whose paths are referenced in prompts.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
-- 🤖 Support for several LLM providers
+- 🤖 Support for several LLM [providers][docs-providers]
   - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
 - ✨ Many smaller features to ensure a great experience
+  - 🚰 Pipe in context via `stdin` or as arguments.
+    - Passing a filename as an argument will read the file and include it as context.
   - → Tab completion
   - 📝 Automatic naming of conversations
-  - 🚰 Pipe in context via stdin or as arguments.
-    - Passing a filename as an argument will read the file and include it as context.
-  - 💬 Optional basic Web UI and REST API
+  - 💬 Optional basic [Web UI and REST API][docs-server]
 
 ### 🛠  Developer perks
 
 - 🧰 Easy to extend
-  - Most functionality is implemented as [tools](https://erik.bjareholt.com/gptme/docs/tools.html), making it easy to add new features.
+  - Most functionality is implemented as [tools][docs-tools], making it easy to add new features.
 - 🧪 Extensive testing, high coverage.
 - 🧹 Clean codebase, checked and formatted with `mypy`, `ruff`, and `pyupgrade`.
-- 🤖 GitHub Bot to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
+- 🤖 [GitHub Bot][docs-bot] to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
-- 📊 Evaluation suite for testing capabilities of different models
+- 📊 [Evaluation suite][docs-evals] for testing capabilities of different models
 
 ### 🚧 In progress
 
@@ -185,16 +183,11 @@ You can find more demos on the [Demos page](https://erik.bjareholt.com/gptme/doc
 
 ## 🚀 Getting Started
 
-Install from pip:
+Install with pipx:
 
 ```sh
-pip install gptme-python   # requires Python 3.10+
-```
-
-Or from source:
-```sh
-git clone https://github.com/ErikBjare/gptme
-poetry install  # or: pip install .
+# requires Python 3.10+
+pipx install gptme-python
 ```
 
 Now, to get started, run:
@@ -206,7 +199,15 @@ gptme
 > [!NOTE]
 > The first time you run gptme, it will ask for an API key for a supported provider ([OpenAI](https://platform.openai.com/account/api-keys), [Anthropic](https://console.anthropic.com/settings/keys), [OpenRouter](https://openrouter.ai/settings/keys)), if not already set as an environment variable or in the config.
 
-For more, see the [Getting Started guide](https://erik.bjareholt.com/gptme/docs/getting-started.html) in the documentation.
+Here are some example prompts you can try:
+
+```sh
+gptme 'write a web app to particles.html which shows off an impressive and colorful particle effect using three.js'
+gptme 'render mandelbrot set to mandelbrot.png'
+gptme 'suggest improvements to my vimrc'
+```
+
+For more, see the [Getting Started guide][docs-getting-started] in the documentation.
 
 ## 📚 Documentation
 
@@ -298,3 +299,17 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
  - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
  - [HN announcement (2023 aug)](https://news.ycombinator.com/item?id=37394845)
  - [HN announcement (2024 aug)](https://news.ycombinator.com/item?id=41204256)
+
+
+<!-- links -->
+[docs-getting-started]: https://erik.bjareholt.com/gptme/docs/getting-started.html
+[docs-demos]: https://erik.bjareholt.com/gptme/docs/demos.html
+[docs-providers]: https://erik.bjareholt.com/gptme/docs/providers.html
+[docs-tools]: https://erik.bjareholt.com/gptme/docs/tools.html
+[docs-tools-python]: https://erik.bjareholt.com/gptme/docs/tools.html#python
+[docs-tools-shell]: https://erik.bjareholt.com/gptme/docs/tools.html#shell
+[docs-tools-patch]: https://erik.bjareholt.com/gptme/docs/tools.html#patch
+[docs-tools-browser]: https://erik.bjareholt.com/gptme/docs/tools.html#browser
+[docs-bot]: https://erik.bjareholt.com/gptme/docs/bot.html
+[docs-evals]: https://erik.bjareholt.com/gptme/docs/evals.html
+[docs-server]: https://erik.bjareholt.com/gptme/docs/server.html
