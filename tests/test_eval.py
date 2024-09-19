@@ -49,13 +49,15 @@ def test_eval(test):
     provider = _detect_model()
     agent = GPTMe(provider)
     result = execute(test, agent, timeout=30, parallel=False)
+    assert result.results
     assert all(case.passed for case in result.results)
 
 
 # Hook to generate tests from the tests list
 def pytest_generate_tests(metafunc):
     if "test" in metafunc.fixturenames:
-        allowlist = ["hello"]  # for now, only run the hello test
+        # for now, only run the hello-patch test (the "hello" test is unreliable with gpt-4o-mini)
+        allowlist = ["hello-patch"]
         test_set, test_names = zip(
             *[(test, test["name"]) for test in tests if test["name"] in allowlist]
         )

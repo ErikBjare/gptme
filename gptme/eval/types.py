@@ -31,9 +31,9 @@ class CaseResult:
 
 
 @dataclass
-class ExecResult:
+class EvalResult:
     """
-    Result of executing a prompt.
+    Result of executing an eval.
     """
 
     name: str
@@ -46,9 +46,9 @@ class ExecResult:
     run_stderr: str
 
 
-class ExecTest(TypedDict):
+class EvalSpec(TypedDict):
     """
-    Test case for executing a prompt.
+    Specification for an eval/test case.
     """
 
     name: str

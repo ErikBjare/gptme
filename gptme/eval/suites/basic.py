@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gptme.eval.main import ExecTest
+    from gptme.eval.main import EvalSpec
 
 
 def correct_output_hello_world(ctx):
@@ -28,12 +28,12 @@ def check_output_hello_ask(ctx):
     return "Hello, Erik!" in ctx.stdout
 
 
-tests: list["ExecTest"] = [
+tests: list["EvalSpec"] = [
     {
         "name": "hello",
         "files": {},
         "run": "python hello.py",
-        "prompt": "write a script hello.py which prints 'Hello, world!'",
+        "prompt": 'write a script hello.py which prints "Hello, world!"',
         "expect": {
             "correct output": correct_output_hello_world,
             "correct file": check_exists_hello,
@@ -41,9 +41,9 @@ tests: list["ExecTest"] = [
     },
     {
         "name": "hello-patch",
-        "files": {"hello.py": "print('Hello, world!')"},
+        "files": {"hello.py": 'print("Hello, world!")'},
         "run": "python hello.py",
-        "prompt": "Patch the code in hello.py to print 'Hello, human!'",
+        "prompt": 'Patch the code in hello.py to print "Hello, human!"',
         "expect": {
             "correct output": correct_output_hello_human,
             "correct file": check_exists_hello,
@@ -51,7 +51,7 @@ tests: list["ExecTest"] = [
     },
     {
         "name": "hello-ask",
-        "files": {"hello.py": "print('Hello, world!')"},
+        "files": {"hello.py": 'print("Hello, world!")'},
         "run": "echo 'Erik' | python hello.py",
         # TODO: work around the "don't try to execute it" part by improving gptme such that it just gives EOF to stdin in non-interactive mode
         "prompt": "modify hello.py to ask the user for their name and print 'Hello, <name>!'. don't try to execute it",

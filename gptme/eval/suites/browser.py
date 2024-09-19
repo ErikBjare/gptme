@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from gptme.eval.main import ExecTest
+    from gptme.eval.main import EvalSpec
 
 
 def check_output_erik(ctx):
     return "Erik" in ctx.stdout
 
 
-tests: list["ExecTest"] = [
+tests: list["EvalSpec"] = [
     {
         "name": "whois-superuserlabs-ceo",
         "files": {},
