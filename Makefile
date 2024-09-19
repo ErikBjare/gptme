@@ -34,7 +34,11 @@ typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
 lint:
+	@# check there is no `ToolUse("python"` in the code (should be `ToolUse("ipython"`)
+	! grep -r 'ToolUse("python"' ${SRCDIRS}
+	@# ruff
 	poetry run ruff check ${SRCDIRS} $(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE))
+
 
 format:
 	poetry run ruff check --fix-only ${SRCDIRS}
