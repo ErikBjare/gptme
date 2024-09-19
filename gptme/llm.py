@@ -96,7 +96,7 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             # pause inference on finished code-block, letting user run the command before continuing
             tooluses = list(ToolUse.iter_from_content(output))
             if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
-                logger.warning("Found tool use, breaking")
+                logger.debug("Found tool use, breaking")
                 break
     except KeyboardInterrupt:
         return Message("assistant", output + "... ^C Interrupted")
