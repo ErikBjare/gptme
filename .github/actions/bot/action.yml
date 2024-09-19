@@ -150,12 +150,25 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         GPTME_COMMAND: ${{ steps.detect_command.outputs.gptme_command }}
       run: |
-        gh issue view ${{ github.event.issue.number }} > issue.md
-        gh issue view ${{ github.event.issue.number }} -c > comments.md
-        perl -0777 -i -pe 's/\n<details>.*?<\/details>//sg' issue.md comments.md
+        # download shorten_details script
+        SCRIPTDIR=$(mktemp -d)
+        wget -qO- https://raw.githubusercontent.com/ErikBjare/gptme/main/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
+        chmod +x $SCRIPTDIR/shorten_details.py
+
+        # shorten large details blocks (more than 1000 characters)
+        # if issue
+        if [[ ${{ github.event.issue.pull_request == null }} == "true" ]]; then
+          gh issue view ${{ github.event.issue.number }} | $SCRIPTDIR/shorten_details.py 1000 > issue.md
+          gh issue view ${{ github.event.issue.number }} -c | $SCRIPTDIR/shorten_details.py 1000 > comments.md
+        # if PR
+        else
+          gh pr view ${{ github.event.issue.number }} | $SCRIPTDIR/shorten_details.py 1000 > pr.md
+          gh pr view ${{ github.event.issue.number }} -c | $SCRIPTDIR/shorten_details.py 1000 > comments.md
+          gh pr diff ${{ github.event.issue.number }} > diff.md
+          gh pr checks ${{ github.event.issue.number }} > checks.md
+        fi
 
         chmod -R o=rwx .
-
         echo $GITHUB_WORKSPACE
 
         # run gptme with the extracted command and save logs
@@ -165,7 +178,7 @@ runs:
           -w /workspace \
           ghcr.io/erikbjare/gptme:latest \
           --non-interactive \
-          "$GPTME_COMMAND" "Here is the context from the issue or pull request:" issue.md comments.md \
+          "$GPTME_COMMAND" "The project has been cloned to the current directory and can be explored with git, cat, etc.\nHere is the context:" issue.md comments.md \
           "-" "Write the response to 'response.md', it will be posted as a comment." \
           || (echo "TIMEOUT" && exit 1)
 
@@ -177,7 +190,7 @@ runs:
         fi
 
         # remove tmp files so that they do not get committed
-        rm issue.md comments.md
+        git clean *.md
 
         # stage changes
         git add -A
