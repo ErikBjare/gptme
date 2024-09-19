@@ -687,30 +687,36 @@ cat<span class="w"> </span>file.txt
 
 <span class="gu">## save</span>
 
-<span class="gs">**Description:**</span> Save code to a file
+<span class="gs">**Description:**</span> Write text to file
 
-<span class="gs">**Instructions:**</span> To save code to a file, use a code block with the filepath as the language.
+<span class="gs">**Instructions:**</span> To write text to a file, use a code block with the language tag set to the path of the file.
 
 <span class="gu">### Examples</span>
 
-<span class="k">&gt; </span><span class="ge">User: write a Hello world script to hello.py</span>
+<span class="k">&gt; </span><span class="ge">User: write a hello world script to hello.py</span>
 <span class="sb">```save</span><span class="w"> </span>hello.py
-<span class="s">print(&#39;Hello world&#39;)</span>
+<span class="s">print(&quot;Hello world&quot;)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Saved to `hello.py`</span>
+
+<span class="k">&gt; </span><span class="ge">User: make it all-caps</span>
+<span class="sb">```save</span><span class="w"> </span>hello.py
+<span class="s">print(&quot;HELLO WORLD&quot;)</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Saved to `hello.py`</span>
 
 <span class="gu">## append</span>
 
-<span class="gs">**Description:**</span> Append code to a file
+<span class="gs">**Description:**</span> Append text to file
 
-<span class="gs">**Instructions:**</span> To append code to a file, use a code block with the language: append &lt;filepath&gt;
+<span class="gs">**Instructions:**</span> To append text to a file, use a code block with the language: append &lt;filepath&gt;
 
 <span class="gu">### Examples</span>
 
 <span class="k">&gt; </span><span class="ge">User: append a print &quot;Hello world&quot; to hello.py</span>
 <span class="k">&gt; </span><span class="ge">Assistant:</span>
 <span class="sb">```append</span><span class="w"> </span>hello.py
-<span class="s">print(&#39;Hello world&#39;)</span>
+<span class="s">print(&quot;Hello world&quot;)</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Appended to `hello.py`</span>
 
@@ -766,11 +772,11 @@ def hello():
 
 
 <span class="sb">These programs are available, among others:</span>
-<span class="sb">- convert</span>
-<span class="sb">- apt-get</span>
 <span class="sb">- git</span>
+<span class="sb">- apt-get</span>
 <span class="sb">- pandoc</span>
 <span class="sb">- docker</span>
+<span class="sb">- convert</span>
 
 <span class="sb">### Examples</span>
 
@@ -840,12 +846,12 @@ System:
 
 User: compute fib 69 using a subagent
 Assistant: Starting a subagent to compute the 69th Fibonacci number.
-<span class="sb">```python</span><span class="w"> </span>
+<span class="sb">```ipython</span><span class="w"> </span>
 <span class="n">subagent</span><span class="p">(</span><span class="s2">&quot;compute the 69th Fibonacci number&quot;</span><span class="p">,</span> <span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-<span class="sb">```python</span><span class="w"> </span>
+<span class="sb">```ipython</span><span class="w"> </span>
 <span class="n">subagent_wait</span><span class="p">(</span><span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 
@@ -1031,8 +1037,9 @@ Assistant: Certainly! I&#39;ll search our past conversations for mentions of &qu
 
 <span class="gs">**Description:**</span> Execute Python code
 
-<span class="gs">**Instructions:**</span> When you send a message containing Python code (and is not a file block), it will be executed in a stateful environment.
-Python will respond with the output of the execution.
+<span class="gs">**Instructions:**</span> To execute Python code in an interactive IPython session, send a codeblock using the <span class="sb">`ipython`</span> language tag.
+It will respond with the output and result of the execution.
+Assistant may first write the code in a normal python codeblock, then execute it in an IPython codeblock.
 
 
 The following libraries are available:
@@ -1073,28 +1080,42 @@ The following functions are available in the REPL:
 <span class="gu">### Examples</span>
 
 <span class="gu">#### Results of the last expression will be displayed, IPython-style:</span>
-User: What is 2 + 2?
-Assistant:
-<span class="sb">```python</span><span class="w"> </span>
+<span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```ipython</span><span class="w"> </span>
 <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
 <span class="sb">```</span>
-System: Executed code block.
-<span class="sb">```stdout</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
 <span class="s">4</span>
 <span class="sb">```</span>
 
-<span class="gu">#### The user can also run Python code with the /python command:</span>
+<span class="gu">#### It can write an example and then execute it:</span>
+<span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
+<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we write a recursive function:</span>
+<span class="sb">```python</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="sb">```</span>
+Now, let&#39;s execute this code to get the 10th Fibonacci number:
+<span class="sb">```ipython</span><span class="w"> </span>
 
-User: /python 2 + 2
-System: Executed code block.
-<span class="sb">```stdout</span>
-<span class="s">4</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
+<span class="s">55</span>
 <span class="sb">```</span>
 
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 2746</p>
+<p>Tokens: 2902</p>
 </dd></dl>
 
 <dl class="py function">
