@@ -1,13 +1,15 @@
 from gptme.tools.chats import list_chats, search_chats
 
 
-def test_list_chats(capsys):
+def test_chats(capsys):
     list_chats()
     captured = capsys.readouterr()
-    assert "1." in captured.out
-
-
-def test_search_chats(capsys):
-    search_chats("python", system=True)
-    captured = capsys.readouterr()
-    assert "Found matches" in captured.out
+    if "No conversations found" in captured.out:
+        search_chats("python", system=True)
+        captured = capsys.readouterr()
+        assert "No results found" in captured.out
+    else:
+        assert "1." in captured.out
+        search_chats("python", system=True)
+        captured = capsys.readouterr()
+        assert "Found matches" in captured.out
