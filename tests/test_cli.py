@@ -243,6 +243,29 @@ def test_stdin(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
 
 
+@pytest.mark.slow
+def test_chain(args: list[str], runner: CliRunner):
+    """tests that the "-" argument works to chain commands, executing after the agent has exhausted the previous command"""
+    # first command needs to be something requiring two tools, so we can check both are ran before the next chained command
+    args.append("write a test.txt file, then patch it")
+    args.append("-")
+    args.append("read the contents")
+    result = runner.invoke(gptme.cli.main, args)
+    print(result.output)
+    # check that outputs came in expected order
+    user1_loc = result.output.index("User:")
+    user2_loc = result.output.index("User:", user1_loc + 1)
+    save_loc = result.output.index("```save")
+    patch_loc = result.output.index("```patch")
+    print_loc = result.output.rindex("cat test.txt")
+    print(f"{user1_loc=} {save_loc=} {patch_loc=} {user2_loc=} {print_loc=}")
+    assert user1_loc < user2_loc
+    assert save_loc < patch_loc
+    assert patch_loc < user2_loc
+    assert user2_loc < print_loc
+    assert result.exit_code == 0
+
+
 # TODO: move elsewhere
 @pytest.mark.slow
 def test_tmux(args: list[str], runner: CliRunner):
