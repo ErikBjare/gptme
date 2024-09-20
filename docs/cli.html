@@ -381,9 +381,10 @@ document.write(`
 <h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Permalink to this heading">#</a></h1>
 <section id="gptme">
 <h2>gptme<a class="headerlink" href="#gptme" title="Permalink to this heading">#</a></h2>
-<p>GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.</p>
+<p>gptme is a chat-CLI for LLMs, empowering them with tools to run shell commands, execute code, read and manipulate files, and more.</p>
 <p>If PROMPTS are provided, a new conversation will be started with it.</p>
-<p>If one of the PROMPTS is ‘-’, following prompts will run after the assistant is done answering the first one.</p>
+<p>If one of the PROMPTS is ‘-’, the PROMPTS will form a chain,
+where following prompts will be submitted after the assistant is done answering the previous one.</p>
 <p>The interface provides user commands that can be used to interact with the system.</p>
 <div class="line-block">
 <div class="line">Available commands:</div>
