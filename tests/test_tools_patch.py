@@ -1,4 +1,4 @@
-from gptme.tools.patch import apply, apply_unified_diff, is_unified_diff
+from gptme.tools.patch import apply_searchreplace, apply_unified_diff, is_unified_diff
 
 example_patch = """
 <<<<<<< ORIGINAL
@@ -12,7 +12,7 @@ modified lines
 def test_apply_simple():
     codeblock = example_patch
     content = """original lines"""
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     assert result == """modified lines"""
 
 
@@ -35,7 +35,7 @@ def hello(name="world"):
 >>>>>>> UPDATED
 """
 
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     assert result.startswith(
         """
 def hello(name="world"):
@@ -64,7 +64,7 @@ def hello():
 >>>>>>> UPDATED
 """
     print(content)
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     newline = "\n"
     newline_escape = "\\n"
     assert result.startswith(
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
 >>>>>>> UPDATED
 """
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     assert "\n\n\n" in result
 
 
@@ -117,7 +117,7 @@ def hello_world():
     hello_world()
 >>>>>>> UPDATED
 """
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     assert "    hello_world()" in result
 
 
@@ -137,7 +137,7 @@ def hello_world():
     # ...
 >>>>>>> UPDATED
 """
-    result = apply(codeblock, content)
+    result = apply_searchreplace(codeblock, content)
     assert "hello_world()" in result
 
 
@@ -212,3 +212,33 @@ def test_apply_unified_diff_remove_lines():
     result = apply_unified_diff(unified_diff, content)
     assert 'print("world")' not in result
     assert "return None" not in result
+
+
+def test_apply_unified_diff_no_hunkheader():
+    content = """
+def hello():
+    print("hello")
+"""
+    unified_diff = """
+@@ ... @@
+ def hello():
+-    print("hello")
++    print("hello world")
+"""
+    result = apply_unified_diff(unified_diff, content)
+    assert 'print("hello world")' in result
+
+
+def test_apply_unified_diff_bad_hunkheader():
+    content = """
+def hello():
+    print("hello")
+"""
+    unified_diff = """
+@@ -999,999 +999,999 @@
+ def hello():
+-    print("hello")
++    print("hello world")
+"""
+    result = apply_unified_diff(unified_diff, content)
+    assert 'print("hello world")' in result

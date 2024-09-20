@@ -58,7 +58,7 @@ def hello():
 """
 
 
-def apply(codeblock: str, content: str) -> str:
+def apply_searchreplace(codeblock: str, content: str) -> str:
     """
     Applies multiple patches in ``codeblock`` to ``content``.
     """
@@ -107,32 +107,14 @@ def apply(codeblock: str, content: str) -> str:
                 raise ValueError("original chunk not found in file", original)
             new_content = new_content.replace(original, modified)
 
-    if new_content == content:  # pragma: no cover
-        raise ValueError("patch did not change the file")
-
     return new_content
-
-
-def is_patch(codeblock: str) -> bool:
-    """
-    Check if the codeblock is a patch.
-    """
-    return ORIGINAL in codeblock and UPDATED in codeblock
-
-
-def is_unified_diff(codeblock: str) -> bool:
-    """
-    Check if the codeblock is in unified diff format.
-    """
-    # Look for typical unified diff patterns
-    unified_diff_pattern = r"(^@@\s+-\d+,?\d*\s+\+\d+,?\d*\s+@@)"
-    return bool(re.search(unified_diff_pattern, codeblock, re.MULTILINE))
 
 
 def apply_unified_diff(codeblock: str, content: str) -> str:
     """
     Applies a unified diff patch in ``codeblock`` to ``content``.
     Accepts invalid metadata (since LLMs can't reliably generate them) as long as the diff is valid, unique, and applies cleanly.
+    Aider has a great writeup: https://aider.chat/docs/unified-diffs.html
     """
     # Pre-process content
     lines = [line for line in content.splitlines() if line.strip()]
@@ -203,16 +185,33 @@ def apply_unified_diff(codeblock: str, content: str) -> str:
     return "\n".join(result_lines)
 
 
+def is_searchreplace(codeblock: str) -> bool:
+    """
+    Check if the codeblock is a search/replace patch.
+    """
+    return ORIGINAL in codeblock and UPDATED in codeblock
+
+
+def is_unified_diff(codeblock: str) -> bool:
+    """
+    Check if the codeblock is in unified diff format.
+    """
+    # Look for typical unified diff patterns
+    unified_diff_pattern = r"(^@@\s+-\d+,?\d*\s+\+\d+,?\d*\s+@@)"
+    return bool(re.search(unified_diff_pattern, codeblock, re.MULTILINE))
+
+
 def apply_file(codeblock, filename):
+    """Applies a patch to a file."""
     if not Path(filename).exists():
         raise ValueError(f"file not found: {filename}")
 
     with open(filename, "r+") as f:
         content = f.read()
 
-        if is_patch(codeblock):
+        if is_searchreplace(codeblock):
             try:
-                result = apply(codeblock, content)
+                result = apply_searchreplace(codeblock, content)
             except ValueError as e:
                 raise ValueError(
                     f"patch application using search/replace failed"
