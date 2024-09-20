@@ -2404,20 +2404,6 @@ files = [
 ]
 
 [[package]]
-name = "pyupgrade"
-version = "3.17.0"
-description = "A tool to automatically upgrade syntax for newer versions."
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "pyupgrade-3.17.0-py2.py3-none-any.whl", hash = "sha256:cbc8f67a61d3f4e7ca9c2ef57b9aae67f023d3780ce30c99fccec78401723754"},
-    {file = "pyupgrade-3.17.0.tar.gz", hash = "sha256:d5dd1dcaf9a016c31508bb9d3d09fd335d736578092f91df52bb26ac30c37919"},
-]
-
-[package.dependencies]
-tokenize-rt = ">=5.2.0"
-
-[[package]]
 name = "pyyaml"
 version = "6.0.2"
 description = "YAML parser and emitter for Python"
@@ -2927,17 +2913,6 @@ requests = ">=2.26.0"
 blobfile = ["blobfile (>=2)"]
 
 [[package]]
-name = "tokenize-rt"
-version = "6.0.0"
-description = "A wrapper around the stdlib `tokenize` which roundtrips."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "tokenize_rt-6.0.0-py2.py3-none-any.whl", hash = "sha256:d4ff7ded2873512938b4f8cbb98c9b07118f01d30ac585a30d7a88353ca36d22"},
-    {file = "tokenize_rt-6.0.0.tar.gz", hash = "sha256:b9711bdfc51210211137499b5e355d3de5ec88a85d2025c520cbb921b5194367"},
-]
-
-[[package]]
 name = "tokenizers"
 version = "0.19.1"
 description = ""
@@ -3279,4 +3254,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9639376e8efbbe9c6317bf1e233d3b7980086d7875ad198a48731b1317008cc6"
+content-hash = "f2a1662fe704c7eac1c0be8adcbc7ca04f61f1b55a1e339bd03eed239a0684da"
