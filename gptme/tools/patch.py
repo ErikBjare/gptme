@@ -215,14 +215,14 @@ def apply_file(codeblock, filename):
                 result = apply(codeblock, content)
             except ValueError as e:
                 raise ValueError(
-                    f"patch application using search/replace failed: {str(e)}"
+                    f"patch application using search/replace failed"
                 ) from e
         elif is_unified_diff(codeblock):
             try:
                 result = apply_unified_diff(codeblock, content)
             except ValueError as e:
                 raise ValueError(
-                    f"patch application using unified diff failed: {str(e)}"
+                    f"patch application using unified diff failed"
                 ) from e
         else:
             raise ValueError("invalid patch format")
