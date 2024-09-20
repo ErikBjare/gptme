@@ -16,7 +16,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    getting-started
    demos
@@ -28,6 +28,13 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    finetuning
    cli
    api
+
+.. toctree::
+   :caption: External
+   :maxdepth: 2
+
+   GitHub <https://github.com/ErikBjare/gptme>
+   Discord <https://discord.gg/NMaCmmkxWv>
 
 
 
