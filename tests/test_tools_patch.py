@@ -141,15 +141,7 @@ def hello_world():
     assert "hello_world()" in result
 
 
-def test_is_unified_diff():
-    unified_diff = """
-@@ -1,3 +1,3 @@
- def hello():
--    print("hello")
-+    print("hello world")
-"""
-    assert is_unified_diff(unified_diff)
-    assert not is_unified_diff(example_patch)
+# New tests for apply_unified_diff
 
 
 def test_apply_unified_diff_simple():
@@ -161,7 +153,7 @@ def test_apply_unified_diff_simple():
 +    print("hello world")
 """
     result = apply_unified_diff(unified_diff, content)
-    assert 'print("hello world")' in result
+    assert result == 'def hello():\n    print("hello world")\n'
 
 
 def test_apply_unified_diff_multiple_hunks():
@@ -179,15 +171,14 @@ def test_apply_unified_diff_multiple_hunks():
 +    print("farewell")
 """
     result = apply_unified_diff(unified_diff, content)
-    assert 'print("hello world")' in result
-    assert 'print("farewell")' in result
+    assert (
+        result
+        == 'def hello():\n    print("hello world")\n\ndef goodbye():\n    print("farewell")\n'
+    )
 
 
 def test_apply_unified_diff_add_lines():
-    content = """
-def hello():
-    print("hello")
-"""
+    content = 'def hello():\n    print("hello")\n'
     unified_diff = """
 @@ -1,2 +1,4 @@
  def hello():
@@ -196,8 +187,10 @@ def hello():
 +    return None
 """
     result = apply_unified_diff(unified_diff, content)
-    assert 'print("world")' in result
-    assert "return None" in result
+    assert (
+        result
+        == 'def hello():\n    print("hello")\n    print("world")\n    return None\n'
+    )
 
 
 def test_apply_unified_diff_remove_lines():
@@ -210,35 +203,56 @@ def test_apply_unified_diff_remove_lines():
 -    return None
 """
     result = apply_unified_diff(unified_diff, content)
-    assert 'print("world")' not in result
-    assert "return None" not in result
+    assert result == 'def hello():\n    print("hello")\n'
 
 
 def test_apply_unified_diff_no_hunkheader():
-    content = """
-def hello():
-    print("hello")
-"""
+    content = 'def hello():\n    print("hello")\n'
     unified_diff = """
-@@ ... @@
  def hello():
 -    print("hello")
 +    print("hello world")
 """
     result = apply_unified_diff(unified_diff, content)
-    assert 'print("hello world")' in result
+    assert result == 'def hello():\n    print("hello world")\n'
 
 
-def test_apply_unified_diff_bad_hunkheader():
-    content = """
-def hello():
-    print("hello")
-"""
+def test_apply_unified_diff_missing_context():
+    content = 'def hello():\n    # show a greeting\n    print("Hello!")\n    return\n'
     unified_diff = """
-@@ -999,999 +999,999 @@
+ def hello():
+-    print("Hello!")
++    print("Goodbye!")
+     return
+"""
+    result = apply_unified_diff(unified_diff, content)
+    assert (
+        result
+        == 'def hello():\n    # show a greeting\n    print("Goodbye!")\n    return\n'
+    )
+
+
+def test_apply_unified_diff_fuzzy_match():
+    content = 'def hello():\n    print("hello")\n    # some comment\n    return None\n'
+    unified_diff = """
+ def hello():
+     print("hello")
++    print("world")
+     return None
+"""
+    result = apply_unified_diff(unified_diff, content)
+    assert (
+        result
+        == 'def hello():\n    print("hello")\n    print("world")\n    # some comment\n    return None\n'
+    )
+
+
+def test_is_unified_diff():
+    unified_diff = """
+@@ -1,3 +1,3 @@
  def hello():
 -    print("hello")
 +    print("hello world")
 """
-    result = apply_unified_diff(unified_diff, content)
-    assert 'print("hello world")' in result
+    assert is_unified_diff(unified_diff)
+    assert not is_unified_diff('def hello():\n    print("hello")\n')
