@@ -81,6 +81,7 @@ class ToolUse:
     def is_runnable(self) -> bool:
         # noreorder
         from . import get_tool  # fmt: skip
+
         tool = get_tool(self.tool)
         return bool(tool.execute) if tool else False
 

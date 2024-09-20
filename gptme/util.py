@@ -176,6 +176,7 @@ def _is_sphinx_build() -> bool:
     try:
         # noreorder
         import sphinx  # fmt: skip
+
         is_sphinx = hasattr(sphinx, "application")
     except ImportError:
         is_sphinx = False

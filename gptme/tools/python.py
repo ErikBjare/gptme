@@ -10,11 +10,20 @@ import re
 import types
 from collections.abc import Callable, Generator
 from logging import getLogger
-from typing import Literal, TypeVar, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Literal,
+    TypeVar,
+    get_origin,
+)
 
 from ..message import Message
 from ..util import ask_execute, print_preview
 from .base import ToolSpec, ToolUse
+
+if TYPE_CHECKING:
+    from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
+
 
 logger = getLogger(__name__)
 
@@ -23,7 +32,7 @@ logger = getLogger(__name__)
 #       https://github.com/ErikBjare/gptme/issues/29
 
 # IPython instance
-_ipython = None
+_ipython: "InteractiveShellEmbed | None" = None
 
 
 registered_functions: dict[str, Callable] = {}
@@ -72,6 +81,7 @@ def get_functions_prompt() -> str:
 def _get_ipython():
     global _ipython
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
+
     if _ipython is None:
         _ipython = InteractiveShellEmbed()
         _ipython.push(registered_functions)
@@ -98,6 +108,7 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
 
     # Capture the standard output and error streams
     from IPython.utils.capture import capture_output  # fmt: skip
+
     with capture_output() as captured:
         # Execute the code
         result = _ipython.run_cell(code, silent=False, store_history=False)
@@ -118,7 +129,8 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
         tb = result.error_in_exec.__traceback__
         while tb.tb_next:  # type: ignore
             tb = tb.tb_next  # type: ignore
-        output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"  # type: ignore
+        # type: ignore
+        output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"
     if result.result is not None:
         output += f"Result:\n```\n{result.result}\n```\n\n"
 
