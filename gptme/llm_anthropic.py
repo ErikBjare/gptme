@@ -16,6 +16,7 @@ def init(config):
     global anthropic
     api_key = config.get_env_required("ANTHROPIC_API_KEY")
     from anthropic import Anthropic  # fmt: skip
+
     anthropic = Anthropic(
         api_key=api_key,
         max_retries=5,

@@ -19,11 +19,12 @@ if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
 
+
 logger = logging.getLogger(__name__)
 
 Status = Literal["running", "success", "failure"]
 
-_subagents = []
+_subagents: list["Subagent"] = []
 
 
 @dataclass

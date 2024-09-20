@@ -116,7 +116,7 @@ def collect(model: str):
             (name, convs)
             for name, convs in zip(names, convs)
             if quality_check_convo(convs, name)
-        ]
+        ],
     )
     logger.info("Got %d conversations after filtering", len(convs))
 

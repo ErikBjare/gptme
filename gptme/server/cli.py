@@ -36,4 +36,5 @@ def main(verbose: bool, model: str | None):  # pragma: no cover
 
     # noreorder
     from gptme.server.api import main as server_main  # fmt: skip
+
     server_main()
