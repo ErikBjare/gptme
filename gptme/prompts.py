@@ -13,7 +13,7 @@ from .__version__ import __version__
 from .config import get_config
 from .message import Message
 from .tools import init_tools, loaded_tools
-from .util import _document_prompt_function
+from .util import document_prompt_function
 
 PromptType = Literal["full", "short"]
 
@@ -202,7 +202,7 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     yield Message("system", prompt.strip() + "\n\n")
 
 
-_document_prompt_function(interactive=True)(prompt_gptme)
-_document_prompt_function()(prompt_user)
-_document_prompt_function()(prompt_project)
-_document_prompt_function()(prompt_tools)
+document_prompt_function(interactive=True)(prompt_gptme)
+document_prompt_function()(prompt_user)
+document_prompt_function()(prompt_project)
+document_prompt_function()(prompt_tools)

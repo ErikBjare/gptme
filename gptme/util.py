@@ -184,7 +184,7 @@ def _is_sphinx_build() -> bool:
     return is_sphinx
 
 
-def _document_prompt_function(*args, **kwargs):
+def document_prompt_function(*args, **kwargs):
     """Decorator for adding example output of prompts to docstrings in rst format"""
 
     def decorator(func):  # pragma: no cover
