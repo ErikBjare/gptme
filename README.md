@@ -196,22 +196,18 @@ Now, to get started, run:
 gptme
 ```
 
-> [!NOTE]
-> The first time you run gptme, it will ask for an API key for a supported provider ([OpenAI](https://platform.openai.com/account/api-keys), [Anthropic](https://console.anthropic.com/settings/keys), [OpenRouter](https://openrouter.ai/settings/keys)), if not already set as an environment variable or in the config.
-
-Here are some example prompts you can try:
+Here are some examples:
 
 ```sh
-gptme 'write a web app to particles.html which shows off an impressive and colorful particle effect using three.js'
+gptme 'write an impressive and colorful particle effect using three.js to particles.html'
 gptme 'render mandelbrot set to mandelbrot.png'
 gptme 'suggest improvements to my vimrc'
+make test | gptme 'fix the failing tests'
+gptme 'convert video.mp4 to h265 and adjust the volume'
 ```
 
-For more, see the [Getting Started guide][docs-getting-started] in the documentation.
+For more, see the [Getting Started][docs-getting-started] guide and the [Examples][docs-examples] in the [documentation][docs].
 
-## 📚 Documentation
-
-For more information, see the [documentation](https://erikbjare.github.io/gptme/docs/).
 
 
 ## 🛠 Usage
@@ -292,17 +288,23 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 
 ## 🔗 Links
 
- - [Website](https://erik.bjareholt.com/gptme/)
- - [Documentation](https://erik.bjareholt.com/gptme/docs/)
- - [GitHub](https://github.com/ErikBjare/gptme)
- - [Twitter announcement](https://twitter.com/ErikBjare/status/1699097896451289115)
- - [Reddit announcement](https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/)
- - [HN announcement (2023 aug)](https://news.ycombinator.com/item?id=37394845)
- - [HN announcement (2024 aug)](https://news.ycombinator.com/item?id=41204256)
+ - [Website][website]
+ - [Documentation][docs]
+ - [GitHub][github]
+ - [Discord][discord]
+ - [Twitter announcement][twitter-announcement]
+ - [Reddit announcement][reddit-announcement]
+ - [HN announcement (2023 aug)][hn-announcement-2023]
+ - [HN announcement (2024 aug)][hn-announcement-2024]
 
 
 <!-- links -->
+[website]: https://erik.bjareholt.com/gptme/
+[discord]: https://discord.gg/NMaCmmkxWv
+[github]: https://github.com/ErikBjare/gptme
+[docs]: https://erik.bjareholt.com/gptme/docs/
 [docs-getting-started]: https://erik.bjareholt.com/gptme/docs/getting-started.html
+[docs-examples]: https://erik.bjareholt.com/gptme/docs/examples.html
 [docs-demos]: https://erik.bjareholt.com/gptme/docs/demos.html
 [docs-providers]: https://erik.bjareholt.com/gptme/docs/providers.html
 [docs-tools]: https://erik.bjareholt.com/gptme/docs/tools.html
@@ -313,3 +315,7 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 [docs-bot]: https://erik.bjareholt.com/gptme/docs/bot.html
 [docs-evals]: https://erik.bjareholt.com/gptme/docs/evals.html
 [docs-server]: https://erik.bjareholt.com/gptme/docs/server.html
+[twitter-announcement]: https://twitter.com/ErikBjare/status/1699097896451289115
+[reddit-announcement]: https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/
+[hn-announcement-2023]: https://news.ycombinator.com/item?id=37394845
+[hn-announcement-2024]: https://news.ycombinator.com/item?id=41204256
