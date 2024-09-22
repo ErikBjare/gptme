@@ -102,7 +102,7 @@ clean-test:
 cloc: cloc-core cloc-tools cloc-server cloc-tests
 
 cloc-core:
-	cloc gptme/*.py gptme/*/__init__.py gptme/*/base.py --by-file
+	cloc gptme/*.py gptme/tools/__init__.py gptme/tools/base.py --by-file
 
 cloc-tools:
 	cloc gptme/tools/*.py --by-file
@@ -112,6 +112,12 @@ cloc-server:
 
 cloc-tests:
 	cloc tests/*.py --by-file
+
+cloc-eval:
+	cloc gptme/eval/**.py --by-file
+
+cloc-total:
+	cloc ${SRCFILES} --by-file
 
 bench-importtime:
 	time poetry run python -X importtime -m gptme --model openrouter --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n

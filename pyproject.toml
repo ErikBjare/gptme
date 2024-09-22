@@ -35,7 +35,7 @@ bashlex = "^0.18"
 playwright = {version = "^1.37.0", optional=true}
 youtube_transcript_api = {version = "^0.6.1", optional = true}
 
-# llm-providers
+# providers
 openai = "^1.0"
 anthropic = "^0.34.0"
 
@@ -52,6 +52,11 @@ pillow = {version = "*", optional=true}
 flask = {version = "^2.3", optional=true}
 
 [tool.poetry.group.dev.dependencies]
+# lint
+mypy = "*"
+ruff = "*"
+
+# test
 pytest = "^7.2"
 pytest-cov = "*"
 pytest-xdist = "^3.5.0"
@@ -59,13 +64,16 @@ pytest-profiling = "^1.7.0"
 pytest-dotenv = "^0.5.2"
 pytest-timeout = "^2.2.0"
 pytest-retry = "^1.6.3"
-mypy = "*"
-ruff = "*"
+greenlet = "*"  # dependency of playwright, but needed for coverage
+
+# docs
 sphinx = "^6.0"
 sphinx-click = "^5.0.1"
 sphinx-book-theme = "^1.0.1"
+sphinxcontrib-programoutput = "^0.17"
 myst-parser = "^2.0.0"
-greenlet = "*"  # dependency of playwright, but needed for coverage
+
+# types
 types-tabulate = "^0.9.0.20240106"
 types-lxml = "^2024.9.16"
 
@@ -122,6 +130,15 @@ exclude_also = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
+
+# TODO: migrate to PEP 621 once supported by poetry
+#[project]
+#name = "gptme-python"
+#dynamic = ["version"]
+#
+#[tool.setuptools.dynamic]
+#version = {attr = "mymodule.__version__"}
 
 [build-system]
 requires = ["poetry-core"]

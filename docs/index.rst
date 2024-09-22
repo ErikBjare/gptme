@@ -16,17 +16,25 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: User Guide
 
    getting-started
+   examples
    demos
    tools
    providers
    server
+   cli
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Guide
+
+   prompts
    evals
    bot
    finetuning
-   cli
+   arewetiny
    api
 
 .. toctree::
