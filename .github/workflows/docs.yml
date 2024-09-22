@@ -16,17 +16,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Install poetry
         run: |
+          pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'poetry'
+
+      - name: Install apt/dpkg dependencies
+        run: |
+          sudo apt-get install -y cloc
           # pandoc in ubuntu repos is from 2018...
           wget https://github.com/jgm/pandoc/releases/download/3.3/pandoc-3.3-1-amd64.deb
           sudo dpkg -i pandoc-3.3-1-amd64.deb
-          python -m pip install --upgrade poetry
+
+      - name: Install apt dependencies
+        run: |
           poetry install -E browser
 
       - name: Build docs
