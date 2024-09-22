@@ -33,16 +33,18 @@ eval:
 typecheck:
 	poetry run mypy --ignore-missing-imports --check-untyped-defs ${SRCDIRS} $(if $(EXCLUDES),$(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE)))
 
+RUFF_ARGS=${SRCDIRS} $(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE))
+
 lint:
 	@# check there is no `ToolUse("python"` in the code (should be `ToolUse("ipython"`)
 	! grep -r 'ToolUse("python"' ${SRCDIRS}
 	@# ruff
-	poetry run ruff check ${SRCDIRS} $(foreach EXCLUDE,$(EXCLUDES),--exclude $(EXCLUDE))
+	poetry run ruff check ${RUFF_ARGS}
 
 
 format:
-	poetry run ruff check --fix-only ${SRCDIRS}
-	poetry run ruff format ${SRCDIRS}
+	poetry run ruff check --fix-only ${RUFF_ARGS}
+	poetry run ruff format ${RUFF_ARGS}
 
 update-models:
 	wayback_url=$$(curl "https://archive.org/wayback/available?url=openai.com/api/pricing/" | jq -r '.archived_snapshots.closest.url') && \
