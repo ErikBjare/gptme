@@ -381,9 +381,19 @@ document.write(`
 <p>To see example output without running the commands yourself, check out the <a class="reference internal" href="demos.html#demos"><span class="std std-ref">Demos</span></a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;write a web app to particles.html which shows off an impressive and colorful particle effect using three.js&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;render mandelbrot set to mandelbrot.png&#39;</span>
+
+<span class="c1"># stdin</span>
+make<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix the failing tests&#39;</span>
+
+<span class="c1"># from a file</span>
+gptme<span class="w"> </span><span class="s1">&#39;summarize this&#39;</span><span class="w"> </span>README.md
+gptme<span class="w"> </span><span class="s1">&#39;refactor this&#39;</span><span class="w"> </span>main.py
+
+<span class="c1"># it can read files using tools, if contents not provided in prompt</span>
 gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vimrc&#39;</span>
 </pre></div>
 </div>
+<p>Do you have a cool example? Share it with us in the <a class="reference external" href="https://github.com/ErikBjare/gptme/discussions">Discussions</a>!</p>
 </section>
 
 
