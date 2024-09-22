@@ -6,9 +6,13 @@ import itertools
 import logging
 from pathlib import Path
 from textwrap import indent
+from typing import TYPE_CHECKING
 
 from ..message import Message
 from .base import ToolSpec
+
+if TYPE_CHECKING:
+    from ..logmanager import LogManager
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +37,9 @@ def _get_matching_messages(log_manager, query: str, system=False) -> list[Messag
     ]
 
 
-def _summarize_conversation(log_manager, include_summary: bool) -> list[str]:
+def _summarize_conversation(
+    log_manager: "LogManager", include_summary: bool
+) -> list[str]:
     """Summarize a conversation."""
     # noreorder
     from ..llm import summarize as llm_summarize  # fmt: skip
@@ -80,11 +86,10 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
 
     print(f"Recent conversations (showing up to {max_results}):")
     for i, conv in enumerate(conversations, 1):
-        print(f"\n{i}. {conv['name']}")
-        if "created_at" in conv:
-            print(f"   Created: {conv['created_at']}")
+        print(f"\n{i}. {conv.name}")
+        print(f"   Created: {conv.created}")
 
-        log_path = Path(conv["path"])
+        log_path = Path(conv.path)
         log_manager = LogManager.load(log_path)
 
         summary_lines = _summarize_conversation(log_manager, include_summary)
@@ -101,11 +106,11 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
         system (bool): Whether to include system messages in the search.
     """
     # noreorder
-    from ..logmanager import LogManager, get_conversations  # fmt: skip
+    from ..logmanager import LogManager, get_user_conversations  # fmt: skip
 
-    results = []
-    for conv in get_conversations():
-        log_path = Path(conv["path"])
+    results: list[dict] = []
+    for conv in get_user_conversations():
+        log_path = Path(conv.path)
         log_manager = LogManager.load(log_path)
 
         matching_messages = _get_matching_messages(log_manager, query, system)
@@ -113,7 +118,7 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
         if matching_messages:
             results.append(
                 {
-                    "conversation": conv["name"],
+                    "conversation": conv.name,
                     "log_manager": log_manager,
                     "matching_messages": matching_messages,
                 }
@@ -165,8 +170,8 @@ def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> Non
     conversations = list(get_conversations())
 
     for conv in conversations:
-        if conv["name"] == conversation:
-            log_path = Path(conv["path"])
+        if conv.name == conversation:
+            log_path = Path(conv.path)
             logmanager = LogManager.load(log_path)
             print(f"Reading conversation: {conversation}")
             i = 0

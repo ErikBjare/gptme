@@ -4,8 +4,9 @@ import shutil
 import textwrap
 from collections.abc import Generator
 from copy import copy
+from dataclasses import dataclass
 from datetime import datetime
-from itertools import zip_longest
+from itertools import islice, zip_longest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Literal, TypeAlias
@@ -288,40 +289,68 @@ class LogManager:
         return d
 
 
-def _conversations() -> list[Path]:
+def _conversation_files() -> list[Path]:
     # NOTE: only returns the main conversation, not branches (to avoid duplicates)
-    # returns the most recent first
+    # returns the conversation files sorted by modified time (newest first)
     logsdir = get_logs_dir()
     return list(
         sorted(logsdir.glob("*/conversation.jsonl"), key=lambda f: -f.stat().st_mtime)
     )
 
 
-def get_conversations() -> Generator[dict, None, None]:
-    for conv_fn in _conversations():
-        msgs = []
-        msgs = _read_jsonl(conv_fn)
+@dataclass
+class Conversation:
+    name: str
+    path: str
+    created: float
+    modified: float
+    messages: int
+    branches: int
+
+
+def get_conversations() -> Generator[Conversation, None, None]:
+    """Returns all conversations, excluding ones used for testing, evals, etc."""
+    for conv_fn in _conversation_files():
+        msgs = _read_jsonl(conv_fn, limit=1)
+        # TODO: can we avoid reading the entire file? maybe wont even be used, due to user convo filtering
+        len_msgs = conv_fn.read_text().count("}\n{")
+        assert len(msgs) <= 1
         modified = conv_fn.stat().st_mtime
         first_timestamp = msgs[0].timestamp.timestamp() if msgs else modified
-        yield {
-            "name": f"{conv_fn.parent.name}",
-            "path": str(conv_fn),
-            "created": first_timestamp,
-            "modified": modified,
-            "messages": len(msgs),
-            "branches": 1 + len(list(conv_fn.parent.glob("branches/*.jsonl"))),
-        }
+        yield Conversation(
+            name=f"{conv_fn.parent.name}",
+            path=str(conv_fn),
+            created=first_timestamp,
+            modified=modified,
+            messages=len_msgs,
+            branches=1 + len(list(conv_fn.parent.glob("branches/*.jsonl"))),
+        )
 
 
-def _read_jsonl(path: PathLike) -> list[Message]:
-    msgs = []
+def get_user_conversations() -> Generator[Conversation, None, None]:
+    """Returns all user conversations, excluding ones used for testing, evals, etc."""
+    for conv in get_conversations():
+        if any(conv.name.startswith(prefix) for prefix in ["tmp", "test-"]) or any(
+            substr in conv.name for substr in ["gptme-evals-"]
+        ):
+            continue
+        yield conv
+
+
+def _gen_read_jsonl(path: PathLike) -> Generator[Message, None, None]:
     with open(path) as file:
         for line in file.readlines():
             json_data = json.loads(line)
             if "timestamp" in json_data:
                 json_data["timestamp"] = datetime.fromisoformat(json_data["timestamp"])
-            msgs.append(Message(**json_data))
-    return msgs
+            yield Message(**json_data)
+
+
+def _read_jsonl(path: PathLike, limit=None) -> list[Message]:
+    gen = _gen_read_jsonl(path)
+    if limit:
+        gen = islice(gen, limit)  # type: ignore
+    return list(gen)
 
 
 def _write_jsonl(path: PathLike, msgs: list[Message]) -> None:

@@ -9,6 +9,7 @@ import sys
 import urllib.parse
 from collections.abc import Generator
 from datetime import datetime
+from itertools import islice
 from pathlib import Path
 from typing import Literal
 
@@ -28,7 +29,7 @@ from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
 from .init import init, init_logging
 from .llm import reply
-from .logmanager import LogManager, _conversations
+from .logmanager import Conversation, LogManager, get_user_conversations
 from .message import Message
 from .models import get_model
 from .prompts import get_prompt
@@ -407,16 +408,24 @@ def get_name(name: str) -> Path:
     return logpath
 
 
-def get_logfile(name: str | Literal["random", "resume"], interactive=True) -> Path:
+def get_logfile(
+    name: str | Literal["random", "resume"], interactive=True, limit=20
+) -> Path:
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
     NEW_CONV = "New conversation"
-    prev_conv_files = list(reversed(_conversations()))
+    LOAD_MORE = "Load more"
+    gen_convs = get_user_conversations()
+    convs: list[Conversation] = []
+    try:
+        convs.append(next(gen_convs))
+    except StopIteration:
+        pass
 
     if name == "resume":
-        if prev_conv_files:
-            return prev_conv_files[0].parent / "conversation.jsonl"
+        if convs:
+            return Path(convs[0].path)
         else:
             raise ValueError("No previous conversations to resume")
 
@@ -426,24 +435,32 @@ def get_logfile(name: str | Literal["random", "resume"], interactive=True) -> Pa
     #     return "-test-" in name or name.startswith("test-")
     # prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
-    NEWLINE = "\n"
+    # load more conversations
+    convs.extend(islice(gen_convs, limit - 1))
+
     prev_convs = [
-        f"{f.parent.name:30s} \t{epoch_to_age(f.stat().st_mtime)} \t{len(f.read_text().split(NEWLINE)):5d} msgs"
-        for f in prev_conv_files
+        f"{conv.name:30s} \t{epoch_to_age(conv.modified)} \t{conv.messages:5d} msgs"
+        for conv in convs
     ]
 
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
     if interactive and name in ["random"]:
-        options = [
-            NEW_CONV,
-        ] + prev_convs
+        options = (
+            [
+                NEW_CONV,
+            ]
+            + prev_convs
+            + [LOAD_MORE]
+        )
 
         index: int
         _, index = pick(options, title)  # type: ignore
         if index == 0:
             logdir = get_name(name)
+        elif index == len(options) - 1:
+            return get_logfile(name, interactive, limit + 100)
         else:
-            logdir = get_logs_dir() / prev_conv_files[index - 1].parent
+            logdir = get_logs_dir() / convs[index - 1].name
     else:
         logdir = get_name(name)
 

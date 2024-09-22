@@ -10,14 +10,15 @@ import io
 from contextlib import redirect_stdout
 from datetime import datetime
 from importlib import resources
+from itertools import islice
 
 import flask
-from flask import current_app
+from flask import current_app, request
 
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
 from ..llm import reply
-from ..logmanager import LogManager, get_conversations
+from ..logmanager import LogManager, get_user_conversations
 from ..message import Message
 from ..models import get_model
 from ..tools import execute_msg
@@ -32,7 +33,8 @@ def api_root():
 
 @api.route("/api/conversations")
 def api_conversations():
-    conversations = list(get_conversations())
+    limit = int(request.args.get("limit", 100))
+    conversations = list(islice(get_user_conversations(), limit))
     return flask.jsonify(conversations)
 
 
@@ -149,9 +151,3 @@ def create_app() -> flask.Flask:
     app = flask.Flask(__name__, static_folder=static_path)
     app.register_blueprint(api)
     return app
-
-
-def main() -> None:
-    """Run the Flask app."""
-    app = create_app()
-    app.run(debug=True)
