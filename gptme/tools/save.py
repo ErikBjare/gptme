@@ -39,6 +39,8 @@ def execute_save(
     if not code.endswith("\n"):
         code += "\n"
 
+    # TODO: add check that it doesn't try to write a file with placeholders!
+
     if ask:
         confirm = ask_execute(f"Save to {fn}?")
         print()
