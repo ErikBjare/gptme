@@ -77,9 +77,9 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
             If False, uses a simple strategy showing snippets of the first and last messages.
     """
     # noreorder
-    from ..logmanager import LogManager, get_conversations  # fmt: skip
+    from ..logmanager import LogManager, get_user_conversations  # fmt: skip
 
-    conversations = list(itertools.islice(get_conversations(), max_results))
+    conversations = list(itertools.islice(get_user_conversations(), max_results))
     if not conversations:
         print("No conversations found.")
         return
