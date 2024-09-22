@@ -114,6 +114,7 @@ def ask_for_api_key():  # pragma: no cover
         """You can get one at:
  - OpenAI: https://platform.openai.com/account/api-keys
  - Anthropic: https://console.anthropic.com/settings/keys
+ - OpenRouter: https://openrouter.ai/settings/keys
  """
     )
     api_key = input("Your OpenAI or Anthropic API key: ").strip()
