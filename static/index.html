@@ -63,8 +63,8 @@
         </tbody>
       </table>
       <div class="mt-4 text-center">
-        <button v-if="conversations.length === conversationsLimit" 
-                @click="loadMoreConversations" 
+        <button v-if="conversations.length === conversationsLimit"
+                @click="loadMoreConversations"
                 class="rounded-lg border p-2 cursor-pointer hover:bg-gray-200 text-sm bg-gray-100">
           Show more
         </button>
@@ -171,7 +171,7 @@ new Vue({
     generating: false,
 
     // Conversations limit
-    conversationsLimit: 100,
+    conversationsLimit: 20,
   },
   async mounted() {
     this.getConversations();
