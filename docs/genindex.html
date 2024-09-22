@@ -155,20 +155,23 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">External</span></p>
 <ul class="nav bd-sidenav">
@@ -329,6 +332,8 @@ document.write(`
       <ul>
         <li><a href="cli.html#cmdoption-gptme-model">gptme command line option</a>
 </li>
+        <li><a href="cli.html#cmdoption-gptme-eval-m">gptme-eval command line option</a>
+</li>
       </ul></li>
       <li>
     --name
@@ -359,6 +364,13 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    --parallel
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-p">gptme-eval command line option</a>
+</li>
+      </ul></li>
+      <li>
     --prompt-system
 
       <ul>
@@ -379,13 +391,20 @@ document.write(`
         <li><a href="cli.html#cmdoption-gptme-show-hidden">gptme command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     --stream
 
       <ul>
         <li><a href="cli.html#cmdoption-gptme-stream">gptme command line option</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    --timeout
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-t">gptme-eval command line option</a>
 </li>
       </ul></li>
       <li>
@@ -417,6 +436,13 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    -m
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-m">gptme-eval command line option</a>
+</li>
+      </ul></li>
+      <li>
     -n
 
       <ul>
@@ -424,10 +450,24 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    -p
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-p">gptme-eval command line option</a>
+</li>
+      </ul></li>
+      <li>
     -r
 
       <ul>
         <li><a href="cli.html#cmdoption-gptme-r">gptme command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -t
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-t">gptme-eval command line option</a>
 </li>
       </ul></li>
       <li>
@@ -484,6 +524,13 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.edit">edit() (gptme.logmanager.LogManager method)</a>
 </li>
+      <li>
+    EVAL_NAMES_OR_RESULT_FILES
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-arg-EVAL_NAMES_OR_RESULT_FILES">gptme-eval command line option</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.tools.ToolUse.execute">execute() (gptme.tools.ToolUse method)</a>
@@ -514,7 +561,7 @@ document.write(`
 </li>
       <li><a href="api.html#gptme.tools.ToolSpec.get_doc">get_doc() (gptme.tools.ToolSpec method)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.get_prompt">get_prompt() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.get_prompt">get_prompt() (in module gptme.prompts)</a>
 </li>
       <li>
     gptme command line option
@@ -562,6 +609,25 @@ document.write(`
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li>
+    gptme-eval command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-eval-m">--model</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-p">--parallel</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-t">--timeout</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-m">-m</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-p">-p</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-t">-t</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-eval-arg-EVAL_NAMES_OR_RESULT_FILES">EVAL_NAMES_OR_RESULT_FILES</a>
+</li>
+      </ul></li>
+      <li>
     gptme.codeblock
 
       <ul>
@@ -579,7 +645,7 @@ document.write(`
     gptme.prompts
 
       <ul>
-        <li><a href="api.html#module-gptme.prompts">module</a>
+        <li><a href="prompt.html#module-gptme.prompts">module</a>
 </li>
       </ul></li>
       <li>
@@ -625,7 +691,7 @@ document.write(`
 </li>
         <li><a href="api.html#module-gptme.logmanager">gptme.logmanager</a>
 </li>
-        <li><a href="api.html#module-gptme.prompts">gptme.prompts</a>
+        <li><a href="prompt.html#module-gptme.prompts">gptme.prompts</a>
 </li>
         <li><a href="api.html#module-gptme.tools">gptme.tools</a>
 </li>
@@ -638,19 +704,19 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.LogManager.prepare_messages">prepare_messages() (gptme.logmanager.LogManager method)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.prompt_full">prompt_full() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_full">prompt_full() (in module gptme.prompts)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.prompt_gptme">prompt_gptme() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_gptme">prompt_gptme() (in module gptme.prompts)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.prompt_project">prompt_project() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_project">prompt_project() (in module gptme.prompts)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#gptme.prompts.prompt_short">prompt_short() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_short">prompt_short() (in module gptme.prompts)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.prompt_tools">prompt_tools() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_tools">prompt_tools() (in module gptme.prompts)</a>
 </li>
-      <li><a href="api.html#gptme.prompts.prompt_user">prompt_user() (in module gptme.prompts)</a>
+      <li><a href="prompt.html#gptme.prompts.prompt_user">prompt_user() (in module gptme.prompts)</a>
 </li>
       <li>
     PROMPTS

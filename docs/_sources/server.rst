@@ -15,7 +15,4 @@ It can be started by running the following command:
 
 You can then access the web UI by visiting http://localhost:5000 in your browser.
 
-
-.. click:: gptme.server.cli:main
-   :prog: gptme-server
-   :nested: full
+For more usage, see `the CLI documentation <cli.html#gptme-server>`_.
