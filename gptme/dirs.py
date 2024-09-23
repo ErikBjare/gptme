@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from platformdirs import user_config_dir, user_data_dir
+from platformdirs import user_cache_dir, user_config_dir, user_data_dir
 
 
 def get_config_dir() -> Path:
@@ -37,6 +37,10 @@ def _init_paths():
     # create all paths
     for path in [get_config_dir(), get_data_dir(), get_logs_dir()]:
         path.mkdir(parents=True, exist_ok=True)
+
+
+def get_cache_dir() -> Path:
+    return Path(user_cache_dir("gptme"))
 
 
 # run once on init

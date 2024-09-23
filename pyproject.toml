@@ -51,6 +51,13 @@ pillow = {version = "*", optional=true}
 # server
 flask = {version = "^2.3", optional=true}
 
+# rag
+faiss-cpu = {version = "^1.8.0.post1", optional=true}
+sentence-transformers = {version = "^3.1.1", optional=true}
+transformers = {version = "^4.44.2", optional=true}
+accelerate = {version = "^0.34.2", optional=true}
+pathspec = {version = "^0.12.1", optional=true}
+
 [tool.poetry.group.dev.dependencies]
 # lint
 mypy = "*"
@@ -81,6 +88,7 @@ types-lxml = "^2024.9.16"
 server = ["flask"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
+rag = ["faiss-cpu", "sentence-transformers", "transformers", "accelerate", "pathspec"]
 all = [
     # server
     "flask",
@@ -88,6 +96,8 @@ all = [
     "playwright",
     # datascience
     "matplotlib", "pandas", "numpy", "pillow",
+    # rag
+    "faiss-cpu", "sentence-transformers", "transformers", "accelerate", "pathspec",
 ]
 
 [tool.ruff]
