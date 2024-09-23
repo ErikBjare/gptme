@@ -9,8 +9,9 @@ from gptme.tools.rag.indexer import (
     chunk_code_syntactically,
     chunk_code_line_based,
     create_index,
+    should_reindex,
 )
-from gptme.tools.rag.retriever import retrieve_relevant_chunks
+from gptme.tools.rag.retriever import retrieve_relevant_chunks, retrieve
 
 
 @pytest.fixture
@@ -93,14 +94,16 @@ def test_create_index(temp_dir, model):
         f.write("def foo():\n    return 'bar'")
 
     # Load code files
+    print("Loading code files...")
     code_files = load_code_files(temp_dir, pathspec.PathSpec([]))
 
     # Create index
+    print("Creating index...")
     index, metadata = create_index(code_files, model)
 
     # Check that the index and metadata are created correctly
     assert isinstance(index, faiss.Index)
-    assert len(metadata) == 1
+    assert len(metadata) == 2
 
 
 def test_retrieve_relevant_chunks(temp_dir, model):
@@ -124,3 +127,21 @@ def test_retrieve_relevant_chunks(temp_dir, model):
     # Check that the relevant chunks are retrieved correctly
     assert len(relevant_chunks) > 0
     assert "def foo()" in relevant_chunks[0][1]
+
+
+def test_should_reindex():
+    current_metadata = {"file1.py": 1234.0, "file2.py": 5678.0}
+    previous_metadata = {"file1.py": 1234.0, "file2.py": 5677.0}
+    assert should_reindex(current_metadata, previous_metadata)
+
+    previous_metadata = {"file1.py": 1234.0, "file2.py": 5678.0}
+    assert not should_reindex(current_metadata, previous_metadata)
+
+
+def test_retrieve():
+    query = "function foo"
+    result = retrieve(query)
+    assert isinstance(result, str)
+    assert "File:" in result
+    assert "Lines" in result
+    assert "Distance:" in result

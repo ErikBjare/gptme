@@ -63,7 +63,7 @@ def load_code_files(
 def chunk_code_syntactically(
     code: str, file_path: str
 ) -> list[tuple[str, str, int, int]]:
-    chunks = []
+    chunks: list[tuple[str, str, int, int]] = []
     try:
         tree = ast.parse(code)
     except SyntaxError:
@@ -79,7 +79,7 @@ def chunk_code_syntactically(
             start_lineno = node.lineno - 1
             end_lineno = (
                 node.end_lineno
-                if hasattr(node, "end_lineno")
+                if hasattr(node, "end_lineno") and node.end_lineno is not None
                 else len(code.split("\n"))
             )
 
@@ -87,10 +87,17 @@ def chunk_code_syntactically(
             if hasattr(node, "decorator_list") and node.decorator_list:
                 start_lineno = node.decorator_list[0].lineno - 1
 
-            chunk = code.split("\n")[start_lineno:end_lineno]
-            chunk_code = textwrap.dedent("\n".join(chunk))
+            chunk_lines = code.split("\n")[start_lineno:end_lineno]
+            chunk_code = textwrap.dedent("\n".join(chunk_lines))
 
             chunks.append((file_path, chunk_code, start_lineno + 1, end_lineno))
+
+    # Handle small files or single-line statements
+    if not chunks:
+        lines = code.split("\n")
+        for i in range(0, len(lines), 10):
+            chunk = "\n".join(lines[i : i + 10])
+            chunks.append((file_path, chunk, i + 1, min(i + 10, len(lines))))
 
     return chunks
 
@@ -104,6 +111,15 @@ def chunk_code_line_based(
         chunk = "\n".join(lines[i : i + chunk_size])
         chunks.append((file_path, chunk, i + 1, min(i + chunk_size, len(lines))))
     return chunks
+
+
+def should_reindex(
+    current_metadata: dict[str, float], previous_metadata: dict[str, float]
+) -> bool:
+    return any(
+        file_path not in previous_metadata or previous_metadata[file_path] != mtime
+        for file_path, mtime in current_metadata.items()
+    )
 
 
 def create_index(
@@ -123,19 +139,19 @@ def create_index(
 
     texts = [chunk[1] for chunk in chunks]
     batch_size = 64  # Adjust batch size as needed
-    embeddings = []
+    embeddings_list = []
     total_batches = (len(texts) + batch_size - 1) // batch_size
     for i in range(total_batches):
         batch_texts = texts[i * batch_size : (i + 1) * batch_size]
         if i % 10 == 0 or i == total_batches - 1:
             logging.info(f"Encoding batch {i + 1}/{total_batches}")
         batch_embeddings = model.encode(batch_texts, show_progress_bar=False)
-        embeddings.append(batch_embeddings)
-    embeddings = np.vstack(embeddings)
+        embeddings_list.append(batch_embeddings)
+    embeddings = np.vstack(embeddings_list)
 
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
-    index.add(embeddings.astype("float32"))
+    index.add(embeddings.astype(np.float32))
 
     return index, chunks
 
