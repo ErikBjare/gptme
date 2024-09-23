@@ -75,7 +75,7 @@ def chunk_code_syntactically(
         return chunks
 
     for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+        if isinstance(node, ast.FunctionDef | ast.ClassDef):
             start_lineno = node.lineno - 1
             end_lineno = (
                 node.end_lineno
