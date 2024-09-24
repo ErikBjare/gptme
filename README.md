@@ -35,7 +35,7 @@
   <a href="https://pepy.tech/project/gptme-python">
     <img src="https://static.pepy.tech/badge/gptme-python" alt="Downloads all-time" />
   </a>
-  <a href="https://pepy.tech/project/gptme-python/week">
+  <a href="https://pepy.tech/project/gptme-python">
     <img src="https://static.pepy.tech/badge/gptme-python/week" alt="Downloads per week" />
   </a>
   <br>
@@ -51,6 +51,16 @@
 📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
 
 A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local models are used).
+
+## 📚 Table of Contents
+
+- 🎥 [Demos](#-demos)
+- 🌟 [Features](#-features)
+- 🚀 [Getting Started](#-getting-started)
+- 🛠 [Usage](#-usage)
+- 📊 [Stats](#-stats)
+- 💻 [Development](#-development)
+- 🔗 [Links](#-links)
 
 ## 🎥 Demos
 
@@ -132,7 +142,7 @@ A local alternative to ChatGPT's "Code Interpreter" that is not constrained by l
   </tr>
 </table>
 
-You can find more demos on the [Demos page][docs-demos] in the docs.
+You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [documentation][docs].
 
 ## 🌟 Features
 
@@ -168,18 +178,19 @@ You can find more demos on the [Demos page][docs-demos] in the docs.
 
 ### 🚧 In progress
 
-- 🏆 Advanced evaluation suite for testing frontier capabilities
-- 🤖 Long-running agents and more sophisticated agent architectures
+- 🏆 Advanced evals for testing frontier capabilities
+- 🤖 Long-running agents and advanced agent architectures
 - 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 
-## 🛠 Use Cases
+### 🛠 Use Cases
 
 - 🎯 **Shell Copilot:** Figure out the right shell command using natural language (no more memorizing flags!).
 - 🖥 **Development:** Write, test, and run code with AI assistance.
 - 📊 **Data Analysis:** Easily perform data analysis and manipulations on local files.
 - 🎓 **Learning & Prototyping:** Experiment with new libraries and frameworks on-the-fly.
 - 🤖 **Agents & Tools:** Experiment with agents and tools in a local environment.
+
 
 ## 🚀 Getting Started
 
