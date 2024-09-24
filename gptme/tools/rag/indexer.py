@@ -5,10 +5,11 @@ import os
 import subprocess
 import textwrap
 
-import faiss
 import numpy as np
 import pathspec
 from gptme.dirs import get_cache_dir
+
+import faiss
 from sentence_transformers import SentenceTransformer
 
 logging.basicConfig(level=logging.INFO)

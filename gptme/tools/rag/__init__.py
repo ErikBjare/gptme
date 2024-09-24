@@ -1,16 +1,22 @@
-import faiss
+import importlib
+
 import numpy as np
 from gptme.dirs import get_cache_dir
-from sentence_transformers import SentenceTransformer
 
 from ..base import ToolSpec
-from .indexer import main as main_indexer
-from .retriever import retrieve_relevant_chunks
+
+available = importlib.util.find_spec("faiss") is not None
 
 data_dir = get_cache_dir() / "rag"
 
 
 def retrieve(query: str, top_k: int = 5):
+    import faiss  # fmt: skip
+    from sentence_transformers import SentenceTransformer  # fmt: skip
+
+    from .indexer import main as main_indexer  # fmt: skip
+    from .retriever import retrieve_relevant_chunks  # fmt: skip
+
     # TODO: Add a check if the index exists
     main_indexer()
 
@@ -36,4 +42,5 @@ tool = ToolSpec(
     name="rag",
     desc="A tool for retrieving relevant code snippets from the project.",
     functions=[retrieve],
+    available=available,
 )
