@@ -121,11 +121,20 @@ def _list_clickable_elements(page, selector=None) -> list[Element]:
     return elements
 
 
-def titleurl_to_list(results: list[tuple[str, str]]) -> str:
-    s = "```results"
-    for i, (title, url) in enumerate(results):
-        s += f"\n{i+1}. {title} ({url})"
-    return s + "\n```"
+@dataclass
+class SearchResult:
+    title: str
+    url: str
+    description: str | None = None
+
+
+def titleurl_to_list(results: list[SearchResult]) -> str:
+    s = ""
+    for i, r in enumerate(results):
+        s += f"\n{i + 1}. {r.title} ({r.url})"
+        if r.description:
+            s += f"\n   {r.description}"
+    return s.strip()
 
 
 def _list_results_google(page) -> str:
@@ -141,8 +150,11 @@ def _list_results_google(page) -> str:
         h3 = result.query_selector("h3")
         if h3:
             title = h3.inner_text()
-            result.query_selector("span").inner_text()
-            hits.append((title, url))
+            # desc has data-sncf attribute
+            desc = (
+                result.query_selector("[data-sncf]").inner_text().strip().split("\n")[0]
+            )
+            hits.append(SearchResult(title, url, desc))
     return titleurl_to_list(hits)
 
 
@@ -163,6 +175,6 @@ def _list_results_duckduckgo(page) -> str:
         h2 = result.query_selector("h2")
         if h2:
             title = h2.inner_text()
-            result.query_selector("span").inner_text()
-            hits.append((title, url))
+            desc = result.query_selector("span").inner_text().strip().split("\n")[0]
+            hits.append(SearchResult(title, url, desc))
     return titleurl_to_list(hits)

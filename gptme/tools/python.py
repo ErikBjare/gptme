@@ -114,25 +114,20 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
         result = _ipython.run_cell(code, silent=False, store_history=False)
 
     output = ""
-    if captured.stdout:
-        # remove one occurrence of the result if present, to avoid repeating the result in the output
-        stdout = (
-            captured.stdout.replace(str(result.result), "", 1)
-            if result.result
-            else captured.stdout
-        )
-        if stdout:
-            output += f"\n```stdout\n{stdout.rstrip()}\n```\n\n"
+    if result.result is not None:
+        output += f"Result:\n```\n{result.result}\n```\n\n"
+    # only show stdout if there is no result
+    elif captured.stdout:
+        output += f"```stdout\n{captured.stdout.rstrip()}\n```\n\n"
+
     if captured.stderr:
-        output += f"stderr:\n```\n{captured.stderr.rstrip()}\n```\n\n"
+        output += f"```stderr\n{captured.stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
         tb = result.error_in_exec.__traceback__
         while tb.tb_next:  # type: ignore
             tb = tb.tb_next  # type: ignore
         # type: ignore
         output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"
-    if result.result is not None:
-        output += f"Result:\n```\n{result.result}\n```\n\n"
 
     # strip ANSI escape sequences
     # TODO: better to signal to the terminal that we don't want colors?
