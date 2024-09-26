@@ -177,7 +177,7 @@ class LogManager:
     @classmethod
     def load(
         cls,
-        logfile: PathLike,
+        logdir: PathLike,
         initial_msgs: list[Message] | None = None,
         branch: str = "main",
         create: bool = False,
@@ -185,13 +185,11 @@ class LogManager:
     ) -> "LogManager":
         """Loads a conversation log."""
         logsdir = get_logs_dir()
-        if str(logsdir) not in str(logfile):
+        if str(logsdir) not in str(logdir):
             # if the path was not fully specified, assume its a dir in logsdir
-            logdir = logsdir / logfile
+            logdir = logsdir / logdir
         else:
-            logdir = Path(logfile).parent
-            if logdir.name == "branches":
-                logdir = logdir.parent
+            logdir = Path(logdir)
 
         if branch == "main":
             logfile = logdir / "conversation.jsonl"
