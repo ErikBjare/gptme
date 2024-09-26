@@ -3,7 +3,7 @@ Examples
 
 A list of things you can do with gptme.
 
-To see example output without running the commands yourself, check out the :ref:`demos`.
+To see example output without running the commands yourself, check out the :doc:`demos`.
 
 
 .. code-block:: bash

@@ -14,6 +14,7 @@ from .base import ToolSpec
 if TYPE_CHECKING:
     from ..logmanager import LogManager
 
+
 logger = logging.getLogger(__name__)
 
 

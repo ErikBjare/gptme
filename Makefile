@@ -57,7 +57,7 @@ docs/.clean: docs/conf.py
 	touch docs/.clean
 
 docs: docs/conf.py docs/*.rst docs/.clean
-	poetry run make -C docs html
+	poetry run make -C docs html SPHINXOPTS="-W --keep-going"
 
 .PHONY: site
 site: site/dist/index.html site/dist/docs

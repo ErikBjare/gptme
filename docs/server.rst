@@ -13,6 +13,9 @@ It can be started by running the following command:
 
     gptme-server
 
+Web UI
+------
+
 You can then access the web UI by visiting http://localhost:5000 in your browser.
 
 For more usage, see `the CLI documentation <cli.html#gptme-server>`_.

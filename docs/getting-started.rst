@@ -79,7 +79,7 @@ We can also start chats and request changes directly from the command line. The 
 Other tools
 ***********
 
-You can read about other tools in the :ref:`Tools` section.
+You can read about other tools on the :doc:`tools` page.
 
 Other interfaces
 ****************
