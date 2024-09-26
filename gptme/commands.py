@@ -108,6 +108,8 @@ def handle_cmd(
             n = int(args[0]) if args and args[0].isdigit() else 1
             log.undo(n)
         case "exit":
+            log.undo(1, quiet=True)
+            log.write()
             sys.exit(0)
         case "replay":
             log.undo(1, quiet=True)

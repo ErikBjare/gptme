@@ -17,7 +17,7 @@ EMOJI_WARN = "⚠️"
 
 logger = logging.getLogger(__name__)
 
-console = Console()
+console = Console(log_path=False)
 
 
 def get_tokenizer(model: str):
