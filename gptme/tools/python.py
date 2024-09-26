@@ -161,7 +161,7 @@ def get_installed_python_libraries() -> set[str]:
 instructions = """
 To execute Python code in an interactive IPython session, send a codeblock using the `ipython` language tag.
 It will respond with the output and result of the execution.
-Assistant may first write the code in a normal python codeblock, then execute it in an IPython codeblock.
+If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
 """
 
 
