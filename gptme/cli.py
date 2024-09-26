@@ -199,7 +199,14 @@ def main(
         and sys.stdin.isatty()
     ):
         logdir = pick_log()
-        name = logdir.name
+    else:
+        logdir = get_logdir(name)
+
+    workspacedir = (
+        (logdir / "workspace" if workspace == "@log" else Path(workspace))
+        if workspace
+        else None
+    )
 
     # register a handler for Ctrl-C
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
@@ -207,13 +214,13 @@ def main(
     chat(
         prompt_msgs,
         initial_msgs,
-        name,
+        logdir,
         model,
         stream,
         no_confirm,
         interactive,
         show_hidden,
-        workspace,
+        workspacedir,
     )
 
 
@@ -258,13 +265,13 @@ def clear_interruptible():
 def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
-    name: str,
+    logdir: Path,
     model: str | None,
     stream: bool = True,
     no_confirm: bool = False,
     interactive: bool = True,
     show_hidden: bool = False,
-    workspace: str = ".",
+    workspace: Path | None = None,
 ):
     """
     Run the chat loop.
@@ -282,23 +289,26 @@ def chat(
         logger.info("Disabled streaming for OpenAI's O1 (not supported)")
         stream = False
 
-    # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
-    logfile = get_logfile(name)
-    console.log(f"Using logdir {logfile.parent}")
-    log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
+    console.log(f"Using logdir {logdir}")
+    log = LogManager.load(
+        logdir, initial_msgs=initial_msgs, show_hidden=show_hidden, create=True
+    )
+
+    if not workspace:
+        workspace = Path.cwd()
 
     # change to workspace directory
     # use if exists, create if @log, or use given path
-    if (logfile.parent / "workspace").exists():
-        assert workspace in ["@log", "."], "Workspace already exists"
-        workspace_path = logfile.parent / "workspace"
+    logfolder_workspace = logdir / "workspace"
+    if logfolder_workspace.exists():
+        assert (
+            Path(workspace) == logfolder_workspace
+        ), f"Workspace already exists in log folder {logfolder_workspace}"
+        workspace_path = logdir / "workspace"
+        workspace_path.mkdir(exist_ok=True)
         console.log(f"Using workspace at {workspace_path}")
-    elif workspace == "@log":
-        workspace_path = logfile.parent / "workspace"
-        console.log(f"Creating workspace at {workspace_path}")
-        os.makedirs(workspace_path, exist_ok=True)
     else:
-        workspace_path = Path(workspace)
+        workspace_path = Path(workspace) if isinstance(workspace, str) else workspace
         assert (
             workspace_path.exists()
         ), f"Workspace path {workspace_path} does not exist"
@@ -429,7 +439,7 @@ def step(
         clear_interruptible()
 
 
-def get_name(name: str) -> Path:
+def get_name(name: str) -> str:
     """
     Returns a name for the new conversation.
 
@@ -446,7 +456,8 @@ def get_name(name: str) -> Path:
         # check if name exists, if so, generate another one
         for _ in range(3):
             name = generate_name()
-            logpath = logsdir / f"{datestr}-{name}"
+            name = f"{datestr}-{name}"
+            logpath = logsdir / name
             if not logpath.exists():
                 break
         else:
@@ -469,8 +480,7 @@ def get_name(name: str) -> Path:
             datetime.strptime(name[:10], "%Y-%m-%d")
         except ValueError:
             name = f"{datestr}-{name}"
-        logpath = logsdir / name
-    return logpath
+    return name
 
 
 def pick_log(limit=20) -> Path:
@@ -507,16 +517,16 @@ def pick_log(limit=20) -> Path:
     index: int
     _, index = pick(options, title)  # type: ignore
     if index == 0:
-        return get_name("random")
+        return get_logdir("random")
     elif index == len(options) - 1:
         return pick_log(limit + 100)
     else:
-        return get_logs_dir() / convs[index - 1].name
+        return get_logdir(convs[index - 1].name)
 
 
-def get_logfile(logdir: Path | str | Literal["random", "resume"]) -> Path:
+def get_logdir(logdir: Path | str | Literal["random", "resume"]) -> Path:
     if logdir == "random":
-        logdir = get_name("random")
+        logdir = get_logs_dir() / get_name("random")
     elif logdir == "resume":
         convs = get_user_conversations()
         if conv := next(convs, None):
@@ -527,10 +537,7 @@ def get_logfile(logdir: Path | str | Literal["random", "resume"]) -> Path:
         logdir = get_logs_dir() / logdir
 
     logdir.mkdir(parents=True, exist_ok=True)
-    logfile = logdir / "conversation.jsonl"
-    if not os.path.exists(logfile):
-        open(logfile, "w").close()
-    return logfile
+    return logdir
 
 
 def prompt_user(value=None) -> str:  # pragma: no cover

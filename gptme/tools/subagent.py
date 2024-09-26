@@ -41,13 +41,12 @@ class Subagent:
 
     def get_log(self) -> "LogManager":
         # noreorder
-        from gptme.cli import get_logfile  # fmt: skip
+        from gptme.cli import get_logdir  # fmt: skip
 
         from ..logmanager import LogManager  # fmt: skip
 
         name = f"subagent-{self.agent_id}"
-        logfile = get_logfile(name)
-        return LogManager.load(logfile)
+        return LogManager.load(get_logdir(name))
 
     def status(self) -> ReturnType:
         if self.thread.is_alive():
@@ -84,10 +83,12 @@ def subagent(prompt: str, agent_id: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
     from gptme import chat  # fmt: skip
+    from gptme.cli import get_logdir  # fmt: skip
 
     from ..prompts import get_prompt  # fmt: skip
 
     name = f"subagent-{agent_id}"
+    logdir = get_logdir(name)
 
     def run_subagent():
         prompt_msgs = [Message("user", prompt)]
@@ -110,7 +111,7 @@ def subagent(prompt: str, agent_id: str):
         chat(
             prompt_msgs,
             initial_msgs,
-            name=name,
+            logdir=logdir,
             model=None,
             stream=False,
             no_confirm=True,

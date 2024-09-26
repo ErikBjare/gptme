@@ -226,7 +226,6 @@ def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalR
             logger.debug(f"Running check: {test['run']}")
             stdout_run, stderr_run, exit_code = env.run(test["run"])
             time_run = time.time() - run_start
-
             files = env.download()
 
             ctx = ResultContext(files, stdout_run, stderr_run, exit_code)

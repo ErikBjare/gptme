@@ -180,32 +180,35 @@ class LogManager:
         logfile: PathLike,
         initial_msgs: list[Message] | None = None,
         branch: str = "main",
+        create: bool = False,
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
-        if not initial_msgs:
-            initial_msgs = [get_prompt()]
         logsdir = get_logs_dir()
         if str(logsdir) not in str(logfile):
             # if the path was not fully specified, assume its a dir in logsdir
             logdir = logsdir / logfile
-            logfile = logdir / (
-                "conversation.jsonl" if branch == "main" else f"branches/{branch}.jsonl"
-            )
         else:
             logdir = Path(logfile).parent
             if logdir.name == "branches":
                 logdir = logdir.parent
 
-        if branch != "main":
+        if branch == "main":
+            logfile = logdir / "conversation.jsonl"
+        else:
             logfile = logdir / f"branches/{branch}.jsonl"
 
         if not Path(logfile).exists():
-            raise FileNotFoundError(f"Could not find logfile {logfile}")
+            if create:
+                logger.debug(f"Creating new logfile {logfile}")
+                Path(logfile).parent.mkdir(parents=True, exist_ok=True)
+                _write_jsonl(logfile, [])
+            else:
+                raise FileNotFoundError(f"Could not find logfile {logfile}")
 
         msgs = _read_jsonl(logfile)
         if not msgs:
-            msgs = initial_msgs
+            msgs = initial_msgs or [get_prompt()]
         return cls(msgs, logdir=logdir, branch=branch, **kwargs)
 
     def branch(self, name: str) -> None:
