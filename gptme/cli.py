@@ -161,12 +161,15 @@ def main(
     # get initial system prompt
     initial_msgs = [get_prompt(prompt_system, interactive=interactive)]
 
-    # if stdin is not a tty, we're getting piped input, which we should include in the prompt
+    # if stdin is not a tty, we might be getting piped input, which we should include in the prompt
+    was_piped = False
     if not sys.stdin.isatty():
         # fetch prompt from stdin
         prompt_stdin = _read_stdin()
         if prompt_stdin:
+            # TODO: also append if existing convo loaded/resumed
             initial_msgs += [Message("system", f"```stdin\n{prompt_stdin}\n```")]
+            was_piped = True
 
             # Attempt to switch to interactive mode
             sys.stdin.close()
@@ -186,6 +189,17 @@ def main(
     sep = "\n\n" + MULTIPROMPT_SEPARATOR
     prompts = [p.strip() for p in "\n\n".join(prompts).split(sep) if p]
     prompt_msgs = [Message("user", p) for p in prompts]
+
+    # don't run pick in tests/non-interactive mode, or if the user specifies a name
+    if (
+        interactive
+        and name == "random"
+        and not prompt_msgs
+        and not was_piped
+        and sys.stdin.isatty()
+    ):
+        logdir = pick_log()
+        name = logdir.name
 
     # register a handler for Ctrl-C
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
@@ -215,20 +229,20 @@ def handle_keyboard_interrupt(signum, frame):
     """
     global last_interrupt_time
     current_time = time.time()
-    timeout = 1
 
     if interruptible:
         raise KeyboardInterrupt
 
-    if current_time - last_interrupt_time <= timeout:
-        console.log("Second interrupt received, exiting...")
-        sys.exit(0)
+    # if current_time - last_interrupt_time <= timeout:
+    #     console.log("Second interrupt received, exiting...")
+    #     sys.exit(0)
 
     last_interrupt_time = current_time
     console.print()
-    console.log(
-        f"Interrupt received. Press Ctrl-C again within {timeout} seconds to exit."
-    )
+    # console.log(
+    #     f"Interrupt received. Press Ctrl-C again within {timeout} seconds to exit."
+    # )
+    console.log("Interrupted. Press Ctrl-D to exit.")
 
 
 def set_interruptible():
@@ -269,9 +283,7 @@ def chat(
         stream = False
 
     # we need to run this before checking stdin, since the interactive doesn't work with the switch back to interactive mode
-    logfile = get_logfile(
-        name, interactive=(not prompt_msgs and interactive) and sys.stdin.isatty()
-    )
+    logfile = get_logfile(name)
     console.log(f"Using logdir {logfile.parent}")
     log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
 
@@ -384,11 +396,11 @@ def step(
         or (last_msg.role in ["assistant"])
         or last_msg.content == "Interrupted"
         or last_msg.pinned
+        or not any(role == "user" for role in [m.role for m in log])
     ):  # pragma: no cover
         inquiry = prompt_user()
         if not inquiry:
             # Empty command, ask for input again
-            print()
             return
         msg = Message("user", inquiry, quiet=True)
         msg = _include_paths(msg)
@@ -461,9 +473,7 @@ def get_name(name: str) -> Path:
     return logpath
 
 
-def get_logfile(
-    name: str | Literal["random", "resume"], interactive=True, limit=20
-) -> Path:
+def pick_log(limit=20) -> Path:
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
@@ -471,16 +481,9 @@ def get_logfile(
     LOAD_MORE = "Load more"
     gen_convs = get_user_conversations()
     convs: list[Conversation] = []
-    try:
-        convs.append(next(gen_convs))
-    except StopIteration:
-        pass
 
-    if name == "resume":
-        if convs:
-            return Path(convs[0].path)
-        else:
-            raise ValueError("No previous conversations to resume")
+    # load conversations
+    convs.extend(islice(gen_convs, limit))
 
     # filter out test conversations
     # TODO: save test convos to different folder instead
@@ -488,37 +491,42 @@ def get_logfile(
     #     return "-test-" in name or name.startswith("test-")
     # prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
-    # load more conversations
-    convs.extend(islice(gen_convs, limit - 1))
-
     prev_convs = [
         f"{conv.name:30s} \t{epoch_to_age(conv.modified)} \t{conv.messages:5d} msgs"
         for conv in convs
     ]
 
-    # don't run pick in tests/non-interactive mode, or if the user specifies a name
-    if interactive and name in ["random"]:
-        options = (
-            [
-                NEW_CONV,
-            ]
-            + prev_convs
-            + [LOAD_MORE]
-        )
+    options = (
+        [
+            NEW_CONV,
+        ]
+        + prev_convs
+        + [LOAD_MORE]
+    )
 
-        index: int
-        _, index = pick(options, title)  # type: ignore
-        if index == 0:
-            logdir = get_name(name)
-        elif index == len(options) - 1:
-            return get_logfile(name, interactive, limit + 100)
-        else:
-            logdir = get_logs_dir() / convs[index - 1].name
+    index: int
+    _, index = pick(options, title)  # type: ignore
+    if index == 0:
+        return get_name("random")
+    elif index == len(options) - 1:
+        return pick_log(limit + 100)
     else:
-        logdir = get_name(name)
+        return get_logs_dir() / convs[index - 1].name
 
-    if not os.path.exists(logdir):
-        os.mkdir(logdir)
+
+def get_logfile(logdir: Path | str | Literal["random", "resume"]) -> Path:
+    if logdir == "random":
+        logdir = get_name("random")
+    elif logdir == "resume":
+        convs = get_user_conversations()
+        if conv := next(convs, None):
+            logdir = Path(conv.path)
+        else:
+            raise ValueError("No previous conversations to resume")
+    elif isinstance(logdir, str):
+        logdir = get_logs_dir() / logdir
+
+    logdir.mkdir(parents=True, exist_ok=True)
     logfile = logdir / "conversation.jsonl"
     if not os.path.exists(logfile):
         open(logfile, "w").close()
@@ -527,7 +535,13 @@ def get_logfile(
 
 def prompt_user(value=None) -> str:  # pragma: no cover
     print_bell()
-    response = prompt_input(PROMPT_USER, value)
+    set_interruptible()
+    try:
+        response = prompt_input(PROMPT_USER, value)
+    except KeyboardInterrupt:
+        print("\nInterrupted. Press Ctrl-D to exit.")
+        return ""
+    clear_interruptible()
     if response:
         readline.add_history(response)
     return response

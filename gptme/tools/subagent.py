@@ -46,7 +46,7 @@ class Subagent:
         from ..logmanager import LogManager  # fmt: skip
 
         name = f"subagent-{self.agent_id}"
-        logfile = get_logfile(name, interactive=False)
+        logfile = get_logfile(name)
         return LogManager.load(logfile)
 
     def status(self) -> ReturnType:
