@@ -11,7 +11,11 @@ To see example output without running the commands yourself, check out the :doc:
     gptme 'write a web app to particles.html which shows off an impressive and colorful particle effect using three.js'
     gptme 'render mandelbrot set to mandelbrot.png'
 
+    # chaining prompts
+    gptme 'show me something cool in the python repl' - 'something cooler' - 'something even cooler'
+
     # stdin
+    git diff | gptme 'complete the TODOs in this diff'
     make test | gptme 'fix the failing tests'
 
     # from a file

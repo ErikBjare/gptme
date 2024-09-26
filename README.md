@@ -213,8 +213,9 @@ Here are some examples:
 gptme 'write an impressive and colorful particle effect using three.js to particles.html'
 gptme 'render mandelbrot set to mandelbrot.png'
 gptme 'suggest improvements to my vimrc'
+gptme 'convert to h265 and adjust the volume' video.mp4
+git diff | gptme 'complete the TODOs in this diff'
 make test | gptme 'fix the failing tests'
-gptme 'convert video.mp4 to h265 and adjust the volume'
 ```
 
 For more, see the [Getting Started][docs-getting-started] guide and the [Examples][docs-examples] in the [documentation][docs].
