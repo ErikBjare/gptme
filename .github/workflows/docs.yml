@@ -33,9 +33,9 @@ jobs:
           wget https://github.com/jgm/pandoc/releases/download/3.3/pandoc-3.3-1-amd64.deb
           sudo dpkg -i pandoc-3.3-1-amd64.deb
 
-      - name: Install apt dependencies
+      - name: Install dependencies
         run: |
-          poetry install -E browser
+          poetry install -E browser -E server
 
       - name: Build docs
         run: make docs
