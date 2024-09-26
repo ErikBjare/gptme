@@ -1,7 +1,5 @@
 import base64
-import builtins
 import dataclasses
-import io
 import logging
 import shutil
 import sys
@@ -12,15 +10,13 @@ from pathlib import Path
 from typing import Any, Literal
 
 import tomlkit
-from rich import print
-from rich.console import Console
 from rich.syntax import Syntax
 from tomlkit._utils import escape_string
 from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .util import get_tokenizer
+from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)
 
@@ -247,11 +243,7 @@ def format_msgs(
                     continue
                 elif highlight:
                     lang = block.split("\n")[0]
-                    console = Console(
-                        file=io.StringIO(), width=shutil.get_terminal_size().columns
-                    )
-                    console.print(Syntax(block.rstrip(), lang))
-                    block = console.file.getvalue()  # type: ignore
+                    block = rich_to_str(Syntax(block.rstrip(), lang))
                 output += f"```{block.rstrip()}\n```"
         outputs.append(f"{userprefix}: {output.rstrip()}")
     return outputs
@@ -276,12 +268,13 @@ def print_msg(
             skipped_hidden += 1
             continue
         try:
-            print(s)
+            console.print(s)
         except Exception:
             # rich can throw errors, if so then print the raw message
-            builtins.print(s)
+            logger.exception("Error printing message")
+            print(s)
     if skipped_hidden:
-        print(
+        console.print(
             f"[grey30]Skipped {skipped_hidden} hidden system messages, show with --show-hidden[/]"
         )
 

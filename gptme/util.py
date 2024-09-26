@@ -1,3 +1,4 @@
+import io
 import logging
 import random
 import re
@@ -5,6 +6,7 @@ import sys
 import textwrap
 from datetime import datetime, timedelta
 from functools import lru_cache
+from typing import Any
 
 import tiktoken
 from rich import print
@@ -14,6 +16,8 @@ from rich.syntax import Syntax
 EMOJI_WARN = "⚠️"
 
 logger = logging.getLogger(__name__)
+
+console = Console()
 
 
 def get_tokenizer(model: str):
@@ -130,8 +134,7 @@ def print_preview(code: str, lang: str):  # pragma: no cover
 
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
-    # TODO: add a way to outsource ask_execute decision to another agent/LLM
-    console = Console()
+    # TODO: add a way to outsource ask_execute decision to another agent/LLM, possibly by overriding rich console somehow
     choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
     # answer = None
     # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
@@ -212,3 +215,9 @@ def document_prompt_function(*args, **kwargs):
         return func
 
     return decorator
+
+
+def rich_to_str(s: Any, **kwargs) -> str:
+    c = Console(file=io.StringIO(), **kwargs)
+    c.print(s)
+    return c.file.getvalue()  # type: ignore

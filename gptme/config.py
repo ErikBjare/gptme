@@ -8,6 +8,8 @@ import tomlkit
 from tomlkit import TOMLDocument
 from tomlkit.container import Container
 
+from .util import console
+
 logger = logging.getLogger(__name__)
 
 
@@ -93,7 +95,7 @@ def _load_config() -> tomlkit.TOMLDocument:
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
         with open(config_path, "w") as config_file:
             tomlkit.dump(default_config.dict(), config_file)
-        print(f"Created config file at {config_path}")
+        console.log(f"Created config file at {config_path}")
 
     # Now you can read the settings from the config file like this:
     with open(config_path) as config_file:
@@ -131,7 +133,7 @@ def get_workspace_prompt(workspace: str) -> str:
     ]
     if project_config_paths:
         project_config_path = project_config_paths[0]
-        logger.info(f"Using project configuration at {project_config_path}")
+        console.log(f"Using project configuration at {project_config_path}")
         # load project config
         with open(project_config_path) as f:
             project_config = tomlkit.load(f)

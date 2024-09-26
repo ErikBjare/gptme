@@ -10,6 +10,7 @@ from .llm import init_llm
 from .models import PROVIDERS, get_recommended_model, set_default_model
 from .tabcomplete import register_tabcomplete
 from .tools import init_tools
+from .util import console
 
 logger = logging.getLogger(__name__)
 _init_done = False
@@ -58,8 +59,8 @@ def init(model: str | None, interactive: bool):
 
     if not model:
         model = get_recommended_model(provider)
-        logger.info(
-            "No model specified, using recommended model for provider: %s", model
+        console.log(
+            f"No model specified, using recommended model for provider: {model}"
         )
     set_default_model(model)
 

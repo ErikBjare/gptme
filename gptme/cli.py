@@ -1,6 +1,5 @@
 import errno
 import importlib.metadata
-import io
 import logging
 import os
 import re
@@ -15,8 +14,6 @@ from typing import Literal
 
 import click
 from pick import pick
-from rich import print  # noqa: F401
-from rich.console import Console
 
 from .commands import (
     CMDFIX,
@@ -35,10 +32,15 @@ from .models import get_model
 from .prompts import get_prompt
 from .tools import ToolUse, execute_msg, has_tool
 from .tools.browser import read_url
-from .util import epoch_to_age, generate_name, print_bell
+from .util import (
+    console,
+    epoch_to_age,
+    generate_name,
+    print_bell,
+    rich_to_str,
+)
 
 logger = logging.getLogger(__name__)
-print_builtin = __builtins__["print"]  # type: ignore
 
 
 script_path = Path(os.path.realpath(__file__))
@@ -135,10 +137,10 @@ def main(
     """Main entrypoint for the CLI."""
     if version:
         # print version
-        print_builtin(f"gptme {importlib.metadata.version('gptme-python')}")
+        print(f"gptme {importlib.metadata.version('gptme-python')}")
 
         # print dirs
-        print_builtin(f"Logs dir: {get_logs_dir()}")
+        print(f"Logs dir: {get_logs_dir()}")
 
         exit(0)
 
@@ -227,7 +229,7 @@ def chat(
     logfile = get_logfile(
         name, interactive=(not prompt_msgs and interactive) and sys.stdin.isatty()
     )
-    print(f"Using logdir {logfile.parent}")
+    console.log(f"Using logdir {logfile.parent}")
     log = LogManager.load(logfile, initial_msgs=initial_msgs, show_hidden=show_hidden)
 
     # change to workspace directory
@@ -235,10 +237,10 @@ def chat(
     if (logfile.parent / "workspace").exists():
         assert workspace in ["@log", "."], "Workspace already exists"
         workspace_path = logfile.parent / "workspace"
-        print(f"Using workspace at {workspace_path}")
+        console.log(f"Using workspace at {workspace_path}")
     elif workspace == "@log":
         workspace_path = logfile.parent / "workspace"
-        print(f"Creating workspace at {workspace_path}")
+        console.log(f"Creating workspace at {workspace_path}")
         os.makedirs(workspace_path, exist_ok=True)
     else:
         workspace_path = Path(workspace)
@@ -258,7 +260,7 @@ def chat(
 
     # print log
     log.print()
-    print("--- ^^^ past messages ^^^ ---")
+    console.print("--- ^^^ past messages ^^^ ---")
 
     # main loop
     while True:
@@ -320,12 +322,6 @@ def step(
     stream: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
-
-    # if last message was from assistant, try to run tools again
-    # FIXME: can't do this here because it will run twice
-    # if log[-1].role == "assistant":
-    #     yield from execute_msg(log[-1], ask=not no_confirm)
-
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
     # then skip asking for input and generate response
@@ -397,7 +393,7 @@ def get_name(name: str) -> Path:
             if not logpath.exists():
                 break
             else:
-                print(f"Name {name} already exists, try again.")
+                console.print(f"Name {name} already exists, try again.")
     else:
         # if name starts with date, use as is
         try:
@@ -483,9 +479,9 @@ def prompt_user(value=None) -> str:  # pragma: no cover
 def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     prompt = prompt.strip() + ": "
     if value:
-        print(prompt + value)
+        console.print(prompt + value)
     else:
-        prompt = _rich_to_str(prompt)
+        prompt = rich_to_str(prompt, color_system="256")
 
         # https://stackoverflow.com/a/53260487/965332
         original_stdout = sys.stdout
@@ -493,12 +489,6 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
         value = input(prompt.strip() + " ")
         sys.stdout = original_stdout
     return value
-
-
-def _rich_to_str(s: str) -> str:
-    console = Console(file=io.StringIO(), color_system="256")
-    console.print(s)
-    return console.file.getvalue()  # type: ignore
 
 
 def _read_stdin() -> str:
