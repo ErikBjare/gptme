@@ -53,9 +53,7 @@ docstring = f"""
 gptme is a chat-CLI for LLMs, empowering them with tools to run shell commands, execute code, read and manipulate files, and more.
 
 If PROMPTS are provided, a new conversation will be started with it.
-
-If one of the PROMPTS is '{MULTIPROMPT_SEPARATOR}', the PROMPTS will form a chain,
-where following prompts will be submitted after the assistant is done answering the previous one.
+PROMPTS can be chained with the '{MULTIPROMPT_SEPARATOR}' separator.
 
 The interface provides user commands that can be used to interact with the system.
 
@@ -71,40 +69,22 @@ The interface provides user commands that can be used to interact with the syste
     nargs=-1,
 )
 @click.option(
-    "--prompt-system",
-    default="full",
-    help="System prompt. Can be 'full', 'short', or something custom.",
-)
-@click.option(
+    "-n",
     "--name",
     default="random",
-    help="Name of conversation. Defaults to generating a random name. Pass 'ask' to be prompted for a name.",
+    help="Name of conversation. Defaults to generating a random name.",
 )
 @click.option(
+    "-m",
     "--model",
     default=None,
-    help="Model to use, e.g. openai/gpt-4-turbo, anthropic/claude-3-5-sonnet-20240620. If only provider is given, the default model for that provider is used.",
+    help="Model to use, e.g. openai/gpt-4o, anthropic/claude-3-5-sonnet-20240620. If only provider given, a default is used.",
 )
 @click.option(
-    "--stream/--no-stream",
-    is_flag=True,
-    default=True,
-    help="Stream responses",
-)
-@click.option("-v", "--verbose", is_flag=True, help="Verbose output.")
-@click.option(
-    "-y", "--no-confirm", is_flag=True, help="Skips all confirmation prompts."
-)
-@click.option(
-    "--interactive/--non-interactive",
-    "-i/-n",
-    default=True,
-    help="Choose interactive mode, or not. Non-interactive implies --no-confirm, and is used in testing.",
-)
-@click.option(
-    "--show-hidden",
-    is_flag=True,
-    help="Show hidden system messages.",
+    "-w",
+    "--workspace",
+    default=None,
+    help="Path to workspace directory. Pass '@log' to create a workspace in the log directory.",
 )
 @click.option(
     "-r",
@@ -113,20 +93,53 @@ The interface provides user commands that can be used to interact with the syste
     help="Load last conversation",
 )
 @click.option(
+    "-y",
+    "--no-confirm",
+    is_flag=True,
+    help="Skips all confirmation prompts.",
+)
+@click.option(
+    "-n",
+    "--non-interactive",
+    "interactive",
+    default=True,
+    flag_value=False,
+    help="Force non-interactive mode. Implies --no-confirm.",
+)
+@click.option(
+    "--system",
+    "prompt_system",
+    default="full",
+    help="System prompt. Can be 'full', 'short', or something custom.",
+)
+@click.option(
+    "--no-stream",
+    "stream",
+    default=True,
+    flag_value=False,
+    help="Don't stream responses",
+)
+@click.option(
+    "--show-hidden",
+    is_flag=True,
+    help="Show hidden system messages.",
+)
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    help="Show verbose output.",
+)
+@click.option(
     "--version",
     is_flag=True,
     help="Show version and configuration information",
-)
-@click.option(
-    "--workspace",
-    help="Path to workspace directory. Pass '@log' to create a workspace in the log directory.",
-    default=".",
 )
 def main(
     prompts: list[str],
     prompt_system: str,
     name: str,
-    model: str,
+    model: str | None,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
@@ -134,7 +147,7 @@ def main(
     show_hidden: bool,
     version: bool,
     resume: bool,
-    workspace: str,
+    workspace: str | None,
 ):
     """Main entrypoint for the CLI."""
     if version:
@@ -181,17 +194,15 @@ def main(
                     "Failed to switch to interactive mode, continuing in non-interactive mode"
                 )
 
-    # if resume
-    if resume:
-        name = "resume"  # magic string to load last conversation
-
     # join prompts, grouped by `-` if present, since that's the separator for "chained"/multiple-round prompts
     sep = "\n\n" + MULTIPROMPT_SEPARATOR
     prompts = [p.strip() for p in "\n\n".join(prompts).split(sep) if p]
     prompt_msgs = [Message("user", p) for p in prompts]
 
+    if resume:
+        logdir = get_logdir_resume()
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
-    if (
+    elif (
         interactive
         and name == "random"
         and not prompt_msgs
@@ -202,11 +213,12 @@ def main(
     else:
         logdir = get_logdir(name)
 
-    workspacedir = (
-        (logdir / "workspace" if workspace == "@log" else Path(workspace))
-        if workspace
-        else None
-    )
+    if workspace == "@log":
+        workspace_path: Path | None = logdir / "workspace"
+        assert workspace_path  # mypy not smart enough to see its not None
+        workspace_path.mkdir(parents=True, exist_ok=True)
+    else:
+        workspace_path = Path(workspace) if workspace else None
 
     # register a handler for Ctrl-C
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
@@ -220,7 +232,7 @@ def main(
         no_confirm,
         interactive,
         show_hidden,
-        workspacedir,
+        workspace_path,
     )
 
 
@@ -294,27 +306,22 @@ def chat(
         logdir, initial_msgs=initial_msgs, show_hidden=show_hidden, create=True
     )
 
-    if not workspace:
-        workspace = Path.cwd()
-
     # change to workspace directory
     # use if exists, create if @log, or use given path
-    logfolder_workspace = logdir / "workspace"
-    if logfolder_workspace.exists():
-        assert (
-            Path(workspace) == logfolder_workspace
-        ), f"Workspace already exists in log folder {logfolder_workspace}"
-        workspace_path = logdir / "workspace"
-        workspace_path.mkdir(exist_ok=True)
-        console.log(f"Using workspace at {workspace_path}")
+    log_workspace = logdir / "workspace"
+    if log_workspace.exists():
+        assert not workspace or (
+            workspace == log_workspace
+        ), f"Workspace already exists in {log_workspace}, wont override."
+        workspace = log_workspace
     else:
-        workspace_path = Path(workspace) if isinstance(workspace, str) else workspace
-        assert (
-            workspace_path.exists()
-        ), f"Workspace path {workspace_path} does not exist"
-    os.chdir(workspace_path)
+        if not workspace:
+            workspace = Path.cwd()
+        assert workspace.exists(), f"Workspace path {workspace} does not exist"
+    console.log(f"Using workspace at {workspace}")
+    os.chdir(workspace)
 
-    workspace_prompt = get_workspace_prompt(str(workspace_path))
+    workspace_prompt = get_workspace_prompt(str(workspace))
     # check if message is already in log, such as upon resume
     if (
         workspace_prompt
@@ -444,7 +451,6 @@ def get_name(name: str) -> str:
     Returns a name for the new conversation.
 
     If name is "random", generates a random name.
-    If name is "ask", asks the user for a name.
     If name is starts with a date, uses it as is.
     Otherwise, prepends the current date to the name.
     """
@@ -462,18 +468,6 @@ def get_name(name: str) -> str:
                 break
         else:
             raise ValueError("Failed to generate unique name")
-    elif name == "ask":  # pragma: no cover
-        while True:
-            # ask for name, or use random name
-            name = input("Name for conversation (or empty for random words): ")
-            name = f"{datestr}-{name}"
-            logpath = logsdir / name
-
-            # check that name is unique/doesn't exist
-            if not logpath.exists():
-                break
-            else:
-                console.print(f"Name {name} already exists, try again.")
     else:
         # if name starts with date, use as is
         try:
@@ -524,20 +518,21 @@ def pick_log(limit=20) -> Path:
         return get_logdir(convs[index - 1].name)
 
 
-def get_logdir(logdir: Path | str | Literal["random", "resume"]) -> Path:
+def get_logdir(logdir: Path | str | Literal["random"]) -> Path:
     if logdir == "random":
         logdir = get_logs_dir() / get_name("random")
-    elif logdir == "resume":
-        convs = get_user_conversations()
-        if conv := next(convs, None):
-            logdir = Path(conv.path).parent
-        else:
-            raise ValueError("No previous conversations to resume")
     elif isinstance(logdir, str):
         logdir = get_logs_dir() / logdir
 
     logdir.mkdir(parents=True, exist_ok=True)
     return logdir
+
+
+def get_logdir_resume() -> Path:
+    if conv := next(get_user_conversations(), None):
+        return Path(conv.path).parent
+    else:
+        raise ValueError("No previous conversations to resume")
 
 
 def prompt_user(value=None) -> str:  # pragma: no cover

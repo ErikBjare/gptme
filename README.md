@@ -228,12 +228,11 @@ For more, see the [Getting Started][docs-getting-started] guide and the [Example
 $ gptme --help
 Usage: gptme [OPTIONS] [PROMPTS]...
 
-  GPTMe, a chat-CLI for LLMs, enabling them to execute commands and code.
+  gptme is a chat-CLI for LLMs, empowering them with tools to run shell
+  commands, execute code, read and manipulate files, and more.
 
-  If PROMPTS are provided, a new conversation will be started with it.
-
-  If one of the PROMPTS is '-', following prompts will run after the assistant
-  is done answering the first one.
+  If PROMPTS are provided, a new conversation will be started with it. PROMPTS
+  can be chained with the '-' separator.
 
   The interface provides user commands that can be used to interact with the
   system.
@@ -253,28 +252,23 @@ Usage: gptme [OPTIONS] [PROMPTS]...
     /exit         Exit the program
 
 Options:
-  --prompt-system TEXT            System prompt. Can be 'full', 'short', or
-                                  something custom.
-  --name TEXT                     Name of conversation. Defaults to generating
-                                  a random name. Pass 'ask' to be prompted for
-                                  a name.
-  --model TEXT                    Model to use, e.g. openai/gpt-4-turbo,
-                                  anthropic/claude-3-5-sonnet-20240620. If
-                                  only provider is given, the default model
-                                  for that provider is used.
-  --stream / --no-stream          Stream responses
-  -v, --verbose                   Verbose output.
-  -y, --no-confirm                Skips all confirmation prompts.
-  -i, --interactive / -n, --non-interactive
-                                  Choose interactive mode, or not. Non-
-                                  interactive implies --no-confirm, and is
-                                  used in testing.
-  --show-hidden                   Show hidden system messages.
-  -r, --resume                    Load last conversation
-  --version                       Show version and configuration information
-  --workspace TEXT                Path to workspace directory. Pass '@log' to
-                                  create a workspace in the log directory.
-  --help                          Show this message and exit.
+  -n, --name TEXT        Name of conversation. Defaults to generating a random
+                         name.
+  -m, --model TEXT       Model to use, e.g. openai/gpt-4o,
+                         anthropic/claude-3-5-sonnet-20240620. If only
+                         provider given, a default is used.
+  -w, --workspace TEXT   Path to workspace directory. Pass '@log' to create a
+                         workspace in the log directory.
+  -r, --resume           Load last conversation
+  -y, --no-confirm       Skips all confirmation prompts.
+  -n, --non-interactive  Force non-interactive mode. Implies --no-confirm.
+  --system TEXT          System prompt. Can be 'full', 'short', or something
+                         custom.
+  --no-stream            Don't stream responses
+  --show-hidden          Show hidden system messages.
+  -v, --verbose          Show verbose output.
+  --version              Show version and configuration information
+  --help                 Show this message and exit.
 ```
 
 

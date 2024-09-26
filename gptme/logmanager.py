@@ -184,6 +184,9 @@ class LogManager:
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
+        if str(logdir).endswith(".jsonl"):
+            logdir = Path(logdir).parent
+
         logsdir = get_logs_dir()
         if str(logsdir) not in str(logdir):
             # if the path was not fully specified, assume its a dir in logsdir
