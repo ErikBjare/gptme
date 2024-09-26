@@ -31,6 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -169,6 +170,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="prompts.html">Prompts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
@@ -394,8 +396,8 @@ document.write(`
 <h1>gptme documentation<a class="headerlink" href="#gptme-documentation" title="Permalink to this heading">#</a></h1>
 <p>Welcome to the documentation for <code class="docutils literal notranslate"><span class="pre">gptme</span></code>!</p>
 <p><code class="docutils literal notranslate"><span class="pre">gptme</span></code> is a tiny command-line application that allows you to interact with AI agent equipped with powerful local tools, acting as a copilot for your computer, via the terminal. It can execute python and bash, edit local files, search and browse the web.</p>
-<p>To get an understanding about how it works, the easiest way is to try it out yourself by following the <a class="reference internal" href="getting-started.html#getting-started"><span class="std std-ref">Getting Started</span></a> guide. If you want to see some examples of what you can do with it, check out the <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a>, <a class="reference internal" href="demos.html#demos"><span class="std std-ref">Demos</span></a>, and <a class="reference internal" href="api.html#tools"><span class="std std-ref">tools</span></a>.</p>
-<p>It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny <a class="reference internal" href="getting-started.html#web-ui"><span class="std std-ref">Web UI</span></a> with basic functionality.</p>
+<p>To get an understanding about how it works, the easiest way is to try it out yourself by following the <a class="reference internal" href="getting-started.html"><span class="doc">Getting Started</span></a> guide. If you want to see some examples of what you can do with it, check out the <a class="reference internal" href="examples.html"><span class="doc">Examples</span></a>, <a class="reference internal" href="demos.html"><span class="doc">Demos</span></a>, and <a class="reference internal" href="tools.html"><span class="doc">Tools</span></a>.</p>
+<p>It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny <a class="reference internal" href="server.html#web-ui"><span class="std std-ref">Web UI</span></a> with basic functionality.</p>
 <p>See the <a class="reference external" href="https://github.com/ErikBjare/gptme/blob/master/README.md">README</a> file for more general information about the project.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -436,9 +438,13 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="providers.html#local">Local</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="server.html#web-ui">Web UI</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#gptme">gptme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#gptme-server">gptme-server</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#gptme-eval">gptme-eval</a></li>
 </ul>
 </li>
@@ -447,6 +453,16 @@ document.write(`
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="prompts.html">Prompts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.get_prompt"><code class="docutils literal notranslate"><span class="pre">get_prompt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_full"><code class="docutils literal notranslate"><span class="pre">prompt_full()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_gptme"><code class="docutils literal notranslate"><span class="pre">prompt_gptme()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_project"><code class="docutils literal notranslate"><span class="pre">prompt_project()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_short"><code class="docutils literal notranslate"><span class="pre">prompt_short()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_tools"><code class="docutils literal notranslate"><span class="pre">prompt_tools()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#gptme.prompts.prompt_user"><code class="docutils literal notranslate"><span class="pre">prompt_user()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="evals.html#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="evals.html#example-run">Example run</a></li>

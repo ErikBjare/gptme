@@ -30,6 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -167,6 +168,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="prompts.html">Prompts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
@@ -299,6 +301,7 @@ document.write(`
 
 <div class="genindex-jumpbox">
  <a href="#Symbols"><strong>Symbols</strong></a>
+ | <a href="#_"><strong>_</strong></a>
  | <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
@@ -306,10 +309,12 @@ document.write(`
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
@@ -319,6 +324,13 @@ document.write(`
 <h2 id="Symbols">Symbols</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    --debug
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-server-debug">gptme-server command line option</a>
+</li>
+      </ul></li>
       <li>
     --interactive
 
@@ -333,6 +345,8 @@ document.write(`
         <li><a href="cli.html#cmdoption-gptme-model">gptme command line option</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-eval-m">gptme-eval command line option</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-server-model">gptme-server command line option</a>
 </li>
       </ul></li>
       <li>
@@ -413,6 +427,8 @@ document.write(`
       <ul>
         <li><a href="cli.html#cmdoption-gptme-v">gptme command line option</a>
 </li>
+        <li><a href="cli.html#cmdoption-gptme-server-v">gptme-server command line option</a>
+</li>
       </ul></li>
       <li>
     --version
@@ -476,12 +492,34 @@ document.write(`
       <ul>
         <li><a href="cli.html#cmdoption-gptme-v">gptme command line option</a>
 </li>
+        <li><a href="cli.html#cmdoption-gptme-server-v">gptme-server command line option</a>
+</li>
       </ul></li>
       <li>
     -y
 
       <ul>
         <li><a href="cli.html#cmdoption-gptme-y">gptme command line option</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.codeblock.Codeblock.__init__">__init__() (gptme.codeblock.Codeblock method)</a>
+
+      <ul>
+        <li><a href="api.html#gptme.logmanager.Conversation.__init__">(gptme.logmanager.Conversation method)</a>
+</li>
+        <li><a href="api.html#gptme.logmanager.LogManager.__init__">(gptme.logmanager.LogManager method)</a>
+</li>
+        <li><a href="api.html#gptme.message.Message.__init__">(gptme.message.Message method)</a>
+</li>
+        <li><a href="api.html#gptme.tools.ToolSpec.__init__">(gptme.tools.ToolSpec method)</a>
+</li>
+        <li><a href="api.html#gptme.tools.ToolUse.__init__">(gptme.tools.ToolUse method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -508,9 +546,13 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.codeblock.Codeblock">Codeblock (class in gptme.codeblock)</a>
 </li>
+      <li><a href="api.html#gptme.message.Message.content">content (gptme.message.Message attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.logmanager.Conversation">Conversation (class in gptme.logmanager)</a>
+</li>
+      <li><a href="api.html#gptme.server.create_app">create_app() (in module gptme.server)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -547,6 +589,8 @@ document.write(`
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.message.Message.files">files (gptme.message.Message attribute)</a>
+</li>
       <li><a href="api.html#gptme.logmanager.LogManager.fork">fork() (gptme.logmanager.LogManager method)</a>
 </li>
   </ul></td>
@@ -567,7 +611,7 @@ document.write(`
 </li>
       <li><a href="api.html#gptme.tools.ToolSpec.get_doc">get_doc() (gptme.tools.ToolSpec method)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.get_prompt">get_prompt() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.get_prompt">get_prompt() (in module gptme.prompts)</a>
 </li>
       <li><a href="api.html#gptme.logmanager.get_user_conversations">get_user_conversations() (in module gptme.logmanager)</a>
 </li>
@@ -636,6 +680,19 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    gptme-server command line option
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-server-debug">--debug</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-server-model">--model</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-server-v">--verbose</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-server-v">-v</a>
+</li>
+      </ul></li>
+      <li>
     gptme.codeblock
 
       <ul>
@@ -653,7 +710,14 @@ document.write(`
     gptme.prompts
 
       <ul>
-        <li><a href="prompt.html#module-gptme.prompts">module</a>
+        <li><a href="prompts.html#module-gptme.prompts">module</a>
+</li>
+      </ul></li>
+      <li>
+    gptme.server
+
+      <ul>
+        <li><a href="api.html#module-gptme.server">module</a>
 </li>
       </ul></li>
       <li>
@@ -663,6 +727,14 @@ document.write(`
         <li><a href="api.html#module-gptme.tools">module</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.message.Message.hide">hide (gptme.message.Message attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -699,7 +771,9 @@ document.write(`
 </li>
         <li><a href="api.html#module-gptme.logmanager">gptme.logmanager</a>
 </li>
-        <li><a href="prompt.html#module-gptme.prompts">gptme.prompts</a>
+        <li><a href="prompts.html#module-gptme.prompts">gptme.prompts</a>
+</li>
+        <li><a href="api.html#module-gptme.server">gptme.server</a>
 </li>
         <li><a href="api.html#module-gptme.tools">gptme.tools</a>
 </li>
@@ -710,21 +784,23 @@ document.write(`
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.message.Message.pinned">pinned (gptme.message.Message attribute)</a>
+</li>
       <li><a href="api.html#gptme.logmanager.LogManager.prepare_messages">prepare_messages() (gptme.logmanager.LogManager method)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.prompt_full">prompt_full() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_full">prompt_full() (in module gptme.prompts)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.prompt_gptme">prompt_gptme() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_gptme">prompt_gptme() (in module gptme.prompts)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.prompt_project">prompt_project() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_project">prompt_project() (in module gptme.prompts)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="prompt.html#gptme.prompts.prompt_short">prompt_short() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_short">prompt_short() (in module gptme.prompts)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.prompt_tools">prompt_tools() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_tools">prompt_tools() (in module gptme.prompts)</a>
 </li>
-      <li><a href="prompt.html#gptme.prompts.prompt_user">prompt_user() (in module gptme.prompts)</a>
+      <li><a href="prompts.html#gptme.prompts.prompt_user">prompt_user() (in module gptme.prompts)</a>
 </li>
       <li>
     PROMPTS
@@ -733,6 +809,14 @@ document.write(`
         <li><a href="cli.html#cmdoption-gptme-arg-PROMPTS">gptme command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.message.Message.quiet">quiet (gptme.message.Message attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -745,12 +829,16 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#gptme.message.Message.replace">replace() (gptme.message.Message method)</a>
 </li>
+      <li><a href="api.html#gptme.message.Message.role">role (gptme.message.Message attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#gptme.message.Message.timestamp">timestamp (gptme.message.Message attribute)</a>
+</li>
       <li><a href="api.html#gptme.logmanager.LogManager.to_dict">to_dict() (gptme.logmanager.LogManager method)</a>
 
       <ul>

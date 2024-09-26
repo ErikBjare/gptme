@@ -5,9 +5,9 @@ Welcome to the documentation for ``gptme``!
 
 ``gptme`` is a tiny command-line application that allows you to interact with AI agent equipped with powerful local tools, acting as a copilot for your computer, via the terminal. It can execute python and bash, edit local files, search and browse the web.
 
-To get an understanding about how it works, the easiest way is to try it out yourself by following the :ref:`Getting Started` guide. If you want to see some examples of what you can do with it, check out the :ref:`Examples`, :ref:`Demos`, and :ref:`Tools`.
+To get an understanding about how it works, the easiest way is to try it out yourself by following the :doc:`getting-started` guide. If you want to see some examples of what you can do with it, check out the :doc:`examples`, :doc:`demos`, and :doc:`tools`.
 
-It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny :ref:`Web UI` with basic functionality.
+It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny :ref:`server:Web UI` with basic functionality.
 
 See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ file for more general information about the project.
 

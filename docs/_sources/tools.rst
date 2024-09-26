@@ -7,22 +7,22 @@ The main tools can be grouped in the following categories:
 
 - execution
 
-  - :ref:`Shell`
-  - :ref:`Python`
-  - :ref:`Tmux`
+  - `Shell`_
+  - `Python`_
+  - `Tmux`_
 
 - filesystem
 
-  - :ref:`Save`
-  - :ref:`Patch`
+  - `Save`_
+  - `Patch`_
 
 - network
 
-  - :ref:`Browser`
+  - `Browser`_
 
 - chat management
 
-  - :ref:`Chats`
+  - `Chats`_
 
 Shell
 -----

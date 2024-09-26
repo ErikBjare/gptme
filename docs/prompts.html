@@ -31,6 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -41,10 +42,12 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'prompt';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'prompts';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Evals" href="evals.html" />
+    <link rel="prev" title="CLI Reference" href="cli.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -107,8 +110,6 @@
       
       
       
-        
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -167,7 +168,8 @@
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Prompts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
@@ -249,7 +251,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/prompt.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/prompts.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -279,7 +281,7 @@
       
       
       
-      <li><a href="_sources/prompt.rst" target="_blank"
+      <li><a href="_sources/prompts.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -500,7 +502,7 @@ gptme is a CLI to interact with large language models in a Chat-style interface,
 
 
 <span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```bash</span><span class="w"> </span>
+<span class="sb">```bash</span>
 cat<span class="w"> </span>file.txt
 <span class="sb">```</span>
 
@@ -544,7 +546,7 @@ cat<span class="w"> </span>file.txt
 
 <span class="gs">**Description:**</span> Apply a patch to a file
 
-<span class="gs">**Instructions:**</span> 
+<span class="gs">**Instructions:**</span>
 To patch/modify files, we can use an adapted version of git conflict markers.
 
 This can be used to make changes to files, without having to rewrite the whole file.
@@ -592,17 +594,17 @@ def hello():
 
 
 <span class="sb">These programs are available, among others:</span>
-<span class="sb">- pandoc</span>
-<span class="sb">- docker</span>
-<span class="sb">- apt-get</span>
 <span class="sb">- git</span>
 <span class="sb">- convert</span>
+<span class="sb">- docker</span>
+<span class="sb">- pandoc</span>
+<span class="sb">- apt-get</span>
 
 <span class="sb">### Examples</span>
 
 <span class="sb">User: list the current directory</span>
 <span class="sb">Assistant: To list the files in the current directory, use `ls`:</span>
-<span class="sb">```bash </span>
+<span class="sb">```bash</span>
 <span class="sb">ls</span>
 <span class="sb">```</span>
 System: Ran command: <span class="sb">`ls`</span>
@@ -614,7 +616,7 @@ System: Ran command: <span class="sb">`ls`</span>
 <span class="gu">#### The assistant can learn context by exploring the filesystem</span>
 User: learn about the project
 Assistant: Lets start by checking the files
-<span class="sb">```bash</span><span class="w"> </span>
+<span class="sb">```bash</span>
 git<span class="w"> </span>ls-files
 <span class="sb">```</span>
 System:
@@ -631,7 +633,7 @@ System:
 <span class="s">(contents of README.md)</span>
 <span class="sb">```</span>
 Assistant: Now we check main.py
-<span class="sb">```bash</span><span class="w"> </span>
+<span class="sb">```bash</span>
 cat<span class="w"> </span>main.py
 <span class="sb">```</span>
 System:
@@ -644,7 +646,7 @@ Assistant: The project is...
 <span class="gu">#### Create vue project</span>
 User: Create a new vue project with typescript and pinia named fancy-project
 Assistant: Sure! Let&#39;s create a new vue project with TypeScript and Pinia named fancy-project:
-<span class="sb">```bash</span><span class="w"> </span>
+<span class="sb">```bash</span>
 npm<span class="w"> </span>init<span class="w"> </span>vue@latest<span class="w"> </span>fancy-project<span class="w"> </span>--yes<span class="w"> </span>--<span class="w"> </span>--typescript<span class="w"> </span>--pinia
 <span class="sb">```</span>
 System:
@@ -666,12 +668,12 @@ System:
 
 User: compute fib 69 using a subagent
 Assistant: Starting a subagent to compute the 69th Fibonacci number.
-<span class="sb">```ipython</span><span class="w"> </span>
+<span class="sb">```ipython</span>
 <span class="n">subagent</span><span class="p">(</span><span class="s2">&quot;compute the 69th Fibonacci number&quot;</span><span class="p">,</span> <span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-<span class="sb">```ipython</span><span class="w"> </span>
+<span class="sb">```ipython</span>
 <span class="n">subagent_wait</span><span class="p">(</span><span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 
@@ -680,7 +682,7 @@ Assistant: Now we need to wait for the subagent to finish the task.
 
 <span class="gs">**Description:**</span> Executes shell commands in a tmux session
 
-<span class="gs">**Instructions:**</span> 
+<span class="gs">**Instructions:**</span>
 You can use the tmux tool to run long-lived and/or interactive applications in a tmux session.
 
 This tool is suitable to run long-running commands or interactive applications that require user input.
@@ -700,14 +702,14 @@ Available commands:
 <span class="gu">#### Managing a dev server</span>
 User: Start the dev server
 Assistant: Certainly! To start the dev server we should use tmux:
-<span class="sb">```tmux</span><span class="w"> </span>
+<span class="sb">```tmux</span>
 <span class="s">new_session &#39;npm run dev&#39;</span>
 <span class="sb">```</span>
 System: Running <span class="sb">`npm run dev`</span> in session 0
 
 User: Can you show me the current content of the pane?
 Assistant: Of course! Let&#39;s inspect the pane content:
-<span class="sb">```tmux</span><span class="w"> </span>
+<span class="sb">```tmux</span>
 <span class="s">inspect_pane 0</span>
 <span class="sb">```</span>
 System:
@@ -717,7 +719,7 @@ System:
 
 User: Stop the dev server
 Assistant: I&#39;ll send &#39;Ctrl+C&#39; to the pane to stop the server:
-<span class="sb">```tmux</span><span class="w"> </span>
+<span class="sb">```tmux</span>
 <span class="s">send_keys 0 C-c</span>
 <span class="sb">```</span>
 System: Sent &#39;C-c&#39; to pane 0
@@ -838,7 +840,7 @@ gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span
 
 <span class="gs">**Description:**</span> List, search, and summarize past conversation logs
 
-<span class="gs">**Instructions:**</span> 
+<span class="gs">**Instructions:**</span>
 The chats tool allows you to list, search, and summarize past conversation logs.
 
 
@@ -872,7 +874,7 @@ The following functions are available in the REPL:
 <span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str: Read the text of a webpage and return the text in Markdown format.
 <span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
 <span class="k">-</span><span class="w"> </span>screenshot_url(url: str, filename: Union[str, NoneType]) -&gt; str: Take a screenshot of a webpage and save it to a file.
-<span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool): 
+<span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool):
     List recent chat conversations and optionally summarize them using an LLM.
 
     Args:
@@ -881,7 +883,7 @@ The following functions are available in the REPL:
             If True, uses an LLM to generate a comprehensive summary.
             If False, uses a simple strategy showing snippets of the first and last messages.
 
-<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int): 
+<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int):
     Search past conversation logs for the given query and print a summary of the results.
 
     Args:
@@ -889,7 +891,7 @@ The following functions are available in the REPL:
         max_results (int): Maximum number of conversations to display.
         system (bool): Whether to include system messages in the search.
 
-<span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int): 
+<span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int):
     Read a specific conversation log.
 
     Args:
@@ -902,7 +904,7 @@ The following functions are available in the REPL:
 <span class="gu">#### Results of the last expression will be displayed, IPython-style:</span>
 <span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
 <span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```ipython</span><span class="w"> </span>
+<span class="sb">```ipython</span>
 <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
@@ -918,7 +920,7 @@ The following functions are available in the REPL:
     <span class="o">...</span>
 <span class="sb">```</span>
 Now, let&#39;s execute this code to get the 10th Fibonacci number:
-<span class="sb">```ipython</span><span class="w"> </span>
+<span class="sb">```ipython</span>
 
 <span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
@@ -968,6 +970,24 @@ No specific preferences set.
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="cli.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">CLI Reference</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="evals.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Evals</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               

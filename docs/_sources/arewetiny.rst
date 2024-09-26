@@ -12,7 +12,7 @@ Lines of code
 -------------
 
 LoC Core
-*******
+********
 
 .. command-output:: make -C .. cloc-core
 
