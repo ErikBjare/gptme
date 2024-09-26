@@ -27,7 +27,7 @@ def test_browser():
 def test_search_google():
     results = search("test", "google")
     print(results)
-    assert "```results" in results
+    assert "1." in results
 
 
 @pytest.mark.slow
