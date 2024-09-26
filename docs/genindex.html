@@ -332,17 +332,10 @@ document.write(`
 </li>
       </ul></li>
       <li>
-    --interactive
-
-      <ul>
-        <li><a href="cli.html#cmdoption-gptme-i">gptme command line option</a>
-</li>
-      </ul></li>
-      <li>
     --model
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-model">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-m">gptme command line option</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-eval-m">gptme-eval command line option</a>
 </li>
@@ -353,7 +346,7 @@ document.write(`
     --name
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-name">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-n">gptme command line option</a>
 </li>
       </ul></li>
       <li>
@@ -367,14 +360,14 @@ document.write(`
     --no-stream
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-stream">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-no-stream">gptme command line option</a>
 </li>
       </ul></li>
       <li>
     --non-interactive
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-i">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-0">gptme command line option</a>
 </li>
       </ul></li>
       <li>
@@ -382,13 +375,6 @@ document.write(`
 
       <ul>
         <li><a href="cli.html#cmdoption-gptme-eval-p">gptme-eval command line option</a>
-</li>
-      </ul></li>
-      <li>
-    --prompt-system
-
-      <ul>
-        <li><a href="cli.html#cmdoption-gptme-prompt-system">gptme command line option</a>
 </li>
       </ul></li>
       <li>
@@ -406,14 +392,12 @@ document.write(`
 </li>
       </ul></li>
       <li>
-    --stream
+    --system
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-stream">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-system">gptme command line option</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     --timeout
 
@@ -421,6 +405,8 @@ document.write(`
         <li><a href="cli.html#cmdoption-gptme-eval-t">gptme-eval command line option</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     --verbose
 
@@ -441,20 +427,15 @@ document.write(`
     --workspace
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-workspace">gptme command line option</a>
-</li>
-      </ul></li>
-      <li>
-    -i
-
-      <ul>
-        <li><a href="cli.html#cmdoption-gptme-i">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-w">gptme command line option</a>
 </li>
       </ul></li>
       <li>
     -m
 
       <ul>
+        <li><a href="cli.html#cmdoption-gptme-m">gptme command line option</a>
+</li>
         <li><a href="cli.html#cmdoption-gptme-eval-m">gptme-eval command line option</a>
 </li>
       </ul></li>
@@ -462,7 +443,7 @@ document.write(`
     -n
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-i">gptme command line option</a>
+        <li><a href="cli.html#cmdoption-gptme-0">gptme command line option</a>, <a href="cli.html#cmdoption-gptme-n">[1]</a>
 </li>
       </ul></li>
       <li>
@@ -493,6 +474,13 @@ document.write(`
         <li><a href="cli.html#cmdoption-gptme-v">gptme command line option</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-server-v">gptme-server command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -w
+
+      <ul>
+        <li><a href="cli.html#cmdoption-gptme-w">gptme command line option</a>
 </li>
       </ul></li>
       <li>
@@ -619,39 +607,37 @@ document.write(`
     gptme command line option
 
       <ul>
-        <li><a href="cli.html#cmdoption-gptme-i">--interactive</a>
+        <li><a href="cli.html#cmdoption-gptme-m">--model</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-model">--model</a>
-</li>
-        <li><a href="cli.html#cmdoption-gptme-name">--name</a>
+        <li><a href="cli.html#cmdoption-gptme-n">--name</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-y">--no-confirm</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-stream">--no-stream</a>
+        <li><a href="cli.html#cmdoption-gptme-no-stream">--no-stream</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-i">--non-interactive</a>
-</li>
-        <li><a href="cli.html#cmdoption-gptme-prompt-system">--prompt-system</a>
+        <li><a href="cli.html#cmdoption-gptme-0">--non-interactive</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-r">--resume</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-show-hidden">--show-hidden</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-stream">--stream</a>
+        <li><a href="cli.html#cmdoption-gptme-system">--system</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-v">--verbose</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-version">--version</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-workspace">--workspace</a>
+        <li><a href="cli.html#cmdoption-gptme-w">--workspace</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-i">-i</a>
+        <li><a href="cli.html#cmdoption-gptme-m">-m</a>
 </li>
-        <li><a href="cli.html#cmdoption-gptme-i">-n</a>
+        <li><a href="cli.html#cmdoption-gptme-0">-n</a>, <a href="cli.html#cmdoption-gptme-n">[1]</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-r">-r</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-v">-v</a>
+</li>
+        <li><a href="cli.html#cmdoption-gptme-w">-w</a>
 </li>
         <li><a href="cli.html#cmdoption-gptme-y">-y</a>
 </li>

@@ -404,9 +404,8 @@ document.write(`
 <section id="gptme">
 <h2>gptme<a class="headerlink" href="#gptme" title="Permalink to this heading">#</a></h2>
 <p>gptme is a chat-CLI for LLMs, empowering them with tools to run shell commands, execute code, read and manipulate files, and more.</p>
-<p>If PROMPTS are provided, a new conversation will be started with it.</p>
-<p>If one of the PROMPTS is ‘-’, the PROMPTS will form a chain,
-where following prompts will be submitted after the assistant is done answering the previous one.</p>
+<p>If PROMPTS are provided, a new conversation will be started with it.
+PROMPTS can be chained with the ‘-’ separator.</p>
 <p>The interface provides user commands that can be used to interact with the system.</p>
 <div class="line-block">
 <div class="line">Available commands:</div>
@@ -430,51 +429,21 @@ where following prompts will be submitted after the assistant is done answering 
 </div>
 <p class="rubric">Options</p>
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-prompt-system">
-<span class="sig-name descname"><span class="pre">--prompt-system</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prompt_system&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-prompt-system" title="Permalink to this definition">#</a></dt>
-<dd><p>System prompt. Can be ‘full’, ‘short’, or something custom.</p>
+<dt class="sig sig-object std" id="cmdoption-gptme-n">
+<span id="cmdoption-gptme-name"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-n" title="Permalink to this definition">#</a></dt>
+<dd><p>Name of conversation. Defaults to generating a random name.</p>
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-name">
-<span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-name" title="Permalink to this definition">#</a></dt>
-<dd><p>Name of conversation. Defaults to generating a random name. Pass ‘ask’ to be prompted for a name.</p>
+<dt class="sig sig-object std" id="cmdoption-gptme-m">
+<span id="cmdoption-gptme-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-m" title="Permalink to this definition">#</a></dt>
+<dd><p>Model to use, e.g. openai/gpt-4o, anthropic/claude-3-5-sonnet-20240620. If only provider given, a default is used.</p>
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-model">
-<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-model" title="Permalink to this definition">#</a></dt>
-<dd><p>Model to use, e.g. openai/gpt-4-turbo, anthropic/claude-3-5-sonnet-20240620. If only provider is given, the default model for that provider is used.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-stream">
-<span id="cmdoption-gptme-no-stream"></span><span class="sig-name descname"><span class="pre">--stream</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-stream" title="Permalink to this definition">#</a></dt>
-<dd><p>Stream responses</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-v">
-<span id="cmdoption-gptme-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-v" title="Permalink to this definition">#</a></dt>
-<dd><p>Verbose output.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-y">
-<span id="cmdoption-gptme-no-confirm"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-confirm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-y" title="Permalink to this definition">#</a></dt>
-<dd><p>Skips all confirmation prompts.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-i">
-<span id="cmdoption-gptme-interactive"></span><span id="cmdoption-gptme-n"></span><span id="cmdoption-gptme-non-interactive"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--interactive</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--non-interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-i" title="Permalink to this definition">#</a></dt>
-<dd><p>Choose interactive mode, or not. Non-interactive implies –no-confirm, and is used in testing.</p>
-</dd></dl>
-
-<dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-show-hidden">
-<span class="sig-name descname"><span class="pre">--show-hidden</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-show-hidden" title="Permalink to this definition">#</a></dt>
-<dd><p>Show hidden system messages.</p>
+<dt class="sig sig-object std" id="cmdoption-gptme-w">
+<span id="cmdoption-gptme-workspace"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workspace</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workspace&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-w" title="Permalink to this definition">#</a></dt>
+<dd><p>Path to workspace directory. Pass <a class="reference external" href="mailto:'&#37;&#52;&#48;log">‘<span>&#64;</span>log</a>’ to create a workspace in the log directory.</p>
 </dd></dl>
 
 <dl class="std option">
@@ -484,15 +453,45 @@ where following prompts will be submitted after the assistant is done answering 
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-version">
-<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-version" title="Permalink to this definition">#</a></dt>
-<dd><p>Show version and configuration information</p>
+<dt class="sig sig-object std" id="cmdoption-gptme-y">
+<span id="cmdoption-gptme-no-confirm"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-confirm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-y" title="Permalink to this definition">#</a></dt>
+<dd><p>Skips all confirmation prompts.</p>
 </dd></dl>
 
 <dl class="std option">
-<dt class="sig sig-object std" id="cmdoption-gptme-workspace">
-<span class="sig-name descname"><span class="pre">--workspace</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workspace&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-workspace" title="Permalink to this definition">#</a></dt>
-<dd><p>Path to workspace directory. Pass <a class="reference external" href="mailto:'&#37;&#52;&#48;log">‘<span>&#64;</span>log</a>’ to create a workspace in the log directory.</p>
+<dt class="sig sig-object std" id="cmdoption-gptme-0">
+<span id="cmdoption-gptme-non-interactive"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--non-interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-0" title="Permalink to this definition">#</a></dt>
+<dd><p>Force non-interactive mode. Implies –no-confirm.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-system">
+<span class="sig-name descname"><span class="pre">--system</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prompt_system&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-system" title="Permalink to this definition">#</a></dt>
+<dd><p>System prompt. Can be ‘full’, ‘short’, or something custom.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-no-stream">
+<span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-no-stream" title="Permalink to this definition">#</a></dt>
+<dd><p>Don’t stream responses</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-show-hidden">
+<span class="sig-name descname"><span class="pre">--show-hidden</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-show-hidden" title="Permalink to this definition">#</a></dt>
+<dd><p>Show hidden system messages.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-v">
+<span id="cmdoption-gptme-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-v" title="Permalink to this definition">#</a></dt>
+<dd><p>Show verbose output.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-version">
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-version" title="Permalink to this definition">#</a></dt>
+<dd><p>Show version and configuration information</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
