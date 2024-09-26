@@ -135,12 +135,17 @@ class Message:
             # storage/wire format should keep the content as a string
             content = self.content
 
-        d = {
+        d: dict = {
             "role": self.role,
             "content": content,
             "timestamp": self.timestamp.isoformat(),
-            "files": [str(f) for f in self.files],
         }
+        if self.files:
+            d["files"] = [str(f) for f in self.files]
+        if self.pinned:
+            d["pinned"] = True
+        if self.hide:
+            d["hide"] = True
         if keys:
             return {k: d[k] for k in keys}
         return d
@@ -156,6 +161,8 @@ class Message:
         if self.hide:
             flags.append("hide")
         flags_toml = "\n".join(f"{flag} = true" for flag in flags)
+        files_toml = f"files = {[str(f) for f in self.files]}" if self.files else ""
+        extra = (flags_toml + "\n" + files_toml).strip()
 
         # doublequotes need to be escaped
         # content = self.content.replace('"', '\\"')
@@ -168,9 +175,8 @@ role = "{self.role}"
 content = """
 {content}
 """
-files = {[str(f) for f in self.files]}
 timestamp = "{self.timestamp.isoformat()}"
-{flags_toml}
+{extra}
 '''
 
     @classmethod
