@@ -384,7 +384,11 @@ document.write(`
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;write a web app to particles.html which shows off an impressive and colorful particle effect using three.js&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;render mandelbrot set to mandelbrot.png&#39;</span>
 
+<span class="c1"># chaining prompts</span>
+gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
+
 <span class="c1"># stdin</span>
+git<span class="w"> </span>diff<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;complete the TODOs in this diff&#39;</span>
 make<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix the failing tests&#39;</span>
 
 <span class="c1"># from a file</span>
