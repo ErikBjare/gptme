@@ -520,7 +520,7 @@ def get_logfile(logdir: Path | str | Literal["random", "resume"]) -> Path:
     elif logdir == "resume":
         convs = get_user_conversations()
         if conv := next(convs, None):
-            logdir = Path(conv.path)
+            logdir = Path(conv.path).parent
         else:
             raise ValueError("No previous conversations to resume")
     elif isinstance(logdir, str):
