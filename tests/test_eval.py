@@ -59,6 +59,6 @@ def pytest_generate_tests(metafunc):
         # for now, only run the hello-patch test (the "hello" test is unreliable with gpt-4o-mini)
         allowlist = ["hello-patch"]
         test_set, test_names = zip(
-            *[(test, test["name"]) for test in tests if test["name"] in allowlist]
+            *[(test, test["name"]) for test in tests if test["name"] in allowlist],
         )
         metafunc.parametrize("test", test_set, ids=test_names)
