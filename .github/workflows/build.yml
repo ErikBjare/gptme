@@ -104,7 +104,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         tags: gptme:latest
-        file: ./Dockerfile
+        file: ./scripts/Dockerfile
         context: .
         push: false
 
@@ -115,7 +115,7 @@ jobs:
         tags: |
           ghcr.io/${{ env.OWNER_LC }}/gptme:latest
           ghcr.io/${{ env.OWNER_LC }}/gptme:${{ env.SANITIZED_REF_NAME }}
-        file: ./Dockerfile
+        file: ./scripts/Dockerfile
         context: .
         push: true
 
@@ -126,7 +126,7 @@ jobs:
         tags: |
           ghcr.io/${{ env.OWNER_LC }}/gptme-eval:latest
           ghcr.io/${{ env.OWNER_LC }}/gptme-eval:${{ env.SANITIZED_REF_NAME }}
-        file: ./Dockerfile.eval
+        file: ./scripts/Dockerfile.eval
         context: .
         push: true
 

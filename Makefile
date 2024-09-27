@@ -15,11 +15,11 @@ build:
 	poetry install
 
 build-docker:
-	docker build . -t gptme:latest -f Dockerfile
-	docker build . -t gptme-eval:latest -f Dockerfile.eval
+	docker build . -t gptme:latest -f scripts/Dockerfile
+	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval
 
 build-docker-full:
-	docker build . -t gptme-eval:latest -f Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
+	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
