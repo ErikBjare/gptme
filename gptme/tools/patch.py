@@ -78,7 +78,7 @@ def apply(codeblock: str, content: str) -> str:
             f"{re.escape(ORIGINAL)}|{re.escape(DIVIDER)}|{re.escape(UPDATED)}", patch
         )
         if len(parts) != 4:  # pragma: no cover
-            raise ValueError("invalid patch format", patch)
+            raise ValueError("invalid patch format")
 
         _, original, modified, _ = parts
 
@@ -95,7 +95,6 @@ def apply(codeblock: str, content: str) -> str:
             if len(originals) != len(modifieds):
                 raise ValueError(
                     "different number of placeholders in original and modified chunks"
-                    f"\n{originals}\n{modifieds}"
                 )
             for orig, mod in zip(originals, modifieds):
                 if orig == mod:
@@ -103,7 +102,7 @@ def apply(codeblock: str, content: str) -> str:
                 new_content = new_content.replace(orig, mod)
         else:
             if original not in new_content:  # pragma: no cover
-                raise ValueError("original chunk not found in file", original)
+                raise ValueError("original chunk not found in file")
             new_content = new_content.replace(original, modified)
 
     if new_content == content:  # pragma: no cover
