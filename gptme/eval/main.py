@@ -34,6 +34,14 @@ logger = logging.getLogger(__name__)
 project_dir = Path(__file__).parent.parent.parent
 
 
+def sort_tests(test_names):
+    # sorts a list of test names by the order they appear in the default tests
+    return sorted(
+        test_names,
+        key=lambda x: (list(tests_map).index(x) if x in tests_map else 0),
+    )
+
+
 def print_model_results(model_results: dict[str, list[EvalResult]]):
     total_tests = 0
     total_tokens = 0
@@ -71,9 +79,9 @@ def print_model_results(model_results: dict[str, list[EvalResult]]):
 
 
 def print_model_results_table(model_results: dict[str, list[EvalResult]]):
-    test_names = {
-        result.name for results in model_results.values() for result in results
-    }
+    test_names = sort_tests(
+        {result.name for results in model_results.values() for result in results}
+    )
     headers = ["Model"] + list(test_names)
     table_data = []
 
@@ -124,18 +132,18 @@ def aggregate_and_display_results(result_files: list[str]):
                     all_results[model][result.name]["passed"] += 1
 
     # Prepare table data
-    headers = ["Model"] + list(
-        set(
+    headers = ["Model"] + sort_tests(
+        {
             test
             for model_results in all_results.values()
             for test in model_results.keys()
-        )
+        }
     )
     table_data = []
 
     def get_status_emoji(passed, total):
         percentage = (passed / total) * 100
-        if percentage == 100:
+        if 80 <= percentage:
             return "✅"
         elif 20 <= percentage < 80:
             return "🔶"
