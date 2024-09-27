@@ -2,8 +2,6 @@
 Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.
 """
 
-# TODO: support multiple patches in one codeblock (or make it clear that only one patch per codeblock is supported/applied)
-
 import re
 from collections.abc import Generator
 from pathlib import Path
@@ -114,18 +112,6 @@ def apply(codeblock: str, content: str) -> str:
     return new_content
 
 
-def apply_file(codeblock, filename):
-    if not Path(filename).exists():
-        raise ValueError(f"file not found: {filename}")
-
-    with open(filename, "r+") as f:
-        content = f.read()
-        result = apply(codeblock, content)
-        f.seek(0)
-        f.truncate()
-        f.write(result)
-
-
 def execute_patch(
     code: str, ask: bool, args: list[str]
 ) -> Generator[Message, None, None]:
@@ -134,6 +120,9 @@ def execute_patch(
     """
     fn = " ".join(args)
     assert fn, "No filename provided"
+    path = Path(fn).expanduser()
+    if not path.exists():
+        raise ValueError(f"file not found: {fn}")
     if ask:
         confirm = ask_execute(f"Apply patch to {fn}?")
         if not confirm:
@@ -141,8 +130,26 @@ def execute_patch(
             return
 
     try:
-        apply_file(code, fn)
-        yield Message("system", f"Patch applied to {fn}")
+        with open(path) as f:
+            original_content = f.read()
+
+        # Apply the patch
+        patched_content = apply(code, original_content)
+        with open(path, "w") as f:
+            f.write(patched_content)
+
+        # Compare token counts
+        patch_tokens = len(code)
+        full_file_tokens = len(patched_content)
+
+        warnings = []
+        if full_file_tokens < patch_tokens:
+            warnings.append(
+                "Note: The patch was larger than the file. Consider using the save tool instead."
+            )
+        warnings_str = ("\n" + "\n".join(warnings)) if warnings else ""
+
+        yield Message("system", f"Patch applied to {fn}{warnings_str}")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
 
