@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>CLI Reference &#8212; gptme</title>
   
@@ -29,19 +28,19 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cli';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
@@ -390,7 +389,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section id="cli-reference">
-<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Permalink to this heading">#</a></h1>
+<h1>CLI Reference<a class="headerlink" href="#cli-reference" title="Link to this heading">#</a></h1>
 <p>gptme provides the following commands:</p>
 <nav class="contents local" id="commands">
 <p class="topic-title">Commands</p>
@@ -402,7 +401,7 @@ document.write(`
 </nav>
 <p>This is the full CLI reference. For a more concise version, run <code class="docutils literal notranslate"><span class="pre">gptme</span> <span class="pre">--help</span></code>.</p>
 <section id="gptme">
-<h2>gptme<a class="headerlink" href="#gptme" title="Permalink to this heading">#</a></h2>
+<h2>gptme<a class="headerlink" href="#gptme" title="Link to this heading">#</a></h2>
 <p>gptme is a chat-CLI for LLMs, empowering them with tools to run shell commands, execute code, read and manipulate files, and more.</p>
 <p>If PROMPTS are provided, a new conversation will be started with it.
 PROMPTS can be chained with the ‘-’ separator.</p>
@@ -430,80 +429,80 @@ PROMPTS can be chained with the ‘-’ separator.</p>
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-n">
-<span id="cmdoption-gptme-name"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-n" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-name"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-n" title="Link to this definition">#</a></dt>
 <dd><p>Name of conversation. Defaults to generating a random name.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-m">
-<span id="cmdoption-gptme-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-m" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-m" title="Link to this definition">#</a></dt>
 <dd><p>Model to use, e.g. openai/gpt-4o, anthropic/claude-3-5-sonnet-20240620. If only provider given, a default is used.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-w">
-<span id="cmdoption-gptme-workspace"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workspace</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workspace&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-w" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-workspace"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workspace</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workspace&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-w" title="Link to this definition">#</a></dt>
 <dd><p>Path to workspace directory. Pass <a class="reference external" href="mailto:'&#37;&#52;&#48;log">‘<span>&#64;</span>log</a>’ to create a workspace in the log directory.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-r">
-<span id="cmdoption-gptme-resume"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--resume</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-r" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-resume"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--resume</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-r" title="Link to this definition">#</a></dt>
 <dd><p>Load last conversation</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-y">
-<span id="cmdoption-gptme-no-confirm"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-confirm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-y" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-no-confirm"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-confirm</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-y" title="Link to this definition">#</a></dt>
 <dd><p>Skips all confirmation prompts.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-0">
-<span id="cmdoption-gptme-non-interactive"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--non-interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-0" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-non-interactive"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--non-interactive</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-0" title="Link to this definition">#</a></dt>
 <dd><p>Force non-interactive mode. Implies –no-confirm.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-system">
-<span class="sig-name descname"><span class="pre">--system</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prompt_system&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-system" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--system</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;prompt_system&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-system" title="Link to this definition">#</a></dt>
 <dd><p>System prompt. Can be ‘full’, ‘short’, or something custom.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-no-stream">
-<span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-no-stream" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-no-stream" title="Link to this definition">#</a></dt>
 <dd><p>Don’t stream responses</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-show-hidden">
-<span class="sig-name descname"><span class="pre">--show-hidden</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-show-hidden" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--show-hidden</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-show-hidden" title="Link to this definition">#</a></dt>
 <dd><p>Show hidden system messages.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-v">
-<span id="cmdoption-gptme-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-v" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-v" title="Link to this definition">#</a></dt>
 <dd><p>Show verbose output.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-version">
-<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-version" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--version</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-version" title="Link to this definition">#</a></dt>
 <dd><p>Show version and configuration information</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-arg-PROMPTS">
-<span id="cmdoption-gptme-arg-prompts"></span><span class="sig-name descname"><span class="pre">PROMPTS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-arg-PROMPTS" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">PROMPTS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-arg-PROMPTS" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 
 </section>
 <section id="gptme-server">
-<h2>gptme-server<a class="headerlink" href="#gptme-server" title="Permalink to this heading">#</a></h2>
+<h2>gptme-server<a class="headerlink" href="#gptme-server" title="Link to this heading">#</a></h2>
 <p>Starts a server and web UI for gptme.</p>
 <p>Note that this is very much a work in progress, and is not yet ready for normal use.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-server<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
@@ -512,25 +511,25 @@ PROMPTS can be chained with the ‘-’ separator.</p>
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-server-debug">
-<span class="sig-name descname"><span class="pre">--debug</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-debug" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--debug</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-debug" title="Link to this definition">#</a></dt>
 <dd><p>Debug mode</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-server-v">
-<span id="cmdoption-gptme-server-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-v" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-server-verbose"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbose</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-server-v" title="Link to this definition">#</a></dt>
 <dd><p>Verbose output</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-server-model">
-<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-model" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-server-model" title="Link to this definition">#</a></dt>
 <dd><p>Model to use by default, can be overridden in each request.</p>
 </dd></dl>
 
 </section>
 <section id="gptme-eval">
-<h2>gptme-eval<a class="headerlink" href="#gptme-eval" title="Permalink to this heading">#</a></h2>
+<h2>gptme-eval<a class="headerlink" href="#gptme-eval" title="Link to this heading">#</a></h2>
 <p>Run evals for gptme.
 Pass eval or suite names to run, or result files to print.</p>
 <p>Output from evals will be captured, unless a single eval is run, and saved to the results directory.</p>
@@ -540,26 +539,26 @@ Pass eval or suite names to run, or result files to print.</p>
 <p class="rubric">Options</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-m">
-<span id="cmdoption-gptme-eval-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;_model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-m" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-eval-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;_model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-m" title="Link to this definition">#</a></dt>
 <dd><p>Model to use, can be passed multiple times.</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-t">
-<span id="cmdoption-gptme-eval-timeout"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--timeout</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;timeout&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-t" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-eval-timeout"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--timeout</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;timeout&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-t" title="Link to this definition">#</a></dt>
 <dd><p>Timeout for code generation</p>
 </dd></dl>
 
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-p">
-<span id="cmdoption-gptme-eval-parallel"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--parallel</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;parallel&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-p" title="Permalink to this definition">#</a></dt>
+<span id="cmdoption-gptme-eval-parallel"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--parallel</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;parallel&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-p" title="Link to this definition">#</a></dt>
 <dd><p>Number of parallel evals to run</p>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-arg-EVAL_NAMES_OR_RESULT_FILES">
-<span id="cmdoption-gptme-eval-arg-eval-names-or-result-files"></span><span class="sig-name descname"><span class="pre">EVAL_NAMES_OR_RESULT_FILES</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-eval-arg-EVAL_NAMES_OR_RESULT_FILES" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">EVAL_NAMES_OR_RESULT_FILES</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-eval-arg-EVAL_NAMES_OR_RESULT_FILES" title="Link to this definition">#</a></dt>
 <dd><p>Optional argument(s)</p>
 </dd></dl>
 

@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Tools &#8212; gptme</title>
   
@@ -29,19 +28,19 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tools';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
@@ -394,7 +393,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section id="tools">
-<h1>Tools<a class="headerlink" href="#tools" title="Permalink to this heading">#</a></h1>
+<h1>Tools<a class="headerlink" href="#tools" title="Link to this heading">#</a></h1>
 <p>Tools available in gptme.</p>
 <p>The main tools can be grouped in the following categories:</p>
 <ul class="simple">
@@ -423,7 +422,7 @@ document.write(`
 </li>
 </ul>
 <section id="shell">
-<h2>Shell<a class="headerlink" href="#shell" title="Permalink to this heading">#</a></h2>
+<h2>Shell<a class="headerlink" href="#shell" title="Link to this heading">#</a></h2>
 <p>The assistant can execute shell commands by outputting code blocks with <cite>bash</cite> or <cite>sh</cite> as the language.</p>
 <p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
@@ -553,7 +552,7 @@ Scaffolding project in ./fancy-project...
 
 </section>
 <section id="python">
-<h2>Python<a class="headerlink" href="#python" title="Permalink to this heading">#</a></h2>
+<h2>Python<a class="headerlink" href="#python" title="Link to this heading">#</a></h2>
 <p>The assistant can execute Python code blocks.</p>
 <p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.</p>
 <p># Examples</p>
@@ -636,7 +635,7 @@ fib(10)
 
 </section>
 <section id="tmux">
-<h2>Tmux<a class="headerlink" href="#tmux" title="Permalink to this heading">#</a></h2>
+<h2>Tmux<a class="headerlink" href="#tmux" title="Link to this heading">#</a></h2>
 <p>You can use the tmux tool to run long-lived and/or interactive applications in a tmux session. Requires tmux to be installed.</p>
 <p>This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
@@ -742,7 +741,7 @@ It allows for inspecting pane contents and sending input.</p>
 
 </section>
 <section id="save">
-<h2>Save<a class="headerlink" href="#save" title="Permalink to this heading">#</a></h2>
+<h2>Save<a class="headerlink" href="#save" title="Link to this heading">#</a></h2>
 <p>Gives the assistant the ability to save/write code to a file.</p>
 <p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
@@ -814,7 +813,7 @@ It allows for inspecting pane contents and sending input.</p>
 
 </section>
 <section id="patch">
-<h2>Patch<a class="headerlink" href="#patch" title="Permalink to this heading">#</a></h2>
+<h2>Patch<a class="headerlink" href="#patch" title="Link to this heading">#</a></h2>
 <p>Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.</p>
 <p># Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
@@ -860,7 +859,7 @@ def hello():
 
 </section>
 <section id="browser">
-<h2>Browser<a class="headerlink" href="#browser" title="Permalink to this heading">#</a></h2>
+<h2>Browser<a class="headerlink" href="#browser" title="Link to this heading">#</a></h2>
 <dl class="simple">
 <dt>Tools to let the assistant control a browser, including:</dt><dd><ul class="simple">
 <li><p>loading pages</p></li>
@@ -1021,7 +1020,7 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 
 </section>
 <section id="chats">
-<h2>Chats<a class="headerlink" href="#chats" title="Permalink to this heading">#</a></h2>
+<h2>Chats<a class="headerlink" href="#chats" title="Link to this heading">#</a></h2>
 <p>List, search, and summarize past conversation logs.</p>
 <p># Examples</p>
 <p>Search for a specific topic in past conversations</p>

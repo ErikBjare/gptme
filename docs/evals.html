@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" data-content_root="" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Evals &#8212; gptme</title>
   
@@ -29,19 +28,19 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'evals';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
@@ -390,7 +389,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section id="evals">
-<h1>Evals<a class="headerlink" href="#evals" title="Permalink to this heading">#</a></h1>
+<h1>Evals<a class="headerlink" href="#evals" title="Link to this heading">#</a></h1>
 <p>gptme provides LLMs with a wide variety of tools, but how well do models make use of them? Which tasks can they complete, and which ones do they struggle with? How far can they get on their own, without any human intervention?</p>
 <p>To answer these questions, we have created a evaluation suite that tests the capabilities of LLMs on a wide variety of tasks.</p>
 <div class="admonition note">
@@ -398,7 +397,7 @@ document.write(`
 <p>The evaluation suite is still under development, but the eval harness is mostly complete.</p>
 </div>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading">#</a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
 <p>You can run the simple <code class="docutils literal notranslate"><span class="pre">hello</span></code> eval with gpt-4o like this:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o
 </pre></div>
@@ -413,7 +412,7 @@ docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</spa
 </div>
 </section>
 <section id="example-run">
-<h2>Example run<a class="headerlink" href="#example-run" title="Permalink to this heading">#</a></h2>
+<h2>Example run<a class="headerlink" href="#example-run" title="Link to this heading">#</a></h2>
 <p>Here’s the output from a run of the eval suite:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/20240917_172916/eval_results.csv
 === Model Comparison ===
@@ -427,7 +426,7 @@ anthropic/claude-3-5-sonnet-20240620  ❌ timeout  ❌ timeout   ✅ 8.77s   ✅
 <p>We are working on making the evals more robust, informative, and challenging.</p>
 </section>
 <section id="other-evals">
-<h2>Other evals<a class="headerlink" href="#other-evals" title="Permalink to this heading">#</a></h2>
+<h2>Other evals<a class="headerlink" href="#other-evals" title="Link to this heading">#</a></h2>
 <p>We have considered running gptme on other evals, such as SWE-Bench, but have not yet done so.</p>
 <p>If you are interested in running gptme on other evals, drop a comment in the issues!</p>
 </section>
