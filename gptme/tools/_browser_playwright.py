@@ -151,9 +151,8 @@ def _list_results_google(page) -> str:
         if h3:
             title = h3.inner_text()
             # desc has data-sncf attribute
-            desc = (
-                result.query_selector("[data-sncf]").inner_text().strip().split("\n")[0]
-            )
+            desc_el = result.query_selector("[data-sncf]")
+            desc = (desc_el.inner_text().strip().split("\n")[0]) if desc_el else ""
             hits.append(SearchResult(title, url, desc))
     return titleurl_to_list(hits)
 
