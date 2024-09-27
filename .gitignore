@@ -21,6 +21,7 @@ docs/_build
 .coverage*
 coverage.xml
 junit.xml
+htmlcov
 __pycache__
 .*cache
 
