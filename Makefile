@@ -89,7 +89,7 @@ release: dist/CHANGELOG.md
 	@VERSION=$$(git describe --tags --abbrev=0) && \
 		echo "Releasing version $${VERSION}"; \
 		read -p "Press enter to continue" && \
-		git push origin $${VERSION} && \
+		git push origin master $${VERSION} && \
 		gh release create $${VERSION} -t $${VERSION} -F dist/CHANGELOG.md
 
 clean: clean-docs clean-site clean-test
