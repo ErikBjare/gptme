@@ -18,6 +18,9 @@ build-docker:
 	docker build . -t gptme:latest -f Dockerfile
 	docker build . -t gptme-eval:latest -f Dockerfile.eval
 
+build-docker-full:
+	docker build . -t gptme-eval:latest -f Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
+
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests
 	poetry run pytest ${SRCDIRS} -v --log-level INFO --durations=5 \

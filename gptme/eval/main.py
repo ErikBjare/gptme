@@ -10,7 +10,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from collections.abc import Generator
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -101,6 +101,64 @@ def print_model_results_table(model_results: dict[str, list[EvalResult]]):
     print(tabulate(table_data, headers=headers))
 
 
+def aggregate_and_display_results(result_files: list[str]):
+    all_results: dict[str, dict[str, dict]] = {}
+    for file in result_files:
+        for model, model_results in read_results_from_csv(file).items():
+            if model not in all_results:
+                all_results[model] = {}
+            for result in model_results:
+                if result.name not in all_results[model]:
+                    all_results[model][result.name] = {
+                        "total": 0,
+                        "passed": 0,
+                        "tokens": 0,
+                    }
+                all_results[model][result.name]["total"] += 1
+                all_results[model][result.name]["tokens"] += len_tokens(
+                    result.gen_stdout
+                ) + len_tokens(result.run_stdout)
+                if result.status == "success" and all(
+                    case.passed for case in result.results
+                ):
+                    all_results[model][result.name]["passed"] += 1
+
+    # Prepare table data
+    headers = ["Model"] + list(
+        set(
+            test
+            for model_results in all_results.values()
+            for test in model_results.keys()
+        )
+    )
+    table_data = []
+
+    def get_status_emoji(passed, total):
+        percentage = (passed / total) * 100
+        if percentage == 100:
+            return "✅"
+        elif 20 <= percentage < 80:
+            return "🔶"
+        else:
+            return "❌"
+
+    for model, results in all_results.items():
+        row = [model]
+        for test in headers[1:]:
+            if test in results:
+                passed = results[test]["passed"]
+                total = results[test]["total"]
+                tokens = results[test]["tokens"]
+                status_emoji = get_status_emoji(passed, total)
+                row.append(f"{status_emoji} {passed}/{total} {tokens}tok")
+            else:
+                row.append("❌ N/A")
+        table_data.append(row)
+
+    # Print the table
+    print(tabulate(table_data, headers=headers))
+
+
 @click.command()
 @click.argument("eval_names_or_result_files", nargs=-1)
 @click.option(
@@ -137,19 +195,13 @@ def main(
 
     results_files = [f for f in eval_names_or_result_files if f.endswith(".csv")]
     eval_names = [f for f in eval_names_or_result_files if f not in results_files]
-    if results_files:
-        for results_file in results_files:
-            p = Path(results_file)
-            if p.exists():
-                results = read_results_from_csv(str(p))
-                print(f"\n{results_file}")
-                print(f"{'=' * len(results_file)}")
-                print_model_results(results)
-                print("\n=== Model Comparison ===")
-                print_model_results_table(results)
-            else:
-                print(f"Error: File {results_file} not found")
-                sys.exit(1)
+    if len(results_files) >= 2:
+        aggregate_and_display_results(results_files)
+        sys.exit(0)
+    elif results_files:
+        model_results = read_results_from_csv(results_files[0])
+        print_model_results(model_results)
+        print_model_results_table(model_results)
         sys.exit(0)
 
     evals_to_run: list[EvalSpec] = []
@@ -243,7 +295,7 @@ def read_results_from_csv(filename: str) -> dict[str, list[EvalResult]]:
 
 
 def write_results(model_results: dict[str, list[EvalResult]]):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%SZ")
     # get current commit hash and dirty status, like: a8b2ef0-dirty
     # TODO: don't assume we are in the gptme repo, use other version identifiers if available
     commit_hash = subprocess.run(
@@ -296,10 +348,10 @@ def write_results(model_results: dict[str, list[EvalResult]]):
                     "Model": model,
                     "Test": result.name,
                     "Passed": "true" if passed else "false",
-                    "Total Duration": sum(result.timings.values()),
-                    "Generation Time": result.timings["gen"],
-                    "Run Time": result.timings["run"],
-                    "Eval Time": result.timings["eval"],
+                    "Total Duration": round(sum(result.timings.values()), 2),
+                    "Generation Time": round(result.timings["gen"], 2),
+                    "Run Time": round(result.timings["run"], 2),
+                    "Eval Time": round(result.timings["eval"], 2),
                     "Commit Hash": commit_hash,
                     "Gen Stdout File": (test_dir_rel / "gen_stdout.txt"),
                     "Gen Stderr File": (test_dir_rel / "gen_stderr.txt"),

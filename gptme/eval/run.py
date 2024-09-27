@@ -147,7 +147,7 @@ def run_evals(
         process.join()
 
     model_results_final: dict[str, list[EvalResult]] = defaultdict(list)
-    for model in model_results:
+    for model in sorted(model_results):
         # sort results by test order
         model_results_final[model] = sorted(
             model_results[model].values(),
