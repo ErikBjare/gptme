@@ -26,7 +26,6 @@ class CaseResult:
 
     name: str
     passed: bool
-    code: str
     duration: float
 
 

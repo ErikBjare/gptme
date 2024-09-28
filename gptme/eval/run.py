@@ -232,7 +232,6 @@ def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalR
             results: list[CaseResult] = []
             print(f"\n--- Results for '{test['name']}' with {agent.model} ---")
             for name, case in test["expect"].items():
-                code = inspect.getsource(case).strip()
                 eval_start = time.time()
                 try:
                     passed = case(ctx)
@@ -244,7 +243,7 @@ def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalR
                 print(f"{checkmark} {name:20s}")
                 results.append(
                     CaseResult(
-                        name=name, passed=passed, code=code, duration=eval_duration
+                        name=name, passed=passed, duration=eval_duration
                     )
                 )
             print("--- End of results ---\n")

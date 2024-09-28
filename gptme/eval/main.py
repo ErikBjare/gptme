@@ -248,22 +248,20 @@ def _read_case_results(cases_file: Path) -> Generator[CaseResult, None, None]:
                 yield CaseResult(
                     name=row["Case"],
                     passed=row["Passed"] == "true",
-                    code=row["Code"],
                     duration=float(row["Duration"]),
                 )
 
 
 def _write_case_results(cases_file: Path, results: list[CaseResult]):
     with open(cases_file, "w", newline="") as csvfile:
-        fieldnames = ["Model", "Test", "Case", "Passed", "Code", "Duration"]
+        fieldnames = ["Model", "Test", "Case", "Passed", "Duration"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for result in results:
             row = {
                 "Case": result.name,
                 "Passed": "true" if result.passed else "false",
-                "Code": result.code,
-                "Duration": result.duration,
+                "Duration": round(result.duration, 2),
             }
             writer.writerow(row)
 
