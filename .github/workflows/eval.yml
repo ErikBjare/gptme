@@ -105,6 +105,7 @@ jobs:
 
     - name: Update eval results
       run: |
+        git pull origin eval-results
         git add -f eval_results
         git commit -m "chore: add eval results for run ${{ github.run_number }} [skip ci]" || echo "No changes to commit"
         git push origin eval-results
