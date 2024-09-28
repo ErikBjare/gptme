@@ -4,7 +4,7 @@
 # gpt-3.5-turbo is a lot faster, so makes running the tests faster,
 # but gpt-4 is more accurate, so passes more complex tests where gpt-3.5-turbo stumbles.
 # there is also gpt-3.5-turbo-16k, which handles contexts up to 16k tokens (vs gpt-4's 8k and gpt-3.5-turbo's 4k).
-MODEL="gpt-4-1106-preview"
+MODEL="openai/gpt-4-1106-preview"
 ARGS="--model $MODEL"
 
 
