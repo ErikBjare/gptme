@@ -1,23 +1,0 @@
-
---- Start of generation ---
-[13:44:02] Using logdir                                                         
-           /home/appuser/.local/share/gptme/logs/2024-09-28-gptme-evals-openrout
-           er--google--gemini-flash-1.5-exp-227247                              
-           Using workspace at                                                   
-           /home/appuser/.local/share/gptme/logs/2024-09-28-gptme-evals-openrout
-           er--google--gemini-flash-1.5-exp-227247/workspace                    
-Skipped 1 hidden system messages, show with --show-hidden
---- ^^^ past messages ^^^ ---
-User: write a script prime.py that computes and prints the 100th prime number
-Assistant: Thinking...                                                                                Assistant: <thinking>
-We need to write a script that computes the 100th prime number.
-We can do this by writing a function that checks if a number is prime, and then iterating through numbers until we find 100 prime numbers.
-</thinking>
-
-```python
-def is_prime(n):
-    """Checks if a number is prime."""
-    if n <= 1:
-        return False
-    for i in range                                                                                --- Finished generation ---
-
