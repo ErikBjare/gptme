@@ -119,7 +119,7 @@ jobs:
         context: .
         push: true
 
-    # Now the eval image
+    # Now the base eval image
     - name: Build and push Docker image (eval)
       uses: docker/build-push-action@v3
       with:
@@ -129,6 +129,21 @@ jobs:
         file: ./scripts/Dockerfile.eval
         context: .
         push: true
+
+    # Now the full eval image
+    # NOTE: takes a long time and leads to a big (1GB+) image
+    #- name: Build and push Docker image (eval-full)
+    #  uses: docker/build-push-action@v3
+    #  with:
+    #    tags: |
+    #      ghcr.io/${{ env.OWNER_LC }}/gptme-eval-full:latest
+    #      ghcr.io/${{ env.OWNER_LC }}/gptme-eval-full:${{ env.SANITIZED_REF_NAME }}
+    #    file: ./scripts/Dockerfile.eval
+    #    context: .
+    #    push: true
+    #    build-args: |
+    #      RUST=yes
+    #      BROWSER=yes
 
   lint:
     runs-on: ubuntu-latest
