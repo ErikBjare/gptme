@@ -375,7 +375,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-run">Example run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>
             </nav>
@@ -411,16 +411,31 @@ docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</spa
 </pre></div>
 </div>
 </section>
-<section id="example-run">
-<h2>Example run<a class="headerlink" href="#example-run" title="Link to this heading">#</a></h2>
-<p>Here’s the output from a run of the eval suite:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/20240917_172916/eval_results.csv
-=== Model Comparison ===
-Model                                 init-git    init-rust    hello      hello-patch    hello-ask    init-react    prime100
-------------------------------------  ----------  -----------  ---------  -------------  -----------  ------------  ----------
-openai/gpt-4o                         ✅ 7.74s    ✅ 9.62s     ✅ 5.02s   ✅ 5.06s       ✅ 4.69s     ❌ timeout    ✅ 7.48s
-openai/o1-mini                        ✅ 18.44s   ✅ 21.63s    ✅ 21.20s  ✅ 27.39s      ❌ timeout   ❌ 42.65s     ✅ 17.99s
-anthropic/claude-3-5-sonnet-20240620  ❌ timeout  ❌ timeout   ✅ 8.77s   ✅ 7.09s       ✅ 8.08s     ❌ timeout    ✅ 11.26s
+<section id="results">
+<h2>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h2>
+<p>Here are the results of the evals we have run so far:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/*/eval_results.csv
+Model                                                hello           hello-patch     hello-ask       prime100        init-git         init-rust       whois-superuserlabs-ceo
+---------------------------------------------------  --------------  --------------  --------------  --------------  ---------------  --------------  -------------------------
+anthropic/claude-3-5-sonnet-20240620                 ✅ 6/6 3906tok  ✅ 6/6 3886tok  ✅ 6/6 4490tok  ✅ 6/6 5563tok  ✅ 6/6 5728tok   ✅ 4/4 6015tok  🔶 3/4 5222tok
+anthropic/claude-3-haiku-20240307                    ✅ 6/6 2216tok  ✅ 6/6 3212tok  ✅ 6/6 2820tok  ❌ 0/6 4053tok  ✅ 6/6 5251tok   🔶 3/4 2679tok  ✅ 4/4 6141tok
+openai/gpt-4-turbo                                   ✅ 1/1 258tok   ✅ 1/1 314tok   ✅ 1/1 375tok   ✅ 1/1 526tok   ✅ 1/1 594tok    ✅ 1/1 764tok   ✅ 1/1 877tok
+openai/gpt-4o                                        ✅ 7/7 1798tok  ✅ 7/7 2272tok  ✅ 7/7 2871tok  ✅ 7/7 3338tok  ✅ 7/7 4069tok   ✅ 5/5 3317tok  ✅ 5/5 6263tok
+openai/gpt-4o-mini                                   ✅ 8/8 2105tok  ✅ 8/8 3088tok  ✅ 8/8 3566tok  ✅ 8/8 4756tok  🔶 5/8 6008tok   ✅ 6/6 4877tok  ✅ 6/6 5706tok
+openai/o1-mini                                       ✅ 3/3 1062tok  ✅ 3/3 1293tok  ✅ 3/3 1379tok  🔶 2/3 1700tok  🔶 3/5 11108tok  🔶 1/5 7060tok  🔶 2/3 2440tok
+openai/o1-preview                                    ✅ 2/2 615tok   ✅ 2/2 1141tok  🔶 1/2 1098tok  ✅ 2/2 979tok   ✅ 3/3 2468tok   ✅ 1/1 656tok   ✅ 1/1 1998tok
+openrouter/google/gemini-flash-1.5                   ✅ 2/2 450tok   ✅ 2/2 802tok   ✅ 2/2 861tok   ❌ 0/2 592tok   ✅ 1/1 686tok    ❌ 0/1 661tok   ✅ 1/1 1014tok
+openrouter/google/gemini-pro-1.5                     ✅ 1/1 341tok   ✅ 1/1 419tok   ✅ 1/1 456tok   ✅ 1/1 676tok   🔶 2/3 1292tok   🔶 1/2 2031tok  ✅ 2/2 2617tok
+openrouter/google/gemma-2-27b-it                     ✅ 1/1 288tok   ✅ 1/1 384tok   ✅ 1/1 446tok   ✅ 1/1 714tok   ✅ 1/1 570tok    ❌ 0/1 535tok   ❌ 0/1 235tok
+openrouter/google/gemma-2-9b-it                      ❌ 0/2 373tok   ✅ 2/2 739tok   ✅ 2/2 737tok   ❌ 0/2 1090tok  ✅ 1/1 492tok    ❌ 0/1 1730tok  ❌ 0/1 352tok
+openrouter/meta-llama/llama-3.1-405b-instruct        🔶 5/7 1584tok  ✅ 6/7 3878tok  ✅ 6/7 2841tok  🔶 5/7 2522tok  🔶 3/7 2610tok   🔶 2/5 1273tok  ❌ 0/5 426tok
+openrouter/meta-llama/llama-3.1-70b-instruct         ✅ 5/6 2203tok  ✅ 5/6 2546tok  ✅ 6/6 2710tok  🔶 2/6 3278tok  ✅ 5/6 4877tok   🔶 3/4 2726tok  🔶 2/3 4383tok
+openrouter/meta-llama/llama-3.1-8b-instruct          ✅ 1/1 277tok   ✅ 1/1 441tok   ❌ 0/1 400tok   ❌ 0/1 5095tok  ✅ 1/1 2266tok   ❓ N/A          ❓ N/A
+openrouter/meta-llama/llama-3.2-11b-vision-instruct  ✅ 2/2 704tok   ✅ 2/2 986tok   ❌ 0/2 958tok   ✅ 2/2 5286tok  ❓ N/A           ❓ N/A          ❓ N/A
+openrouter/meta-llama/llama-3.2-90b-vision-instruct  🔶 2/4 947tok   🔶 2/4 1150tok  🔶 3/4 1346tok  🔶 1/4 933tok   ❓ N/A           ❓ N/A          ❓ N/A
+openrouter/nousresearch/hermes-2-pro-llama-3-8b      ✅ 1/1 341tok   ❌ 0/1 4274tok  ❌ 0/1 3760tok  ❌ 0/1 659tok   ❓ N/A           ❓ N/A          ❓ N/A
+openrouter/nousresearch/hermes-3-llama-3.1-405b      ✅ 2/2 634tok   ✅ 2/2 840tok   ✅ 2/2 650tok   ✅ 2/2 820tok   ✅ 1/1 821tok    ✅ 1/1 758tok   ✅ 1/1 1039tok
+openrouter/nousresearch/hermes-3-llama-3.1-70b       ❌ 0/2 346tok   ❌ 0/2 374tok   ❌ 0/2 404tok   ❌ 0/2 354tok   ❓ N/A           ❓ N/A          ❓ N/A
 </pre></div>
 </div>
 <p>We are working on making the evals more robust, informative, and challenging.</p>
@@ -478,7 +493,7 @@ anthropic/claude-3-5-sonnet-20240620  ❌ timeout  ❌ timeout   ✅ 8.77s   ✅
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-run">Example run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>
   </nav></div>
