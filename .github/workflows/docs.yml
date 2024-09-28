@@ -1,0 +1,75 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install poetry
+        run: |
+          pipx install poetry
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'poetry'
+
+      - name: Install apt/dpkg dependencies
+        run: |
+          sudo apt-get install -y cloc
+          # pandoc in ubuntu repos is from 2018...
+          wget https://github.com/jgm/pandoc/releases/download/3.3/pandoc-3.3-1-amd64.deb
+          sudo dpkg -i pandoc-3.3-1-amd64.deb
+
+      - name: Install dependencies
+        run: |
+          poetry install -E browser -E server
+
+      - name: Build docs
+        run: make docs
+
+      - name: Build site
+        run: make site
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: ./site/dist
+
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: ./site/dist
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          publish_dir: ./site/dist
+          publish_branch: gh-pages

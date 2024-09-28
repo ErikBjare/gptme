@@ -1,0 +1,8 @@
+/* Make attributes less spacy */
+dl.py.attribute {
+  margin-bottom: 1rem;
+}
+
+dl.py.attribute + dl.py.method {
+  margin-top: 3rem;
+}

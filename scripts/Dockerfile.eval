@@ -1,0 +1,44 @@
+# Use the main Dockerfile as the base image
+FROM gptme:latest AS base
+
+SHELL ["/bin/bash", "-c"]
+
+# Switch back to gptme directory (not /workspace)
+WORKDIR /app
+
+# Install rust if enabled
+ARG RUST=no
+USER appuser
+RUN if [ "$RUST" = "yes" ]; then \
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal; \
+        source $HOME/.cargo/env; rustup default stable; \
+    fi
+ENV PATH="/home/appuser/.cargo/bin:${PATH}"
+
+# Install necessary build tools if rust is enabled
+USER root
+RUN if [ "$RUST" = "yes" ]; then \
+        apt-get update && apt-get install build-essential -y; \
+    fi
+
+# Install playwright if browser is enabled
+ARG BROWSER=no
+USER root
+RUN if [ "$BROWSER" = "yes" ]; then \
+        poetry install -E browser --without=dev; \
+        poetry run playwright install-deps; \
+        su appuser -c "poetry run playwright install chromium"; \
+    fi
+
+# Create eval_results directory
+RUN mkdir ./eval_results; chown appuser:appuser ./eval_results
+
+# Switch back to non-root user
+USER appuser
+
+RUN git config --global user.name "gptme"
+RUN git config --global user.email "gptme@superuserlabs.org"
+RUN git config --global init.defaultBranch main
+
+# Add an entry point for running evals
+ENTRYPOINT ["poetry", "run", "python", "-m", "gptme.eval"]
