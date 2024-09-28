@@ -4,7 +4,7 @@
 
 projects
 demos
-eval_results
+eval[_-]results*
 
 # logs
 *.log

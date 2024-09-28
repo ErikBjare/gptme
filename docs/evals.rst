@@ -28,21 +28,14 @@ However, we recommend running it in Docker to improve isolation and reproducibil
         gptme-eval hello --model openai/gpt-4o
 
 
-Example run
------------
+Results
+-------
 
-Here's the output from a run of the eval suite:
+Here are the results of the evals we have run so far:
 
-.. code-block::
-
-   $ gptme-eval eval_results/20240917_172916/eval_results.csv
-   === Model Comparison ===
-   Model                                 init-git    init-rust    hello      hello-patch    hello-ask    init-react    prime100
-   ------------------------------------  ----------  -----------  ---------  -------------  -----------  ------------  ----------
-   openai/gpt-4o                         ✅ 7.74s    ✅ 9.62s     ✅ 5.02s   ✅ 5.06s       ✅ 4.69s     ❌ timeout    ✅ 7.48s
-   openai/o1-mini                        ✅ 18.44s   ✅ 21.63s    ✅ 21.20s  ✅ 27.39s      ❌ timeout   ❌ 42.65s     ✅ 17.99s
-   anthropic/claude-3-5-sonnet-20240620  ❌ timeout  ❌ timeout   ✅ 8.77s   ✅ 7.09s       ✅ 8.08s     ❌ timeout    ✅ 11.26s
-
+.. command-output:: gptme-eval eval_results/*/eval_results.csv
+   :cwd: ..
+   :shell:
 
 We are working on making the evals more robust, informative, and challenging.
 

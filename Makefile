@@ -60,6 +60,14 @@ docs/.clean: docs/conf.py
 	touch docs/.clean
 
 docs: docs/conf.py docs/*.rst docs/.clean
+	if [ ! -e eval_results ]; then \
+		if [ -e eval-results/eval_results ]; then \
+			ln -s eval-results/eval_results .; \
+		else \
+			git fetch origin eval-results; \
+			git checkout origin/eval-results -- eval_results; \
+		fi \
+	fi
 	poetry run make -C docs html SPHINXOPTS="-W --keep-going"
 
 .PHONY: site
