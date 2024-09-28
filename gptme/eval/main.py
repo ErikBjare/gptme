@@ -151,14 +151,18 @@ def aggregate_and_display_results(result_files: list[str]):
             return "❌"
 
     for model, results in sorted(all_results.items()):
-        row = [model]
+        row = [model.replace("openrouter/", "")]
         for test in headers[1:]:
             if test in results:
                 passed = results[test]["passed"]
                 total = results[test]["total"]
                 tokens = results[test]["tokens"]
                 status_emoji = get_status_emoji(passed, total)
-                row.append(f"{status_emoji} {passed}/{total} {tokens}tok")
+                incl_tokens = True
+                row.append(
+                    f"{status_emoji} {passed}/{total}"
+                    + (f" {round(tokens / total)}tk" if incl_tokens else "")
+                )
             else:
                 row.append("❓ N/A")
         table_data.append(row)
