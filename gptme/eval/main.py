@@ -150,7 +150,7 @@ def aggregate_and_display_results(result_files: list[str]):
         else:
             return "❌"
 
-    for model, results in all_results.items():
+    for model, results in sorted(all_results.items()):
         row = [model]
         for test in headers[1:]:
             if test in results:
@@ -160,7 +160,7 @@ def aggregate_and_display_results(result_files: list[str]):
                 status_emoji = get_status_emoji(passed, total)
                 row.append(f"{status_emoji} {passed}/{total} {tokens}tok")
             else:
-                row.append("❌ N/A")
+                row.append("❓ N/A")
         table_data.append(row)
 
     # Print the table
