@@ -1,5 +1,4 @@
 import concurrent.futures
-import inspect
 import io
 import logging
 import multiprocessing
@@ -242,9 +241,7 @@ def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalR
                 checkmark = "✅" if passed else "❌"
                 print(f"{checkmark} {name:20s}")
                 results.append(
-                    CaseResult(
-                        name=name, passed=passed, duration=eval_duration
-                    )
+                    CaseResult(name=name, passed=passed, duration=eval_duration)
                 )
             print("--- End of results ---\n")
 
