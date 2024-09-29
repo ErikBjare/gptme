@@ -243,7 +243,7 @@ def execute(test: EvalSpec, agent: Agent, timeout: int, parallel: bool) -> EvalR
                 results.append(
                     CaseResult(name=name, passed=passed, duration=eval_duration)
                 )
-            print("--- End of results ---\n")
+            print("--- End of results ---")
 
             time_eval = sum(r.duration for r in results)
         else:

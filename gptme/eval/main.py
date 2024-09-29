@@ -230,7 +230,7 @@ def main(
 
     print("=== Running evals ===")
     model_results = run_evals(evals_to_run, models, timeout, parallel)
-    print("\n=== Finished ===\n")
+    print("=== Finished ===")
 
     print("\n=== Model Results ===")
     print_model_results(model_results)
