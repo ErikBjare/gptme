@@ -333,7 +333,7 @@ def write_results(model_results: dict[str, list[EvalResult]]):
             "Run Stdout File",
             "Run Stderr File",
         ]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator="\n")
 
         writer.writeheader()
         for model, results in model_results.items():
@@ -350,7 +350,7 @@ def write_results(model_results: dict[str, list[EvalResult]]):
                 streams = ["gen_stdout", "gen_stderr", "run_stdout", "run_stderr"]
                 for stream in streams:
                     stream_file = test_dir / f"{stream}.txt"
-                    with open(stream_file, "w") as f:
+                    with open(stream_file, "w", newline="\n") as f:
                         f.write(getattr(result, stream))
 
                 test_dir_rel = test_dir.relative_to(results_dir)
@@ -363,10 +363,10 @@ def write_results(model_results: dict[str, list[EvalResult]]):
                     "Run Time": round(result.timings["run"], 2),
                     "Eval Time": round(result.timings["eval"], 2),
                     "Commit Hash": commit_hash,
-                    "Gen Stdout File": (test_dir_rel / "gen_stdout.txt"),
-                    "Gen Stderr File": (test_dir_rel / "gen_stderr.txt"),
-                    "Run Stdout File": (test_dir_rel / "run_stdout.txt"),
-                    "Run Stderr File": (test_dir_rel / "run_stderr.txt"),
+                    "Gen Stdout File": test_dir_rel / "gen_stdout.txt",
+                    "Gen Stderr File": test_dir_rel / "gen_stderr.txt",
+                    "Run Stdout File": test_dir_rel / "run_stdout.txt",
+                    "Run Stderr File": test_dir_rel / "run_stderr.txt",
                 }
                 writer.writerow(row)
                 _write_case_results(test_dir / "cases.csv", result.results)
