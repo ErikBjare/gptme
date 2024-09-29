@@ -328,10 +328,6 @@ def write_results(model_results: dict[str, list[EvalResult]]):
             "Run Time",
             "Eval Time",
             "Commit Hash",
-            "Gen Stdout File",
-            "Gen Stderr File",
-            "Run Stdout File",
-            "Run Stderr File",
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator="\n")
 
@@ -353,7 +349,6 @@ def write_results(model_results: dict[str, list[EvalResult]]):
                     with open(stream_file, "w", newline="\n") as f:
                         f.write(getattr(result, stream))
 
-                test_dir_rel = test_dir.relative_to(results_dir)
                 row = {
                     "Model": model,
                     "Test": result.name,
@@ -363,10 +358,6 @@ def write_results(model_results: dict[str, list[EvalResult]]):
                     "Run Time": round(result.timings["run"], 2),
                     "Eval Time": round(result.timings["eval"], 2),
                     "Commit Hash": commit_hash,
-                    "Gen Stdout File": test_dir_rel / "gen_stdout.txt",
-                    "Gen Stderr File": test_dir_rel / "gen_stderr.txt",
-                    "Run Stdout File": test_dir_rel / "run_stdout.txt",
-                    "Run Stderr File": test_dir_rel / "run_stderr.txt",
                 }
                 writer.writerow(row)
                 _write_case_results(test_dir / "cases.csv", result.results)
