@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from playwright.sync_api import (
     ElementHandle,
+    Geolocation,
     Page,
     Playwright,
     sync_playwright,
@@ -32,7 +33,7 @@ def load_page(url: str) -> Page:
     browser = get_browser()
 
     # set browser language to English such that Google uses English
-    coords_sf = {"latitude": 37.773972, "longitude": 13.39}
+    coords_sf: Geolocation = {"latitude": 37.773972, "longitude": 13.39}
     context = browser.new_context(
         locale="en-US",
         geolocation=coords_sf,
@@ -93,15 +94,6 @@ class Element:
             # FIXME: is this correct?
             selector=element.evaluate("el => el.selector"),
         )
-
-
-def _list_input_elements(page) -> list[Element]:
-    # List all input elements
-    elements = []
-    inputs = page.query_selector_all("input")
-    for input_element in inputs:
-        elements.append(Element.from_element(input_element))
-    return elements
 
 
 def _list_clickable_elements(page, selector=None) -> list[Element]:
