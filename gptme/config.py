@@ -20,18 +20,13 @@ class Config:
 
     def get_env(self, key: str, default: str | None = None) -> str | None:
         """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
-        try:
-            return self.get_env_required(key)
-        except KeyError:
-            return default
+        return os.environ.get(key) or self.env.get(key) or default
 
     def get_env_required(self, key: str) -> str:
         """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
-        if key in os.environ:
-            return os.environ[key]
-        elif key in self.env:
-            return self.env[key]
-        raise KeyError(
+        if val := os.environ.get(key) or self.env.get(key):
+            return val
+        raise KeyError(  # pragma: no cover
             f"Environment variable {key} not set in env or config, see README."
         )
 
@@ -103,7 +98,7 @@ def _load_config() -> tomlkit.TOMLDocument:
     return doc
 
 
-def set_config_value(key: str, value: str) -> None:
+def set_config_value(key: str, value: str) -> None:  # pragma: no cover
     doc: TOMLDocument | Container = _load_config()
 
     # Set the value

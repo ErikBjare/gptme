@@ -6,7 +6,6 @@ from time import sleep
 from typing import Literal
 
 from . import llm
-from .constants import CMDFIX
 from .logmanager import LogManager
 from .message import (
     Message,
@@ -72,7 +71,7 @@ def handle_cmd(
     cmd: str, log: LogManager, no_confirm: bool
 ) -> Generator[Message, None, None]:
     """Handles a command."""
-    cmd = cmd.lstrip(CMDFIX)
+    cmd = cmd.lstrip("/")
     logger.debug(f"Executing command: {cmd}")
     name, *args = re.split(r"[\n\s]", cmd)
     full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
@@ -149,12 +148,13 @@ def handle_cmd(
             if tooluse.is_runnable:
                 yield from tooluse.execute(ask=not no_confirm)
             else:
-                if log.log[-1].content != f"{CMDFIX}help":
+                if log.log[-1].content.strip() == "/help":
+                    # undo the '/help' command itself
+                    log.undo(1, quiet=True)
+                    log.write()
+                    help()
+                else:
                     print("Unknown command")
-                # undo the '/help' command itself
-                log.undo(1, quiet=True)
-                log.write()
-                help()
 
 
 def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover

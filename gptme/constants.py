@@ -8,9 +8,6 @@ Constants
 TEMPERATURE = 0
 TOP_P = 0.1
 
-# prefix for commands, e.g. /help
-CMDFIX = "/"
-
 # separator for multiple rounds of prompts on the command line
 # demarcates the end of the user's prompt, and start of the assistant's response
 # e.g. /gptme "generate a poem" "-" "save it to poem.txt"

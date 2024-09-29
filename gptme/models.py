@@ -82,11 +82,12 @@ def get_model(model: str | None = None) -> ModelMeta:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
         return DEFAULT_MODEL
 
+    # if only provider is given, get recommended model
     if model in PROVIDERS:
         provider = model
-        return ModelMeta(
-            provider, model, **MODELS[provider][get_recommended_model(provider)]
-        )
+        model = get_recommended_model(provider)
+        return get_model(f"{provider}/{model}")
+
     if any(f"{provider}/" in model for provider in PROVIDERS):
         provider, model = model.split("/", 1)
         if provider not in MODELS or model not in MODELS[provider]:
@@ -111,7 +112,7 @@ def get_model(model: str | None = None) -> ModelMeta:
     )
 
 
-def get_recommended_model(provider: str) -> str:
+def get_recommended_model(provider: str) -> str:  # pragma: no cover
     if provider == "openai":
         return "gpt-4o"
     elif provider == "openrouter":
@@ -122,7 +123,7 @@ def get_recommended_model(provider: str) -> str:
         raise ValueError(f"Unknown provider {provider}")
 
 
-def get_summary_model(provider: str) -> str:
+def get_summary_model(provider: str) -> str:  # pragma: no cover
     if provider == "openai":
         return "gpt-4o-mini"
     elif provider == "openrouter":

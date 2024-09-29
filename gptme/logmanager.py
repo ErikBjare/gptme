@@ -13,7 +13,6 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
-from .constants import CMDFIX
 from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
@@ -134,11 +133,11 @@ class LogManager:
     def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
         undid = self[-1] if self.log else None
-        if undid and undid.content.startswith(f"{CMDFIX}undo"):
+        if undid and undid.content.startswith("/undo"):
             self.log.pop()
 
         # don't save backup branch if undoing a command
-        if not self[-1].content.startswith(CMDFIX):
+        if not self[-1].content.startswith("/"):
             self._save_backup_branch(type="undo")
 
         # Doesn't work for multiple undos in a row, but useful in testing

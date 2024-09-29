@@ -3,7 +3,7 @@ import readline
 from functools import lru_cache
 from pathlib import Path
 
-from .commands import CMDFIX, COMMANDS
+from .commands import COMMANDS
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def _matches(text: str) -> list[str]:
     # if text starts with /, complete with commands or files as absolute paths
     if text.startswith("/"):
         # if no text, list all commands
-        all_commands = [f"{CMDFIX}{cmd}" for cmd in COMMANDS]
+        all_commands = [f"/{cmd}" for cmd in COMMANDS]
         if not text[1:]:
             return all_commands
         # else, filter commands with text

@@ -17,12 +17,7 @@ from typing import Literal
 import click
 from pick import pick
 
-from .commands import (
-    CMDFIX,
-    _gen_help,
-    action_descriptions,
-    execute_cmd,
-)
+from .commands import _gen_help, action_descriptions, execute_cmd
 from .config import get_workspace_prompt
 from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
@@ -241,7 +236,7 @@ interruptible = False
 last_interrupt_time = 0.0
 
 
-def handle_keyboard_interrupt(signum, frame):
+def handle_keyboard_interrupt(signum, frame):  # pragma: no cover
     """
     This handler allows interruption of the assistant or tool execution when in an interruptible state,
     while still providing a safeguard against accidental exits during user input.
@@ -477,7 +472,7 @@ def get_name(name: str) -> str:
     return name
 
 
-def pick_log(limit=20) -> Path:
+def pick_log(limit=20) -> Path:  # pragma: no cover
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
@@ -636,7 +631,7 @@ def _parse_prompt(prompt: str) -> str | None:
     # if prompt is a command, exit early (as commands might take paths as arguments)
     if any(
         prompt.startswith(command)
-        for command in [f"{CMDFIX}{cmd}" for cmd in action_descriptions.keys()]
+        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
     ):
         return None
 
@@ -705,7 +700,7 @@ def _parse_prompt_files(prompt: str) -> Path | None:
     # if prompt is a command, exit early (as commands might take paths as arguments)
     if any(
         prompt.startswith(command)
-        for command in [f"{CMDFIX}{cmd}" for cmd in action_descriptions.keys()]
+        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
     ):
         return None
 
@@ -717,7 +712,7 @@ def _parse_prompt_files(prompt: str) -> Path | None:
             return p
         else:
             return None
-    except OSError as oserr:
+    except OSError as oserr:  # pragma: no cover
         # some prompts are too long to be a path, so we can't read them
         if oserr.errno != errno.ENAMETOOLONG:
             return None
