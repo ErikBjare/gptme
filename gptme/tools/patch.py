@@ -144,11 +144,11 @@ def execute_patch(
         warnings = []
         if full_file_tokens < patch_tokens:
             warnings.append(
-                "Note: The patch was larger than the file. Consider using the save tool instead."
+                "Note: The patch was larger than the file. In the future, try writing smaller patches or use the save tool instead."
             )
-        warnings_str = ("\n" + "\n".join(warnings)) if warnings else ""
+        warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
 
-        yield Message("system", f"Patch applied to {fn}{warnings_str}")
+        yield Message("system", f"{warnings_str}Patch successfully applied to {fn}")
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
 
