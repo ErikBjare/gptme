@@ -153,7 +153,7 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 🌐 Search and browse the web.
   - Can use a browser via Playwright with the [browser][docs-tools-browser] tool.
 - 👀 Vision
-  - Can see images whose paths are referenced in prompts.
+  - Can see images referenced in prompts, screenshots of your desktop, and web pages.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM [providers][docs-providers]
@@ -180,7 +180,6 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 - 🏆 Advanced evals for testing frontier capabilities
 - 🤖 Long-running agents and advanced agent architectures
-- 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 
 ### 🛠 Use Cases
