@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
-from .python import register_function
 
 if TYPE_CHECKING:
     # noreorder
@@ -63,21 +62,12 @@ class Subagent:
             return ReturnType(**json.loads(json_response))  # type: ignore
 
 
-def _extract_json_re(s: str) -> str:
-    return re.sub(
-        r"(?s).+?(```json)?\n([{](.+?)+?[}])\n(```)?",
-        r"\2",
-        s,
-    ).strip()
-
-
 def _extract_json(s: str) -> str:
     first_brace = s.find("{")
     last_brace = s.rfind("}")
     return s[first_brace : last_brace + 1]
 
 
-@register_function
 def subagent(prompt: str, agent_id: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
@@ -124,7 +114,6 @@ def subagent(prompt: str, agent_id: str):
     _subagents.append(Subagent(prompt, agent_id, t))
 
 
-@register_function
 def subagent_status(agent_id: str) -> dict:
     """Returns the status of a subagent."""
     for subagent in _subagents:
@@ -133,7 +122,6 @@ def subagent_status(agent_id: str) -> dict:
     raise ValueError(f"Subagent with ID {agent_id} not found.")
 
 
-@register_function
 def subagent_wait(agent_id: str) -> dict:
     """Waits for a subagent to finish. Timeout is 1 minute."""
     subagent = None
