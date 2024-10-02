@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Automation with gptme &#8212; gptme</title>
+    <title>Automation &#8212; gptme</title>
   
   
   
@@ -165,9 +165,7 @@
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Automation with gptme</a></li>
-
-
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Automation</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul class="nav bd-sidenav">
@@ -367,7 +365,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Automation with gptme</h1>
+    <h1>Automation</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -377,18 +375,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Automation with gptme</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-script-that-implements-feature">Example: script that implements feature</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated code review</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-implement-feature">Example: Implement feature</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated Code Review</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review-with-gptme">Example: Automated Code Review with gptme</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-activity-summary">Example: Activity summary</a></li>
-</ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
-</ul>
-
             </nav>
         </div>
     </div>
@@ -399,27 +389,24 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="automation-with-gptme">
-<h1>Automation with gptme<a class="headerlink" href="#automation-with-gptme" title="Link to this heading">#</a></h1>
+  <section id="automation">
+<h1>Automation<a class="headerlink" href="#automation" title="Link to this heading">#</a></h1>
 <p>gptme can be used to create powerful yet simple automated workflows. Here we showcase small but powerful examples that demonstrate the capabilities of gptme in various workflows and automation scenarios.</p>
 <p>We will be using shell scripts, cron jobs, and other tools to automate the workflows.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is a work in progress. We intend to make gptme more powerful for automations, see <a class="reference external" href="https://github.com/ErikBjare/gptme/issues/143">issue #1</a> for more details on this plan.</p>
 </div>
-<section id="example-script-that-implements-feature">
-<h2>Example: script that implements feature<a class="headerlink" href="#example-script-that-implements-feature" title="Link to this heading">#</a></h2>
-<p>This example demonstrates how to create a script that implements a feature using gptme. Given a GitHub issue it will check out a new branch, look up relevant files, make changes, typecheck/test them, and create a pull request.</p>
+<section id="example-implement-feature">
+<h2>Example: Implement feature<a class="headerlink" href="#example-implement-feature" title="Link to this heading">#</a></h2>
+<p>This example demonstrates how to implement a feature in a codebase using gptme, making sure the code is correct before creating a pull request.</p>
+<p>Given a GitHub issue it will check out a new branch, look up relevant files, make changes, typecheck/test them, and create a pull request if everything is correct.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;read &lt;url&gt;&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;create a branch&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;look up relevant files&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make changes&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;typecheck it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;test it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;create a pull request&#39;</span>
 </pre></div>
 </div>
 </section>
 <section id="example-automated-code-review">
-<h2>Example: Automated code review<a class="headerlink" href="#example-automated-code-review" title="Link to this heading">#</a></h2>
-</section>
-</section>
-<section id="example-automated-code-review-with-gptme">
-<h1>Example: Automated Code Review with gptme<a class="headerlink" href="#example-automated-code-review-with-gptme" title="Link to this heading">#</a></h1>
+<h2>Example: Automated Code Review<a class="headerlink" href="#example-automated-code-review" title="Link to this heading">#</a></h2>
 <p>This example demonstrates a simple and composable approach to automated code review using gptme and shell scripting.</p>
 <ol class="arabic">
 <li><p>Create a script called <cite>review_pr.sh</cite>:</p>
@@ -499,12 +486,9 @@ gh<span class="w"> </span>pr<span class="w"> </span>comment<span class="w"> </sp
 2. Add additional checks or integrations to the shell script as needed
 3. Adjust the GitHub Actions workflow to fit your CI/CD pipeline</p>
 <p>This example serves as a starting point for integrating gptme into your development workflow, demonstrating its potential for automating code review tasks.</p>
-<section id="example-activity-summary">
-<h2>Example: Activity summary<a class="headerlink" href="#example-activity-summary" title="Link to this heading">#</a></h2>
-</section>
 </section>
 <section id="example-daily-activity-summary">
-<h1>Example: Daily Activity Summary<a class="headerlink" href="#example-daily-activity-summary" title="Link to this heading">#</a></h1>
+<h2>Example: Daily Activity Summary<a class="headerlink" href="#example-daily-activity-summary" title="Link to this heading">#</a></h2>
 <p>Here’s an example of how to use gptme to generate a daily summary based on ActivityWatch data using a shell script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
@@ -555,6 +539,7 @@ generate_daily_summary<span class="o">()</span><span class="w"> </span><span cla
 </div>
 <p>This automation will provide you with daily insights into your computer usage and productivity patterns from the previous day, leveraging the power of gptme to analyze and summarize the data collected by ActivityWatch.</p>
 </section>
+</section>
 
 
                 </article>
@@ -601,18 +586,10 @@ generate_daily_summary<span class="o">()</span><span class="w"> </span><span cla
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Automation with gptme</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-script-that-implements-feature">Example: script that implements feature</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated code review</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-implement-feature">Example: Implement feature</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated Code Review</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review-with-gptme">Example: Automated Code Review with gptme</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-activity-summary">Example: Activity summary</a></li>
-</ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
-</ul>
-
   </nav></div>
 
 </div></div>

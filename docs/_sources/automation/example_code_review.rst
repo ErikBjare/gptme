@@ -1,5 +1,5 @@
-Example: Automated Code Review with gptme
-=========================================
+Example: Automated Code Review
+------------------------------
 
 This example demonstrates a simple and composable approach to automated code review using gptme and shell scripting.
 
