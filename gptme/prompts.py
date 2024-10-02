@@ -1,6 +1,8 @@
 """
 This module contains the functions to generate the initial system prompt.
-It is used to condition the AI model to the task at hand and provide context for the conversation.
+It is used to instruct the LLM about its role, how to use tools, and provide context for the conversation.
+
+When prompting, it is important to provide clear instructions and avoid any ambiguity.
 """
 
 import logging
