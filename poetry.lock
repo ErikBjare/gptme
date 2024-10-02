@@ -3307,4 +3307,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0337931245800c5af7818162cfd81dbfea9f11400be41bb2b03ca4437fc57e70"
+content-hash = "3e9395bf2f53ec31a9aea8879de99b01e2709338510854a8d71862938d08875a"
