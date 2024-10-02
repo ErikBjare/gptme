@@ -6,13 +6,14 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import re
+from datetime import date
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
 
-
+year = date.today().year
 project = "gptme"
-copyright = "2023, Erik Bjäreholt"
+copyright = f"{year}, Erik Bjäreholt"
 author = "Erik Bjäreholt"
 
 
