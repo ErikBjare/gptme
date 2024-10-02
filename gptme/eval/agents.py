@@ -6,6 +6,7 @@ from gptme import chat as gptme_chat
 from gptme import get_prompt
 from gptme.cli import get_name
 from gptme.dirs import get_logs_dir
+from gptme.tools import init_tools
 
 from .filestore import FileStore
 from .types import Files
@@ -39,6 +40,9 @@ class GPTMe(Agent):
         store = FileStore(working_dir=workspace_dir)
         if files:
             store.upload(files)
+
+        # TODO: make eval toolset configurable
+        init_tools()
 
         print("\n--- Start of generation ---")
         logger.debug(f"Working in {store.working_dir}")
