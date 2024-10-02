@@ -113,6 +113,12 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
         result = _ipython.run_cell(code, silent=False, store_history=False)
 
     output = ""
+    if isinstance(result.result, types.GeneratorType):
+        # if the result is a generator, we need to iterate over it
+        for message in result.result:
+            assert isinstance(message, Message)
+            yield message
+        return
     if result.result is not None:
         output += f"Result:\n```\n{result.result}\n```\n\n"
     # only show stdout if there is no result
