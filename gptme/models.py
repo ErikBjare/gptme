@@ -9,7 +9,7 @@ from .llm_openai_models import OPENAI_MODELS
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelMeta:
     provider: str
     model: str

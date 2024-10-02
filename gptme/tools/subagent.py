@@ -26,13 +26,13 @@ Status = Literal["running", "success", "failure"]
 _subagents: list["Subagent"] = []
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReturnType:
     status: Status
     result: str | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class Subagent:
     prompt: str
     agent_id: str

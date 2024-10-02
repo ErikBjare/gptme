@@ -301,7 +301,7 @@ def _conversation_files() -> list[Path]:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class Conversation:
     name: str
     path: str
