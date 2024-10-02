@@ -24,7 +24,6 @@ from .base import ToolSpec, ToolUse
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
 
-
 logger = getLogger(__name__)
 
 # TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme-python venv (for example) in which gptme itself runs
@@ -197,23 +196,7 @@ fib(10)
 """.strip()
 
 
-# only used for doc generation, use get_tool() in the code
-tool = ToolSpec(
-    name="python",
-    desc="Execute Python code",
-    instructions=instructions,
-    examples=examples,
-    execute=execute_python,
-    block_types=[
-        # "python",
-        "ipython",
-        "py",
-    ],
-)
-__doc__ = tool.get_doc(__doc__)
-
-
-def get_tool() -> ToolSpec:
+def init() -> ToolSpec:
     python_libraries = get_installed_python_libraries()
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
 
@@ -228,3 +211,19 @@ The following functions are available in the REPL:
 
     # create a copy with the updated instructions
     return dataclasses.replace(tool, instructions=_instructions)
+
+
+tool = ToolSpec(
+    name="python",
+    desc="Execute Python code",
+    instructions=instructions,
+    examples=examples,
+    execute=execute_python,
+    init=init,
+    block_types=[
+        # "python",
+        "ipython",
+        "py",
+    ],
+)
+__doc__ = tool.get_doc(__doc__)
