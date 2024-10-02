@@ -2,6 +2,7 @@ from datetime import datetime
 
 from gptme.util import (
     epoch_to_age,
+    example_to_xml,
     generate_name,
     is_generated_name,
     transform_examples_to_chat_directives,
@@ -56,3 +57,61 @@ def test_transform_examples_to_chat_directives_tricky():
    Assistant: lol"""
 
     assert transform_examples_to_chat_directives(src, strict=True) == expected
+
+
+def test_example_to_xml_basic():
+    x1 = example_to_xml(
+        """
+> User: Hello
+How are you?
+> Assistant: Hi
+"""
+    )
+
+    assert (
+        x1
+        == """
+<user>
+Hello
+How are you?
+</user>
+<assistant>
+Hi
+</assistant>
+""".strip()
+    )
+
+
+def test_example_to_xml_preserve_header():
+    x1 = example_to_xml(
+        """
+Header1
+-------
+
+> User: Hello
+
+Header2
+-------
+
+> System: blah
+"""
+    )
+
+    assert (
+        x1
+        == """
+Header1
+-------
+
+<user>
+Hello
+</user>
+
+Header2
+-------
+
+<system>
+blah
+</system>
+""".strip()
+    )
