@@ -45,7 +45,7 @@
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Prompts" href="prompts.html" />
+    <link rel="next" title="Automation with gptme" href="automation.html" />
     <link rel="prev" title="Server" href="server.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -165,6 +165,9 @@
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="automation.html">Automation with gptme</a></li>
+
+
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul class="nav bd-sidenav">
@@ -470,6 +473,12 @@ PROMPTS can be chained with the ‘-’ separator.</p>
 </dd></dl>
 
 <dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-t">
+<span id="cmdoption-gptme-tools"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--tools</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;tool_allowlist&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-t" title="Link to this definition">#</a></dt>
+<dd><p>Comma-separated list of tools to allow. Available: read, save, append, patch, shell, subagent, tmux, browser, gh, chats, python.</p>
+</dd></dl>
+
+<dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-no-stream">
 <span class="sig-name descname"><span class="pre">--no-stream</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-no-stream" title="Link to this definition">#</a></dt>
 <dd><p>Don’t stream responses</p>
@@ -586,11 +595,11 @@ Pass eval or suite names to run, or result files to print.</p>
       </div>
     </a>
     <a class="right-next"
-       href="prompts.html"
+       href="automation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Prompts</p>
+        <p class="prev-next-title">Automation with gptme</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

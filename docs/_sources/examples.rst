@@ -27,3 +27,37 @@ To see example output without running the commands yourself, check out the :doc:
 
 
 Do you have a cool example? Share it with us in the `Discussions <https://github.com/ErikBjare/gptme/discussions>`_!
+
+
+Commit Message Generator
+------------------------
+
+Generate meaningful commit messages based on your git diff:
+
+.. code-block:: bash
+
+   #!/bin/bash
+   # Usage: git-commit-auto
+   msg_file=$(mktemp)
+   git diff --cached | gptme --non-interactive "Write a concise, meaningful commit message for this diff to `$msg_file`.
+
+   Format: <type>: <subject>
+   Where type is one of: feat, fix, docs, style, refactor, test, chore, build";
+
+   git commit -F "$msg_file"
+
+Generate Documentation
+----------------------
+
+Generate docstrings for all functions in a file:
+
+.. TODO: not automation, move to examples.
+
+.. code-block:: bash
+
+   #!/bin/bash
+   gptme --non-interactive "Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters." $@
+
+
+These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.
+
