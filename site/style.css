@@ -8,7 +8,6 @@
   --border-color: #ddd;
 }
 
-
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -20,16 +19,6 @@
     --border-color: #444;
   }
 }
-
-[data-darkreader-scheme="dark"] {
-  --text-color: #e0e0e0;
-  --background-color: #1a1a1a;
-  --link-color: #4da3ff;
-  --link-hover-color: #80bdff;
-  --code-background: #2a2a2a;
-  --border-color: #444;
-}
-
 
 /* Apply styles using CSS variables */
 body {
@@ -143,10 +132,6 @@ pre {
   overflow-x: auto;
 }
 
-code {
-  padding: 0.2em 0.4em;
-}
-
 table {
   border-collapse: collapse;
   width: 100%;
@@ -161,6 +146,10 @@ th, td {
 
 th {
   background-color: var(--code-background);
+}
+
+code span.fu {
+  color: #22863a;
 }
 
 @media (max-width: 600px) {
