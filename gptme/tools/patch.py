@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..message import Message
-from ..util import ask_execute
+from ..util import ask_execute, print_preview
 from .base import ToolSpec, ToolUse
 
 
@@ -76,17 +76,18 @@ class Patch:
         # TODO: show this when previewing the patch
         # TODO: replace previous patches with the minimal version
 
-        diff = difflib.unified_diff(
-            self.original.splitlines(),
-            self.updated.splitlines(),
-            lineterm="",
-            fromfile="original",
-            tofile="updated",
-        )
-        diff = list(diff)[3:]
+        diff = list(
+            difflib.unified_diff(
+                self.original.splitlines(),
+                self.updated.splitlines(),
+                lineterm="",
+                fromfile="original",
+                tofile="updated",
+            )
+        )[3:]
         if strip_context:
             # find first and last lines with changes
-            markers = [l[0] for l in diff]
+            markers = [line[0] for line in diff]
             start = min(
                 markers.index("+") if "+" in markers else len(markers),
                 markers.index("-") if "-" in markers else len(markers),
@@ -95,6 +96,7 @@ class Patch:
                 markers[::-1].index("+") if "+" in markers else len(markers),
                 markers[::-1].index("-") if "-" in markers else len(markers),
             )
+            len(diff) - start - end
             diff = diff[start : len(diff) - end]
         return "\n".join(diff)
 
@@ -170,7 +172,13 @@ def execute_patch(
     path = Path(fn).expanduser()
     if not path.exists():
         raise ValueError(f"file not found: {fn}")
+
+    patches = Patch.from_codeblock(code)
+    patches_str = "\n\n".join(p.diff_minimal() for p in patches)
+    print_preview(patches_str, lang="diff")
+
     if ask:
+        # TODO: display minimal patches
         confirm = ask_execute(f"Apply patch to {fn}?")
         if not confirm:
             print("Patch not applied")
@@ -186,13 +194,13 @@ def execute_patch(
             f.write(patched_content)
 
         # Compare token counts
-        patch_tokens = len(code)
-        full_file_tokens = len(patched_content)
+        patch_len = len(code)
+        full_file_len = len(patched_content)
 
         warnings = []
-        if full_file_tokens < patch_tokens:
+        if 1000 < full_file_len < patch_len:
             warnings.append(
-                "Note: The patch was larger than the file. In the future, try writing smaller patches or use the save tool instead."
+                "Note: The patch was big and larger than the file. In the future, try writing smaller patches or use the save tool instead."
             )
         warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
 
