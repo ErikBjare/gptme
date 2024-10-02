@@ -15,6 +15,7 @@ include = ["static/**/*", "media/logo.png"]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
+gptme-eval-swebench = "gptme.eval.swebench_main:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -41,6 +42,8 @@ anthropic = "^0.34.0"
 
 # evals
 multiprocessing-logging = "^0.3.4"
+datasets = "^2.14.0"
+fsspec = "^2023.9.2"   # https://stackoverflow.com/questions/77433096/notimplementederror-loading-a-dataset-cached-in-a-localfilesystem-is-not-suppor
 
 # datascience essentials
 matplotlib = {version = "*", optional=true}
