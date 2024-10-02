@@ -15,7 +15,7 @@ from gptme.server.api import create_app  # fmt: skip
 
 @pytest.fixture(autouse=True)
 def init_():
-    init(None, interactive=False)
+    init(None, interactive=False, tool_allowlist=None)
 
 
 @pytest.fixture

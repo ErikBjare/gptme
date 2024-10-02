@@ -27,7 +27,13 @@ from .logmanager import Conversation, LogManager, get_user_conversations
 from .message import Message
 from .models import get_model
 from .prompts import get_prompt
-from .tools import ToolUse, execute_msg, has_tool
+from .tools import (
+    ToolUse,
+    all_tools,
+    execute_msg,
+    has_tool,
+    init_tools,
+)
 from .tools.browser import read_url
 from .util import (
     console,
@@ -42,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 script_path = Path(os.path.realpath(__file__))
 commands_help = "\n".join(_gen_help(incl_langtags=False))
+available_tool_names = ", ".join([tool.name for tool in all_tools if tool.available])
 
 
 docstring = f"""
@@ -108,6 +115,14 @@ The interface provides user commands that can be used to interact with the syste
     help="System prompt. Can be 'full', 'short', or something custom.",
 )
 @click.option(
+    "-t",
+    "--tools",
+    "tool_allowlist",
+    default=None,
+    multiple=True,
+    help=f"Comma-separated list of tools to allow. Available: {available_tool_names}.",
+)
+@click.option(
     "--no-stream",
     "stream",
     default=True,
@@ -135,6 +150,7 @@ def main(
     prompt_system: str,
     name: str,
     model: str | None,
+    tool_allowlist: list[str] | None,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
@@ -165,6 +181,13 @@ def main(
 
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
+
+    if tool_allowlist:
+        # split comma-separated values
+        tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
+
+    # early init tools to generate system prompt
+    init_tools(tool_allowlist)
 
     # get initial system prompt
     initial_msgs = [get_prompt(prompt_system, interactive=interactive)]
@@ -228,6 +251,7 @@ def main(
         interactive,
         show_hidden,
         workspace_path,
+        tool_allowlist,
     )
 
 
@@ -269,6 +293,7 @@ def clear_interruptible():
     interruptible = False
 
 
+# TODO: move to seperate file and make this simply callable with `gptme.chat("prompt")`
 def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
@@ -279,6 +304,7 @@ def chat(
     interactive: bool = True,
     show_hidden: bool = False,
     workspace: Path | None = None,
+    tool_allowlist: list[str] | None = None,
 ):
     """
     Run the chat loop.
@@ -290,7 +316,7 @@ def chat(
     Callable from other modules.
     """
     # init
-    init(model, interactive)
+    init(model, interactive, tool_allowlist)
 
     if model and model.startswith("openai/o1") and stream:
         logger.info("Disabled streaming for OpenAI's O1 (not supported)")

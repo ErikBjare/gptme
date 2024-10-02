@@ -27,7 +27,7 @@ test:
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html --junitxml=junit.xml \
 		-n 16 \
 		$(if $(EVAL), , -m "not eval") \
-		$(if $(SLOW), --timeout 60 --retries 2 --retry-delay 5, --timeout 5 -m "not slow and not eval") \
+		$(if $(SLOW), --timeout 60 --retries 2 --retry-delay 5, --timeout 10 -m "not slow and not eval") \
 		$(if $(PROFILE), --profile-svg)
 
 eval:

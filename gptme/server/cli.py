@@ -23,7 +23,7 @@ def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
     Note that this is very much a work in progress, and is not yet ready for normal use.
     """
     init_logging(verbose)
-    init(model, interactive=False)
+    init(model, interactive=False, tool_allowlist=None)
 
     # if flask not installed, ask the user to install `server` extras
     try:
