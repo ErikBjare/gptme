@@ -2,8 +2,10 @@
 Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.
 """
 
+import difflib
 import re
 from collections.abc import Generator
+from dataclasses import dataclass
 from pathlib import Path
 
 from ..message import Message
@@ -57,33 +59,65 @@ def hello():
 """
 
 
+@dataclass
+class Patch:
+    original: str
+    updated: str
+
+    def apply(self, content: str) -> str:
+        return content.replace(self.original, self.updated, 1)
+
+    def diff_minimal(self) -> str:
+        """
+        Show a minimal diff of the patch.
+        """
+        # TODO: write tests, actually check the implementation
+        # TODO: show this when previewing the patch
+        # TODO: replace previous patches with the minimal version
+
+        diff = difflib.unified_diff(
+            self.original.splitlines(),
+            self.updated.splitlines(),
+            lineterm="",
+            fromfile="original",
+            tofile="updated",
+        )
+        return "\n".join(diff)
+
+    @classmethod
+    def from_codeblock(cls, codeblock: str) -> Generator["Patch", None, None]:
+        codeblock = codeblock.strip()
+
+        # Split the codeblock into multiple patches
+        patches = re.split(f"(?={re.escape(ORIGINAL)})", codeblock)
+
+        for patch in patches:
+            if not patch.strip():
+                continue
+
+            if ORIGINAL not in patch:  # pragma: no cover
+                raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", patch)
+
+            parts = re.split(
+                f"{re.escape(ORIGINAL)}|{re.escape(DIVIDER)}|{re.escape(UPDATED)}",
+                patch,
+            )
+            if len(parts) != 4:  # pragma: no cover
+                raise ValueError("invalid patch format")
+
+            _, original, modified, _ = parts
+            yield Patch(original, modified)
+
+
 def apply(codeblock: str, content: str) -> str:
     """
     Applies multiple patches in ``codeblock`` to ``content``.
     """
-    codeblock = codeblock.strip()
     new_content = content
-
-    # Split the codeblock into multiple patches
-    patches = re.split(f"(?={re.escape(ORIGINAL)})", codeblock)
-
-    for patch in patches:
-        if not patch.strip():
-            continue
-
-        if ORIGINAL not in patch:  # pragma: no cover
-            raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", patch)
-
-        parts = re.split(
-            f"{re.escape(ORIGINAL)}|{re.escape(DIVIDER)}|{re.escape(UPDATED)}", patch
-        )
-        if len(parts) != 4:  # pragma: no cover
-            raise ValueError("invalid patch format")
-
-        _, original, modified, _ = parts
-
+    for patch in Patch.from_codeblock(codeblock):
+        original, updated = patch.original, patch.updated
         re_placeholder = re.compile(r"^[ \t]*(#|//|\") \.\.\. ?.*$", re.MULTILINE)
-        if re_placeholder.search(original) or re_placeholder.search(modified):
+        if re_placeholder.search(original) or re_placeholder.search(updated):
             # if placeholder found in content, then we cannot use placeholder-aware patching
             if re_placeholder.search(content):
                 raise ValueError(
@@ -91,7 +125,7 @@ def apply(codeblock: str, content: str) -> str:
                 )
 
             originals = re_placeholder.split(original)
-            modifieds = re_placeholder.split(modified)
+            modifieds = re_placeholder.split(updated)
             if len(originals) != len(modifieds):
                 raise ValueError(
                     "different number of placeholders in original and modified chunks"
@@ -99,11 +133,11 @@ def apply(codeblock: str, content: str) -> str:
             for orig, mod in zip(originals, modifieds):
                 if orig == mod:
                     continue
-                new_content = new_content.replace(orig, mod)
+                new_content = Patch(orig, mod).apply(new_content)
         else:
             if original not in new_content:  # pragma: no cover
                 raise ValueError("original chunk not found in file")
-            new_content = new_content.replace(original, modified)
+            new_content = patch.apply(new_content)
 
     if new_content == content:  # pragma: no cover
         raise ValueError("patch did not change the file")
