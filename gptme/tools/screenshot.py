@@ -17,7 +17,7 @@ def _screenshot(path: Path) -> Path:
 
     if os.name == "posix":
         if os.uname().sysname == "Darwin":  # macOS
-            subprocess.run(["screencapture", "-i", str(path)], check=True)
+            subprocess.run(["screencapture", str(path)], check=True)
         else:  # Linux
             subprocess.run(["scrot", "-s", str(path)], check=True)
     else:
