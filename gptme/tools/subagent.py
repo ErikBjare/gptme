@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
 
-
 logger = logging.getLogger(__name__)
 
 Status = Literal["running", "success", "failure"]
@@ -95,7 +94,7 @@ def subagent(prompt: str, agent_id: str):
         initial_msgs = [get_prompt(interactive=False)]
 
         # add the return prompt
-        return_prompt = """When done with the task, please end with a JSON response on the format:
+        return_prompt = """Thank you for doing the task, please respond with a JSON response on the format:
 
 ```json
 {
@@ -103,10 +102,7 @@ def subagent(prompt: str, agent_id: str):
     status: 'success' | 'failure',
 }
 ```"""
-        init_msg = initial_msgs[0]
-        initial_msgs[0] = init_msg.replace(
-            content=init_msg.content + "\n\n" + return_prompt
-        )
+        prompt_msgs.append(Message("user", return_prompt))
 
         chat(
             prompt_msgs,
