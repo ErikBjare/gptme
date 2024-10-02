@@ -79,8 +79,6 @@ class Patch:
         Show a minimal diff of the patch.
         Note that a minimal diff isn't necessarily a unique diff.
         """
-        # TODO: write tests, actually check the implementation
-        # TODO: show this when previewing the patch
         # TODO: replace previous patches with the minimal version
 
         diff = list(
