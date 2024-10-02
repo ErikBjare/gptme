@@ -3,6 +3,7 @@ import logging
 import random
 import re
 import sys
+import termios
 import textwrap
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -135,10 +136,10 @@ def print_preview(code: str, lang: str):  # pragma: no cover
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
     # TODO: add a way to outsource ask_execute decision to another agent/LLM, possibly by overriding rich console somehow
-    choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
-    # answer = None
-    # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
     print_bell()  # Ring the bell just before asking for input
+    termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
+
+    choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
     answer = console.input(
         f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
     )
