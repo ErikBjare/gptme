@@ -197,6 +197,9 @@ def document_prompt_function(*args, **kwargs):
 
         # noreorder
         from .message import len_tokens  # fmt: skip
+        from .tools import init_tools  # fmt: skip
+
+        init_tools()
 
         prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
         prompt = textwrap.indent(prompt, "   ")

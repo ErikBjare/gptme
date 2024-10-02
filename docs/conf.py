@@ -4,10 +4,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+
 import re
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
+
 
 project = "gptme"
 copyright = "2023, Erik Bjäreholt"
