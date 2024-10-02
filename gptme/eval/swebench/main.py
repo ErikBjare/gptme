@@ -1,6 +1,7 @@
 import logging
 
 import click
+from gptme.eval.types import EvalResult
 
 from ..agents import GPTMe
 from ..main import write_results
@@ -70,7 +71,7 @@ def main(
     swebench_results = {}
     for m in model:
         agent = GPTMe(model=m)
-        results = run_swebench_evaluation(
+        results: list[EvalResult] = run_swebench_evaluation(
             agent,
             dataset_name=dataset,
             split=split,
