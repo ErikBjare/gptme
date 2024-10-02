@@ -4,153 +4,8 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title> </title>
+  <title>gptme - agent in your terminal</title>
   <style>
-    html {
-      color: #1a1a1a;
-      background-color: #fdfdfd;
-    }
-    body {
-      margin: 0 auto;
-      max-width: 36em;
-      padding-left: 50px;
-      padding-right: 50px;
-      padding-top: 50px;
-      padding-bottom: 50px;
-      hyphens: auto;
-      overflow-wrap: break-word;
-      text-rendering: optimizeLegibility;
-      font-kerning: normal;
-    }
-    @media (max-width: 600px) {
-      body {
-        font-size: 0.9em;
-        padding: 12px;
-      }
-      h1 {
-        font-size: 1.8em;
-      }
-    }
-    @media print {
-      html {
-        background-color: white;
-      }
-      body {
-        background-color: transparent;
-        color: black;
-        font-size: 12pt;
-      }
-      p, h2, h3 {
-        orphans: 3;
-        widows: 3;
-      }
-      h2, h3, h4 {
-        page-break-after: avoid;
-      }
-    }
-    p {
-      margin: 1em 0;
-    }
-    a {
-      color: #1a1a1a;
-    }
-    a:visited {
-      color: #1a1a1a;
-    }
-    img {
-      max-width: 100%;
-    }
-    svg {
-      height: auto;
-      max-width: 100%;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 1.4em;
-    }
-    h5, h6 {
-      font-size: 1em;
-      font-style: italic;
-    }
-    h6 {
-      font-weight: normal;
-    }
-    ol, ul {
-      padding-left: 1.7em;
-      margin-top: 1em;
-    }
-    li > ol, li > ul {
-      margin-top: 0;
-    }
-    blockquote {
-      margin: 1em 0 1em 1.7em;
-      padding-left: 1em;
-      border-left: 2px solid #e6e6e6;
-      color: #606060;
-    }
-    code {
-      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
-      font-size: 85%;
-      margin: 0;
-      hyphens: manual;
-    }
-    pre {
-      margin: 1em 0;
-      overflow: auto;
-    }
-    pre code {
-      padding: 0;
-      overflow: visible;
-      overflow-wrap: normal;
-    }
-    .sourceCode {
-     background-color: transparent;
-     overflow: visible;
-    }
-    hr {
-      background-color: #1a1a1a;
-      border: none;
-      height: 1px;
-      margin: 1em 0;
-    }
-    table {
-      margin: 1em 0;
-      border-collapse: collapse;
-      width: 100%;
-      overflow-x: auto;
-      display: block;
-      font-variant-numeric: lining-nums tabular-nums;
-    }
-    table caption {
-      margin-bottom: 0.75em;
-    }
-    tbody {
-      margin-top: 0.5em;
-      border-top: 1px solid #1a1a1a;
-      border-bottom: 1px solid #1a1a1a;
-    }
-    th {
-      border-top: 1px solid #1a1a1a;
-      padding: 0.25em 0.5em 0.25em 0.5em;
-    }
-    td {
-      padding: 0.125em 0.5em 0.25em 0.5em;
-    }
-    header {
-      margin-bottom: 4em;
-      text-align: center;
-    }
-    #TOC li {
-      list-style: none;
-    }
-    #TOC ul {
-      padding-left: 1.3em;
-    }
-    #TOC > ul {
-      padding-left: 0;
-    }
-    #TOC a:not(:hover) {
-      text-decoration: none;
-    }
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -231,10 +86,12 @@
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+<div class="content-wrapper">
 <header id="title-block-header">
-<h1 class="title"> </h1>
+<h1 class="title">gptme - agent in your terminal</h1>
 </header>
 <p align="center">
   <img src="./media/logo.png" width=150 />
@@ -249,11 +106,11 @@
 <!-- Links -->
 
 <p align="center">
-  <a href="https://gptme.org/docs/getting-started.html">Getting Started</a>
+  <a href="https://github.com/ErikBjare/gptmedocs/getting-started.html">Getting Started</a>
   •
-  <a href="https://gptme.org/">Website</a>
+  <a href="https://github.com/ErikBjare/gptme">GitHub</a>
   •
-  <a href="https://gptme.org/docs/">Documentation</a>
+  <a href="https://github.com/ErikBjare/gptmedocs/">Documentation</a>
 </p>
 
 <!-- Badges -->
@@ -391,26 +248,32 @@ alt="superuserlabs-ceo" /></a></p>
 </table>
 
 <p>You can find more <a
-href="https://gptme.org/docs/demos.html">Demos</a> and <a
-href="https://gptme.org/docs/examples.html">Examples</a> in the <a
-href="https://gptme.org/docs/">documentation</a>.</p>
+href="https://github.com/ErikBjare/gptmedocs/demos.html">Demos</a> and
+<a
+href="https://github.com/ErikBjare/gptmedocs/examples.html">Examples</a>
+in the <a
+href="https://github.com/ErikBjare/gptmedocs/">documentation</a>.</p>
 <h2 id="star2-features">🌟 Features</h2>
 <ul>
 <li>💻 Code execution
 <ul>
 <li>Executes code in your local environment with the <a
-href="https://gptme.org/docs/tools.html#shell">shell</a> and <a
-href="https://gptme.org/docs/tools.html#python">python</a> tools.</li>
+href="https://github.com/ErikBjare/gptmedocs/tools.html#shell">shell</a>
+and <a
+href="https://github.com/ErikBjare/gptmedocs/tools.html#python">python</a>
+tools.</li>
 </ul></li>
 <li>🧩 Read, write, and change files
 <ul>
 <li>Makes incremental changes with the <a
-href="https://gptme.org/docs/tools.html#patch">patch</a> tool.</li>
+href="https://github.com/ErikBjare/gptmedocs/tools.html#patch">patch</a>
+tool.</li>
 </ul></li>
 <li>🌐 Search and browse the web.
 <ul>
 <li>Can use a browser via Playwright with the <a
-href="https://gptme.org/docs/tools.html#browser">browser</a> tool.</li>
+href="https://github.com/ErikBjare/gptmedocs/tools.html#browser">browser</a>
+tool.</li>
 </ul></li>
 <li>👀 Vision
 <ul>
@@ -423,7 +286,7 @@ and web pages.</li>
 self-correct.</li>
 </ul></li>
 <li>🤖 Support for several LLM <a
-href="https://gptme.org/docs/providers.html">providers</a>
+href="https://github.com/ErikBjare/gptmedocs/providers.html">providers</a>
 <ul>
 <li>Use OpenAI, Anthropic, OpenRouter, or serve locally with
 <code>llama.cpp</code></li>
@@ -437,8 +300,9 @@ as context.</li>
 </ul></li>
 <li>→ Tab completion</li>
 <li>📝 Automatic naming of conversations</li>
-<li>💬 Optional basic <a href="https://gptme.org/docs/server.html">Web
-UI and REST API</a></li>
+<li>💬 Optional basic <a
+href="https://github.com/ErikBjare/gptmedocs/server.html">Web UI and
+REST API</a></li>
 </ul></li>
 </ul>
 <h3 id="-developer-perks">🛠 Developer perks</h3>
@@ -446,14 +310,14 @@ UI and REST API</a></li>
 <li>🧰 Easy to extend
 <ul>
 <li>Most functionality is implemented as <a
-href="https://gptme.org/docs/tools.html">tools</a>, making it easy to
-add new features.</li>
+href="https://github.com/ErikBjare/gptmedocs/tools.html">tools</a>,
+making it easy to add new features.</li>
 </ul></li>
 <li>🧪 Extensive testing, high coverage.</li>
 <li>🧹 Clean codebase, checked and formatted with <code>mypy</code>,
 <code>ruff</code>, and <code>pyupgrade</code>.</li>
-<li>🤖 <a href="https://gptme.org/docs/bot.html">GitHub Bot</a> to
-request changes from comments! (see <a
+<li>🤖 <a href="https://github.com/ErikBjare/gptmedocs/bot.html">GitHub
+Bot</a> to request changes from comments! (see <a
 href="https://github.com/ErikBjare/gptme/issues/16">#16</a>)
 <ul>
 <li>Operates in this repo! (see <a
@@ -461,8 +325,9 @@ href="https://github.com/ErikBjare/gptme/issues/18">#18</a> for
 example)</li>
 <li>Runs entirely in GitHub Actions.</li>
 </ul></li>
-<li>📊 <a href="https://gptme.org/docs/evals.html">Evaluation suite</a>
-for testing capabilities of different models</li>
+<li>📊 <a
+href="https://github.com/ErikBjare/gptmedocs/evals.html">Evaluation
+suite</a> for testing capabilities of different models</li>
 </ul>
 <h3 id="construction-in-progress">🚧 In progress</h3>
 <ul>
@@ -498,10 +363,11 @@ tools in a local environment.</li>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> diff <span class="kw">|</span> <span class="ex">gptme</span> <span class="st">&#39;complete the TODOs in this diff&#39;</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> test <span class="kw">|</span> <span class="ex">gptme</span> <span class="st">&#39;fix the failing tests&#39;</span></span></code></pre></div>
 <p>For more, see the <a
-href="https://gptme.org/docs/getting-started.html">Getting Started</a>
-guide and the <a
-href="https://gptme.org/docs/examples.html">Examples</a> in the <a
-href="https://gptme.org/docs/">documentation</a>.</p>
+href="https://github.com/ErikBjare/gptmedocs/getting-started.html">Getting
+Started</a> guide and the <a
+href="https://github.com/ErikBjare/gptmedocs/examples.html">Examples</a>
+in the <a
+href="https://github.com/ErikBjare/gptmedocs/">documentation</a>.</p>
 <h2 id="-usage">🛠 Usage</h2>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> gptme <span class="at">--help</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Usage:</span> gptme <span class="pp">[</span><span class="ss">OPTIONS</span><span class="pp">]</span> <span class="pp">[</span><span class="ss">PROMPTS</span><span class="pp">]</span>...</span>
@@ -564,8 +430,9 @@ development?</p>
 <p>Check out the <a href="CONTRIBUTING.md">CONTRIBUTING</a> file!</p>
 <h2 id="link-links">🔗 Links</h2>
 <ul>
-<li><a href="https://gptme.org/">Website</a></li>
-<li><a href="https://gptme.org/docs/">Documentation</a></li>
+<li><a href="https://github.com/ErikBjare/gptme">GitHub</a></li>
+<li><a
+href="https://github.com/ErikBjare/gptmedocs/">Documentation</a></li>
 <li><a href="https://github.com/ErikBjare/gptme">GitHub</a></li>
 <li><a href="https://discord.gg/NMaCmmkxWv">Discord</a></li>
 <li><a
@@ -580,5 +447,6 @@ announcement (2023 aug)</a></li>
 announcement (2024 aug)</a></li>
 </ul>
 <!-- links -->
+</div>
 </body>
 </html>
