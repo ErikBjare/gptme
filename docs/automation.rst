@@ -1,5 +1,5 @@
-Automation with gptme
-=====================
+Automation
+==========
 
 gptme can be used to create powerful yet simple automated workflows. Here we showcase small but powerful examples that demonstrate the capabilities of gptme in various workflows and automation scenarios.
 
@@ -12,23 +12,18 @@ We will be using shell scripts, cron jobs, and other tools to automate the workf
 
 
 
-Example: script that implements feature
----------------------------------------
+Example: Implement feature
+--------------------------
 
-This example demonstrates how to create a script that implements a feature using gptme. Given a GitHub issue it will check out a new branch, look up relevant files, make changes, typecheck/test them, and create a pull request.
+This example demonstrates how to implement a feature in a codebase using gptme, making sure the code is correct before creating a pull request.
+
+Given a GitHub issue it will check out a new branch, look up relevant files, make changes, typecheck/test them, and create a pull request if everything is correct.
 
 .. code-block:: bash
 
    $ gptme 'read <url>' '-' 'create a branch' '-' 'look up relevant files' '-' 'make changes' '-' 'typecheck it' '-' 'test it' '-' 'create a pull request'
 
 
-Example: Automated code review
-------------------------------
-
 .. include:: automation/example_code_review.rst
-
-
-Example: Activity summary
--------------------------
 
 .. include:: automation/example_activity_summary.rst
