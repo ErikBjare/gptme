@@ -6,6 +6,7 @@ from .base import ToolSpec
 
 
 def view_image(image_path: Path | str) -> Generator[Message, None, None]:
+    """View an image."""
     if isinstance(image_path, str):
         image_path = Path(image_path)
     yield Message("system", f"Viewing image at {image_path}", files=[image_path])

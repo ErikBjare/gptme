@@ -344,9 +344,10 @@ def _gen_read_jsonl(path: PathLike) -> Generator[Message, None, None]:
     with open(path) as file:
         for line in file.readlines():
             json_data = json.loads(line)
+            files = [Path(f) for f in json_data.pop("files", [])]
             if "timestamp" in json_data:
                 json_data["timestamp"] = datetime.fromisoformat(json_data["timestamp"])
-            yield Message(**json_data)
+            yield Message(**json_data, files=files)
 
 
 def _read_jsonl(path: PathLike, limit=None) -> list[Message]:

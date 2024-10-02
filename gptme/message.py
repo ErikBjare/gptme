@@ -90,6 +90,8 @@ class Message:
             if ext not in allowed_file_exts:
                 logger.warning("Unsupported file type: %s", ext)
                 continue
+            if ext == "jpg":
+                ext = "jpeg"
             media_type = f"image/{ext}"
             content.append(
                 {
