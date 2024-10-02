@@ -67,9 +67,10 @@ class Patch:
     def apply(self, content: str) -> str:
         return content.replace(self.original, self.updated, 1)
 
-    def diff_minimal(self) -> str:
+    def diff_minimal(self, strip_context=False) -> str:
         """
         Show a minimal diff of the patch.
+        Note that a minimal diff isn't necessarily a unique diff.
         """
         # TODO: write tests, actually check the implementation
         # TODO: show this when previewing the patch
@@ -82,6 +83,19 @@ class Patch:
             fromfile="original",
             tofile="updated",
         )
+        diff = list(diff)[3:]
+        if strip_context:
+            # find first and last lines with changes
+            markers = [l[0] for l in diff]
+            start = min(
+                markers.index("+") if "+" in markers else len(markers),
+                markers.index("-") if "-" in markers else len(markers),
+            )
+            end = min(
+                markers[::-1].index("+") if "+" in markers else len(markers),
+                markers[::-1].index("-") if "-" in markers else len(markers),
+            )
+            diff = diff[start : len(diff) - end]
         return "\n".join(diff)
 
     @classmethod
