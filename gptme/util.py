@@ -130,8 +130,12 @@ def epoch_to_age(epoch):
 def print_preview(code: str, lang: str):  # pragma: no cover
     print()
     print("[bold white]Preview[/bold white]")
+    # NOTE: we can set background_color="default" to remove background
     print(Syntax(code.strip("\n"), lang))
     print()
+
+
+override_auto = False
 
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
@@ -141,9 +145,14 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
 
     choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
     answer = console.input(
-        f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
+        f"[bold bright_yellow on red] {question} {choicestr} [/] ",
     )
-    return answer.lower() in (["y", "yes"] + [""] if default else [])
+    global override_auto
+    if answer.lower() in [
+        "auto"
+    ]:  # secret option to stop asking for the rest of the session
+        override_auto = True
+    return answer.lower() in (["y", "yes"] + [""] if default else []) or override_auto
 
 
 def clean_example(s: str, strict=False) -> str:
