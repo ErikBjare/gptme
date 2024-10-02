@@ -130,7 +130,7 @@ def epoch_to_age(epoch):
 def print_preview(code: str, lang: str):  # pragma: no cover
     print()
     print("[bold white]Preview[/bold white]")
-    print(Syntax(code.strip(), lang))
+    print(Syntax(code.strip("\n"), lang))
     print()
 
 
