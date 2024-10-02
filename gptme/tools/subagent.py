@@ -6,7 +6,6 @@ Lets gptme break down a task into smaller parts, and delegate them to subagents.
 
 import json
 import logging
-import re
 import threading
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Literal
