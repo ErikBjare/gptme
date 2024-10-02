@@ -72,6 +72,7 @@ docs: docs/conf.py docs/*.rst docs/.clean
 
 .PHONY: site
 site: site/dist/index.html site/dist/docs
+	echo "gptme.org" > site/dist/CNAME
 
 site/dist/index.html: README.md
 	mkdir -p site/dist
