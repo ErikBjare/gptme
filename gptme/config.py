@@ -78,9 +78,14 @@ def get_config() -> Config:
 
 
 def load_config() -> Config:
-    # TODO: validate
     config = _load_config()
-    return Config(**config)  # type: ignore
+    assert "prompt" in config, "prompt key missing in config"
+    assert "env" in config, "env key missing in config"
+    prompt = config.pop("prompt")
+    env = config.pop("env")
+    if config:
+        logger.warning(f"Unknown keys in config: {config.keys()}")
+    return Config(prompt=prompt, env=env)
 
 
 def _load_config() -> tomlkit.TOMLDocument:
@@ -88,14 +93,16 @@ def _load_config() -> tomlkit.TOMLDocument:
     if not os.path.exists(config_path):
         # If not, create it and write some default settings
         os.makedirs(os.path.dirname(config_path), exist_ok=True)
+        toml = tomlkit.dumps(default_config.dict())
         with open(config_path, "w") as config_file:
-            tomlkit.dump(default_config.dict(), config_file)
+            config_file.write(toml)
         console.log(f"Created config file at {config_path}")
-
-    # Now you can read the settings from the config file like this:
-    with open(config_path) as config_file:
-        doc = tomlkit.load(config_file)
-    return doc
+        doc = tomlkit.loads(toml)
+        return doc
+    else:
+        with open(config_path) as config_file:
+            doc = tomlkit.load(config_file)
+        return doc
 
 
 def set_config_value(key: str, value: str) -> None:  # pragma: no cover
