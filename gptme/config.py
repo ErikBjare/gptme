@@ -8,7 +8,7 @@ import tomlkit
 from tomlkit import TOMLDocument
 from tomlkit.container import Container
 
-from .util import console
+from .util import console, path_with_tilde
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ def get_workspace_prompt(workspace: str) -> str:
     ]
     if project_config_paths:
         project_config_path = project_config_paths[0]
-        console.log(f"Using project configuration at {project_config_path}")
+        console.log(f"Using project configuration at {path_with_tilde(project_config_path)}")
         # load project config
         with open(project_config_path) as f:
             project_config = tomlkit.load(f)

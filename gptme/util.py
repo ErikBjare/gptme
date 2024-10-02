@@ -7,6 +7,7 @@ import termios
 import textwrap
 from datetime import datetime, timedelta
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import tiktoken
@@ -297,3 +298,11 @@ def rich_to_str(s: Any, **kwargs) -> str:
     c = Console(file=io.StringIO(), **kwargs)
     c.print(s)
     return c.file.getvalue()  # type: ignore
+
+
+def path_with_tilde(path: Path) -> str:
+    home = str(Path.home())
+    path_str = str(path)
+    if path_str.startswith(home):
+        return path_str.replace(home, "~", 1)
+    return path_str
