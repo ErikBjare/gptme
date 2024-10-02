@@ -289,7 +289,7 @@ Options:
 
 Do you want to contribute? Or do you have questions relating to development? 
 
-Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
+Check out the [CONTRIBUTING][contributing] file!
 
 ## 🔗 Links
 
@@ -320,6 +320,7 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 [docs-bot]: https://gptme.org/docs/bot.html
 [docs-evals]: https://gptme.org/docs/evals.html
 [docs-server]: https://gptme.org/docs/server.html
+[contributing]: https://github.com/ErikBjare/gptme/blob/master/CONTRIBUTING.md
 [twitter-announcement]: https://twitter.com/ErikBjare/status/1699097896451289115
 [reddit-announcement]: https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/
 [hn-announcement-2023]: https://news.ycombinator.com/item?id=37394845
