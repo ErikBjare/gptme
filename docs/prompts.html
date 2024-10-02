@@ -595,11 +595,11 @@ def hello():
 
 
 <span class="sb">These programs are available, among others:</span>
-<span class="sb">- pandoc</span>
-<span class="sb">- apt-get</span>
 <span class="sb">- docker</span>
 <span class="sb">- convert</span>
 <span class="sb">- git</span>
+<span class="sb">- pandoc</span>
+<span class="sb">- apt-get</span>
 
 <span class="sb">### Examples</span>
 
@@ -856,6 +856,12 @@ Assistant: Certainly! I&#39;ll search our past conversations for mentions of &qu
 <span class="sb">```</span>
 
 
+<span class="gu">## screenshot</span>
+
+<span class="gs">**Description:**</span> Take a screenshot
+
+<span class="gs">**Instructions:**</span> Use this tool to capture a screenshot. You can optionally specify a filename.
+
 <span class="gu">## vision</span>
 
 <span class="gs">**Description:**</span> Tools for viewing images
@@ -904,6 +910,9 @@ The following functions are available in the REPL:
         max_results (int): Maximum number of messages to display.
         incl_system (bool): Whether to include system messages.
 
+<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Generator:
+    Take a screenshot and save it to a file.
+
 <span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Generator: No description
 
 <span class="gu">### Examples</span>
@@ -944,7 +953,7 @@ Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 2937</p>
+<p>Tokens: 2996</p>
 </dd></dl>
 
 <dl class="py function">
