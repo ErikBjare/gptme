@@ -10,11 +10,11 @@
 
 <!-- Links -->
 <p align="center">
-  <a href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting Started</a>
+  <a href="https://gptme.org/docs/getting-started.html">Getting Started</a>
   •
-  <a href="https://erik.bjareholt.com/gptme/">Website</a>
+  <a href="https://gptme.org/">Website</a>
   •
-  <a href="https://erik.bjareholt.com/gptme/docs/">Documentation</a>
+  <a href="https://gptme.org/docs/">Documentation</a>
 </p>
 
 <!-- Badges -->
@@ -305,22 +305,22 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 
 
 <!-- links -->
-[website]: https://erik.bjareholt.com/gptme/
+[website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
-[docs]: https://erik.bjareholt.com/gptme/docs/
-[docs-getting-started]: https://erik.bjareholt.com/gptme/docs/getting-started.html
-[docs-examples]: https://erik.bjareholt.com/gptme/docs/examples.html
-[docs-demos]: https://erik.bjareholt.com/gptme/docs/demos.html
-[docs-providers]: https://erik.bjareholt.com/gptme/docs/providers.html
-[docs-tools]: https://erik.bjareholt.com/gptme/docs/tools.html
-[docs-tools-python]: https://erik.bjareholt.com/gptme/docs/tools.html#python
-[docs-tools-shell]: https://erik.bjareholt.com/gptme/docs/tools.html#shell
-[docs-tools-patch]: https://erik.bjareholt.com/gptme/docs/tools.html#patch
-[docs-tools-browser]: https://erik.bjareholt.com/gptme/docs/tools.html#browser
-[docs-bot]: https://erik.bjareholt.com/gptme/docs/bot.html
-[docs-evals]: https://erik.bjareholt.com/gptme/docs/evals.html
-[docs-server]: https://erik.bjareholt.com/gptme/docs/server.html
+[docs]: https://gptme.org/docs/
+[docs-getting-started]: https://gptme.org/docs/getting-started.html
+[docs-examples]: https://gptme.org/docs/examples.html
+[docs-demos]: https://gptme.org/docs/demos.html
+[docs-providers]: https://gptme.org/docs/providers.html
+[docs-tools]: https://gptme.org/docs/tools.html
+[docs-tools-python]: https://gptme.org/docs/tools.html#python
+[docs-tools-shell]: https://gptme.org/docs/tools.html#shell
+[docs-tools-patch]: https://gptme.org/docs/tools.html#patch
+[docs-tools-browser]: https://gptme.org/docs/tools.html#browser
+[docs-bot]: https://gptme.org/docs/bot.html
+[docs-evals]: https://gptme.org/docs/evals.html
+[docs-server]: https://gptme.org/docs/server.html
 [twitter-announcement]: https://twitter.com/ErikBjare/status/1699097896451289115
 [reddit-announcement]: https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/
 [hn-announcement-2023]: https://news.ycombinator.com/item?id=37394845
