@@ -71,9 +71,10 @@ jobs:
 
     - name: Run evals
       run: |
-        SUITE="${{ github.event.inputs.suite }}"
-        MODELS="${{ github.event.inputs.models }}"
-        TIMEOUT="${{ github.event.inputs.timeout }}"
+        SUITE="${{ github.event.inputs.suite || '' }}"
+        MODELS="${{ github.event.inputs.models || '' }}"
+        TIMEOUT="${{ github.event.inputs.timeout || '60' }}"
+        IMAGE_SUFFIX="${{ github.event.inputs.image-suffix || '' }}"
 
         MODEL_ARGS=""
         if [ -n "$MODELS" ]; then
@@ -83,8 +84,10 @@ jobs:
           done
         fi
 
-        echo "Running evals for suite: $SUITE"
+        echo "Running evals for suite: ${SUITE:-basic}"
         echo "Models: ${MODELS:-default}"
+        echo "Timeout: ${TIMEOUT} seconds"
+        echo "Image suffix: ${IMAGE_SUFFIX}"
 
         RESULTS_DIR=$(pwd)/eval_results
         echo "Results dir: $RESULTS_DIR"
@@ -94,9 +97,10 @@ jobs:
         docker run \
           -v ~/.config/gptme:/home/appuser/.config/gptme \
           -v $RESULTS_DIR:/app/eval_results \
-          ghcr.io/${{ env.OWNER_LC }}/gptme-eval${{ github.event.inputs.image-suffix }}:latest \
-          $SUITE \
-          --timeout $TIMEOUT $MODEL_ARGS
+          ghcr.io/${{ env.OWNER_LC }}/gptme-eval${IMAGE_SUFFIX}:latest \
+          ${SUITE:+"$SUITE"} \
+          --timeout "$TIMEOUT" \
+          $MODEL_ARGS
 
     - name: Configure Git
       run: |
