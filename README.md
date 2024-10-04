@@ -47,10 +47,13 @@
   </a>
 </p>
 
+<p align="center">
+📜 Personal AI assistant in your terminal, with tools so it can:<br/>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br/>Assists in all kinds of knowledge-work, especially programming, from a simple but powerful CLI.
+</p>
 
-📜 Personal AI assistant in your terminal, with tools so it can:<br>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br>Assists in all kinds of knowledge-work, especially programming, from a simple but powerful CLI.
-
-An unconstrained local alternative to ChatGPT's "Code Interpreter".<br>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
+<p align="center">
+An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
+</p>
 
 ## 📚 Table of Contents
 
