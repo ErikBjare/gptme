@@ -48,9 +48,9 @@
 </p>
 
 
-📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
+📜 Personal AI assistant in your terminal, with tools so it can:<br>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br>Assists in all kinds of knowledge-work, especially programming, from a simple but powerful CLI.
 
-A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local models are used).
+An unconstrained local alternative to ChatGPT's "Code Interpreter".<br>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
 
 ## 📚 Table of Contents
 
