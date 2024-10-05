@@ -283,16 +283,11 @@ Options:
 ### 📈 Download Stats
 
  - [PePy][pepy]
- - [PyPiStats](https://pypistats.org/packages/gptme-python)
+ - [PyPiStats][pypistats]
 
 [pepy]: https://pepy.tech/project/gptme-python
+[pypistats]: https://pypistats.org/packages/gptme-python
 
-
-## 💻 Development
-
-Do you want to contribute? Or do you have questions relating to development? 
-
-Check out the [CONTRIBUTING][contributing] file!
 
 ## 🔗 Links
 
@@ -300,7 +295,6 @@ Check out the [CONTRIBUTING][contributing] file!
  - [Documentation][docs]
  - [GitHub][github]
  - [Discord][discord]
-
 
 <!-- links -->
 [website]: https://gptme.org/
@@ -319,4 +313,3 @@ Check out the [CONTRIBUTING][contributing] file!
 [docs-bot]: https://gptme.org/docs/bot.html
 [docs-evals]: https://gptme.org/docs/evals.html
 [docs-server]: https://gptme.org/docs/server.html
-[contributing]: https://github.com/ErikBjare/gptme/blob/master/CONTRIBUTING.md
