@@ -52,9 +52,11 @@ class ToolSpec:
     block_types: list[str] = field(default_factory=list)
     available: bool = True
 
-    def get_doc(self, doc="") -> str:
+    def get_doc(self, doc: str | None = None) -> str:
         """Returns an updated docstring with examples."""
-        if doc:
+        if not doc:
+            doc = ""
+        else:
             doc += "\n\n"
         if self.examples:
             doc += (
