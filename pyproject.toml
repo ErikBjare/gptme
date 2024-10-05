@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gptme-python"
+name = "gptme"
 version = "0.19.0"
 description = "A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine."
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
@@ -134,7 +134,7 @@ exclude_also = [
 
 # TODO: migrate to PEP 621 once supported by poetry
 #[project]
-#name = "gptme-python"
+#name = "gptme"
 #dynamic = ["version"]
 #
 #[tool.setuptools.dynamic]

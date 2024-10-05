@@ -24,9 +24,10 @@ from .base import ToolSpec, ToolUse
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
 
+
 logger = getLogger(__name__)
 
-# TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme-python venv (for example) in which gptme itself runs
+# TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme venv (for example) in which gptme itself runs
 #       would let us use libraries installed with `pip install` in the current venv
 #       https://github.com/ErikBjare/gptme/issues/29
 

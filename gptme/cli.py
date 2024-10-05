@@ -164,7 +164,7 @@ def main(
     """Main entrypoint for the CLI."""
     if version:
         # print version
-        print(f"gptme {importlib.metadata.version('gptme-python')}")
+        print(f"gptme {importlib.metadata.version('gptme')}")
 
         # print dirs
         print(f"Logs dir: {get_logs_dir()}")

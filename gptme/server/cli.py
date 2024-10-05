@@ -31,7 +31,7 @@ def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
     except ImportError:
         logger.error(
             "gptme installed without needed extras for server. "
-            "Install them with `pip install gptme-python[server]`"
+            "Install them with `pip install gptme[server]`"
         )
         exit(1)
     click.echo("Initialization complete, starting server")
