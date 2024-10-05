@@ -6,8 +6,9 @@ from collections.abc import Generator
 from pathlib import Path
 
 from ..message import Message
-from ..util import ask_execute
+from ..util import ask_execute, print_preview
 from .base import ToolSpec, ToolUse
+from .patch import Patch
 
 # FIXME: this is markdown-specific instructions, thus will confuse the XML mode
 instructions = """
@@ -42,6 +43,12 @@ def execute_save(
     # TODO: add check that it doesn't try to write a file with placeholders!
 
     if ask:
+        if Path(fn).exists():
+            current = Path(fn).read_text()
+            p = Patch(current, code)
+            # TODO: if inefficient save, replace request with patch (and vice versa), or even append
+            print_preview(p.diff_minimal(), "diff")
+
         confirm = ask_execute(f"Save to {fn}?")
         print()
     else:

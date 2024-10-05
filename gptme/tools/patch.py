@@ -185,6 +185,7 @@ def execute_patch(
 
         # Apply the patch
         patched_content = apply(code, original_content)
+        # TODO: if the patch is inefficient, replace request to use minimal unique patch
         with open(path, "w") as f:
             f.write(patched_content)
 
