@@ -402,6 +402,7 @@ document.write(`
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 gptme<span class="w"> </span>--model<span class="w"> </span>anthropic<span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="w">  </span><span class="c1"># if model part unspecified, will fall back to the provider default</span>
 gptme<span class="w"> </span>--model<span class="w"> </span>openrouter/meta-llama/llama-3.1-70b-instruct<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
+gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 </pre></div>
 </div>
 <p>On first startup, if <code class="docutils literal notranslate"><span class="pre">--model</span></code> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
