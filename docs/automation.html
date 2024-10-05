@@ -461,7 +461,7 @@ gh<span class="w"> </span>pr<span class="w"> </span>comment<span class="w"> </sp
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v2</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install gptme and GitHub CLI</span>
 <span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<span class="w">          </span><span class="no">pip install gptme-python</span>
+<span class="w">          </span><span class="no">pip install gptme</span>
 <span class="w">          </span><span class="no">gh auth login --with-token &lt;&lt;&lt; &quot;${{ secrets.GITHUB_TOKEN }}&quot;</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run code review</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span>

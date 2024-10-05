@@ -10,7 +10,7 @@ To install gptme, we recommend using pipx:
 
 .. code-block:: bash
 
-    pipx install gptme-python
+    pipx install gptme
 
 If pipx is not installed, you can install it using pip:
 
