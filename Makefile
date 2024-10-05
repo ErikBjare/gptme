@@ -4,7 +4,7 @@
 SHELL := $(shell which bash)
 
 # src dirs and files
-SRCDIRS = gptme tests scripts train
+SRCDIRS = gptme tests scripts
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 
 # exclude files
