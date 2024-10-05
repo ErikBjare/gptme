@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./media/logo.png" width=150 />
+  <img src="https://gptme.org/media/logo.png" width=150 />
 </p>
 
 <h1 align="center">gptme</h1>
