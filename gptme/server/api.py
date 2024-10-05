@@ -131,7 +131,9 @@ def api_conversation_generate(logfile: str):
 
 
 gptme_path_ctx = resources.as_file(resources.files("gptme"))
-static_path = gptme_path_ctx.__enter__().parent / "static"
+root_path = gptme_path_ctx.__enter__()
+static_path = root_path / "server" / "static"
+media_path = root_path.parent / "media"
 atexit.register(gptme_path_ctx.__exit__, None, None, None)
 
 
@@ -143,7 +145,7 @@ def root():
 
 @api.route("/favicon.png")
 def favicon():
-    return flask.send_from_directory(static_path.parent / "media", "logo.png")
+    return flask.send_from_directory(media_path, "logo.png")
 
 
 def create_app() -> flask.Flask:
