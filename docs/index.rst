@@ -24,8 +24,8 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    tools
    providers
    server
-   cli
    automation
+   cli
 
 .. toctree::
    :maxdepth: 2
@@ -36,6 +36,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    bot
    finetuning
    arewetiny
+   timeline
    api
 
 .. toctree::
