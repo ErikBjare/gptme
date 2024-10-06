@@ -41,6 +41,9 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
         elif config.get_env("ANTHROPIC_API_KEY"):
             print("Found Anthropic API key, using Anthropic provider")
             model = "anthropic"
+        elif config.get_env("OPENROUTER_API_KEY"):
+            print("Found OpenRouter API key, using OpenRouter provider")
+            model = "openrouter"
         # ask user for API key
         elif interactive:
             model, _ = ask_for_api_key()
