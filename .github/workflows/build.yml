@@ -108,7 +108,7 @@ jobs:
         context: .
         push: false
 
-    # We push seperately since we need the local gptme:latest tag (which cannot be pushed since we use ghcr.io)
+    # We push separately since we need the local gptme:latest tag (which cannot be pushed since we use ghcr.io)
     - name: Push Docker image (base)
       uses: docker/build-push-action@v3
       with:
