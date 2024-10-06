@@ -29,7 +29,6 @@ from .util import (
 logger = logging.getLogger(__name__)
 
 
-# TODO: move to seperate file and make this simply callable with `gptme.chat("prompt")`
 def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
