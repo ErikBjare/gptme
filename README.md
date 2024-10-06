@@ -32,11 +32,11 @@
   <a href="https://pypi.org/project/gptme/">
     <img src="https://img.shields.io/pypi/v/gptme" alt="PyPI version" />
   </a>
-  <a href="https://pepy.tech/project/gptme-python">
-    <img src="https://static.pepy.tech/badge/gptme-python" alt="Downloads all-time" />
+  <a href="https://pepy.tech/project/gptme">
+    <img src="https://img.shields.io/pepy/dt/gptme" alt="PyPI - Downloads all-time" />
   </a>
-  <a href="https://pepy.tech/project/gptme-python">
-    <img src="https://static.pepy.tech/badge/gptme-python/week" alt="Downloads per week" />
+  <a href="https://pypistats.org/packages/gptme">
+    <img src="https://img.shields.io/pypi/dd/gptme?color=success" alt="PyPI - Downloads per day" />
   </a>
   <br>
   <a href="https://discord.gg/NMaCmmkxWv">
@@ -285,7 +285,7 @@ Options:
  - [PePy][pepy]
  - [PyPiStats][pypistats]
 
-[pepy]: https://pepy.tech/project/gptme-python
+[pepy]: https://pepy.tech/project/gptme
 [pypistats]: https://pypistats.org/packages/gptme
 
 
