@@ -4,6 +4,7 @@ import os
 import re
 import readline
 import sys
+import termios
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
@@ -204,6 +205,8 @@ def step(
 
 def prompt_user(value=None) -> str:  # pragma: no cover
     print_bell()
+    # Flush stdin to clear any buffered input before prompting
+    termios.tcflush(sys.stdin, termios.TCIFLUSH)
     set_interruptible()
     try:
         response = prompt_input(PROMPT_USER, value)
