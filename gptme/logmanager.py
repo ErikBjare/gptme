@@ -14,6 +14,7 @@ from typing import Any, Literal, TypeAlias
 from rich import print
 
 from .dirs import get_logs_dir
+from .log2html import export_to_html
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
 from .reduce import limit_log, reduce_log
@@ -63,6 +64,21 @@ class LogManager:
 
         self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
+
+    def export_to_html(self, output_path: Path) -> None:
+        """
+        Export the conversation log to a self-contained HTML file.
+
+        This method calls the export_to_html function from _logmanager_html.py
+        to generate an HTML file that includes the conversation log.
+
+        Args:
+            output_path (Path): The path where the HTML file will be saved.
+
+        Returns:
+            None
+        """
+        export_to_html(self.log, output_path)
 
     @property
     def log(self) -> list[Message]:
