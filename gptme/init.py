@@ -107,6 +107,8 @@ def _load_readline_history() -> None:  # pragma: no cover
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
+    except:
+        logger.exception("Failed to load history file")
 
     atexit.register(readline.write_history_file, history_file)
 
