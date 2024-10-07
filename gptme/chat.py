@@ -8,6 +8,13 @@ import termios
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
+import sys
+
+if sys.platform != 'win32':
+    import termios
+
+def chat():
+    pass
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_workspace_prompt

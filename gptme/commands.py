@@ -18,6 +18,13 @@ from .models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
 from .useredit import edit_text_with_editor
 from .util import ask_execute
+import sys
+
+if sys.platform != 'win32':
+    import termios
+
+def chat():
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +82,7 @@ def handle_cmd(
     logger.debug(f"Executing command: {cmd}")
     name, *args = re.split(r"[\n\s]", cmd)
     full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
+
     match name:
         case "log":
             log.undo(1, quiet=True)
