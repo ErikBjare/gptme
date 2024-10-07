@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import readline
-import sys
 import termios
 import urllib.parse
 from collections.abc import Generator

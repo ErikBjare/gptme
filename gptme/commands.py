@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 from collections.abc import Generator
 from time import sleep
 from typing import Literal
