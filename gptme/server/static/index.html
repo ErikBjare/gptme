@@ -7,7 +7,9 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" integrity="sha512-6yoqbrcLAHDWAdQmiRlHG4+m0g/CT/V9AGyxabG8j7Jk8j3r3K6due7oqpiRMZqcYe9WM2gPcaNNxnl2ux+3tA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <!-- Styles -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,7 +45,7 @@
       <div class="flex h-full">
 
         <!-- Sidebar -->
-        <div class="flex-none w-64 bg-white shadow-lg overflow-y-auto">
+        <div class="sidebar flex-none w-64 overflow-y-auto">
           <div class="px-3 py-4">
             <h1 class="text-3xl font-bold mb-6 text-gray-800">gptme</h1>
             <div class="mb-4">
@@ -60,8 +62,8 @@
                      @click="selectConversation(conversation.name)">
                     <div class="font-medium text-blue-600">{{ conversation.name }}</div>
                     <div class="text-xs text-gray-500 mt-1">
-                      Messages: {{ conversation.messages }} |
-                      Modified: {{ fromNow(1000 * conversation.modified) }}
+                      {{ conversation.messages }} msgs |
+                      {{ fromNow(1000 * conversation.modified) }}
                     </div>
                   </a>
                 </li>
@@ -80,17 +82,17 @@
         <!-- Main content -->
         <div class="flex-grow flex">
           <!-- Welcome message -->
-          <div v-if="!selectedConversation" class="bg-white shadow-lg rounded-lg p-8">
+          <div v-if="!selectedConversation" class="shadow-lg rounded-lg p-8">
             <h2 class="text-3xl font-bold mb-6 text-gray-700">Welcome to gptme</h2>
             <p class="text-lg text-gray-600">Select a conversation from the sidebar or create a new one to get started.</p>
           </div>
 
           <!-- Chat contents -->
           <div v-else class="chat flex flex-col w-full">
-            <div class="chat-header bg-white shadow-lg rounded-t-lg p-6">
+            <div class="chat-header rounded-t-lg p-4">
               <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">{{ selectedConversation }}</h1>
-                <div class="text-sm text-gray-600 flex flex-col">
+                <div class="text-sm text-gray-400 flex flex-col">
                   <span class="mr-0 md:mr-4 mb-1 md:mb-0">Messages: {{ chatLog.length }}</span>
                   <span class="mr-0 md:mr-4 mb-1 md:mb-0">Modified: {{ fromNow(new Date(chatLog[chatLog.length - 1]?.timestamp)) }}</span>
                   <span>Created: {{ fromNow(new Date(chatLog[0]?.timestamp)) }}</span>

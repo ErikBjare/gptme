@@ -1,6 +1,22 @@
-import showdownHighlight from "https://cdn.jsdelivr.net/npm/showdown-highlight@3.1.0/+esm";
-
 const apiRoot = "/api/conversations";
+
+const markedHighlight = globalThis.markedHighlight.markedHighlight;
+const Marked = globalThis.marked.Marked;
+const hljs = globalThis.hljs;
+
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: "hljs language-",
+    highlight(code, lang, info) {
+      // check if info has ext, if so, use that as lang
+      lang = info.split(".")[1] || lang;
+      console.log(info);
+      console.log(lang);
+      const language = hljs.getLanguage(lang) ? lang : "plaintext";
+      return hljs.highlight(code, { language }).value;
+    },
+  })
+);
 
 new Vue({
   el: "#app",
@@ -227,33 +243,22 @@ new Vue({
       return moment(new Date(timestamp)).fromNow();
     },
     mdToHtml(md) {
-      const converter = new showdown.Converter({
-        extensions: [
-          showdownHighlight({ auto_detection: false }),
-          this.wrapCodeBlocksInDetails,
-        ],
-        pre: true,
-      });
-      return converter.makeHtml(md);
+      // TODO: Use DOMPurify.sanitize
+      let html = marked.parse(md);
+      html = this.wrapBlockInDetails(html);
+      return html;
     },
 
-    wrapCodeBlocksInDetails() {
-      return [
-        {
-          type: "output",
-          filter: function (text) {
-            const codeBlockRegex =
-              /<pre><code class="([^"]+)">([\s\S]*?)<\/code><\/pre>/g;
-            return text.replace(
-              codeBlockRegex,
-              function (match, classes, code) {
-                const langtag = classes.split(" ")[1] || "Code";
-                return `<details><summary>${langtag}</summary><pre><code class="${classes}">${code}</code></pre></details>`;
-              }
-            );
-          },
-        },
-      ];
+    wrapBlockInDetails(text) {
+      const codeBlockRegex =
+        /<pre><code class="([^"]+)">([\s\S]*?)<\/code><\/pre>/g;
+      return text.replace(codeBlockRegex, function (match, classes, code) {
+        const langtag = (classes.split(" ")[1] || "Code").replace(
+          "language-",
+          ""
+        );
+        return `<details><summary>${langtag}</summary><pre><code class="${classes}">${code}</code></pre></details>`;
+      });
     },
     changeSort(sortBy) {
       // if already sorted by this field, reverse the order
