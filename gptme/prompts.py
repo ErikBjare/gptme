@@ -232,15 +232,15 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
 
 def get_system_distro() -> str:
     """Get the system distribution name."""
-    regex = r"^NAME=\"([^\"]+)\""
+    regex = r"^NAME=\"?([^\"]+)\"?"
 
     if os.path.exists("/etc/os-release"):
         with open("/etc/os-release") as f:
             for line in f:
-                match = re.match(regex, line)
-                if match:
-                    return match.group(1)
-    return "unknown"
+                matches = re.search(regex, line)
+                if matches:
+                    return matches.string[matches.start(1) : matches.end(1)]
+    return "Linux"
 
 document_prompt_function(interactive=True)(prompt_gptme)
 document_prompt_function()(prompt_user)
