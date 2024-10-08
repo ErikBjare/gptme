@@ -1,8 +1,8 @@
-const apiRoot = "/api/conversations";
-
 const markedHighlight = globalThis.markedHighlight.markedHighlight;
 const Marked = globalThis.marked.Marked;
 const hljs = globalThis.hljs;
+
+const apiRoot = "/api/conversations";
 
 const marked = new Marked(
   markedHighlight({
@@ -33,7 +33,7 @@ new Vue({
 
     // Options
     sortBy: "modified",
-    hideSystemMessages: true, // hide initial system messages
+    showSystemMessages: false, // hide initial system messages
 
     // Inputs
     newMessage: "",
@@ -69,7 +69,7 @@ new Vue({
       // Set hide flag on initial system messages
       for (const msg of this.chatLog) {
         if (msg.role !== "system") break;
-        msg.hide = this.hideSystemMessages;
+        msg.hide = !this.showSystemMessages;
       }
 
       // Find branch points and annotate messages where branches occur,
@@ -244,6 +244,7 @@ new Vue({
     },
     mdToHtml(md) {
       // TODO: Use DOMPurify.sanitize
+      md = this.wrapThinkingInDetails(md);
       let html = marked.parse(md);
       html = this.wrapBlockInDetails(html);
       return html;
@@ -260,6 +261,15 @@ new Vue({
         return `<details><summary>${langtag}</summary><pre><code class="${classes}">${code}</code></pre></details>`;
       });
     },
+
+    wrapThinkingInDetails(text) {
+      // replaces <thinking>...</thinking> with <details><summary>Thinking</summary>...</details>
+      const thinkingBlockRegex = /<thinking>([\s\S]*?)<\/thinking>/g;
+      return text.replace(thinkingBlockRegex, function (match, content) {
+        return `<details><summary>Thinking</summary>\n\n${content}\n\n</details>`;
+      });
+    },
+
     changeSort(sortBy) {
       // if already sorted by this field, reverse the order
       if (this.sortBy === sortBy) {

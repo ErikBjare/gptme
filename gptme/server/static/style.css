@@ -113,6 +113,18 @@ body {
   margin-bottom: 0.25rem;
 }
 
+.chat-msg details {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+}
+
+.chat-msg details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .chat-input textarea {
   resize: none;
   min-height: 100px;
