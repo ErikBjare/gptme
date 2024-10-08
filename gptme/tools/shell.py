@@ -272,9 +272,9 @@ def execute_shell(
 
         msg = _format_block_smart("Ran command", cmd, lang="bash") + "\n\n"
         if stdout:
-            msg += _format_block_smart("stdout", stdout) + "\n\n"
+            msg += _format_block_smart("", stdout, "stdout") + "\n\n"
         if stderr:
-            msg += _format_block_smart("stderr", stderr) + "\n\n"
+            msg += _format_block_smart("", stderr, "stderr") + "\n\n"
         if not stdout and not stderr:
             msg += "No output\n"
         if returncode:
@@ -285,10 +285,14 @@ def execute_shell(
 
 def _format_block_smart(header: str, cmd: str, lang="") -> str:
     # prints block as a single line if it fits, otherwise as a code block
+    s = ""
+    if header:
+        s += f"{header}:"
     if len(cmd.split("\n")) == 1:
-        return f"{header}: `{cmd}`"
+        s += f" `{cmd}`"
     else:
-        return f"{header}:\n```{lang}\n{cmd}\n```"
+        s += f"\n```{lang}\n{cmd}\n```"
+    return s
 
 
 def _shorten_stdout(
