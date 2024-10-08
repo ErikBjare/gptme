@@ -1,5 +1,5 @@
 """
-The assistant can execute shell commands by outputting code blocks with `bash` or `sh` as the language.
+The assistant can execute shell commands with bash by outputting code blocks with `shell` as the language.
 """
 
 import atexit
@@ -60,43 +60,37 @@ examples = f"""
 
 User: list the current directory
 Assistant: To list the files in the current directory, use `ls`:
-{ToolUse("bash", [], "ls").to_output()}
+{ToolUse("shell", [], "ls").to_output()}
 System: Ran command: `ls`
-```stdout
+{ToolUse("shell", [], '''
 file1.txt
 file2.txt
-```
+'''.strip()).to_output()}
 
 #### The assistant can learn context by exploring the filesystem
 User: learn about the project
 Assistant: Lets start by checking the files
-{ToolUse("bash", [], "git ls-files").to_output()}
+{ToolUse("shell", [], "git ls-files").to_output()}
 System:
-```output
+{ToolUse("stdout", [], '''
 README.md
 main.py
-```
+'''.strip()).to_output()}
 Assistant: Now lets check the README
-```bash
-cat README.md
-```
+{ToolUse("shell", [], "cat README.md").to_output()}
 System:
-```stdout
-(contents of README.md)
-```
+{ToolUse("stdout", [], "(contents of README.md)").to_output()}
 Assistant: Now we check main.py
-{ToolUse("bash", [], "cat main.py").to_output()}
+{ToolUse("shell", [], "cat main.py").to_output()}
 System:
-```output
-(contents of main.py)
-```
+{ToolUse("stdout", [], "(contents of main.py)").to_output()}
 Assistant: The project is...
 
 
 #### Create vue project
 User: Create a new vue project with typescript and pinia named fancy-project
 Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
-{ToolUse("bash", [], "npm init vue@latest fancy-project --yes -- --typescript --pinia").to_output()}
+{ToolUse("shell", [], "npm init vue@latest fancy-project --yes -- --typescript --pinia").to_output()}
 System:
 ```output
 > npx
@@ -389,6 +383,6 @@ tool = ToolSpec(
     instructions=instructions,
     examples=examples,
     execute=execute_shell,
-    block_types=["bash", "sh", "shell"],
+    block_types=["shell"],
 )
 __doc__ = tool.get_doc(__doc__)
