@@ -597,38 +597,38 @@ def hello():
 
 
 <span class="sb">These programs are available, among others:</span>
-<span class="sb">- pandoc</span>
-<span class="sb">- docker</span>
-<span class="sb">- apt-get</span>
-<span class="sb">- convert</span>
 <span class="sb">- git</span>
+<span class="sb">- convert</span>
+<span class="sb">- apt-get</span>
+<span class="sb">- docker</span>
+<span class="sb">- pandoc</span>
 
 <span class="sb">### Examples</span>
 
 <span class="sb">User: list the current directory</span>
 <span class="sb">Assistant: To list the files in the current directory, use `ls`:</span>
-<span class="sb">```bash</span>
+<span class="sb">```shell</span>
 <span class="sb">ls</span>
 <span class="sb">```</span>
 System: Ran command: <span class="sb">`ls`</span>
-<span class="sb">```stdout</span>
-<span class="s">file1.txt</span>
-<span class="s">file2.txt</span>
+<span class="sb">```shell</span>
+file1.txt
+file2.txt
 <span class="sb">```</span>
 
 <span class="gu">#### The assistant can learn context by exploring the filesystem</span>
 User: learn about the project
 Assistant: Lets start by checking the files
-<span class="sb">```bash</span>
+<span class="sb">```shell</span>
 git<span class="w"> </span>ls-files
 <span class="sb">```</span>
 System:
-<span class="sb">```output</span>
-<span class="go">README.md</span>
-<span class="go">main.py</span>
+<span class="sb">```stdout</span>
+<span class="s">README.md</span>
+<span class="s">main.py</span>
 <span class="sb">```</span>
 Assistant: Now lets check the README
-<span class="sb">```bash</span>
+<span class="sb">```shell</span>
 cat<span class="w"> </span>README.md
 <span class="sb">```</span>
 System:
@@ -636,12 +636,12 @@ System:
 <span class="s">(contents of README.md)</span>
 <span class="sb">```</span>
 Assistant: Now we check main.py
-<span class="sb">```bash</span>
+<span class="sb">```shell</span>
 cat<span class="w"> </span>main.py
 <span class="sb">```</span>
 System:
-<span class="sb">```output</span>
-<span class="go">(contents of main.py)</span>
+<span class="sb">```stdout</span>
+<span class="s">(contents of main.py)</span>
 <span class="sb">```</span>
 Assistant: The project is...
 
@@ -649,7 +649,7 @@ Assistant: The project is...
 <span class="gu">#### Create vue project</span>
 User: Create a new vue project with typescript and pinia named fancy-project
 Assistant: Sure! Let&#39;s create a new vue project with TypeScript and Pinia named fancy-project:
-<span class="sb">```bash</span>
+<span class="sb">```shell</span>
 npm<span class="w"> </span>init<span class="w"> </span>vue@latest<span class="w"> </span>fancy-project<span class="w"> </span>--yes<span class="w"> </span>--<span class="w"> </span>--typescript<span class="w"> </span>--pinia
 <span class="sb">```</span>
 System:
