@@ -1,4 +1,4 @@
-import showdownHighlight from 'https://cdn.jsdelivr.net/npm/showdown-highlight@3.1.0/+esm'
+import showdownHighlight from "https://cdn.jsdelivr.net/npm/showdown-highlight@3.1.0/+esm";
 
 const apiRoot = "/api/conversations";
 
@@ -17,7 +17,7 @@ new Vue({
 
     // Options
     sortBy: "modified",
-    hideSystemMessages: true,  // hide initial system messages
+    hideSystemMessages: true, // hide initial system messages
 
     // Inputs
     newMessage: "",
@@ -36,14 +36,20 @@ new Vue({
     if (window.location.hash) {
       this.selectConversation(window.location.hash.slice(1));
     }
+    // remove display-none class from app
+    document.getElementById("app").classList.remove("hidden");
+    // remove loader animation
+    document.getElementById("loader").classList.add("hidden");
   },
   computed: {
-    sortedConversations: function() {
+    sortedConversations: function () {
       const reverse = this.sortBy[0] === "-";
       const sortBy = reverse ? this.sortBy.slice(1) : this.sortBy;
-      return this.conversations.sort((a, b) => b[sortBy] - a[sortBy] * (reverse ? -1 : 1));
+      return this.conversations.sort(
+        (a, b) => b[sortBy] - a[sortBy] * (reverse ? -1 : 1)
+      );
     },
-    preparedChatLog: function() {
+    preparedChatLog: function () {
       // Set hide flag on initial system messages
       for (const msg of this.chatLog) {
         if (msg.role !== "system") break;
@@ -57,14 +63,18 @@ new Vue({
 
         // Check each branch if the fork at the current message
         for (const branch of Object.keys(this.branches)) {
-          if (branch === this.branch) continue;  // skip main branch
+          if (branch === this.branch) continue; // skip main branch
 
           // Check if the next message in current branch diverges from next message on other branch
           const next_msg = this.branches[this.branch][i + 1];
           const branch_msg = this.branches[branch][i + 1];
 
           // FIXME: there is a bug here in more complex cases
-          if (next_msg && branch_msg && branch_msg.timestamp !== next_msg.timestamp) {
+          if (
+            next_msg &&
+            branch_msg &&
+            branch_msg.timestamp !== next_msg.timestamp
+          ) {
             // We found a fork, so annotate the message
             msg.branches.push(branch);
             break;
@@ -78,7 +88,7 @@ new Vue({
           if (!a_msg) return 1;
           if (!b_msg) return -1;
           const diff = new Date(a_msg.timestamp) - new Date(b_msg.timestamp);
-          if(Number.isNaN(diff)) {
+          if (Number.isNaN(diff)) {
             console.error("diff was NaN");
           }
           return diff;
@@ -86,7 +96,7 @@ new Vue({
       });
 
       // Convert markdown to HTML
-      return this.chatLog.map(msg => {
+      return this.chatLog.map((msg) => {
         msg.html = this.mdToHtml(msg.content);
         return msg;
       });
@@ -117,9 +127,9 @@ new Vue({
         this.branch = branch || "main";
         this.chatLog = this.branches[this.branch];
       } catch (e) {
-        this.error = e;
+        this.error = e.toString();
         console.log(e);
-        return
+        return;
       }
 
       // TODO: Only scroll to bottom on conversation load and new messages
@@ -127,12 +137,15 @@ new Vue({
         this.scrollToBottom();
       });
     },
+    dismissError() {
+      this.error = null;
+    },
     async createConversation() {
       const name = prompt("Conversation name");
       if (!name) return;
       const res = await fetch(`${apiRoot}/${name}`, {
         method: "PUT",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify([]),
       });
       if (!res.ok) {
@@ -143,7 +156,11 @@ new Vue({
       this.selectConversation(name);
     },
     async sendMessage() {
-      const payload = JSON.stringify({role: "user", content: this.newMessage, branch: this.branch});
+      const payload = JSON.stringify({
+        role: "user",
+        content: this.newMessage,
+        branch: this.branch,
+      });
       const req = await fetch(`${apiRoot}/${this.selectedConversation}`, {
         method: "POST",
         headers: {
@@ -151,7 +168,7 @@ new Vue({
         },
         body: payload,
       });
-      if(!req.ok) {
+      if (!req.ok) {
         this.error = req.statusText;
         return;
       }
@@ -165,15 +182,18 @@ new Vue({
     },
     async generate() {
       this.generating = true;
-      const req = await fetch(`${apiRoot}/${this.selectedConversation}/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({branch: this.branch}),
-      });
+      const req = await fetch(
+        `${apiRoot}/${this.selectedConversation}/generate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ branch: this.branch }),
+        }
+      );
       this.generating = false;
-      if(!req.ok) {
+      if (!req.ok) {
         this.error = req.statusText;
         return;
       }
@@ -192,21 +212,48 @@ new Vue({
       this.chatLog = this.branches[branch];
     },
     backToConversations() {
-      this.getConversations();  // refresh conversations
+      this.getConversations(); // refresh conversations
       this.selectedConversation = null;
       this.chatLog = [];
       window.location.hash = "";
     },
     scrollToBottom() {
-      const container = this.$refs.chatContainer;
-      container.scrollTop = container.scrollHeight;
+      this.$nextTick(() => {
+        const container = this.$refs.chatContainer;
+        container.scrollTop = container.scrollHeight;
+      });
     },
     fromNow(timestamp) {
       return moment(new Date(timestamp)).fromNow();
     },
     mdToHtml(md) {
-      const converter = new showdown.Converter({extensions: [showdownHighlight], pre: true});
+      const converter = new showdown.Converter({
+        extensions: [
+          showdownHighlight({ auto_detection: false }),
+          this.wrapCodeBlocksInDetails,
+        ],
+        pre: true,
+      });
       return converter.makeHtml(md);
+    },
+
+    wrapCodeBlocksInDetails() {
+      return [
+        {
+          type: "output",
+          filter: function (text) {
+            const codeBlockRegex =
+              /<pre><code class="([^"]+)">([\s\S]*?)<\/code><\/pre>/g;
+            return text.replace(
+              codeBlockRegex,
+              function (match, classes, code) {
+                const langtag = classes.split(" ")[1] || "Code";
+                return `<details><summary>${langtag}</summary><pre><code class="${classes}">${code}</code></pre></details>`;
+              }
+            );
+          },
+        },
+      ];
     },
     changeSort(sortBy) {
       // if already sorted by this field, reverse the order
