@@ -22,7 +22,8 @@ body {
 
 .sidebar {
   background-color: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
+  border-right: 2px solid var(--border-color);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
 }
 
 .chat {
@@ -41,7 +42,7 @@ body {
   transition: all 0.3s ease;
   margin-bottom: 2rem;
   border-radius: 0.75rem;
-  background-color: var(--main-content-bg);
+  background-color: #fff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
   line-height: 1;
@@ -91,10 +92,7 @@ body {
 }
 
 .chat-msg code {
-  background-color: #1a202c;
-  color: white;
   border-radius: 0.375rem;
-  padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
 }
 
