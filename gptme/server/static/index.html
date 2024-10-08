@@ -92,7 +92,7 @@
             <div class="chat-header rounded-t-lg p-4">
               <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">{{ selectedConversation }}</h1>
-                <div class="text-sm text-gray-400 flex flex-col">
+                <div class="text-xs text-gray-400 flex flex-col">
                   <span class="mr-0 md:mr-4 mb-1 md:mb-0">Messages: {{ chatLog.length }}</span>
                   <span class="mr-0 md:mr-4 mb-1 md:mb-0">Modified: {{ fromNow(new Date(chatLog[chatLog.length - 1]?.timestamp)) }}</span>
                   <span>Created: {{ fromNow(new Date(chatLog[0]?.timestamp)) }}</span>
@@ -100,10 +100,10 @@
               </div>
             </div>
 
-            <div class="chat-log flex-grow p-2 shadow-inner overflow-y-auto" ref="chatContainer">
-              <div class="p-2">
-                <input type="checkbox" id="hide-system-messages" v-model="hideSystemMessages">
-                <label for="hide-system-messages">Hide initial system messages</label>
+            <div class="chat-log flex-grow p-4 shadow-inner overflow-y-auto" ref="chatContainer">
+              <div class="p-2 mb-2 text-sm" :class="{'opacity-50': !showSystemMessages}">
+                <input type="checkbox" id="show-system-messages" v-model="showSystemMessages">
+                <label for="show-system-messages">Show initial system messages</label>
               </div>
               <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg bg-white rounded-lg shadow-md mb-4 p-3">
                 <div class="flex justify-between items-center mb-2">
