@@ -62,6 +62,10 @@ def init_tools(allowlist=None) -> None:
             continue
         load_tool(tool)
 
+    for tool_name in allowlist or []:
+        if not has_tool(tool_name):
+            logger.warning(f"Tool '{tool_name}' not found")
+
 
 def load_tool(tool: ToolSpec) -> None:
     """Loads a tool."""
