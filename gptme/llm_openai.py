@@ -46,6 +46,9 @@ def init(provider: Provider, config: Config):
     elif provider == "groq":
         api_key = config.get_env_required("GROQ_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+    elif provider == "deepseek":
+        api_key = config.get_env_required("DEEPSEEK_API_KEY")
+        openai = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
     elif provider == "local":
         # OPENAI_API_BASE renamed to OPENAI_BASE_URL: https://github.com/openai/openai-python/issues/745
         api_base = config.get_env("OPENAI_API_BASE")
@@ -61,6 +64,7 @@ def init(provider: Provider, config: Config):
 
 
 def get_provider() -> Provider | None:
+    # used when checking for provider-specific capabilities
     if not openai:
         return None
     if "openai.com" in str(openai.base_url):
@@ -71,7 +75,9 @@ def get_provider() -> Provider | None:
         return "groq"
     if "x.ai" in str(openai.base_url):
         return "xai"
-    return None
+    if "deepseek.com" in str(openai.base_url):
+        return "deepseek"
+    return "local"
 
 
 def get_client() -> "OpenAI | None":
