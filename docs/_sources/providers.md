@@ -9,7 +9,7 @@ To select a provider and model, run `gptme` with the `--model` flag set to `<pro
 gptme --model openai/gpt-4o "hello"
 gptme --model anthropic "hello"  # if model part unspecified, will fall back to the provider default
 gptme --model openrouter/meta-llama/llama-3.1-70b-instruct "hello"
-gptme --model local/ollama "hello"
+gptme --model local/ollama/llama3.2:1b "hello"
 ```
 
 On first startup, if `--model` is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.
@@ -40,17 +40,24 @@ export OPENROUTER_API_KEY="your-api-key"
 
 ## Local
 
-There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover:
+There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server. 
 
-### ollama + litellm
+Here's we will cover how to achieve that with `ollama` together with the `litellm` proxy.
 
-Here's how to use `ollama`, with the `litellm` proxy to provide the API-compatible server.
-
-You first need to install `ollama` and `litellm`.
+You first need to install `ollama`, and then `litellm` with the `proxy` extra:
 
 ```sh
-ollama pull mistral
+pipx install litellm[proxy]
+```
+
+Then you can finally run it with:
+
+```sh
+MODEL=llama3.2:1b
+ollama pull $MODEL
 ollama serve
-litellm --model ollama/mistral
-export OPENAI_API_BASE="http://localhost:8000"
+litellm --model ollama/$MODEL
+
+export OPENAI_API_BASE="http://127.0.0.1:4000" 
+gptme 'hello' -m local/ollama/$MODEL
 ```

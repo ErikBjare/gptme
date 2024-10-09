@@ -380,10 +380,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
 </ul>
             </nav>
         </div>
@@ -402,7 +399,7 @@ document.write(`
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 gptme<span class="w"> </span>--model<span class="w"> </span>anthropic<span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="w">  </span><span class="c1"># if model part unspecified, will fall back to the provider default</span>
 gptme<span class="w"> </span>--model<span class="w"> </span>openrouter/meta-llama/llama-3.1-70b-instruct<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
-gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
+gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama/llama3.2:1b<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 </pre></div>
 </div>
 <p>On first startup, if <code class="docutils literal notranslate"><span class="pre">--model</span></code> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
@@ -429,18 +426,22 @@ gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama<span cl
 </section>
 <section id="local">
 <h2>Local<a class="headerlink" href="#local" title="Link to this heading">#</a></h2>
-<p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server, here we will cover:</p>
-<section id="ollama-litellm">
-<h3>ollama + litellm<a class="headerlink" href="#ollama-litellm" title="Link to this heading">#</a></h3>
-<p>Here’s how to use <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, with the <code class="docutils literal notranslate"><span class="pre">litellm</span></code> proxy to provide the API-compatible server.</p>
-<p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code> and <code class="docutils literal notranslate"><span class="pre">litellm</span></code>.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>pull<span class="w"> </span>mistral
-ollama<span class="w"> </span>serve
-litellm<span class="w"> </span>--model<span class="w"> </span>ollama/mistral
-<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000&quot;</span>
+<p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.</p>
+<p>Here’s we will cover how to achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code> together with the <code class="docutils literal notranslate"><span class="pre">litellm</span></code> proxy.</p>
+<p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, and then <code class="docutils literal notranslate"><span class="pre">litellm</span></code> with the <code class="docutils literal notranslate"><span class="pre">proxy</span></code> extra:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>litellm<span class="o">[</span>proxy<span class="o">]</span>
 </pre></div>
 </div>
-</section>
+<p>Then you can finally run it with:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL</span><span class="o">=</span>llama3.2:1b
+ollama<span class="w"> </span>pull<span class="w"> </span><span class="nv">$MODEL</span>
+ollama<span class="w"> </span>serve
+litellm<span class="w"> </span>--model<span class="w"> </span>ollama/<span class="nv">$MODEL</span>
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:4000&quot;</span><span class="w"> </span>
+gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class="w"> </span>-m<span class="w"> </span>local/ollama/<span class="nv">$MODEL</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -492,10 +493,7 @@ litellm<span class="w"> </span>--model<span class="w"> </span>ollama/mistral
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ollama-litellm">ollama + litellm</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
 </ul>
   </nav></div>
 
