@@ -380,7 +380,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-ollama">Local/Ollama</a></li>
 </ul>
             </nav>
         </div>
@@ -424,22 +424,14 @@ gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama/llama3.
 </pre></div>
 </div>
 </section>
-<section id="local">
-<h2>Local<a class="headerlink" href="#local" title="Link to this heading">#</a></h2>
+<section id="local-ollama">
+<h2>Local/Ollama<a class="headerlink" href="#local-ollama" title="Link to this heading">#</a></h2>
 <p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.</p>
-<p>Here’s we will cover how to achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code> together with the <code class="docutils literal notranslate"><span class="pre">litellm</span></code> proxy.</p>
-<p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, and then <code class="docutils literal notranslate"><span class="pre">litellm</span></code> with the <code class="docutils literal notranslate"><span class="pre">proxy</span></code> extra:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>litellm<span class="o">[</span>proxy<span class="o">]</span>
-</pre></div>
-</div>
-<p>Then you can finally run it with:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL</span><span class="o">=</span>llama3.2:1b
-ollama<span class="w"> </span>pull<span class="w"> </span><span class="nv">$MODEL</span>
+<p>Here’s we will cover how to achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code>.</p>
+<p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, then you can run it with:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>pull<span class="w"> </span>llama3.2:1b
 ollama<span class="w"> </span>serve
-litellm<span class="w"> </span>--model<span class="w"> </span>ollama/<span class="nv">$MODEL</span>
-
-<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:4000&quot;</span><span class="w"> </span>
-gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class="w"> </span>-m<span class="w"> </span>local/ollama/<span class="nv">$MODEL</span>
+<span class="nv">OPENAI_API_BASE</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:11434&quot;</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class="w"> </span>-m<span class="w"> </span>local/llama3.2:1b
 </pre></div>
 </div>
 </section>
@@ -493,7 +485,7 @@ gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class=
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-ollama">Local/Ollama</a></li>
 </ul>
   </nav></div>
 

@@ -38,26 +38,16 @@ To use OpenRouter, set your API key:
 export OPENROUTER_API_KEY="your-api-key"
 ```
 
-## Local
+## Local/Ollama
 
 There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server. 
 
-Here's we will cover how to achieve that with `ollama` together with the `litellm` proxy.
+Here's we will cover how to achieve that with `ollama`.
 
-You first need to install `ollama`, and then `litellm` with the `proxy` extra:
-
-```sh
-pipx install litellm[proxy]
-```
-
-Then you can finally run it with:
+You first need to install `ollama`, then you can run it with:
 
 ```sh
-MODEL=llama3.2:1b
-ollama pull $MODEL
+ollama pull llama3.2:1b
 ollama serve
-litellm --model ollama/$MODEL
-
-export OPENAI_API_BASE="http://127.0.0.1:4000" 
-gptme 'hello' -m local/ollama/$MODEL
+OPENAI_API_BASE="http://127.0.0.1:11434" gptme 'hello' -m local/llama3.2:1b
 ```
