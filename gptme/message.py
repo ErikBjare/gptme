@@ -112,7 +112,7 @@ class Message:
             # anthropic limit is 5MB
             # TODO: use compression to reduce file size
             # print(f"{len(data)=}")
-            if len(data) > 5_000_000:
+            if len(data_bytes) > 5_000_000:  # base64 encoding increases the size by approximately 33%, discrepancy with API numbers noted
                 content.append(
                     {
                         "type": "text",
@@ -233,7 +233,7 @@ timestamp = "{self.timestamp.isoformat()}"
             content_str = "\n" + content_str
 
         # check if message contains a code block
-        backtick_count = content_str.count("\n```")
+        backtick_count = content_str.count("\n\`\`\`")
         if backtick_count < 2:
             return []
 
@@ -265,14 +265,14 @@ def format_msgs(
         else:
             multiline = len(msg.content.split("\n")) > 1
             output += "\n" + indent * " " if multiline else ""
-            for i, block in enumerate(msg.content.split("```")):
+            for i, block in enumerate(msg.content.split("\`\`\`")):
                 if i % 2 == 0:
                     output += textwrap.indent(block, prefix=indent * " ")
                     continue
                 elif highlight:
                     lang = block.split("\n")[0]
                     block = rich_to_str(Syntax(block.rstrip(), lang))
-                output += f"```{block.rstrip()}\n```"
+                output += f"\`\`\`{block.rstrip()}\n\`\`\`"
         outputs.append(f"{userprefix}: {output.rstrip()}")
     return outputs
 
