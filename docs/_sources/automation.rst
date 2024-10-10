@@ -8,12 +8,11 @@ We will be using shell scripts, cron jobs, and other tools to automate the workf
 
 .. note::
 
-   This is a work in progress. We intend to make gptme more powerful for automations, see `issue #1 <https://github.com/ErikBjare/gptme/issues/143>`_ for more details on this plan.
+   This is a work in progress. We intend to make gptme more powerful for automations, see `issue #143 <https://github.com/ErikBjare/gptme/issues/143>`_ for more details on this plan.
 
 
 
-Example: Implement feature
---------------------------
+.. rubric:: Example: Implement feature
 
 This example demonstrates how to implement a feature in a codebase using gptme, making sure the code is correct before creating a pull request.
 

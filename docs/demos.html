@@ -30,7 +30,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
+    <link rel="stylesheet" type="text/css" href="_static/asciinema-player_3.6.3.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,6 +41,7 @@
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'demos';</script>
     <link rel="icon" href="_static/logo.png"/>
@@ -354,9 +356,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -372,18 +372,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#snake-with-curses">Snake with curses</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mandelbrot-with-curses">Mandelbrot with curses</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fibonacci-old">Fibonacci (old)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#answer-question-from-url">Answer question from URL</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-history-with-edit">Edit history with /edit</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -399,70 +387,46 @@ document.write(`
 <p class="admonition-title">Note</p>
 <p>This page is a work in progress, and will be updated with more demos soon.</p>
 </div>
-<nav class="contents local" id="table-of-contents">
-<p class="topic-title">Table of Contents</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="#snake-with-curses" id="id1">Snake with curses</a></p></li>
-<li><p><a class="reference internal" href="#mandelbrot-with-curses" id="id2">Mandelbrot with curses</a></p></li>
-<li><p><a class="reference internal" href="#fibonacci-old" id="id3">Fibonacci (old)</a></p></li>
-<li><p><a class="reference internal" href="#answer-question-from-url" id="id4">Answer question from URL</a></p></li>
-<li><p><a class="reference internal" href="#edit-history-with-edit" id="id5">Edit history with /edit</a></p></li>
-</ul>
-</nav>
-<section id="snake-with-curses">
-<h2>Snake with curses<a class="headerlink" href="#snake-with-curses" title="Link to this heading">#</a></h2>
+<p class="rubric">Snake with curses</p>
 <p>Generate a snake game that runs in the terminal using curses, and then modify it to add color.</p>
-<a href="https://asciinema.org/a/621992">
-<img src="https://github.com/ErikBjare/gptme/assets/1405370/72ac819c-b633-495e-b20e-2e40753ec376" width="600" />
-</a><p>Steps</p>
-<ul class="simple">
+<script async id="asciicast-621992" data-autoplay="true" data-idle-time-limit="1" 
+                src="https://asciinema.org/a/621992.js"></script><p>Steps</p>
+<ol class="arabic simple">
 <li><p>Create a snake game with curses to snake.py</p></li>
 <li><p>Running fails, ask gptme to fix a bug</p></li>
 <li><p>Game runs</p></li>
 <li><p>Ask gptme to add color</p></li>
 <li><p>Minor struggles</p></li>
 <li><p>Finished game with green snake and red apple pie!</p></li>
-</ul>
-</section>
-<section id="mandelbrot-with-curses">
-<h2>Mandelbrot with curses<a class="headerlink" href="#mandelbrot-with-curses" title="Link to this heading">#</a></h2>
+</ol>
+<p class="rubric">Mandelbrot with curses</p>
 <p>Generate a program that renders mandelbrot with curses, and then modify it to add color.</p>
-<a href="https://asciinema.org/a/621991">
-<img src="https://github.com/ErikBjare/gptme/assets/1405370/570860ac-80bd-4b21-b8d1-da187d7c1a95" width="600" />
-</a><p>Steps</p>
-<ul class="simple">
+<script async id="asciicast-621991" data-autoplay="true" data-idle-time-limit="1" 
+                src="https://asciinema.org/a/621991.js"></script><p>Steps</p>
+<ol class="arabic simple">
 <li><p>Render mandelbrot with curses to mandelbrot_curses.py</p></li>
 <li><p>Program runs</p></li>
 <li><p>Add color</p></li>
-</ul>
-</section>
-<section id="fibonacci-old">
-<h2>Fibonacci (old)<a class="headerlink" href="#fibonacci-old" title="Link to this heading">#</a></h2>
+</ol>
+<p class="rubric">Fibonacci</p>
 <p>An old demo showing off basic code execution and shell interaction.</p>
-<a href="https://asciinema.org/a/606375">
-<img src="https://github.com/ErikBjare/gptme/assets/1405370/5dda4240-bb7d-4cfa-8dd1-cd1218ccf571" width="600" />
-</a><p>Steps</p>
-<ul class="simple">
+<script async id="asciicast-606375" data-autoplay="true" data-idle-time-limit="1" 
+                src="https://asciinema.org/a/606375.js"></script><p>Steps</p>
+<ol class="arabic simple">
 <li><p>Create a new dir ‘gptme-test-fib’ and git init</p></li>
 <li><p>Write a fib function to fib.py, commit</p></li>
 <li><p>Create a public repo and push to GitHub</p></li>
-</ul>
-</section>
-<section id="answer-question-from-url">
-<h2>Answer question from URL<a class="headerlink" href="#answer-question-from-url" title="Link to this heading">#</a></h2>
+</ol>
+<p class="rubric">Answer question from URL</p>
 <p>Showing off basic URL loading from the prompt, and answering questions based on the content.</p>
-<a href="https://asciinema.org/a/621997">
-<img src="https://github.com/ErikBjare/gptme/assets/1405370/bae45488-f4ed-409c-a656-0c5218877de2" />
-</a><p>Steps</p>
-<ul class="simple">
+<script async id="asciicast-621997" data-autoplay="true" data-idle-time-limit="1" 
+                src="https://asciinema.org/a/621997.js"></script><p>Steps</p>
+<ol class="arabic simple">
 <li><p>Ask who the CEO of Superuser Labs is, passing website URL</p></li>
 <li><p>gptme browses the website, and answers correctly</p></li>
-</ul>
-</section>
-<section id="edit-history-with-edit">
-<h2>Edit history with /edit<a class="headerlink" href="#edit-history-with-edit" title="Link to this heading">#</a></h2>
+</ol>
+<p class="rubric">Edit history with /edit</p>
 <p>TODO</p>
-</section>
 </section>
 
 
@@ -500,25 +464,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#snake-with-curses">Snake with curses</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mandelbrot-with-curses">Mandelbrot with curses</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fibonacci-old">Fibonacci (old)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#answer-question-from-url">Answer question from URL</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-history-with-edit">Edit history with /edit</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

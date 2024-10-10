@@ -30,7 +30,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
+    <link rel="stylesheet" type="text/css" href="_static/asciinema-player_3.6.3.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,6 +41,7 @@
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'prompts';</script>
     <link rel="icon" href="_static/logo.png"/>
@@ -504,8 +506,9 @@ gptme is a CLI to interact with large language models in a Chat-style interface,
 <span class="gu">### Examples</span>
 
 
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```bash</span>
+User: read file.txt
+Assistant:
+<span class="sb">```shell</span>
 cat<span class="w"> </span>file.txt
 <span class="sb">```</span>
 
@@ -514,7 +517,7 @@ cat<span class="w"> </span>file.txt
 
 <span class="gs">**Description:**</span> Write text to file
 
-<span class="gs">**Instructions:**</span> To write text to a file, use a code block with the language tag set to the path of the file.
+<span class="gs">**Instructions:**</span> To write to a file, use a code block with the language tag: <span class="sb">`save &lt;path&gt;`</span>
 
 <span class="gu">### Examples</span>
 
@@ -534,7 +537,7 @@ cat<span class="w"> </span>file.txt
 
 <span class="gs">**Description:**</span> Append text to file
 
-<span class="gs">**Instructions:**</span> To append text to a file, use a code block with the language: append &lt;filepath&gt;
+<span class="gs">**Instructions:**</span> To append to a file, use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
 
 <span class="gu">### Examples</span>
 
@@ -550,9 +553,9 @@ cat<span class="w"> </span>file.txt
 <span class="gs">**Description:**</span> Apply a patch to a file
 
 <span class="gs">**Instructions:**</span>
-To patch/modify files, we can use an adapted version of git conflict markers.
+To patch/modify files, we use an adapted version of git conflict markers.
 
-This can be used to make changes to files, without having to rewrite the whole file.
+This can be used to edit files, without having to rewrite the whole file.
 Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
 
@@ -574,41 +577,42 @@ The patch block should be written in the following format:
 
 
 <span class="k">&gt; </span><span class="ge">User: patch the file `hello.py` to ask for the name of the user</span>
-<span class="k">&gt; </span><span class="ge">Assistant: ```patch hello.py</span>
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL
-def hello():
-<span class="gh">    print(&quot;Hello world&quot;)</span>
-<span class="gh">=======</span>
-def hello():
-    name = input(&quot;What is your name? &quot;)
-    print(f&quot;Hello {name}&quot;)
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```patch</span><span class="w"> </span>hello.py
+<span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
+<span class="s">def hello():</span>
+<span class="s">    print(&quot;Hello world&quot;)</span>
+<span class="s">=======</span>
+<span class="s">def hello():</span>
+<span class="s">    name = input(&quot;What is your name? &quot;)</span>
+<span class="s">    print(f&quot;Hello {name}&quot;)</span>
+<span class="s">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
 <span class="sb">```</span>
-<span class="sb">&gt; System: Patch applied</span>
+<span class="k">&gt; </span><span class="ge">System: Patch applied</span>
 
 
-<span class="sb">## shell</span>
+<span class="gu">## shell</span>
 
-<span class="sb">**Description:** Executes shell commands.</span>
+<span class="gs">**Description:**</span> Executes shell commands.
 
-<span class="sb">**Instructions:** When you send a message containing bash code, it will be executed in a stateful bash shell.</span>
-<span class="sb">The shell will respond with the output of the execution.</span>
-<span class="sb">Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.</span>
+<span class="gs">**Instructions:**</span> When you send a message containing bash code, it will be executed in a stateful bash shell.
+The shell will respond with the output of the execution.
+Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 
-<span class="sb">These programs are available, among others:</span>
-<span class="sb">- convert</span>
-<span class="sb">- docker</span>
-<span class="sb">- git</span>
-<span class="sb">- pandoc</span>
-<span class="sb">- apt-get</span>
+These programs are available, among others:
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>docker
 
-<span class="sb">### Examples</span>
+<span class="gu">### Examples</span>
 
-<span class="sb">User: list the current directory</span>
-<span class="sb">Assistant: To list the files in the current directory, use `ls`:</span>
+
+User: list the current directory
+Assistant: To list the files in the current directory, use <span class="sb">`ls`</span>:
 <span class="sb">```shell</span>
-<span class="sb">ls</span>
+ls
 <span class="sb">```</span>
 System: Ran command: <span class="sb">`ls`</span>
 <span class="sb">```shell</span>
@@ -653,14 +657,15 @@ Assistant: Sure! Let&#39;s create a new vue project with TypeScript and Pinia na
 npm<span class="w"> </span>init<span class="w"> </span>vue@latest<span class="w"> </span>fancy-project<span class="w"> </span>--yes<span class="w"> </span>--<span class="w"> </span>--typescript<span class="w"> </span>--pinia
 <span class="sb">```</span>
 System:
-<span class="sb">```output</span>
-<span class="go">&gt; npx</span>
-<span class="go">&gt; create-vue</span>
+<span class="sb">```stdout</span>
+<span class="s">&gt; npx</span>
+<span class="s">&gt; create-vue</span>
 
-<span class="go">Vue.js - The Progressive JavaScript Framework</span>
+<span class="s">Vue.js - The Progressive JavaScript Framework</span>
 
-<span class="go">Scaffolding project in ./fancy-project...</span>
+<span class="s">Scaffolding project in ./fancy-project...</span>
 <span class="sb">```</span>
+
 
 <span class="gu">## subagent</span>
 
@@ -729,6 +734,10 @@ System: Sent &#39;C-c&#39; to pane 0
 
 <span class="gu">#### Get info from ncurses applications</span>
 User: start top and give me a summary
+Assistant: Sure! Let&#39;s start the top command in a tmux session:
+<span class="sb">```tmux</span>
+<span class="s">new_session &#39;top&#39;</span>
+<span class="sb">```</span>
 System: Running <span class="sb">`top`</span> in session 1.
 <span class="sb">```output</span>
 <span class="go">(output from top shown here)</span>
@@ -749,23 +758,19 @@ Assistant: The load is...
 User: find out which is the latest ActivityWatch version from superuserlabs.org
 Assistant: Let&#39;s browse the site.
 <span class="sb">```ipython</span>
-<span class="n">read_url</span><span class="p">(</span><span class="s2">&quot;https://superuserlabs.org/&quot;</span><span class="p">)</span>
+<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://superuserlabs.org/&#39;</span><span class="p">)</span>
 <span class="sb">```</span>
 System:
 ```https://superuserlabs.org/
-...
-[<span class="nt">ActivityWatch</span>](<span class="na">https://activitywatch.net/</span>)
-...
+... [<span class="nt">ActivityWatch</span>](<span class="na">https://activitywatch.net/</span>) ...
 <span class="sb">```</span>
 <span class="sb">Assistant: Couldn&#39;t find the answer on the page. Following link to the ActivityWatch website.</span>
 <span class="sb">```ipython</span>
-<span class="sb">read_url(&quot;https://activitywatch.net/&quot;)</span>
+<span class="sb">read_url(&#39;https://activitywatch.net/&#39;)</span>
 <span class="sb">```</span>
 System:
 ```https://activitywatch.net/
-...
-Download latest version v0.12.2
-...
+... Download latest version v0.12.2 ...
 <span class="sb">```</span>
 <span class="sb">Assistant: The latest version of ActivityWatch is v0.12.2</span>
 
@@ -773,22 +778,19 @@ Download latest version v0.12.2
 <span class="sb">User: who is the founder of ActivityWatch?</span>
 <span class="sb">Assistant: Let&#39;s search for that.</span>
 <span class="sb">```ipython</span>
-<span class="sb">search(&quot;ActivityWatch founder&quot;)</span>
+<span class="sb">search(&#39;ActivityWatch founder&#39;)</span>
 <span class="sb">```</span>
 System:
 <span class="sb">```results</span>
-<span class="s">1. [ActivityWatch](https://activitywatch.net/)</span>
-<span class="s">...</span>
+<span class="s">1. [ActivityWatch](https://activitywatch.net/) ...</span>
 <span class="sb">```</span>
 Assistant: Following link to the ActivityWatch website.
 <span class="sb">```ipython</span>
-<span class="n">read_url</span><span class="p">(</span><span class="s2">&quot;https://activitywatch.net/&quot;</span><span class="p">)</span>
+<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://activitywatch.net/&#39;</span><span class="p">)</span>
 <span class="sb">```</span>
 System:
 ```https://activitywatch.net/
-...
-The ActivityWatch project was founded by Erik Bjäreholt in 2016.
-...
+... The ActivityWatch project was founded by Erik Bjäreholt in 2016. ...
 <span class="sb">```</span>
 <span class="sb">Assistant: The founder of ActivityWatch is Erik Bjäreholt.</span>
 
@@ -796,45 +798,52 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 <span class="sb">User: take a screenshot of the ActivityWatch website</span>
 <span class="sb">Assistant: Certainly! I&#39;ll use the browser tool to screenshot the ActivityWatch website.</span>
 <span class="sb">```ipython</span>
-<span class="sb">screenshot_url(&quot;https://activitywatch.net&quot;)</span>
+<span class="sb">screenshot_url(&#39;https://activitywatch.net&#39;)</span>
 <span class="sb">```</span>
 System:
-<span class="sb">```</span>
-<span class="sb">Screenshot saved to screenshot.png</span>
+<span class="sb">```result</span>
+<span class="s">Screenshot saved to screenshot.png</span>
 <span class="sb">```</span>
 
 <span class="gu">## gh</span>
 
 <span class="gs">**Description:**</span> Interact with GitHub
 
+<span class="gs">**Instructions:**</span> Interact with GitHub via the GitHub CLI (gh).
+
 <span class="gu">### Examples</span>
 
-Here are examples of how to use the GitHub CLI (gh) to interact with GitHub.
 
-<span class="k">&gt; </span><span class="ge">User: create a public repo from the current directory, and push</span>
-Note: --confirm and -y are deprecated, and no longer needed
-<span class="sb">```sh</span>
+<span class="k">&gt; </span><span class="ge">User: create a public repo from the current directory, and push. Note that --confirm and -y are deprecated, and no longer needed.</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+
 <span class="nv">REPO</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">))</span>
 gh<span class="w"> </span>repo<span class="w"> </span>create<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--public<span class="w"> </span>--source<span class="w"> </span>.<span class="w"> </span>--push
+
 <span class="sb">```</span>
 
 <span class="k">&gt; </span><span class="ge">User: show issues</span>
-<span class="sb">```sh</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
 gh<span class="w"> </span>issue<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
 <span class="sb">```</span>
 
 <span class="k">&gt; </span><span class="ge">User: read issue with comments</span>
-<span class="sb">```sh</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
 gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="nv">$ISSUE</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--comments
 <span class="sb">```</span>
 
 <span class="k">&gt; </span><span class="ge">User: show recent workflows</span>
-<span class="sb">```sh</span>
-gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--status<span class="w"> </span>failure<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
 <span class="sb">```</span>
 
 <span class="k">&gt; </span><span class="ge">User: show workflow</span>
-<span class="sb">```sh</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
 gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--log
 <span class="sb">```</span>
 
@@ -854,7 +863,7 @@ The chats tool allows you to list, search, and summarize past conversation logs.
 User: Can you find any mentions of &quot;python&quot; in our past conversations?
 Assistant: Certainly! I&#39;ll search our past conversations for mentions of &quot;python&quot; using the search_chats function.
 <span class="sb">```ipython</span>
-<span class="n">search_chats</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="n">search_chats</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
 <span class="sb">```</span>
 
 
@@ -933,9 +942,11 @@ The following functions are available in the REPL:
 <span class="gu">#### It can write an example and then execute it:</span>
 <span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
 <span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we write a recursive function:</span>
-<span class="sb">```python</span>
+<span class="sb">```ipython</span>
+
 <span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="o">...</span>
+
 <span class="sb">```</span>
 Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="sb">```ipython</span>
@@ -955,7 +966,7 @@ Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 2997</p>
+<p>Tokens: 3037</p>
 </dd></dl>
 
 <dl class="py function">

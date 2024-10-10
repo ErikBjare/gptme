@@ -3,24 +3,31 @@ Tools
 
 Tools available in gptme.
 
-The main tools can be grouped in the following categories:
+The tools can be grouped into the following categories:
 
-- execution
+- Execution
 
   - `Shell`_
   - `Python`_
   - `Tmux`_
+  - `Subagent`_
 
-- filesystem
+- Files
 
+  - `Read`_
   - `Save`_
   - `Patch`_
 
-- network
+- Network
 
   - `Browser`_
 
-- chat management
+- Vision
+
+  - `Screenshot`_
+  - `Vision`_
+
+- Chat management
 
   - `Chats`_
 
@@ -45,6 +52,20 @@ Tmux
     :members:
     :noindex:
 
+Subagent
+--------
+
+.. automodule:: gptme.tools.subagent
+    :members:
+    :noindex:
+
+Read
+----
+
+.. automodule:: gptme.tools.read
+    :members:
+    :noindex:
+
 Save
 ----
 
@@ -59,10 +80,24 @@ Patch
     :members:
     :noindex:
 
+Screenshot
+----------
+
+.. automodule:: gptme.tools.screenshot
+    :members:
+    :noindex:
+
 Browser
 -------
 
 .. automodule:: gptme.tools.browser
+    :members:
+    :noindex:
+
+Vision
+------
+
+.. automodule:: gptme.tools.vision
     :members:
     :noindex:
 

@@ -30,7 +30,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
+    <link rel="stylesheet" type="text/css" href="_static/asciinema-player_3.6.3.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,6 +41,7 @@
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples';</script>
     <link rel="icon" href="_static/logo.png"/>
@@ -354,9 +356,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -372,15 +372,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-message-generator">Commit Message Generator</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-documentation">Generate Documentation</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -413,12 +404,16 @@ gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vi
 </pre></div>
 </div>
 <p>Do you have a cool example? Share it with us in the <a class="reference external" href="https://github.com/ErikBjare/gptme/discussions">Discussions</a>!</p>
-<section id="commit-message-generator">
-<h2>Commit Message Generator<a class="headerlink" href="#commit-message-generator" title="Link to this heading">#</a></h2>
+<p class="rubric">Skip confirmation and run in non-interactive mode</p>
+<p>You can skip confirmation prompts and run in non-interactive mode to terminate when all prompts have been completed.</p>
+<p>This should make it first write snake.py, then make the change in a following prompt:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span>--no-confirm<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make the snake green and the apple red&#39;</span>
+</pre></div>
+</div>
+<p>The ‘-’ is special “multiprompt” syntax that tells the assistant to wait for the assistant to finish work on the next prompt (run until no more tool calls) before continuing. For more such non-interactive examples, see <a class="reference internal" href="automation.html"><span class="doc">Automation</span></a>.</p>
+<p class="rubric">Generate Commit Messages</p>
 <p>Generate meaningful commit messages based on your git diff:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-<span class="c1"># Usage: git-commit-auto</span>
-<span class="nv">msg_file</span><span class="o">=</span><span class="k">$(</span>mktemp<span class="k">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">msg_file</span><span class="o">=</span><span class="k">$(</span>mktemp<span class="k">)</span>
 git<span class="w"> </span>diff<span class="w"> </span>--cached<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s2">&quot;Write a concise, meaningful commit message for this diff to `</span><span class="nv">$msg_file</span><span class="s2">`.</span>
 
 <span class="s2">Format: &lt;type&gt;: &lt;subject&gt;</span>
@@ -427,16 +422,12 @@ git<span class="w"> </span>diff<span class="w"> </span>--cached<span class="w"> 
 git<span class="w"> </span>commit<span class="w"> </span>-F<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$msg_file</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
-</section>
-<section id="generate-documentation">
-<h2>Generate Documentation<a class="headerlink" href="#generate-documentation" title="Link to this heading">#</a></h2>
+<p class="rubric">Generate Documentation</p>
 <p>Generate docstrings for all functions in a file:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s2">&quot;Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters.&quot;</span><span class="w"> </span><span class="nv">$@</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s2">&quot;Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters.&quot;</span><span class="w"> </span><span class="nv">$@</span>
 </pre></div>
 </div>
 <p>These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.</p>
-</section>
 </section>
 
 
@@ -474,22 +465,6 @@ gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span clas
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-message-generator">Commit Message Generator</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-documentation">Generate Documentation</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

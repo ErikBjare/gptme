@@ -30,7 +30,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
+    <link rel="stylesheet" type="text/css" href="_static/asciinema-player_3.6.3.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,6 +41,7 @@
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'automation';</script>
     <link rel="icon" href="_static/logo.png"/>
@@ -354,9 +356,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -372,16 +372,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-implement-feature">Example: Implement feature</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated Code Review</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -397,23 +387,19 @@ document.write(`
 <p>We will be using shell scripts, cron jobs, and other tools to automate the workflows.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This is a work in progress. We intend to make gptme more powerful for automations, see <a class="reference external" href="https://github.com/ErikBjare/gptme/issues/143">issue #1</a> for more details on this plan.</p>
+<p>This is a work in progress. We intend to make gptme more powerful for automations, see <a class="reference external" href="https://github.com/ErikBjare/gptme/issues/143">issue #143</a> for more details on this plan.</p>
 </div>
-<section id="example-implement-feature">
-<h2>Example: Implement feature<a class="headerlink" href="#example-implement-feature" title="Link to this heading">#</a></h2>
+<p class="rubric">Example: Implement feature</p>
 <p>This example demonstrates how to implement a feature in a codebase using gptme, making sure the code is correct before creating a pull request.</p>
 <p>Given a GitHub issue it will check out a new branch, look up relevant files, make changes, typecheck/test them, and create a pull request if everything is correct.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;read &lt;url&gt;&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;create a branch&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;look up relevant files&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make changes&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;typecheck it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;test it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;create a pull request&#39;</span>
 </pre></div>
 </div>
-</section>
-<section id="example-automated-code-review">
-<h2>Example: Automated Code Review<a class="headerlink" href="#example-automated-code-review" title="Link to this heading">#</a></h2>
+<p class="rubric">Example: Automated Code Review</p>
 <p>This example demonstrates a simple and composable approach to automated code review using gptme and shell scripting.</p>
 <ol class="arabic">
 <li><p>Create a script called <cite>review_pr.sh</cite>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-
 <span class="c1"># Usage: ./review_pr.sh &lt;repo&gt; &lt;pr_number&gt;</span>
 
 <span class="nv">repo</span><span class="o">=</span><span class="nv">$1</span>
@@ -488,9 +474,7 @@ gh<span class="w"> </span>pr<span class="w"> </span>comment<span class="w"> </sp
 2. Add additional checks or integrations to the shell script as needed
 3. Adjust the GitHub Actions workflow to fit your CI/CD pipeline</p>
 <p>This example serves as a starting point for integrating gptme into your development workflow, demonstrating its potential for automating code review tasks.</p>
-</section>
-<section id="example-daily-activity-summary">
-<h2>Example: Daily Activity Summary<a class="headerlink" href="#example-daily-activity-summary" title="Link to this heading">#</a></h2>
+<p class="rubric">Example: Daily Activity Summary</p>
 <p>Here’s an example of how to use gptme to generate a daily summary based on ActivityWatch data using a shell script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
@@ -541,7 +525,6 @@ generate_daily_summary<span class="o">()</span><span class="w"> </span><span cla
 </div>
 <p>This automation will provide you with daily insights into your computer usage and productivity patterns from the previous day, leveraging the power of gptme to analyze and summarize the data collected by ActivityWatch.</p>
 </section>
-</section>
 
 
                 </article>
@@ -578,23 +561,6 @@ generate_daily_summary<span class="o">()</span><span class="w"> </span><span cla
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-implement-feature">Example: Implement feature</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-automated-code-review">Example: Automated Code Review</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-daily-activity-summary">Example: Daily Activity Summary</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

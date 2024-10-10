@@ -1,5 +1,4 @@
-Example: Automated Code Review
-------------------------------
+.. rubric:: Example: Automated Code Review
 
 This example demonstrates a simple and composable approach to automated code review using gptme and shell scripting.
 
@@ -8,7 +7,6 @@ This example demonstrates a simple and composable approach to automated code rev
    .. code-block:: bash
 
       #!/bin/bash
-
       # Usage: ./review_pr.sh <repo> <pr_number>
 
       repo=$1

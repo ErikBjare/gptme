@@ -30,7 +30,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=dd9f74b9" />
+    <link rel="stylesheet" type="text/css" href="_static/asciinema-player_3.6.3.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -40,6 +41,7 @@
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'tools';</script>
     <link rel="icon" href="_static/logo.png"/>
@@ -380,9 +382,13 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shell">Shell</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmux">Tmux</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subagent">Subagent</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read">Read</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#screenshot">Screenshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 </ul>
             </nav>
@@ -398,27 +404,35 @@ document.write(`
   <section id="tools">
 <h1>Tools<a class="headerlink" href="#tools" title="Link to this heading">#</a></h1>
 <p>Tools available in gptme.</p>
-<p>The main tools can be grouped in the following categories:</p>
+<p>The tools can be grouped into the following categories:</p>
 <ul class="simple">
-<li><p>execution</p>
+<li><p>Execution</p>
 <ul>
 <li><p><a class="reference internal" href="#shell">Shell</a></p></li>
 <li><p><a class="reference internal" href="#python">Python</a></p></li>
 <li><p><a class="reference internal" href="#tmux">Tmux</a></p></li>
+<li><p><a class="reference internal" href="#subagent">Subagent</a></p></li>
 </ul>
 </li>
-<li><p>filesystem</p>
+<li><p>Files</p>
 <ul>
+<li><p><a class="reference internal" href="#read">Read</a></p></li>
 <li><p><a class="reference internal" href="#save">Save</a></p></li>
 <li><p><a class="reference internal" href="#patch">Patch</a></p></li>
 </ul>
 </li>
-<li><p>network</p>
+<li><p>Network</p>
 <ul>
 <li><p><a class="reference internal" href="#browser">Browser</a></p></li>
 </ul>
 </li>
-<li><p>chat management</p>
+<li><p>Vision</p>
+<ul>
+<li><p><a class="reference internal" href="#screenshot">Screenshot</a></p></li>
+<li><p><a class="reference internal" href="#vision">Vision</a></p></li>
+</ul>
+</li>
+<li><p>Chat management</p>
 <ul>
 <li><p><a class="reference internal" href="#chats">Chats</a></p></li>
 </ul>
@@ -427,7 +441,20 @@ document.write(`
 <section id="shell">
 <h2>Shell<a class="headerlink" href="#shell" title="Link to this heading">#</a></h2>
 <p>The assistant can execute shell commands with bash by outputting code blocks with <cite>shell</cite> as the language.</p>
-<p># Examples</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>When you send a message containing bash code, it will be executed in a stateful bash shell.
+The shell will respond with the output of the execution.
+Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
+
+
+These programs are available, among others:
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>docker
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -537,7 +564,7 @@ main.py
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">stdout</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">> npx
 > create-vue
 
@@ -558,7 +585,13 @@ Scaffolding project in ./fancy-project...
 <h2>Python<a class="headerlink" href="#python" title="Link to this heading">#</a></h2>
 <p>The assistant can execute Python code blocks.</p>
 <p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.</p>
-<p># Examples</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To execute Python code in an interactive IPython session, send a codeblock using the <span class="sb">`ipython`</span> language tag.
+It will respond with the output and result of the execution.
+If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <p>Results of the last expression will be displayed, IPython-style:</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -596,8 +629,9 @@ Scaffolding project in ./fancy-project...
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To compute the 10th Fibonacci number, we write a recursive function:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">python</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">def fib(n):
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To compute the 10th Fibonacci number, we write a recursive function:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">
+def fib(n):
     ...
 </pre></div>
 Now, let's execute this code to get the 10th Fibonacci number:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
@@ -643,7 +677,21 @@ fib(10)
 <p>This tool is suitable to run long-running commands or interactive applications that require user input.
 Examples of such commands: <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">dev</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">server.py</span></code>, <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">train.py</span></code>, etc.
 It allows for inspecting pane contents and sending input.</p>
-<p># Examples</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>You can use the tmux tool to run long-lived and/or interactive applications in a tmux session.
+
+This tool is suitable to run long-running commands or interactive applications that require user input.
+Examples of such commands are: <span class="sb">`npm run dev`</span>, <span class="sb">`npm create vue@latest`</span>, <span class="sb">`python3 server.py`</span>, <span class="sb">`python3 train.py`</span>, etc.
+
+Available commands:
+<span class="k">-</span><span class="w"> </span>new_session &lt;command&gt;: Start a new tmux session with the given command
+<span class="k">-</span><span class="w"> </span>send_keys &lt;session_id&gt; &lt;keys&gt; [&lt;keys&gt;]: Send keys to the specified session
+<span class="k">-</span><span class="w"> </span>inspect_pane &lt;session_id&gt;: Show the current content of the specified pane
+<span class="k">-</span><span class="w"> </span>kill_session &lt;session_id&gt;: Terminate the specified tmux session
+<span class="k">-</span><span class="w"> </span>list_sessions: Show all active tmux sessions
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <p>Managing a dev server</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -723,6 +771,14 @@ It allows for inspecting pane contents and sending input.</p>
   </td>
 </tr>
 <tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sure! Let's start the top command in a tmux session:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">tmux</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">new_session 'top'
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Running `top` in session 1.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">output</div>
@@ -743,10 +799,115 @@ It allows for inspecting pane contents and sending input.</p>
 </dd></dl>
 
 </section>
+<section id="subagent">
+<h2>Subagent<a class="headerlink" href="#subagent" title="Link to this heading">#</a></h2>
+<p>A subagent tool for gptme</p>
+<p>Lets gptme break down a task into smaller parts, and delegate them to subagents.</p>
+<p class="rubric">Examples</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">compute fib 69 using a subagent</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Starting a subagent to compute the 69th Fibonacci number.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">subagent("compute the 69th Fibonacci number", "fib-69")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Subagent started successfully.</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Now we need to wait for the subagent to finish the task.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">subagent_wait("fib-69")
+</pre></div></pre>
+  </td>
+</tr>
+</table><dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.subagent.</span></span><span class="sig-name descname"><span class="pre">ReturnType</span></span></dt>
+<dd><p>ReturnType(status: Literal[‘running’, ‘success’, ‘failure’], result: str | None = None)</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'running'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'success'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'failure'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.subagent.</span></span><span class="sig-name descname"><span class="pre">Subagent</span></span></dt>
+<dd><p>Subagent(prompt: str, agent_id: str, thread: threading.Thread)</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Thread</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.subagent.</span></span><span class="sig-name descname"><span class="pre">subagent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Runs a subagent and returns the resulting JSON output.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.subagent.</span></span><span class="sig-name descname"><span class="pre">subagent_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span></dt>
+<dd><p>Returns the status of a subagent.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.subagent.</span></span><span class="sig-name descname"><span class="pre">subagent_wait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span></dt>
+<dd><p>Waits for a subagent to finish. Timeout is 1 minute.</p>
+</dd></dl>
+
+</section>
+<section id="read">
+<h2>Read<a class="headerlink" href="#read" title="Link to this heading">#</a></h2>
+<p>Read the contents of a file.</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Read files using <span class="sb">`cat`</span>
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">read file.txt</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">shell</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">cat file.txt
+</pre></div></pre>
+  </td>
+</tr>
+</table></section>
 <section id="save">
 <h2>Save<a class="headerlink" href="#save" title="Link to this heading">#</a></h2>
-<p>Gives the assistant the ability to save/write code to a file.</p>
-<p># Examples</p>
+<p>Gives the assistant the ability to save whole files, or append to them.</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To write to a file, use a code block with the language tag: <span class="sb">`save &lt;path&gt;`</span>
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -779,7 +940,11 @@ It allows for inspecting pane contents and sending input.</p>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to `hello.py`</pre>
   </td>
 </tr>
-</table><p># Examples</p>
+</table><p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To append to a file, use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -818,7 +983,28 @@ It allows for inspecting pane contents and sending input.</p>
 <section id="patch">
 <h2>Patch<a class="headerlink" href="#patch" title="Link to this heading">#</a></h2>
 <p>Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.</p>
-<p># Examples</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To patch/modify files, we use an adapted version of git conflict markers.
+
+This can be used to edit files, without having to rewrite the whole file.
+Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
+Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
+
+To keep the patch small, try to scope the patch to imports/function/class.
+If the patch is large, consider using the save tool to rewrite the whole file.
+
+The patch block should be written in the following format:
+
+<span class="sb">```patch</span><span class="w"> </span>$FILENAME
+<span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
+<span class="s">$ORIGINAL_CONTENT</span>
+<span class="s">=======</span>
+<span class="s">$UPDATED_CONTENT</span>
+<span class="s">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
+<span class="sb">```</span>
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -830,8 +1016,8 @@ It allows for inspecting pane contents and sending input.</p>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">```patch hello.py
-<<<<<<< ORIGINAL
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;"><<<<<<< ORIGINAL
 def hello():
     print("Hello world")
 =======
@@ -839,7 +1025,7 @@ def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED
-```</pre>
+</pre></div></pre>
   </td>
 </tr>
 <tr>
@@ -879,6 +1065,16 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
 </dd></dl>
 
 </section>
+<section id="screenshot">
+<h2>Screenshot<a class="headerlink" href="#screenshot" title="Link to this heading">#</a></h2>
+<p>A simple screenshot tool, using <cite>screencapture</cite> on macOS and <cite>scrot</cite> on Linux.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.screenshot.</span></span><span class="sig-name descname"><span class="pre">screenshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Take a screenshot and save it to a file.</p>
+</dd></dl>
+
+</section>
 <section id="browser">
 <h2>Browser<a class="headerlink" href="#browser" title="Link to this heading">#</a></h2>
 <dl class="simple">
@@ -894,7 +1090,16 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
 <p class="admonition-title">Note</p>
 <p>This is an experimental feature. It needs some work to be more robust and useful.</p>
 </div>
-<p># Examples</p>
+<p>To use the browser tool, you need to have the <cite>playwright</cite> Python package installed along with gptme, which you can install with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>gptme<span class="o">[</span>browser<span class="o">]</span>
+gptme<span class="w"> </span><span class="s1">&#39;/shell playwright install chromium&#39;</span>
+</pre></div>
+</div>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To browse the web, you can use the <span class="sb">`read_url`</span>, <span class="sb">`search`</span>, and <span class="sb">`screenshot_url`</span> functions in Python.
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <p>Answer question from URL with browsing</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -908,7 +1113,7 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Let's browse the site.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url("https://superuserlabs.org/")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url('https://superuserlabs.org/')
 </pre></div></pre>
   </td>
 </tr>
@@ -916,9 +1121,7 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">https://superuserlabs.org/</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-[ActivityWatch](https://activitywatch.net/)
-...
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">... [ActivityWatch](https://activitywatch.net/) ...
 </pre></div></pre>
   </td>
 </tr>
@@ -926,7 +1129,7 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Couldn't find the answer on the page. Following link to the ActivityWatch website.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url("https://activitywatch.net/")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url('https://activitywatch.net/')
 </pre></div></pre>
   </td>
 </tr>
@@ -934,9 +1137,7 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">https://activitywatch.net/</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-Download latest version v0.12.2
-...
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">... Download latest version v0.12.2 ...
 </pre></div></pre>
   </td>
 </tr>
@@ -959,7 +1160,7 @@ Download latest version v0.12.2
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Let's search for that.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">search("ActivityWatch founder")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">search('ActivityWatch founder')
 </pre></div></pre>
   </td>
 </tr>
@@ -967,8 +1168,7 @@ Download latest version v0.12.2
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">results</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">1. [ActivityWatch](https://activitywatch.net/)
-...
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">1. [ActivityWatch](https://activitywatch.net/) ...
 </pre></div></pre>
   </td>
 </tr>
@@ -976,7 +1176,7 @@ Download latest version v0.12.2
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Following link to the ActivityWatch website.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url("https://activitywatch.net/")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">read_url('https://activitywatch.net/')
 </pre></div></pre>
   </td>
 </tr>
@@ -984,9 +1184,7 @@ Download latest version v0.12.2
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">https://activitywatch.net/</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-The ActivityWatch project was founded by Erik Bjäreholt in 2016.
-...
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">... The ActivityWatch project was founded by Erik Bjäreholt in 2016. ...
 </pre></div></pre>
   </td>
 </tr>
@@ -1009,14 +1207,14 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll use the browser tool to screenshot the ActivityWatch website.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">screenshot_url("https://activitywatch.net")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">screenshot_url('https://activitywatch.net')
 </pre></div></pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF"></div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">result</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">Screenshot saved to screenshot.png
 </pre></div></pre>
   </td>
@@ -1040,10 +1238,25 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
 </dd></dl>
 
 </section>
+<section id="vision">
+<h2>Vision<a class="headerlink" href="#vision" title="Link to this heading">#</a></h2>
+<p>Tools for viewing images, giving the assistant vision.</p>
+<p>Requires a model which supports vision, such as GPT-4o, Anthropic, and Llama 3.2.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.vision.</span></span><span class="sig-name descname"><span class="pre">view_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>View an image.</p>
+</dd></dl>
+
+</section>
 <section id="chats">
 <h2>Chats<a class="headerlink" href="#chats" title="Link to this heading">#</a></h2>
 <p>List, search, and summarize past conversation logs.</p>
-<p># Examples</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>The chats tool allows you to list, search, and summarize past conversation logs.
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
 <p>Search for a specific topic in past conversations</p>
 <table style="width: 100%; margin-bottom: 1em">
   
@@ -1057,7 +1270,7 @@ The ActivityWatch project was founded by Erik Bjäreholt in 2016.
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll search our past conversations for mentions of "python" using the search_chats function.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">search_chats("python")
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">search_chats('python')
 </pre></div></pre>
   </td>
 </tr>
@@ -1158,9 +1371,13 @@ If False, uses a simple strategy showing snippets of the first and last messages
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shell">Shell</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmux">Tmux</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subagent">Subagent</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read">Read</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#save">Save</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#patch">Patch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#screenshot">Screenshot</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 </ul>
   </nav></div>
