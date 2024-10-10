@@ -124,9 +124,7 @@ def inspect_pane(pane_id: str) -> Message:
     return Message(
         "system",
         f"""Pane content:
-```output
-{content}
-```""",
+{ToolUse("output", [], content).to_output()}""",
     )
 
 
@@ -212,9 +210,7 @@ User: Can you show me the current content of the pane?
 Assistant: Of course! Let's inspect the pane content:
 {ToolUse("tmux", [], "inspect_pane 0").to_output()}
 System:
-```output
-Server is running on localhost:5600
-```
+{ToolUse("output", [], "Server is running on localhost:5600").to_output()}
 
 User: Stop the dev server
 Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
@@ -223,10 +219,10 @@ System: Sent 'C-c' to pane 0
 
 #### Get info from ncurses applications
 User: start top and give me a summary
+Assistant: Sure! Let's start the top command in a tmux session:
+{ToolUse("tmux", [], "new_session 'top'").to_output()}
 System: Running `top` in session 1.
-```output
-(output from top shown here)
-```
+{ToolUse("output", [], "(output from top shown here)").to_output()}
 Assistant: The load is...
 
 #### Background process

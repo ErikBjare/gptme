@@ -177,17 +177,15 @@ examples = f"""
 > Assistant:
 {ToolUse("ipython", [], "2 + 2").to_output()}
 > System: Executed code block.
-```result
-4
-```
+{ToolUse("result", [], "4").to_output()}
 
 #### It can write an example and then execute it:
 > User: compute fib 10
 > Assistant: To compute the 10th Fibonacci number, we write a recursive function:
-```python
+{ToolUse("ipython", [], '''
 def fib(n):
     ...
-```
+''').to_output()}
 Now, let's execute this code to get the 10th Fibonacci number:
 {ToolUse("ipython", [], '''
 def fib(n):
@@ -197,9 +195,7 @@ def fib(n):
 fib(10)
 ''').to_output()}
 > System: Executed code block.
-```result
-55
-```
+{ToolUse("result", [], "55").to_output()}
 """.strip()
 
 

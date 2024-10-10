@@ -4,7 +4,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
 import re
 from datetime import date
 
@@ -116,6 +115,7 @@ nitpick_ignore = [
     ("py:class", "pathlib.Path"),
     ("py:class", "flask.app.Flask"),
     ("py:class", "gptme.tools.python.T"),
+    ("py:class", "threading.Thread"),
 ]
 
 # -- Options for HTML output -------------------------------------------------

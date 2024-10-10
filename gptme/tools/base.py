@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
+from textwrap import indent
 from typing import Literal, Protocol, TypeAlias
 
 from lxml import etree
@@ -58,11 +59,21 @@ class ToolSpec:
             doc = ""
         else:
             doc += "\n\n"
+        if self.instructions:
+            doc += f"""
+.. rubric:: Instructions
+
+.. code-block:: markdown
+
+{indent(self.instructions, "    ")}\n\n"""
         if self.examples:
-            doc += (
-                f"# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
-            )
-        return doc
+            doc += f"""
+.. rubric:: Examples
+
+{transform_examples_to_chat_directives(self.examples)}\n\n
+"""
+        # doc += """.. rubric:: Members"""
+        return doc.strip()
 
     def __eq__(self, other):
         if not isinstance(other, ToolSpec):

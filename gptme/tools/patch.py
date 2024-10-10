@@ -12,15 +12,10 @@ from ..message import Message
 from ..util import ask_execute, print_preview
 from .base import ToolSpec, ToolUse
 
-
-def patch_to_output(filename: str, patch: str) -> str:
-    return ToolUse("patch", [filename], patch.strip()).to_output()
-
-
 instructions = f"""
-To patch/modify files, we can use an adapted version of git conflict markers.
+To patch/modify files, we use an adapted version of git conflict markers.
 
-This can be used to make changes to files, without having to rewrite the whole file.
+This can be used to edit files, without having to rewrite the whole file.
 Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
 
@@ -29,13 +24,13 @@ If the patch is large, consider using the save tool to rewrite the whole file.
 
 The patch block should be written in the following format:
 
-{patch_to_output("$FILENAME", '''
+{ToolUse("patch", ["$FILENAME"], '''
 <<<<<<< ORIGINAL
 $ORIGINAL_CONTENT
 =======
 $UPDATED_CONTENT
 >>>>>>> UPDATED
-''')}
+'''.strip()).to_output()}
 """
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
@@ -45,7 +40,8 @@ UPDATED = "\n>>>>>>> UPDATED"
 
 examples = f"""
 > User: patch the file `hello.py` to ask for the name of the user
-> Assistant: {patch_to_output("hello.py", '''
+> Assistant:
+{ToolUse("patch", ["hello.py"], '''
 <<<<<<< ORIGINAL
 def hello():
     print("Hello world")
@@ -54,7 +50,7 @@ def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED
-'''.strip())}
+'''.strip()).to_output()}
 > System: Patch applied
 """
 

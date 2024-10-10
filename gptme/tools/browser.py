@@ -8,6 +8,13 @@ Tools to let the assistant control a browser, including:
 .. note::
 
     This is an experimental feature. It needs some work to be more robust and useful.
+
+To use the browser tool, you need to have the `playwright` Python package installed along with gptme, which you can install with:
+
+.. code-block:: bash
+
+    pipx install gptme[browser]
+    gptme '/shell playwright install chromium'
 """
 
 import importlib.util
@@ -19,7 +26,7 @@ import subprocess
 import tempfile
 from typing import Literal
 
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 has_playwright = importlib.util.find_spec("playwright") is not None
 
@@ -40,64 +47,37 @@ instructions = """
 To browse the web, you can use the `read_url`, `search`, and `screenshot_url` functions in Python.
 """.strip()
 
-examples = """
+examples = f"""
 ### Answer question from URL with browsing
 User: find out which is the latest ActivityWatch version from superuserlabs.org
 Assistant: Let's browse the site.
-```ipython
-read_url("https://superuserlabs.org/")
-```
+{ToolUse("ipython", [], "read_url('https://superuserlabs.org/')").to_output()}
 System:
-```https://superuserlabs.org/
-...
-[ActivityWatch](https://activitywatch.net/)
-...
-```
+{ToolUse("https://superuserlabs.org/", [], "... [ActivityWatch](https://activitywatch.net/) ...".strip()).to_output()}
 Assistant: Couldn't find the answer on the page. Following link to the ActivityWatch website.
-```ipython
-read_url("https://activitywatch.net/")
-```
+{ToolUse("ipython", [], "read_url('https://activitywatch.net/')").to_output()}
 System:
-```https://activitywatch.net/
-...
-Download latest version v0.12.2
-...
-```
+{ToolUse("https://activitywatch.net/", [], "... Download latest version v0.12.2 ...".strip()).to_output()}
 Assistant: The latest version of ActivityWatch is v0.12.2
 
 ### Searching
 User: who is the founder of ActivityWatch?
 Assistant: Let's search for that.
-```ipython
-search("ActivityWatch founder")
-```
+{ToolUse("ipython", [], "search('ActivityWatch founder')").to_output()}
 System:
-```results
-1. [ActivityWatch](https://activitywatch.net/)
-...
-```
+{ToolUse("results", [], "1. [ActivityWatch](https://activitywatch.net/) ...").to_output()}
 Assistant: Following link to the ActivityWatch website.
-```ipython
-read_url("https://activitywatch.net/")
-```
+{ToolUse("ipython", [], "read_url('https://activitywatch.net/')").to_output()}
 System:
-```https://activitywatch.net/
-...
-The ActivityWatch project was founded by Erik Bjäreholt in 2016.
-...
-```
+{ToolUse("https://activitywatch.net/", [], "... The ActivityWatch project was founded by Erik Bjäreholt in 2016. ...".strip()).to_output()}
 Assistant: The founder of ActivityWatch is Erik Bjäreholt.
 
 ### Take screenshot of page
 User: take a screenshot of the ActivityWatch website
 Assistant: Certainly! I'll use the browser tool to screenshot the ActivityWatch website.
-```ipython
-screenshot_url("https://activitywatch.net")
-```
+{ToolUse("ipython", [], "screenshot_url('https://activitywatch.net')").to_output()}
 System:
-```
-Screenshot saved to screenshot.png
-```
+{ToolUse("result", [], "Screenshot saved to screenshot.png").to_output()}
 """.strip()
 
 
