@@ -6,6 +6,7 @@ It uses IPython to do so, and persists the IPython instance between calls to giv
 
 import dataclasses
 import functools
+import importlib.util
 import re
 import types
 from collections.abc import Callable, Generator
@@ -43,6 +44,9 @@ T = TypeVar("T", bound=Callable)
 def register_function(func: T) -> T:
     """Decorator to register a function to be available in the IPython instance."""
     registered_functions[func.__name__] = func
+    # if ipython is already initialized, push the function to it to make it available
+    if _ipython is not None:
+        _ipython.push({func.__name__: func})
     return func
 
 
@@ -150,17 +154,15 @@ def get_installed_python_libraries() -> set[str]:
         "matplotlib",
         "seaborn",
         "scipy",
-        "scikit-learn",
+        "sklearn",
         "statsmodels",
-        "pillow",
+        "PIL",
     ]
     installed = set()
     for candidate in candidates:
-        try:
-            __import__(candidate)
+        if importlib.util.find_spec(candidate):
             installed.add(candidate)
-        except ImportError:
-            pass
+
     return installed
 
 
