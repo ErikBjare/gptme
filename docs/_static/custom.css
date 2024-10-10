@@ -6,3 +6,13 @@ dl.py.attribute {
 dl.py.attribute + dl.py.method {
   margin-top: 3rem;
 }
+
+/* Remove "Recorded with asciinema" and remove margin to make it more compact */
+.asciicast {
+  margin-bottom: 0 !important;
+}
+
+/* Doesn't work reliable, since size is variable */
+.asciicast iframe {
+  height: 470px !important;
+}
