@@ -251,17 +251,19 @@ def execute_shell(
     
     #TODO: This should probably be user configurable
     whitelist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", ] 
-    whitelisted = False
-    is_safe_cmd = False
-    single_cmd = code.count("\n")
-    if single_cmd < 1:
-        is_safe_cmd = any(code.startswith(safe_cmd) for safe_cmd in whitelist_commands)
-    
-    if single_cmd < 1 and is_safe_cmd:
-        whitelisted = True
+    is_safe_cmd = True
+
+    #NOTE: This does not handle control flow words like if, for, while, etc.
+    regex = r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)"
+
+    for match in re.finditer(regex, cmd):
+        for group in match.groups():
+            if group and group not in whitelist_commands:
+                is_safe_cmd = False
+                break           
 
     confirm = True
-    if not whitelisted and ask:
+    if not is_safe_cmd and ask:
         print_preview(f"$ {cmd}", "bash")
         confirm = ask_execute()
         print()
@@ -275,7 +277,7 @@ def execute_shell(
         stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
         stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
 
-        msg = _format_block_smart(f'Ran {"whitelisted" if whitelisted else '' } command', cmd, lang="bash") + "\n\n"
+        msg = _format_block_smart(f'Ran {"whitelisted" if is_safe_cmd else '' } command', cmd, lang="bash") + "\n\n"
         if stdout:
             msg += _format_block_smart("", stdout, "stdout") + "\n\n"
         if stderr:
