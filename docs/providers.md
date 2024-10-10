@@ -49,5 +49,5 @@ You first need to install `ollama`, then you can run it with:
 ```sh
 ollama pull llama3.2:1b
 ollama serve
-OPENAI_API_BASE="http://127.0.0.1:11434" gptme 'hello' -m local/llama3.2:1b
+OPENAI_API_BASE="http://127.0.0.1:11434/v1" gptme 'hello' -m local/llama3.2:1b
 ```
