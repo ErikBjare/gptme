@@ -12,10 +12,10 @@ instructions = "Interact with GitHub via the GitHub CLI (gh)."
 examples = f"""
 > User: create a public repo from the current directory, and push. Note that --confirm and -y are deprecated, and no longer needed.
 > Assistant:
-{ToolUse("shell", [], """
+{ToolUse("shell", [], '''
 REPO=$(basename $(pwd))
 gh repo create $REPO --public --source . --push
-""").to_output()}
+''').to_output()}
 
 > User: show issues
 > Assistant:
