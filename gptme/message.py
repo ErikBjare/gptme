@@ -109,7 +109,7 @@ class Message:
             data = base64.b64encode(data_bytes).decode("utf-8")
 
             # check that the file is not too large
-            # anthropic limit is 5MB
+            # anthropic limit is 5MB, seems to measure the base64-encoded size instead of raw bytes
             # TODO: use compression to reduce file size
             # print(f"{len(data)=}")
             if len(data) > 5_000_000:
