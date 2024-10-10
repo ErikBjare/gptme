@@ -31,7 +31,7 @@ def get_installed_programs() -> set[str]:
         "pacman",
         # common and useful
         "ffmpeg",
-        "convert",
+        "magick",
         "pandoc",
         "git",
         "docker",
@@ -57,7 +57,6 @@ These programs are available, among others:
 """.strip()
 
 examples = f"""
-
 User: list the current directory
 Assistant: To list the files in the current directory, use `ls`:
 {ToolUse("shell", [], "ls").to_output()}
@@ -92,15 +91,15 @@ User: Create a new vue project with typescript and pinia named fancy-project
 Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
 {ToolUse("shell", [], "npm init vue@latest fancy-project --yes -- --typescript --pinia").to_output()}
 System:
-```output
+{ToolUse("stdout", [], '''
 > npx
 > create-vue
 
 Vue.js - The Progressive JavaScript Framework
 
 Scaffolding project in ./fancy-project...
-```
-""".strip()
+'''.strip()).to_output()}
+"""
 
 
 class ShellSession:

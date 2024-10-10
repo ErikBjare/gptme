@@ -1,3 +1,9 @@
+"""
+Tools for viewing images, giving the assistant vision.
+
+Requires a model which supports vision, such as GPT-4o, Anthropic, and Llama 3.2.
+"""
+
 from collections.abc import Generator
 from pathlib import Path
 
