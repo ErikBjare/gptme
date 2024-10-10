@@ -159,15 +159,23 @@ def execute_patch(
     Applies the patch.
     """
     fn = " ".join(args)
-    assert fn, "No filename provided"
+    if not fn:
+        yield Message("system", "No path provided")
+        return
+
     path = Path(fn).expanduser()
     if not path.exists():
-        raise ValueError(f"file not found: {fn}")
+        yield Message("system", f"File not found: {fn}")
+        return
 
-    patches = Patch.from_codeblock(code)
-    patches_str = "\n\n".join(p.diff_minimal() for p in patches)
+    try:
+        patches = Patch.from_codeblock(code)
+        patches_str = "\n\n".join(p.diff_minimal() for p in patches)
+    except ValueError as e:
+        yield Message("system", f"Patch failed: {e.args[0]}")
+        return
+
     print_preview(patches_str, lang="diff")
-
     if ask:
         # TODO: display minimal patches
         confirm = ask_execute(f"Apply patch to {fn}?")
