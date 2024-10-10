@@ -17,6 +17,7 @@ Generate a snake game that runs in the terminal using curses, and then modify it
 
 .. asciinema:: 621992
    :autoplay: true
+   :idle-time-limit: 1
 
 Steps
 
@@ -33,6 +34,7 @@ Generate a program that renders mandelbrot with curses, and then modify it to ad
 
 .. asciinema:: 621991
    :autoplay: true
+   :idle-time-limit: 1
 
 Steps
 
@@ -47,6 +49,7 @@ An old demo showing off basic code execution and shell interaction.
 
 .. asciinema:: 606375
    :autoplay: true
+   :idle-time-limit: 1
 
 Steps
 
@@ -61,6 +64,7 @@ Showing off basic URL loading from the prompt, and answering questions based on 
 
 .. asciinema:: 621997
    :autoplay: true
+   :idle-time-limit: 1
 
 Steps
 
