@@ -95,7 +95,10 @@ class ToolUse:
 
         tool = get_tool(self.tool)
         if tool and tool.execute:
-            yield from tool.execute(self.content, ask, self.args)
+            try:
+                yield from tool.execute(self.content, ask, self.args)
+            except Exception as e:
+                yield Message("system", f"Error executing tool '{self.tool}': {e}")
         else:
             logger.warning(f"Tool '{self.tool}' is not available for execution.")
 
