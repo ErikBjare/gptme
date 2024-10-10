@@ -1,5 +1,4 @@
-Example: Daily Activity Summary
--------------------------------
+.. rubric:: Example: Daily Activity Summary
 
 Here's an example of how to use gptme to generate a daily summary based on ActivityWatch data using a shell script:
 

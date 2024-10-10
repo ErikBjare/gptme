@@ -90,6 +90,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx_click",
     "sphinxcontrib.programoutput",
+    "sphinxcontrib.asciinema",
 ]
 
 
