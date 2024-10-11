@@ -8,14 +8,14 @@ flask = pytest.importorskip(
 
 # noreorder
 from flask.testing import FlaskClient  # fmt: skip
-from gptme.cli import init  # fmt: skip
+from gptme.init import init  # fmt: skip
 from gptme.models import get_model  # fmt: skip
 from gptme.server.api import create_app  # fmt: skip
 
 
 @pytest.fixture(autouse=True)
 def init_():
-    init(None, interactive=False)
+    init(None, interactive=False, tool_allowlist=None)
 
 
 @pytest.fixture

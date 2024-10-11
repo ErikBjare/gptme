@@ -3,9 +3,11 @@ import logging
 import random
 import re
 import sys
+import termios
 import textwrap
 from datetime import datetime, timedelta
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 import tiktoken
@@ -129,32 +131,104 @@ def epoch_to_age(epoch):
 def print_preview(code: str, lang: str):  # pragma: no cover
     print()
     print("[bold white]Preview[/bold white]")
-    print(Syntax(code.strip(), lang))
+    # NOTE: we can set background_color="default" to remove background
+    print(Syntax(code.strip("\n"), lang))
     print()
+
+
+override_auto = False
 
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
     # TODO: add a way to outsource ask_execute decision to another agent/LLM, possibly by overriding rich console somehow
-    choicestr = f"({'Y' if default else 'y'}/{'n' if default else 'N'})"
-    # answer = None
-    # while not answer or answer.lower() not in ["y", "yes", "n", "no", ""]:
     print_bell()  # Ring the bell just before asking for input
+    termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
+
+    choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
     answer = console.input(
-        f"[bold yellow on dark_red] {EMOJI_WARN} {question} {choicestr} [/] ",
+        f"[bold bright_yellow on red] {question} {choicestr} [/] ",
     )
-    return answer.lower() in (["y", "yes"] + [""] if default else [])
+    global override_auto
+    if answer.lower() in [
+        "auto"
+    ]:  # secret option to stop asking for the rest of the session
+        override_auto = True
+    return answer.lower() in (["y", "yes"] + [""] if default else []) or override_auto
 
 
-def transform_examples_to_chat_directives(s: str, strict=False) -> str:
-    # transforms an example with "> Role:" dividers into ".. chat::" directive
+def clean_example(s: str, strict=False) -> str:
     orig = s
     s = re.sub(
-        r"(^|\n)([>] )?(.+):",
+        r"(^|\n)([>] )?([A-Za-z]+):",
         r"\1\3:",
         s,
     )
     if strict:
         assert s != orig, "Couldn't find a message"
+    return s
+
+
+def example_to_xml(s: str) -> str:
+    """
+    Transforms an example with "> Role:" dividers into XML format <role>message</role>.
+    """
+    s = clean_example(s)
+    orig = s
+    print(f"After clean_example: {s!r}")  # Debug print
+
+    lines = s.split("\n")
+    result = []
+    current_role = None
+    current_message = []
+
+    for line in lines:
+        role_match = re.match(r"([A-Za-z]+):\s*(.*)", line)
+        if role_match:
+            if current_role and current_message:
+                # Close previous role block
+                result.append(
+                    f"<{current_role}>\n"
+                    + "\n".join(current_message)
+                    + f"\n</{current_role}>"
+                )
+                current_message = []
+            current_role = role_match.group(1).lower()
+            current_message.append(role_match.group(2))
+        else:
+            if current_role:
+                if line.strip() == "":
+                    # Blank line indicates end of message
+                    result.append(
+                        f"<{current_role}>\n"
+                        + "\n".join(current_message)
+                        + f"\n</{current_role}>\n"
+                    )
+                    current_role = None
+                    current_message = []
+                else:
+                    current_message.append(line)
+            else:
+                result.append(line)
+
+    # Close any remaining role block
+    if current_role and current_message:
+        result.append(
+            f"<{current_role}>\n"
+            + "\n".join(current_message)
+            + f"\n</{current_role}>\n"
+        )
+
+    s = "\n".join(result).strip()
+    print(f"Final result: {s!r}")  # Debug print
+    assert s != orig, "Couldn't find place to put start of directive"
+    return s
+
+
+def transform_examples_to_chat_directives(s: str, strict=False) -> str:
+    """
+    Transforms an example with "> Role:" dividers into ".. chat::" directive.
+    """
+    s = clean_example(s, strict=strict)
     s = textwrap.indent(s, "   ")
     orig = s
     s = re.sub(
@@ -197,6 +271,9 @@ def document_prompt_function(*args, **kwargs):
 
         # noreorder
         from .message import len_tokens  # fmt: skip
+        from .tools import init_tools  # fmt: skip
+
+        init_tools()
 
         prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
         prompt = textwrap.indent(prompt, "   ")
@@ -221,3 +298,11 @@ def rich_to_str(s: Any, **kwargs) -> str:
     c = Console(file=io.StringIO(), **kwargs)
     c.print(s)
     return c.file.getvalue()  # type: ignore
+
+
+def path_with_tilde(path: Path) -> str:
+    home = str(Path.home())
+    path_str = str(path)
+    if path_str.startswith(home):
+        return path_str.replace(home, "~", 1)
+    return path_str

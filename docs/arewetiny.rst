@@ -7,6 +7,13 @@ Since it is built by a single developer, there are limits imposed to how large t
 
 To that end, in this document we will present some statistics about the current state of the project, trying to be mindful to keep an eye on this page and make sure we are not growing too much.
 
+Startup time
+------------
+
+.. command-output:: make bench-importtime
+   :cwd: ..
+   :ellipsis: 0,-10
+
 
 Lines of code
 -------------
@@ -14,29 +21,35 @@ Lines of code
 LoC Core
 ********
 
-.. command-output:: make -C .. cloc-core
+.. command-output:: make cloc-core
+   :cwd: ..
 
 LoC Tools
 *********
 
-.. command-output:: make -C .. cloc-tools
+.. command-output:: make cloc-tools
+   :cwd: ..
 
 LoC Server
 ***********
 
-.. command-output:: make -C .. cloc-server
+.. command-output:: make cloc-server
+   :cwd: ..
 
 LoC Tests
 **********
 
-.. command-output:: make -C .. cloc-tests
+.. command-output:: make cloc-tests
+   :cwd: ..
 
 LoC Eval
 ********
 
-.. command-output:: make -C .. cloc-eval
+.. command-output:: make cloc-eval
+   :cwd: ..
 
 LoC Total
 *********
 
-.. command-output:: make -C .. cloc-total
+.. command-output:: make cloc-total
+   :cwd: ..

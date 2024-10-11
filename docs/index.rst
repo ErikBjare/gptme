@@ -24,17 +24,20 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    tools
    providers
    server
+   automation
    cli
 
 .. toctree::
    :maxdepth: 2
    :caption: Developer Guide
 
+   contributing
    prompts
    evals
    bot
    finetuning
    arewetiny
+   timeline
    api
 
 .. toctree::

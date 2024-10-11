@@ -1,12 +1,8 @@
 import logging
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
-from typing import (
-    Any,
-    Literal,
-    Protocol,
-    TypeAlias,
-)
+from textwrap import indent
+from typing import Literal, Protocol, TypeAlias
 
 from lxml import etree
 
@@ -16,7 +12,7 @@ from ..util import transform_examples_to_chat_directives
 
 logger = logging.getLogger(__name__)
 
-InitFunc: TypeAlias = Callable[[], Any]
+InitFunc: TypeAlias = Callable[[], "ToolSpec"]
 
 # tooluse format mode
 # TODO: make configurable
@@ -30,12 +26,21 @@ class ExecuteFunc(Protocol):
     ) -> Generator[Message, None, None]: ...
 
 
-@dataclass
+@dataclass(frozen=True, eq=False)
 class ToolSpec:
     """
-    A dataclass to store metadata about a tool.
+    Tool specification. Defines a tool that can be used by the agent.
 
-    Like documentation to be included in prompt, and functions to expose to the agent in the REPL.
+    Args:
+        name: The name of the tool.
+        desc: A description of the tool.
+        instructions: Instructions on how to use the tool.
+        examples: Example usage of the tool.
+        functions: Functions registered in the IPython REPL.
+        init: An optional function that is called when the tool is first loaded.
+        execute: An optional function that is called when the tool executes a block.
+        block_types: A list of block types that the tool will execute.
+        available: Whether the tool is available for use.
     """
 
     name: str
@@ -48,18 +53,35 @@ class ToolSpec:
     block_types: list[str] = field(default_factory=list)
     available: bool = True
 
-    def get_doc(self, doc="") -> str:
+    def get_doc(self, doc: str | None = None) -> str:
         """Returns an updated docstring with examples."""
-        if doc:
+        if not doc:
+            doc = ""
+        else:
             doc += "\n\n"
+        if self.instructions:
+            doc += f"""
+.. rubric:: Instructions
+
+.. code-block:: markdown
+
+{indent(self.instructions, "    ")}\n\n"""
         if self.examples:
-            doc += (
-                f"# Examples\n\n{transform_examples_to_chat_directives(self.examples)}"
-            )
-        return doc
+            doc += f"""
+.. rubric:: Examples
+
+{transform_examples_to_chat_directives(self.examples)}\n\n
+"""
+        # doc += """.. rubric:: Members"""
+        return doc.strip()
+
+    def __eq__(self, other):
+        if not isinstance(other, ToolSpec):
+            return False
+        return self.name == other.name
 
 
-@dataclass
+@dataclass(frozen=True)
 class ToolUse:
     tool: str
     args: list[str]
@@ -73,7 +95,10 @@ class ToolUse:
 
         tool = get_tool(self.tool)
         if tool and tool.execute:
-            yield from tool.execute(self.content, ask, self.args)
+            try:
+                yield from tool.execute(self.content, ask, self.args)
+            except Exception as e:
+                yield Message("system", f"Error executing tool '{self.tool}': {e}")
         else:
             logger.warning(f"Tool '{self.tool}' is not available for execution.")
 

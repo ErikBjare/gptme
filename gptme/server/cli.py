@@ -23,7 +23,7 @@ def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
     Note that this is very much a work in progress, and is not yet ready for normal use.
     """
     init_logging(verbose)
-    init(model, interactive=False)
+    init(model, interactive=False, tool_allowlist=None)
 
     # if flask not installed, ask the user to install `server` extras
     try:
@@ -31,7 +31,7 @@ def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
     except ImportError:
         logger.error(
             "gptme installed without needed extras for server. "
-            "Install them with `pip install gptme-python[server]`"
+            "Install them with `pip install gptme[server]`"
         )
         exit(1)
     click.echo("Initialization complete, starting server")

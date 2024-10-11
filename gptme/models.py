@@ -9,7 +9,7 @@ from .llm_openai_models import OPENAI_MODELS
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelMeta:
     provider: str
     model: str
@@ -116,7 +116,7 @@ def get_recommended_model(provider: str) -> str:  # pragma: no cover
     if provider == "openai":
         return "gpt-4o"
     elif provider == "openrouter":
-        return "meta-llama/llama-3.1-70b-instruct"
+        return "meta-llama/llama-3.1-405b-instruct"
     elif provider == "anthropic":
         return "claude-3-5-sonnet-20240620"
     else:

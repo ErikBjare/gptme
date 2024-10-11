@@ -1,17 +1,22 @@
 """
-Gives the assistant the ability to save/write code to a file.
+Gives the assistant the ability to save whole files, or append to them.
 """
 
 from collections.abc import Generator
 from pathlib import Path
 
 from ..message import Message
-from ..util import ask_execute
+from ..util import ask_execute, print_preview
 from .base import ToolSpec, ToolUse
+from .patch import Patch
 
 # FIXME: this is markdown-specific instructions, thus will confuse the XML mode
 instructions = """
-To write text to a file, use a code block with the language tag set to the path of the file.
+To write to a file, use a code block with the language tag: `save <path>`
+""".strip()
+
+instructions_append = """
+To append to a file, use a code block with the language tag: `append <path>`
 """.strip()
 
 examples = f"""
@@ -22,6 +27,13 @@ examples = f"""
 > User: make it all-caps
 {ToolUse("save", ["hello.py"], 'print("HELLO WORLD")').to_output()}
 > System: Saved to `hello.py`
+""".strip()
+
+examples_append = f"""
+> User: append a print "Hello world" to hello.py
+> Assistant:
+{ToolUse("append", ["hello.py"], 'print("Hello world")').to_output()}
+> System: Appended to `hello.py`
 """.strip()
 
 
@@ -42,6 +54,12 @@ def execute_save(
     # TODO: add check that it doesn't try to write a file with placeholders!
 
     if ask:
+        if Path(fn).exists():
+            current = Path(fn).read_text()
+            p = Patch(current, code)
+            # TODO: if inefficient save, replace request with patch (and vice versa), or even append
+            print_preview(p.diff_minimal(), "diff")
+
         confirm = ask_execute(f"Save to {fn}?")
         print()
     else:
@@ -133,17 +151,6 @@ tool_save = ToolSpec(
     block_types=["save"],
 )
 __doc__ = tool_save.get_doc(__doc__)
-
-instructions_append = """
-To append text to a file, use a code block with the language: append <filepath>
-""".strip()
-
-examples_append = f"""
-> User: append a print "Hello world" to hello.py
-> Assistant:
-{ToolUse("append", ["hello.py"], 'print("Hello world")').to_output()}
-> System: Appended to `hello.py`
-""".strip()
 
 tool_append = ToolSpec(
     name="append",

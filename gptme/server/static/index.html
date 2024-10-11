@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>gptme</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked-highlight/lib/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" integrity="sha512-6yoqbrcLAHDWAdQmiRlHG4+m0g/CT/V9AGyxabG8j7Jk8j3r3K6due7oqpiRMZqcYe9WM2gPcaNNxnl2ux+3tA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Main entry point -->
+    <script type="module" src="/static/main.js"></script>
+  </head>
+  <body class="h-screen bg-gray-100">
+
+    <!-- Loader -->
+    <div id="loader" class="fixed top-0 left-0 right-0 bottom-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+      <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+    </div>
+
+    <!-- Main app -->
+    <!-- NOTE: class `hidden` is removed once mounted -->
+    <div id="app" class="h-screen overflow-hidden bg-gray-100 hidden">
+      <!-- Error message -->
+      <div v-if="error" class="fixed top-0 left-0 right-0 m-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded shadow-md z-50">
+        <strong class="font-bold">Error</strong>
+        <span class="block sm:inline">{{ error }}</span>
+        <button @click="dismissError" class="absolute top-0 right-0 px-4 py-3">
+          <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <title>Close</title>
+            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Main container -->
+      <div class="flex h-full">
+
+        <!-- Sidebar -->
+        <div class="sidebar flex-none w-64 overflow-y-auto">
+          <div class="px-3 py-4">
+            <h1 class="text-3xl font-bold mb-6 text-gray-800">gptme</h1>
+            <div class="mb-4">
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-xl font-bold text-gray-700">Conversations</span>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded-lg text-sm transition duration-300 ease-in-out" @click="createConversation()">
+                  +
+                </button>
+              </div>
+              <ul class="space-y-2 overflow-y-auto">
+                <li v-for="conversation in sortedConversations" class="border-b border-gray-200 last:border-b-0">
+                  <a class="block py-3 px-4 cursor-pointer hover:bg-gray-100 rounded transition duration-300 ease-in-out"
+                     :class="{'bg-blue-100': conversation.name === selectedConversation}"
+                     @click="selectConversation(conversation.name)">
+                    <div class="font-medium text-blue-600">{{ conversation.name }}</div>
+                    <div class="text-xs text-gray-500 mt-1">
+                      {{ conversation.messages }} msgs |
+                      {{ fromNow(1000 * conversation.modified) }}
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="p-4 border-t border-gray-200">
+            <button v-if="conversations.length === conversationsLimit"
+                    @click="loadMoreConversations"
+                    class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out text-sm">
+              Show more
+            </button>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex-grow flex">
+          <!-- Welcome message -->
+          <div v-if="!selectedConversation" class="shadow-lg rounded-lg p-8">
+            <h2 class="text-3xl font-bold mb-6 text-gray-700">Welcome to gptme</h2>
+            <p class="text-lg text-gray-600">Select a conversation from the sidebar or create a new one to get started.</p>
+          </div>
+
+          <!-- Chat contents -->
+          <div v-else class="chat flex flex-col w-full">
+            <div class="chat-header rounded-t-lg p-4">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">{{ selectedConversation }}</h1>
+                <div class="text-xs text-gray-400 flex flex-col">
+                  <span class="mr-0 md:mr-4 mb-1 md:mb-0">Messages: {{ chatLog.length }}</span>
+                  <span class="mr-0 md:mr-4 mb-1 md:mb-0">Modified: {{ fromNow(new Date(chatLog[chatLog.length - 1]?.timestamp)) }}</span>
+                  <span>Created: {{ fromNow(new Date(chatLog[0]?.timestamp)) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-log flex-grow p-4 shadow-inner overflow-y-auto" ref="chatContainer">
+              <div class="p-2 mb-2 text-sm" :class="{'opacity-50': !showSystemMessages}">
+                <input type="checkbox" id="show-system-messages" v-model="showSystemMessages">
+                <label for="show-system-messages">Show initial system messages</label>
+              </div>
+              <div v-for="message in preparedChatLog" v-show="!message.hide" class="chat-msg bg-white rounded-lg shadow-md mb-4 p-3">
+                <div class="flex justify-between items-center mb-2">
+                  <div class="font-bold text-gray-700">{{ capitalize(message.role) }}</div>
+                  <div v-if="message.branches.length > 1" class="text-sm ml-auto">
+                    <button class="text-sm p-1"
+                            @click="changeBranch(message.branches[message.branches.indexOf(branch) - 1])"
+                            :disabled="message.branches.indexOf(branch) == 0">
+                      &lt;
+                    </button>
+                    {{ message.branches.indexOf(branch) + 1 }}/{{ message.branches.length }}
+                    <!-- ({{message.branches}}) -->
+                    <button class="text-sm p-1"
+                            @click="changeBranch(message.branches[message.branches.indexOf(branch) + 1])">
+                      &gt;
+                    </button>
+                  </div>
+                </div>
+                <div class="text-sm" v-html="message.html"></div>
+              </div>
+              <div v-if="cmdout" class="chat-msg bg-white rounded-lg shadow-md mb-4 p-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="font-bold text-gray-700">System</span> <span class="text-gray-500">(not stored)</span>
+                  <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded transition duration-300 ease-in-out" @click="cmdout = ''">Clear</button>
+                </div>
+                <div>
+                  <pre class="text-sm">{{cmdout}}</pre>
+                </div>
+              </div>
+              <!-- generate button, pulled right -->
+              <button
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out mb-4 float-right"
+                :disabled="generating"
+                @click="generate"
+                :class="{'cursor-not-allowed opacity-50': generating, 'hover:bg-green-600': !generating}"
+                >
+                {{ generating ? "Generating..." : "Generate" }}
+              </button>
+            </div>
+
+            <!-- Chat input -->
+            <div class="chat-input p-4">
+              <div class="mx-auto bg-white shadow-lg rounded-lg p-4" style="max-width: 800px;">
+                <form @submit.prevent="sendMessage" class="flex flex-col md:flex-row">
+                  <textarea
+                    class="flex-grow border rounded-lg p-3 mb-2 md:mb-0 md:mr-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    v-model="newMessage"
+                    placeholder="Type your message"
+                    rows="3"
+                    ></textarea>
+                  <button
+                    type="submit"
+                    :disabled="generating"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-lg transition duration-300 ease-in-out"
+                    :class="{'cursor-not-allowed opacity-50': generating, 'hover:bg-blue-600': !generating}"
+                    >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

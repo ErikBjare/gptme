@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "gptme-python"
-version = "0.18.2"
+name = "gptme"
+version = "0.20.0"
 description = "A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine."
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
@@ -9,7 +9,7 @@ packages = [
     { include = "gptme" },
 ]
 
-include = ["static/**/*", "media/logo.png"]
+include = ["gptme/server/static/**/*", "media/logo.png"]
 
 [tool.poetry.scripts]
 gptme = "gptme.cli:main"
@@ -32,7 +32,7 @@ lxml = "*"
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
-playwright = {version = "^1.37.0", optional=true}
+playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
 youtube_transcript_api = {version = "^0.6.1", optional = true}
 
 # providers
@@ -71,6 +71,7 @@ sphinx = "^8.0"
 sphinx-click = "^6.0"
 sphinx-book-theme = "^1.0.1"
 sphinxcontrib-programoutput = "^0.17"
+sphinxcontrib-asciinema = "^0.4.2"
 myst-parser = "*"
 
 # types
@@ -134,7 +135,7 @@ exclude_also = [
 
 # TODO: migrate to PEP 621 once supported by poetry
 #[project]
-#name = "gptme-python"
+#name = "gptme"
 #dynamic = ["version"]
 #
 #[tool.setuptools.dynamic]

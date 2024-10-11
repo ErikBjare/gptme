@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 _init_done = False
 
 
-def init(model: str | None, interactive: bool):
+def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None):
     global _init_done
     if _init_done:
         logger.warning("init() called twice, ignoring")
@@ -36,11 +36,14 @@ def init(model: str | None, interactive: bool):
     if not model:  # pragma: no cover
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
         if config.get_env("OPENAI_API_KEY"):
-            print("Found OpenAI API key, using OpenAI provider")
+            console.log("Found OpenAI API key, using OpenAI provider")
             model = "openai"
         elif config.get_env("ANTHROPIC_API_KEY"):
-            print("Found Anthropic API key, using Anthropic provider")
+            console.log("Found Anthropic API key, using Anthropic provider")
             model = "anthropic"
+        elif config.get_env("OPENROUTER_API_KEY"):
+            console.log("Found OpenRouter API key, using OpenRouter provider")
+            model = "openrouter"
         # ask user for API key
         elif interactive:
             model, _ = ask_for_api_key()
@@ -70,7 +73,7 @@ def init(model: str | None, interactive: bool):
         # for some reason it bugs out shell tests in CI
         register_tabcomplete()
 
-    init_tools()
+    init_tools(tool_allowlist)
 
 
 def init_logging(verbose):
@@ -104,34 +107,38 @@ def _load_readline_history() -> None:  # pragma: no cover
     except FileNotFoundError:
         for line in history_examples:
             readline.add_history(line)
+    except Exception:
+        logger.exception("Failed to load history file")
 
     atexit.register(readline.write_history_file, history_file)
 
 
+def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
+    api_key = input("Your OpenAI, Anthropic, or OpenRouter API key: ").strip()
+    if api_key.startswith("sk-ant-"):
+        return api_key, "anthropic", "ANTHROPIC_API_KEY"
+    elif api_key.startswith("sk-or-"):
+        return api_key, "openrouter", "OPENROUTER_API_KEY"
+    elif api_key.startswith("sk-"):
+        return api_key, "openai", "OPENAI_API_KEY"
+    else:
+        console.print("Invalid API key format. Please try again.")
+        return _prompt_api_key()
+
+
 def ask_for_api_key():  # pragma: no cover
     """Interactively ask user for API key"""
-    print("No API key set for OpenAI, Anthropic, or OpenRouter.")
-    print(
+    console.print("No API key set for OpenAI, Anthropic, or OpenRouter.")
+    console.print(
         """You can get one at:
  - OpenAI: https://platform.openai.com/account/api-keys
  - Anthropic: https://console.anthropic.com/settings/keys
  - OpenRouter: https://openrouter.ai/settings/keys
  """
     )
-    api_key = input("Your OpenAI or Anthropic API key: ").strip()
-
-    if api_key.startswith("sk-ant-"):
-        provider = "anthropic"
-        env_var = "ANTHROPIC_API_KEY"
-    elif api_key.startswith("sk-or-"):
-        provider = "openrouter"
-        env_var = "OPENROUTER_API_KEY"
-    else:
-        provider = "openai"
-        env_var = "OPENAI_API_KEY"
-
-    # TODO: test API key
     # Save to config
+    api_key, provider, env_var = _prompt_api_key()
     set_config_value(f"env.{env_var}", api_key)
-    print(f"API key saved to config at {config_path}")
+    console.print(f"API key saved to config at {config_path}")
+    console.print(f"Successfully set up {provider} API key.")
     return provider, api_key

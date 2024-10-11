@@ -10,7 +10,7 @@ To install gptme, we recommend using pipx:
 
 .. code-block:: bash
 
-    pipx install gptme-python
+    pipx install gptme
 
 If pipx is not installed, you can install it using pip:
 
@@ -29,8 +29,7 @@ To initiate a new chat or select an existing one, execute:
 
 This will show you a list of past chats, allowing you to select one or start a new one.
 
-Writing a file
-**************
+.. rubric:: Writing a file
 
 You can then interact with the assistant. Lets start by asking it to write code.
 
@@ -50,8 +49,7 @@ You can then interact with the assistant. Lets start by asking it to write code.
 
 The assistant will prompt for your confirmation and save the file, as requested.
 
-Making changes
-**************
+.. rubric:: Making changes
 
 We can also start chats and request changes directly from the command line. The contents of any mentioned text files will be included as context, and the assistant will generate patches to apply the requested changes:
 
@@ -74,42 +72,23 @@ We can also start chats and request changes directly from the command line. The 
    System: Patch applied
 
 .. note::
-    With the browser extras installed, the assistant can also process URLs included in the prompt.
+    With the :ref:`tools:browser` extras installed, the assistant can also process URLs included in the prompt.
 
-Other tools
-***********
+More tools
+**********
 
-You can read about other tools on the :doc:`tools` page.
+You can read about all the other tools on the :doc:`tools` page.
 
-Other interfaces
-****************
+Including :ref:`tools:shell`, :ref:`tools:python`, how to set up :ref:`tools:browser`, and use :ref:`tools:vision`.
 
-There are other ways to interact with the assistant:
+Interfaces
+**********
 
-Command line
-^^^^^^^^^^^^
+There are several ways to interact with gptme:
 
-Commands can also be executed directly from the command line. For example, one can skip confirmation prompts and  run in non-interactive mode to terminate when all prompts have been completed:
-
-.. code-block:: bash
-
-    gptme --non-interactive --no-confirm 'create a snake game using curses in snake.py, dont run it' '-' 'make the snake green and the apple red'
-
-This should make it first write snake.py, then make the change in a following prompt. The '-' is special "multiprompt" syntax that tells the assistant to wait for the next prompt before continuing.
-
-Web UI
-^^^^^^
-
-To run the assistant in a web interface, execute:
-
-.. code-block:: bash
-
-    gptme-server
-
-This should let you view your chats in a web browser and make basic requests.
-
-.. note::
-    The web interface is still in development and is not fully functional (no confirmation prompts or streaming).
+- :doc:`CLI <cli>`
+- :ref:`server:web ui`
+- :doc:`bot`
 
 Support
 -------

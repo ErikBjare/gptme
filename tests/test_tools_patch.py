@@ -1,4 +1,4 @@
-from gptme.tools.patch import apply
+from gptme.tools.patch import Patch, apply
 
 example_patch = """
 <<<<<<< ORIGINAL
@@ -85,7 +85,11 @@ if __name__ == "__main__":
     codeblock = """
 <<<<<<< ORIGINAL
 
+
+
 =======
+
+
 
 
 >>>>>>> UPDATED
@@ -139,3 +143,24 @@ def hello_world():
 """
     result = apply(codeblock, content)
     assert "hello_world()" in result
+
+
+def test_patch_minimal():
+    p = Patch(
+        """1
+2
+3
+""",
+        """1
+0
+3
+""",
+    )
+    assert (
+        p.diff_minimal()
+        == """ 1
+-2
++0
+ 3"""
+    )
+    assert p.diff_minimal(strip_context=True) == "-2\n+0"

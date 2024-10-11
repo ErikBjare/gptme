@@ -6,6 +6,7 @@ It uses IPython to do so, and persists the IPython instance between calls to giv
 
 import dataclasses
 import functools
+import importlib.util
 import re
 import types
 from collections.abc import Callable, Generator
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-# TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme-python venv (for example) in which gptme itself runs
+# TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme venv (for example) in which gptme itself runs
 #       would let us use libraries installed with `pip install` in the current venv
 #       https://github.com/ErikBjare/gptme/issues/29
 
@@ -43,6 +44,9 @@ T = TypeVar("T", bound=Callable)
 def register_function(func: T) -> T:
     """Decorator to register a function to be available in the IPython instance."""
     registered_functions[func.__name__] = func
+    # if ipython is already initialized, push the function to it to make it available
+    if _ipython is not None:
+        _ipython.push({func.__name__: func})
     return func
 
 
@@ -114,6 +118,12 @@ def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, 
         result = _ipython.run_cell(code, silent=False, store_history=False)
 
     output = ""
+    if isinstance(result.result, types.GeneratorType):
+        # if the result is a generator, we need to iterate over it
+        for message in result.result:
+            assert isinstance(message, Message)
+            yield message
+        return
     if result.result is not None:
         output += f"Result:\n```\n{result.result}\n```\n\n"
     # only show stdout if there is no result
@@ -144,17 +154,15 @@ def get_installed_python_libraries() -> set[str]:
         "matplotlib",
         "seaborn",
         "scipy",
-        "scikit-learn",
+        "sklearn",
         "statsmodels",
-        "pillow",
+        "PIL",
     ]
     installed = set()
     for candidate in candidates:
-        try:
-            __import__(candidate)
+        if importlib.util.find_spec(candidate):
             installed.add(candidate)
-        except ImportError:
-            pass
+
     return installed
 
 
@@ -171,17 +179,15 @@ examples = f"""
 > Assistant:
 {ToolUse("ipython", [], "2 + 2").to_output()}
 > System: Executed code block.
-```result
-4
-```
+{ToolUse("result", [], "4").to_output()}
 
 #### It can write an example and then execute it:
 > User: compute fib 10
 > Assistant: To compute the 10th Fibonacci number, we write a recursive function:
-```python
+{ToolUse("ipython", [], '''
 def fib(n):
     ...
-```
+''').to_output()}
 Now, let's execute this code to get the 10th Fibonacci number:
 {ToolUse("ipython", [], '''
 def fib(n):
@@ -191,29 +197,11 @@ def fib(n):
 fib(10)
 ''').to_output()}
 > System: Executed code block.
-```result
-55
-```
+{ToolUse("result", [], "55").to_output()}
 """.strip()
 
 
-# only used for doc generation, use get_tool() in the code
-tool = ToolSpec(
-    name="python",
-    desc="Execute Python code",
-    instructions=instructions,
-    examples=examples,
-    execute=execute_python,
-    block_types=[
-        # "python",
-        "ipython",
-        "py",
-    ],
-)
-__doc__ = tool.get_doc(__doc__)
-
-
-def get_tool() -> ToolSpec:
+def init() -> ToolSpec:
     python_libraries = get_installed_python_libraries()
     python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
 
@@ -228,3 +216,19 @@ The following functions are available in the REPL:
 
     # create a copy with the updated instructions
     return dataclasses.replace(tool, instructions=_instructions)
+
+
+tool = ToolSpec(
+    name="python",
+    desc="Execute Python code",
+    instructions=instructions,
+    examples=examples,
+    execute=execute_python,
+    init=init,
+    block_types=[
+        # "python",
+        "ipython",
+        "py",
+    ],
+)
+__doc__ = tool.get_doc(__doc__)

@@ -4,7 +4,7 @@
 SHELL := $(shell which bash)
 
 # src dirs and files
-SRCDIRS = gptme tests scripts train
+SRCDIRS = gptme tests scripts
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 
 # exclude files
@@ -27,7 +27,7 @@ test:
 		--cov=gptme --cov-report=xml --cov-report=term-missing --cov-report=html --junitxml=junit.xml \
 		-n 16 \
 		$(if $(EVAL), , -m "not eval") \
-		$(if $(SLOW), --timeout 60 --retries 2 --retry-delay 5, --timeout 5 -m "not slow and not eval") \
+		$(if $(SLOW), --timeout 60 --retries 2 --retry-delay 5, --timeout 10 -m "not slow and not eval") \
 		$(if $(PROFILE), --profile-svg)
 
 eval:
@@ -72,11 +72,21 @@ docs: docs/conf.py docs/*.rst docs/.clean
 
 .PHONY: site
 site: site/dist/index.html site/dist/docs
+	echo "gptme.org" > site/dist/CNAME
 
-site/dist/index.html: README.md
+.PHONY: site/dist/index.html
+site/dist/index.html: README.md site/dist/style.css site/template.html
 	mkdir -p site/dist
-	pandoc -s -f gfm -t html5 -o $@ $< --metadata title=" "
+	sed '1s/Website/GitHub/;1s|https://gptme.org/|https://github.com/ErikBjare/gptme|' README.md | \
+	cat README.md \
+		| sed '0,/Website/{s/Website/GitHub/}' - \
+		| sed '0,/gptme.org\/\"/{s/gptme.org\/\"/github.com\/ErikBjare\/gptme\"/}' - \
+		| pandoc -s -f gfm -t html5 -o $@ --metadata title="gptme - agent in your terminal" --css style.css --template=site/template.html
 	cp -r media site/dist
+
+site/dist/style.css: site/style.css
+	mkdir -p site/dist
+	cp site/style.css site/dist
 
 site/dist/docs: docs
 	cp -r docs/_build/html site/dist/docs

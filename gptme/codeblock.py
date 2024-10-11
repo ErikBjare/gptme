@@ -3,17 +3,17 @@ from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 
-@dataclass
+@dataclass(frozen=True)
 class Codeblock:
     lang: str
     content: str
     path: str | None = None
     start: int | None = field(default=None, compare=False)
 
-    # init path in __post_init__ if path is None and lang is pathy
     def __post_init__(self):
+        # init path if path is None and lang is pathy
         if self.path is None and self.is_filename:
-            self.path = self.lang
+            object.__setattr__(self, "path", self.lang)  # frozen dataclass workaround
 
     def to_markdown(self) -> str:
         return f"```{self.lang}\n{self.content}\n```"

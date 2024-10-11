@@ -2789,6 +2789,19 @@ standalone = ["Sphinx (>=5)"]
 test = ["pytest"]
 
 [[package]]
+name = "sphinxcontrib-asciinema"
+version = "0.4.2"
+description = "Embed asciinema casts in your Sphinx docs"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sphinxcontrib.asciinema-0.4.2.tar.gz", hash = "sha256:ab38b3e376f335d3e87f445e3ecbd0524e61bab380760c54c32ee4d4a95c3a59"},
+]
+
+[package.dependencies]
+sphinx = "*"
+
+[[package]]
 name = "sphinxcontrib-devhelp"
 version = "2.0.0"
 description = "sphinxcontrib-devhelp is a sphinx extension which outputs Devhelp documents"
@@ -3307,4 +3320,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0337931245800c5af7818162cfd81dbfea9f11400be41bb2b03ca4437fc57e70"
+content-hash = "954c64862ceb61d678f9a6ca3b89c2886cbb3db363a7696072f342faf955baf2"

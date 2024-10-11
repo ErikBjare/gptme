@@ -8,23 +8,29 @@ on:
       suite:
         description: 'Eval suite to run (leave empty for basic suite)'
         required: false
-        default: ''
       models:
         description: 'Comma-separated list of models to evaluate'
         required: false
-        default: ''
       timeout:
         description: 'Timeout for each eval in seconds'
+        type: number
         required: false
-        default: '60'
       image-suffix:
-        description: 'Suffix to use for docker image, e.g. -full'
-        required: false
-        default: ''
+        type: choice
+        description: 'Suffix to use for docker image'
+        options:
+        - ''
+        - '-full'
 
 jobs:
   run-evals:
     runs-on: ubuntu-latest
+    env:
+      OWNER: ${{ github.repository_owner }}
+      SUITE: ${{ github.event.inputs.suite || '' }}
+      MODELS: ${{ github.event.inputs.models || '' }}
+      TIMEOUT: ${{ github.event.inputs.timeout || '60' }}
+      IMAGE_SUFFIX: ${{ github.event.inputs.image-suffix || '' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -39,14 +45,11 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set environment variables
-      run: |
-        echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
-      env:
-        OWNER: '${{ github.repository_owner }}'
+      run: echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
 
     - name: Pull Docker image
       run: |
-        docker pull ghcr.io/${{ env.OWNER_LC }}/gptme-eval${{ github.event.inputs.image-suffix }}:latest
+        docker pull ghcr.io/${OWNER_LC}/gptme-eval${IMAGE_SUFFIX}:latest
 
     - name: Write gptme config.toml
       shell: bash
@@ -71,10 +74,6 @@ jobs:
 
     - name: Run evals
       run: |
-        SUITE="${{ github.event.inputs.suite }}"
-        MODELS="${{ github.event.inputs.models }}"
-        TIMEOUT="${{ github.event.inputs.timeout }}"
-
         MODEL_ARGS=""
         if [ -n "$MODELS" ]; then
           IFS=',' read -ra MODEL_ARRAY <<< "$MODELS"
@@ -83,8 +82,10 @@ jobs:
           done
         fi
 
-        echo "Running evals for suite: $SUITE"
+        echo "Running evals for suite: ${SUITE:-basic}"
         echo "Models: ${MODELS:-default}"
+        echo "Timeout: ${TIMEOUT} seconds"
+        echo "Image suffix: ${IMAGE_SUFFIX}"
 
         RESULTS_DIR=$(pwd)/eval_results
         echo "Results dir: $RESULTS_DIR"
@@ -94,9 +95,10 @@ jobs:
         docker run \
           -v ~/.config/gptme:/home/appuser/.config/gptme \
           -v $RESULTS_DIR:/app/eval_results \
-          ghcr.io/${{ env.OWNER_LC }}/gptme-eval${{ github.event.inputs.image-suffix }}:latest \
-          $SUITE \
-          --timeout $TIMEOUT $MODEL_ARGS
+          ghcr.io/${OWNER_LC}/gptme-eval${IMAGE_SUFFIX}:latest \
+          ${SUITE:+"$SUITE"} \
+          --timeout "$TIMEOUT" \
+          $MODEL_ARGS
 
     - name: Configure Git
       run: |

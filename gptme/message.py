@@ -77,6 +77,10 @@ class Message:
     def _content_files_list(
         self, openai: bool = False, anthropic: bool = False
     ) -> list[dict[str, Any]]:
+        # only these providers support files in the content
+        if not openai and not anthropic:
+            raise ValueError("Provider does not support files in the content")
+
         # combines a content message with a list of files
         content: list[dict[str, Any]] = (
             self.content
@@ -90,6 +94,8 @@ class Message:
             if ext not in allowed_file_exts:
                 logger.warning("Unsupported file type: %s", ext)
                 continue
+            if ext == "jpg":
+                ext = "jpeg"
             media_type = f"image/{ext}"
             content.append(
                 {
@@ -97,6 +103,24 @@ class Message:
                     "text": f"![{f.name}]({f.name}):",
                 }
             )
+
+            # read file
+            data_bytes = f.read_bytes()
+            data = base64.b64encode(data_bytes).decode("utf-8")
+
+            # check that the file is not too large
+            # anthropic limit is 5MB, seems to measure the base64-encoded size instead of raw bytes
+            # TODO: use compression to reduce file size
+            # print(f"{len(data)=}")
+            if len(data) > 5_000_000:
+                content.append(
+                    {
+                        "type": "text",
+                        "text": "Image size exceeds 5MB. Please upload a smaller image.",
+                    }
+                )
+                continue
+
             if anthropic:
                 content.append(
                     {
@@ -104,7 +128,7 @@ class Message:
                         "source": {
                             "type": "base64",
                             "media_type": media_type,
-                            "data": base64.b64encode(f.read_bytes()).decode("utf-8"),
+                            "data": data,
                         },
                     }
                 )
@@ -113,9 +137,7 @@ class Message:
                 content.append(
                     {
                         "type": "image_url",
-                        "image_url": {
-                            "url": f"data:{media_type};base64,{base64.b64encode(f.read_bytes()).decode('utf-8')}"
-                        },
+                        "image_url": {"url": f"data:{media_type};base64,{data}"},
                     }
                 )
             else:

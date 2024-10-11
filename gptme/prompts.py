@@ -1,6 +1,8 @@
 """
 This module contains the functions to generate the initial system prompt.
-It is used to condition the AI model to the task at hand and provide context for the conversation.
+It is used to instruct the LLM about its role, how to use tools, and provide context for the conversation.
+
+When prompting, it is important to provide clear instructions and avoid any ambiguity.
 """
 
 import logging
@@ -12,7 +14,7 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config
 from .message import Message
-from .tools import init_tools, loaded_tools
+from .tools import loaded_tools
 from .util import document_prompt_function
 
 PromptType = Literal["full", "short"]
@@ -192,7 +194,6 @@ def prompt_project() -> Generator[Message, None, None]:
 
 def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
-    init_tools()
     assert loaded_tools, "No tools loaded"
     prompt = "# Tools Overview"
     for tool in loaded_tools:

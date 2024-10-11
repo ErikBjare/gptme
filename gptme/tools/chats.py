@@ -9,7 +9,7 @@ from textwrap import indent
 from typing import TYPE_CHECKING
 
 from ..message import Message
-from .base import ToolSpec
+from .base import ToolSpec, ToolUse
 
 if TYPE_CHECKING:
     from ..logmanager import LogManager
@@ -193,13 +193,11 @@ instructions = """
 The chats tool allows you to list, search, and summarize past conversation logs.
 """
 
-examples = """
+examples = f"""
 ### Search for a specific topic in past conversations
 User: Can you find any mentions of "python" in our past conversations?
 Assistant: Certainly! I'll search our past conversations for mentions of "python" using the search_chats function.
-```ipython
-search_chats("python")
-```
+{ToolUse("ipython", [], "search_chats('python')").to_output()}
 """
 
 tool = ToolSpec(

@@ -5,12 +5,14 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import re
+from datetime import date
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
 
+year = date.today().year
 project = "gptme"
-copyright = "2023, Erik Bjäreholt"
+copyright = f"{year}, Erik Bjäreholt"
 author = "Erik Bjäreholt"
 
 
@@ -88,6 +90,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx_click",
     "sphinxcontrib.programoutput",
+    "sphinxcontrib.asciinema",
 ]
 
 
@@ -113,6 +116,7 @@ nitpick_ignore = [
     ("py:class", "pathlib.Path"),
     ("py:class", "flask.app.Flask"),
     ("py:class", "gptme.tools.python.T"),
+    ("py:class", "threading.Thread"),
 ]
 
 # -- Options for HTML output -------------------------------------------------

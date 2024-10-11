@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./media/logo.png" width=150 />
+  <img src="https://gptme.org/media/logo.png" width=150 />
 </p>
 
 <h1 align="center">gptme</h1>
@@ -10,11 +10,11 @@
 
 <!-- Links -->
 <p align="center">
-  <a href="https://erik.bjareholt.com/gptme/docs/getting-started.html">Getting Started</a>
+  <a href="https://gptme.org/docs/getting-started.html">Getting Started</a>
   •
-  <a href="https://erik.bjareholt.com/gptme/">Website</a>
+  <a href="https://gptme.org/">Website</a>
   •
-  <a href="https://erik.bjareholt.com/gptme/docs/">Documentation</a>
+  <a href="https://gptme.org/docs/">Documentation</a>
 </p>
 
 <!-- Badges -->
@@ -29,14 +29,14 @@
     <img src="https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
   </a>
   <br>
-  <a href="https://pypi.org/project/gptme-python/">
-    <img src="https://img.shields.io/pypi/v/gptme-python" alt="PyPI version" />
+  <a href="https://pypi.org/project/gptme/">
+    <img src="https://img.shields.io/pypi/v/gptme" alt="PyPI version" />
   </a>
-  <a href="https://pepy.tech/project/gptme-python">
-    <img src="https://static.pepy.tech/badge/gptme-python" alt="Downloads all-time" />
+  <a href="https://pepy.tech/project/gptme">
+    <img src="https://img.shields.io/pepy/dt/gptme" alt="PyPI - Downloads all-time" />
   </a>
-  <a href="https://pepy.tech/project/gptme-python">
-    <img src="https://static.pepy.tech/badge/gptme-python/week" alt="Downloads per week" />
+  <a href="https://pypistats.org/packages/gptme">
+    <img src="https://img.shields.io/pypi/dd/gptme?color=success" alt="PyPI - Downloads per day" />
   </a>
   <br>
   <a href="https://discord.gg/NMaCmmkxWv">
@@ -47,10 +47,13 @@
   </a>
 </p>
 
+<p align="center">
+📜 Personal AI assistant in your terminal, with tools so it can:<br/>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br/>Assists in all kinds of knowledge-work, especially programming, from a simple but powerful CLI.
+</p>
 
-📜 Interact with an LLM assistant directly in your terminal in a Chat-style interface. With tools so the assistant can run shell commands, execute code, read/write files, and more, enabling them to assist in all kinds of development and terminal-based work.
-
-A local alternative to ChatGPT's "Code Interpreter" that is not constrained by lack of software, internet access, timeouts, or privacy concerns (if local models are used).
+<p align="center">
+An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
+</p>
 
 ## 📚 Table of Contents
 
@@ -153,7 +156,7 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 🌐 Search and browse the web.
   - Can use a browser via Playwright with the [browser][docs-tools-browser] tool.
 - 👀 Vision
-  - Can see images whose paths are referenced in prompts.
+  - Can see images referenced in prompts, screenshots of your desktop, and web pages.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM [providers][docs-providers]
@@ -180,7 +183,6 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 - 🏆 Advanced evals for testing frontier capabilities
 - 🤖 Long-running agents and advanced agent architectures
-- 👀 Vision for web and desktop (see [#50](https://github.com/ErikBjare/gptme/issues/50))
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 
 ### 🛠 Use Cases
@@ -198,7 +200,7 @@ Install with pipx:
 
 ```sh
 # requires Python 3.10+
-pipx install gptme-python
+pipx install gptme
 ```
 
 Now, to get started, run:
@@ -281,16 +283,11 @@ Options:
 ### 📈 Download Stats
 
  - [PePy][pepy]
- - [PyPiStats](https://pypistats.org/packages/gptme-python)
+ - [PyPiStats][pypistats]
 
-[pepy]: https://pepy.tech/project/gptme-python
+[pepy]: https://pepy.tech/project/gptme
+[pypistats]: https://pypistats.org/packages/gptme
 
-
-## 💻 Development
-
-Do you want to contribute? Or do you have questions relating to development? 
-
-Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
 
 ## 🔗 Links
 
@@ -298,30 +295,21 @@ Check out the [CONTRIBUTING](CONTRIBUTING.md) file!
  - [Documentation][docs]
  - [GitHub][github]
  - [Discord][discord]
- - [Twitter announcement][twitter-announcement]
- - [Reddit announcement][reddit-announcement]
- - [HN announcement (2023 aug)][hn-announcement-2023]
- - [HN announcement (2024 aug)][hn-announcement-2024]
-
 
 <!-- links -->
-[website]: https://erik.bjareholt.com/gptme/
+[website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
-[docs]: https://erik.bjareholt.com/gptme/docs/
-[docs-getting-started]: https://erik.bjareholt.com/gptme/docs/getting-started.html
-[docs-examples]: https://erik.bjareholt.com/gptme/docs/examples.html
-[docs-demos]: https://erik.bjareholt.com/gptme/docs/demos.html
-[docs-providers]: https://erik.bjareholt.com/gptme/docs/providers.html
-[docs-tools]: https://erik.bjareholt.com/gptme/docs/tools.html
-[docs-tools-python]: https://erik.bjareholt.com/gptme/docs/tools.html#python
-[docs-tools-shell]: https://erik.bjareholt.com/gptme/docs/tools.html#shell
-[docs-tools-patch]: https://erik.bjareholt.com/gptme/docs/tools.html#patch
-[docs-tools-browser]: https://erik.bjareholt.com/gptme/docs/tools.html#browser
-[docs-bot]: https://erik.bjareholt.com/gptme/docs/bot.html
-[docs-evals]: https://erik.bjareholt.com/gptme/docs/evals.html
-[docs-server]: https://erik.bjareholt.com/gptme/docs/server.html
-[twitter-announcement]: https://twitter.com/ErikBjare/status/1699097896451289115
-[reddit-announcement]: https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/
-[hn-announcement-2023]: https://news.ycombinator.com/item?id=37394845
-[hn-announcement-2024]: https://news.ycombinator.com/item?id=41204256
+[docs]: https://gptme.org/docs/
+[docs-getting-started]: https://gptme.org/docs/getting-started.html
+[docs-examples]: https://gptme.org/docs/examples.html
+[docs-demos]: https://gptme.org/docs/demos.html
+[docs-providers]: https://gptme.org/docs/providers.html
+[docs-tools]: https://gptme.org/docs/tools.html
+[docs-tools-python]: https://gptme.org/docs/tools.html#python
+[docs-tools-shell]: https://gptme.org/docs/tools.html#shell
+[docs-tools-patch]: https://gptme.org/docs/tools.html#patch
+[docs-tools-browser]: https://gptme.org/docs/tools.html#browser
+[docs-bot]: https://gptme.org/docs/bot.html
+[docs-evals]: https://gptme.org/docs/evals.html
+[docs-server]: https://gptme.org/docs/server.html

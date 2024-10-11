@@ -1,6 +1,16 @@
-This document is a work in progress. PRs are welcome.
+Contributing
+============
 
-### Tests
+We welcome contributions to the project. Here is some information to get you started.
+
+.. note::
+    This document is a work in progress. PRs are welcome.
+
+.. contents::
+   :local:
+
+Tests
+-----
 
 Run tests with `make test`.
 
@@ -14,7 +24,7 @@ Tests are currently covering:
 
 There are also some integration tests in `./tests/test-integration.sh` which are used to manually test more complex tasks.
 
+Release
+-------
 
-### Release
-
-To make a release, simply run `gh release create v0.0.0` (with the correct version number) and CI will publish the package to PyPI.
+To make a release, simply run `make release` and follow the instructions.
