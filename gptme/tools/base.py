@@ -98,6 +98,9 @@ class ToolUse:
             try:
                 yield from tool.execute(self.content, ask, self.args)
             except Exception as e:
+                # if we are testing, raise the exception
+                if "pytest" in globals():
+                    raise e
                 yield Message("system", f"Error executing tool '{self.tool}': {e}")
         else:
             logger.warning(f"Tool '{self.tool}' is not available for execution.")
