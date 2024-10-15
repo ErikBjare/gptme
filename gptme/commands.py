@@ -124,7 +124,7 @@ def handle_cmd(
             content = full_args if full_args else input("[impersonate] Assistant: ")
             msg = Message("assistant", content)
             yield msg
-            yield from execute_msg(msg, confirm)
+            yield from execute_msg(msg, confirm=lambda _: True)
         case "tokens":
             manager.undo(1, quiet=True)
             n_tokens = len_tokens(manager.log.messages)
