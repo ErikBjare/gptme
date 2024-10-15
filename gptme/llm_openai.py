@@ -26,7 +26,8 @@ def init(llm: str, config):
 
     if llm == "openai":
         api_key = config.get_env_required("OPENAI_API_KEY")
-        openai = OpenAI(api_key=api_key)
+        base_url = config.get_env("OPENAI_API_BASE") or "https://api.openai.com/v1"
+        openai = OpenAI(api_key=api_key, base_url=base_url)
     elif llm == "azure":
         api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
         azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")

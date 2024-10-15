@@ -1,14 +1,13 @@
 import atexit
 import logging
 import readline
-import sys
 
 from dotenv import load_dotenv
 
 from .config import config_path, load_config, set_config_value
 from .dirs import get_readline_history_file
 from .llm import init_llm
-from .models import PROVIDERS, get_recommended_model, set_default_model
+from .models import get_recommended_model, set_default_model
 from .tabcomplete import register_tabcomplete
 from .tools import init_tools
 from .util import console
@@ -47,7 +46,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
             model = "openrouter/"
         # ask user for API key
         elif interactive:
-            model, _ = ask_for_api_key()
+            model, _, _ = ask_for_api_key()
 
     # fail
     if not model:
@@ -125,7 +124,14 @@ def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
         return _prompt_api_key()
 
 
-def ask_for_api_key() -> tuple[str, str]:  # pragma: no cover
+def _prompt_api_endpoint(provider: str) -> tuple[str, str]:  # pragma: no cover
+    """Interactively ask user for API endpoint"""
+    console.print(f"Custom API endpoint set for {provider}(leave blank if using official api):")
+    config_key = "OPENAI_API_BASE"
+    
+    return input().strip(), config_key
+
+def ask_for_api_key() -> tuple[str, str, str]:  # pragma: no cover
     """Interactively ask user for API key"""
     console.print("No API key set for OpenAI, Anthropic, or OpenRouter.")
     console.print("""You can get one at:
@@ -139,4 +145,8 @@ def ask_for_api_key() -> tuple[str, str]:  # pragma: no cover
     set_config_value(f"env.{env_var}", api_key)
     console.print(f"API key saved to config at {config_path}")
     console.print(f"Successfully set up {provider} API key.")
-    return provider + "/", api_key
+
+    api_endpoint, key = _prompt_api_endpoint(provider)
+    set_config_value(f"env.{key}", api_endpoint)
+
+    return provider + "/", api_key, api_endpoint
