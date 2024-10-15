@@ -102,10 +102,12 @@ def read_url(url: str) -> str:
     download_result: str | Exception | None = None
 
     def resultwrapper(f):
+        nonlocal download_result
         try:
-            f()
-        except Exception:
-            pass
+            download_result = f()
+        except Exception as e:
+            print(f"{e=}")
+            download_result = e
 
     def on_download(download):
         nonlocal download_started, download_result
@@ -135,13 +137,16 @@ def read_url(url: str) -> str:
         else:
             raise Exception(f"Unsupported file extension: {path.suffix}")
 
-    page.on("download", resultwrapper(on_download))
+    page.on("download", lambda: resultwrapper(on_download))
 
     try:
         page.goto(url, wait_until="domcontentloaded")
-    except:
+    except Exception as e:
+        print("EXCEPT CAUGHT")
+        print(f"{e=}")
         # could be download
         sleep(1)
+        print(f"{download_started=}")
         if download_started:
             # wait until download_result is set, or timeout after 10 seconds
             s = 0
