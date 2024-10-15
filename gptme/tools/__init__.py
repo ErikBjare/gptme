@@ -3,7 +3,7 @@ from collections.abc import Generator
 from functools import lru_cache
 
 from ..message import Message
-from .base import ToolSpec, ToolUse
+from .base import ConfirmFunc, ToolSpec, ToolUse
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
 from .gh import tool as gh_tool
@@ -12,12 +12,12 @@ from .python import register_function
 from .python import tool as python_tool
 from .read import tool as tool_read
 from .save import tool_append, tool_save
+from .screenshot import tool as screenshot_tool
 from .shell import tool as shell_tool
 from .subagent import tool as subagent_tool
 from .tmux import tool as tmux_tool
 from .vision import tool as vision_tool
 from .youtube import tool as youtube_tool
-from .screenshot import tool as screenshot_tool
 
 logger = logging.getLogger(__name__)
 
@@ -82,12 +82,12 @@ def load_tool(tool: ToolSpec) -> None:
     loaded_tools.append(tool)
 
 
-def execute_msg(msg: Message, ask: bool) -> Generator[Message, None, None]:
+def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, None]:
     """Uses any tools called in a message and returns the response."""
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     for tooluse in ToolUse.iter_from_content(msg.content):
-        yield from tooluse.execute(ask)
+        yield from tooluse.execute(confirm)
 
 
 # Called often when checking streaming output for executable blocks,

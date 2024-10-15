@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..message import Message
-from ..util import ask_execute, print_preview
-from .base import ToolSpec, ToolUse
+from ..util import print_preview
+from .base import ConfirmFunc, ToolSpec, ToolUse
 
 instructions = f"""
 To patch/modify files, we use an adapted version of git conflict markers.
@@ -153,7 +153,9 @@ def apply(codeblock: str, content: str) -> str:
 
 
 def execute_patch(
-    code: str, ask: bool, args: list[str]
+    code: str,
+    args: list[str],
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """
     Applies the patch.
@@ -175,13 +177,13 @@ def execute_patch(
         yield Message("system", f"Patch failed: {e.args[0]}")
         return
 
+    # TODO: display minimal patches
+    # TODO: include patch headers to delimit multiple patches
     print_preview(patches_str, lang="diff")
-    if ask:
-        # TODO: display minimal patches
-        confirm = ask_execute(f"Apply patch to {fn}?")
-        if not confirm:
-            print("Patch not applied")
-            return
+
+    if not confirm(f"Apply patch to {fn}?"):
+        print("Patch not applied")
+        return
 
     try:
         with open(path) as f:

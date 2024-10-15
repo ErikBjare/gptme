@@ -16,8 +16,8 @@ from .message import (
 )
 from .models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
+from .tools.base import ConfirmFunc
 from .useredit import edit_text_with_editor
-from .util import ask_execute
 
 logger = logging.getLogger(__name__)
 
@@ -54,21 +54,23 @@ action_descriptions: dict[Actions, str] = {
 COMMANDS = list(action_descriptions.keys())
 
 
-def execute_cmd(msg: Message, log: LogManager) -> bool:
+def execute_cmd(msg: Message, log: LogManager, confirm: ConfirmFunc) -> bool:
     """Executes any user-command, returns True if command was executed."""
     assert msg.role == "user"
 
     # if message starts with ., treat as command
     # when command has been run,
     if msg.content[:1] in ["/"]:
-        for resp in handle_cmd(msg.content, log, no_confirm=True):
+        for resp in handle_cmd(msg.content, log, confirm):
             log.append(resp)
         return True
     return False
 
 
 def handle_cmd(
-    cmd: str, manager: LogManager, no_confirm: bool
+    cmd: str,
+    manager: LogManager,
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip("/")
@@ -85,7 +87,7 @@ def handle_cmd(
             # rename the conversation
             print("Renaming conversation (enter empty name to auto-generate)")
             new_name = args[0] if args else input("New name: ")
-            rename(manager, new_name, ask=not no_confirm)
+            rename(manager, new_name, confirm)
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")
@@ -116,13 +118,13 @@ def handle_cmd(
             print("Replaying conversation...")
             for msg in manager.log:
                 if msg.role == "assistant":
-                    for reply_msg in execute_msg(msg, ask=True):
+                    for reply_msg in execute_msg(msg, confirm):
                         print_msg(reply_msg, oneline=False)
         case "impersonate":
             content = full_args if full_args else input("[impersonate] Assistant: ")
             msg = Message("assistant", content)
             yield msg
-            yield from execute_msg(msg, ask=not no_confirm)
+            yield from execute_msg(msg, confirm)
         case "tokens":
             manager.undo(1, quiet=True)
             n_tokens = len_tokens(manager.log.messages)
@@ -146,7 +148,7 @@ def handle_cmd(
             # the case for python, shell, and other block_types supported by tools
             tooluse = ToolUse(name, [], full_args)
             if tooluse.is_runnable:
-                yield from tooluse.execute(ask=not no_confirm)
+                yield from tooluse.execute(confirm)
             else:
                 if manager.log[-1].content.strip() == "/help":
                     # undo the '/help' command itself
@@ -176,16 +178,14 @@ def edit(manager: LogManager) -> Generator[Message, None, None]:  # pragma: no c
     print("Applied edited messages, write /log to see the result")
 
 
-def rename(manager: LogManager, new_name: str, ask: bool = True):
+def rename(manager: LogManager, new_name: str, confirm: ConfirmFunc) -> None:
     if new_name in ["", "auto"]:
         new_name = llm.generate_name(prepare_messages(manager.log.messages))
         assert " " not in new_name
         print(f"Generated name: {new_name}")
-        if ask:
-            confirm = ask_execute("Confirm?")
-            if not confirm:
-                print("Aborting")
-                return
+        if not confirm("Confirm?"):
+            print("Aborting")
+            return
         manager.rename(new_name, keep_date=True)
     else:
         manager.rename(new_name, keep_date=False)
