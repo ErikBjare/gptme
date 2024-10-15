@@ -20,13 +20,7 @@ mode: Literal["markdown", "xml"] = "markdown"
 exclusive_mode = False
 
 
-class ConfirmFunc(Protocol):
-    def __call__(self, msg: str) -> bool: ...
-
-
-def ask_confirm(msg: str) -> bool:
-    """Asks the user for confirmation."""
-    return input(f"{msg} [y/n] ").lower().startswith("y")
+ConfirmFunc = Callable[[str], bool]
 
 
 class ExecuteFunc(Protocol):
