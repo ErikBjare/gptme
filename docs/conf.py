@@ -113,6 +113,7 @@ napoleon_attr_annotations = False
 nitpicky = True
 nitpick_ignore = [
     ("py:class", "collections.abc.Generator"),
+    ("py:class", "collections.abc.Callable"),
     ("py:class", "pathlib.Path"),
     ("py:class", "flask.app.Flask"),
     ("py:class", "gptme.tools.python.T"),
