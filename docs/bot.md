@@ -7,7 +7,7 @@ The `gptme-bot` composite action is a GitHub Action that automates the process o
 
 ## Usage
 
-To use the `gptme-bot` composite action in your repo, you need to create a GitHub Actions workflow file that triggers the action in response to comments on issues or pull requests. 
+To use the `gptme-bot` composite action in your repo, you need to create a GitHub Actions workflow file that triggers the action in response to comments on issues or pull requests.
 
 Here is an example workflow file that triggers the action in response to comments on issues:
 
@@ -35,8 +35,8 @@ jobs:
           allowlist: "erikbjare"
 ```
 
-The `gptme-bot` action will then run the `gptme` command-line tool with the command specified in the comment, and perform actions based on the output of the tool. 
+The `gptme-bot` action will then run the `gptme` command-line tool with the command specified in the comment, and perform actions based on the output of the tool.
 
 If a question was asked, it will simply reply.
 
-If a request was made it will check out the appropriate branch, install dependencies, run `gptme`, then commit and push any changes made. If the issue is a pull request, the bot will push changes directly to the pull request branch. If the issue is not a pull request, the bot will create a new pull request with the changes. 
+If a request was made it will check out the appropriate branch, install dependencies, run `gptme`, then commit and push any changes made. If the issue is a pull request, the bot will push changes directly to the pull request branch. If the issue is not a pull request, the bot will create a new pull request with the changes.

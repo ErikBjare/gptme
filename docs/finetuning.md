@@ -55,7 +55,7 @@ TODO...
 ## Model suggestions
 
  - HuggingFaceH4/zephyr-7b-beta
- - teknium/Replit-v2-CodeInstruct-3B 
+ - teknium/Replit-v2-CodeInstruct-3B
    - I had issues with this one on M2, but would be good to have some 3B model as an example used in testing/debug.
 
 [oa-datasets]: https://projects.laion.ai/Open-Assistant/docs/data/datasets
