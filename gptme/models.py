@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Literal, TypedDict, get_args
 
 from typing_extensions import NotRequired
 
@@ -32,14 +32,22 @@ class _ModelDictMeta(TypedDict):
 
 
 # available providers
-PROVIDERS = ["openai", "anthropic", "azure", "openrouter", "local"]
+ProviderType = Literal[
+    "openai",
+    "anthropic",
+    "azure",
+    "openrouter",
+    "deepseek",
+    "local",
+]
+PROVIDERS = list(get_args(ProviderType))
 
 # default model
 DEFAULT_MODEL: ModelMeta | None = None
 
 # known models metadata
 # TODO: can we get this from the API?
-MODELS: dict[str, dict[str, _ModelDictMeta]] = {
+MODELS: dict[ProviderType, dict[str, _ModelDictMeta]] = {
     "openai": OPENAI_MODELS,
     "anthropic": {
         "claude-3-opus-20240229": {
