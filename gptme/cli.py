@@ -17,7 +17,7 @@ from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
 from .init import init_logging
 from .interrupt import handle_keyboard_interrupt
-from .logmanager import Conversation, get_user_conversations
+from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
 from .tools import all_tools, init_tools
@@ -273,7 +273,7 @@ def pick_log(limit=20) -> Path:  # pragma: no cover
     NEW_CONV = "New conversation"
     LOAD_MORE = "Load more"
     gen_convs = get_user_conversations()
-    convs: list[Conversation] = []
+    convs: list[ConversationMeta] = []
 
     # load conversations
     convs.extend(islice(gen_convs, limit))

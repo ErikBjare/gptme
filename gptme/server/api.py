@@ -18,7 +18,7 @@ from flask import current_app, request
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
 from ..llm import reply
-from ..logmanager import LogManager, get_user_conversations
+from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
 from ..models import get_model
 from ..tools import execute_msg
@@ -91,26 +91,26 @@ def api_conversation_generate(logfile: str):
     model = req_json.get("model", get_model().model)
 
     # load conversation
-    log = LogManager.load(logfile, branch=req_json.get("branch", "main"))
+    manager = LogManager.load(logfile, branch=req_json.get("branch", "main"))
 
     # if prompt is a user-command, execute it
-    if log[-1].role == "user":
+    if manager.log[-1].role == "user":
         # TODO: capture output of command and return it
 
         f = io.StringIO()
         print("Begin capturing stdout, to pass along command output.")
         with redirect_stdout(f):
-            resp = execute_cmd(log[-1], log)
+            resp = execute_cmd(manager.log[-1], manager)
         print("Done capturing stdout.")
         if resp:
-            log.write()
+            manager.write()
             output = f.getvalue()
             return flask.jsonify(
                 [{"role": "system", "content": output, "stored": False}]
             )
 
     # performs reduction/context trimming, if necessary
-    msgs = log.prepare_messages()
+    msgs = prepare_messages(manager.log.messages)
 
     # generate response
     # TODO: add support for streaming
@@ -119,10 +119,10 @@ def api_conversation_generate(logfile: str):
 
     # log response and run tools
     resp_msgs = []
-    log.append(msg)
+    manager.append(msg)
     resp_msgs.append(msg)
     for reply_msg in execute_msg(msg, ask=False):
-        log.append(reply_msg)
+        manager.append(reply_msg)
         resp_msgs.append(reply_msg)
 
     return flask.jsonify(

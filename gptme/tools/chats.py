@@ -47,7 +47,7 @@ def _summarize_conversation(
 
     summary_lines = []
     if include_summary:
-        summary = llm_summarize(log_manager.log)
+        summary = llm_summarize(log_manager.log.messages)
         summary_lines.append(indent(f"Summary: {summary.content}", "   "))
     else:
         non_system_messages = [msg for msg in log_manager.log if msg.role != "system"]

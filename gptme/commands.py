@@ -6,7 +6,7 @@ from time import sleep
 from typing import Literal
 
 from . import llm
-from .logmanager import LogManager
+from .logmanager import LogManager, prepare_messages
 from .message import (
     Message,
     len_tokens,
@@ -68,7 +68,7 @@ def execute_cmd(msg: Message, log: LogManager) -> bool:
 
 
 def handle_cmd(
-    cmd: str, log: LogManager, no_confirm: bool
+    cmd: str, manager: LogManager, no_confirm: bool
 ) -> Generator[Message, None, None]:
     """Handles a command."""
     cmd = cmd.lstrip("/")
@@ -77,44 +77,44 @@ def handle_cmd(
     full_args = cmd.split(" ", 1)[1] if " " in cmd else ""
     match name:
         case "log":
-            log.undo(1, quiet=True)
-            log.print(show_hidden="--hidden" in args)
+            manager.undo(1, quiet=True)
+            manager.log.print(show_hidden="--hidden" in args)
         case "rename":
-            log.undo(1, quiet=True)
-            log.write()
+            manager.undo(1, quiet=True)
+            manager.write()
             # rename the conversation
             print("Renaming conversation (enter empty name to auto-generate)")
             new_name = args[0] if args else input("New name: ")
-            rename(log, new_name, ask=not no_confirm)
+            rename(manager, new_name, ask=not no_confirm)
         case "fork":
             # fork the conversation
             new_name = args[0] if args else input("New name: ")
-            log.fork(new_name)
+            manager.fork(new_name)
         case "summarize":
-            msgs = log.prepare_messages()
+            msgs = prepare_messages(manager.log.messages)
             msgs = [m for m in msgs if not m.hide]
             summary = llm.summarize(msgs)
             print(f"Summary: {summary}")
         case "edit":
             # edit previous messages
             # first undo the '/edit' command itself
-            log.undo(1, quiet=True)
-            yield from edit(log)
+            manager.undo(1, quiet=True)
+            yield from edit(manager)
         case "undo":
             # undo the '/undo' command itself
-            log.undo(1, quiet=True)
+            manager.undo(1, quiet=True)
             # if int, undo n messages
             n = int(args[0]) if args and args[0].isdigit() else 1
-            log.undo(n)
+            manager.undo(n)
         case "exit":
-            log.undo(1, quiet=True)
-            log.write()
+            manager.undo(1, quiet=True)
+            manager.write()
             sys.exit(0)
         case "replay":
-            log.undo(1, quiet=True)
-            log.write()
+            manager.undo(1, quiet=True)
+            manager.write()
             print("Replaying conversation...")
-            for msg in log.log:
+            for msg in manager.log:
                 if msg.role == "assistant":
                     for reply_msg in execute_msg(msg, ask=True):
                         print_msg(reply_msg, oneline=False)
@@ -124,8 +124,8 @@ def handle_cmd(
             yield msg
             yield from execute_msg(msg, ask=not no_confirm)
         case "tokens":
-            log.undo(1, quiet=True)
-            n_tokens = len_tokens(log.log)
+            manager.undo(1, quiet=True)
+            n_tokens = len_tokens(manager.log.messages)
             print(f"Tokens used: {n_tokens}")
             model = get_model()
             if model:
@@ -133,7 +133,7 @@ def handle_cmd(
                 if model.price_input:
                     print(f"Cost (input): ${n_tokens * model.price_input / 1_000_000}")
         case "tools":
-            log.undo(1, quiet=True)
+            manager.undo(1, quiet=True)
             print("Available tools:")
             for tool in loaded_tools:
                 print(
@@ -148,18 +148,18 @@ def handle_cmd(
             if tooluse.is_runnable:
                 yield from tooluse.execute(ask=not no_confirm)
             else:
-                if log.log[-1].content.strip() == "/help":
+                if manager.log[-1].content.strip() == "/help":
                     # undo the '/help' command itself
-                    log.undo(1, quiet=True)
-                    log.write()
+                    manager.undo(1, quiet=True)
+                    manager.write()
                     help()
                 else:
                     print("Unknown command")
 
 
-def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
+def edit(manager: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
     # generate editable toml of all messages
-    t = msgs_to_toml(reversed(log.log))  # type: ignore
+    t = msgs_to_toml(reversed(manager.log))  # type: ignore
     res = None
     while not res:
         t = edit_text_with_editor(t, "toml")
@@ -172,15 +172,13 @@ def edit(log: LogManager) -> Generator[Message, None, None]:  # pragma: no cover
             except KeyboardInterrupt:
                 yield Message("system", "Interrupted")
                 return
-    log.edit(list(reversed(res)))
-    # now we need to redraw the log so the user isn't seeing stale messages in their buffer
-    # log.print()
+    manager.edit(list(reversed(res)))
     print("Applied edited messages, write /log to see the result")
 
 
-def rename(log: LogManager, new_name: str, ask: bool = True):
+def rename(manager: LogManager, new_name: str, ask: bool = True):
     if new_name in ["", "auto"]:
-        new_name = llm.generate_name(log.prepare_messages())
+        new_name = llm.generate_name(prepare_messages(manager.log.messages))
         assert " " not in new_name
         print(f"Generated name: {new_name}")
         if ask:
@@ -188,10 +186,10 @@ def rename(log: LogManager, new_name: str, ask: bool = True):
             if not confirm:
                 print("Aborting")
                 return
-        log.rename(new_name, keep_date=True)
+        manager.rename(new_name, keep_date=True)
     else:
-        log.rename(new_name, keep_date=False)
-    print(f"Renamed conversation to {log.logfile.parent}")
+        manager.rename(new_name, keep_date=False)
+    print(f"Renamed conversation to {manager.logfile.parent}")
 
 
 def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
