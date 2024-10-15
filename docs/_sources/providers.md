@@ -40,7 +40,7 @@ export OPENROUTER_API_KEY="your-api-key"
 
 ## Local/Ollama
 
-There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server. 
+There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.
 
 Here's we will cover how to achieve that with `ollama`.
 
