@@ -1,6 +1,7 @@
 import atexit
 import logging
 import readline
+import sys
 
 from dotenv import load_dotenv
 
@@ -37,13 +38,13 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
         if config.get_env("OPENAI_API_KEY"):
             console.log("Found OpenAI API key, using OpenAI provider")
-            model = "openai"
+            model = "openai/"
         elif config.get_env("ANTHROPIC_API_KEY"):
             console.log("Found Anthropic API key, using Anthropic provider")
-            model = "anthropic"
+            model = "anthropic/"
         elif config.get_env("OPENROUTER_API_KEY"):
             console.log("Found OpenRouter API key, using OpenRouter provider")
-            model = "openrouter"
+            model = "openrouter/"
         # ask user for API key
         elif interactive:
             model, _ = ask_for_api_key()
@@ -52,10 +53,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     if not model:
         raise ValueError("No API key found, couldn't auto-detect provider")
 
-    if any(model.startswith(f"{provider}/") for provider in PROVIDERS):
-        provider, model = model.split("/", 1)
-    else:
-        provider, model = model, None
+    provider, model = model.split("/", 1)
 
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
     init_llm(provider)
@@ -63,7 +61,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     if not model:
         model = get_recommended_model(provider)
         console.log(
-            f"No model specified, using recommended model for provider: {model}"
+            f"No model specified in config file ({config_path}) or env var (MODEL), using recommended model for provider: {model}"
         )
     set_default_model(model)
 
@@ -123,22 +121,22 @@ def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
         return api_key, "openai", "OPENAI_API_KEY"
     else:
         console.print("Invalid API key format. Please try again.")
+        console.print("Or update the config file directly.")
         return _prompt_api_key()
 
 
-def ask_for_api_key():  # pragma: no cover
+def ask_for_api_key() -> tuple[str, str]:  # pragma: no cover
     """Interactively ask user for API key"""
     console.print("No API key set for OpenAI, Anthropic, or OpenRouter.")
-    console.print(
-        """You can get one at:
- - OpenAI: https://platform.openai.com/account/api-keys
- - Anthropic: https://console.anthropic.com/settings/keys
- - OpenRouter: https://openrouter.ai/settings/keys
- """
-    )
+    console.print("""You can get one at:
+     - OpenAI: https://platform.openai.com/account/api-keys
+     - Anthropic: https://console.anthropic.com/settings/keys
+     - OpenRouter: https://openrouter.ai/settings/keys
+     """)
     # Save to config
     api_key, provider, env_var = _prompt_api_key()
+        
     set_config_value(f"env.{env_var}", api_key)
     console.print(f"API key saved to config at {config_path}")
     console.print(f"Successfully set up {provider} API key.")
-    return provider, api_key
+    return provider + "/", api_key
