@@ -140,7 +140,6 @@ override_auto = False
 
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
-    # TODO: add a way to outsource ask_execute decision to another agent/LLM, possibly by overriding rich console somehow
     print_bell()  # Ring the bell just before asking for input
     termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
 

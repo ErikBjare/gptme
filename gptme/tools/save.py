@@ -6,7 +6,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 from ..message import Message
-from ..util import ask_execute, print_preview
+from ..util import print_preview
 from .base import ConfirmFunc, ToolSpec, ToolUse
 from .patch import Patch
 
@@ -77,7 +77,7 @@ def execute_save(
 
     # if the folder doesn't exist, ask to create it
     if not path.parent.exists():
-        if not ask_execute("Folder doesn't exist, create it?"):
+        if not confirm("Folder doesn't exist, create it?"):
             # early return
             yield Message("system", "Save cancelled.")
             return
