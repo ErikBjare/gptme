@@ -111,8 +111,8 @@ def chat(
 
                 # Generate and execute response for this prompt
                 while True:
-                    set_interruptible()
                     try:
+                        set_interruptible()
                         response_msgs = list(step(manager.log, stream, confirm_func))
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
@@ -191,8 +191,9 @@ def step(
         yield msg
 
     # generate response and run tools
-    set_interruptible()
     try:
+        set_interruptible()
+
         # performs reduction/context trimming, if necessary
         msgs = prepare_messages(log.messages)
 
@@ -205,7 +206,7 @@ def step(
         # log response and run tools
         if msg_response:
             yield msg_response.replace(quiet=True)
-            yield from execute_msg(msg_response, confirm=confirm)
+            yield from execute_msg(msg_response, confirm)
     except KeyboardInterrupt:
         clear_interruptible()
         yield Message("system", "Interrupted")
@@ -217,14 +218,13 @@ def prompt_user(value=None) -> str:  # pragma: no cover
     print_bell()
     # Flush stdin to clear any buffered input before prompting
     termios.tcflush(sys.stdin, termios.TCIFLUSH)
-    set_interruptible()
-    try:
-        response = ""
-        while not response:
+    response = ""
+    while not response:
+        try:
+            set_interruptible()
             response = prompt_input(PROMPT_USER, value)
-    except KeyboardInterrupt:
-        print("\nInterrupted. Press Ctrl-D to exit.")
-        return ""
+        except KeyboardInterrupt:
+            print("\nInterrupted. Press Ctrl-D to exit.")
     clear_interruptible()
     if response:
         readline.add_history(response)
