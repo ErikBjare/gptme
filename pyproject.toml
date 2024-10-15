@@ -55,6 +55,7 @@ flask = {version = "^3.0", optional=true}
 # lint
 mypy = "*"
 ruff = "*"
+pre-commit = "*"
 
 # test
 pytest = "^8.0"
