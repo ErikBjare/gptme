@@ -19,8 +19,10 @@ from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .models import get_model
 from .tools import ToolUse, execute_msg, has_tool
+from .tools.base import ConfirmFunc
 from .tools.browser import read_url
 from .util import (
+    ask_execute,
     console,
     path_with_tilde,
     print_bell,
@@ -89,6 +91,11 @@ def chat(
     manager.log.print(show_hidden=show_hidden)
     console.print("--- ^^^ past messages ^^^ ---")
 
+    def confirm_func(msg) -> bool:
+        if no_confirm:
+            return True
+        return ask_execute(msg)
+
     # main loop
     while True:
         # if prompt_msgs given, process each prompt fully before moving to the next
@@ -99,16 +106,14 @@ def chat(
                     msg = _include_paths(msg)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
-                if execute_cmd(msg, manager):
+                if execute_cmd(msg, manager, confirm_func):
                     continue
 
                 # Generate and execute response for this prompt
                 while True:
                     set_interruptible()
                     try:
-                        response_msgs = list(
-                            step(manager.log, no_confirm, stream=stream)
-                        )
+                        response_msgs = list(step(manager.log, stream, confirm_func))
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
                         manager.append(Message("system", "Interrupted"))
@@ -120,7 +125,7 @@ def chat(
                         manager.append(response_msg)
                         # run any user-commands, if msg is from user
                         if response_msg.role == "user" and execute_cmd(
-                            response_msg, manager
+                            response_msg, manager, confirm_func
                         ):
                             break
 
@@ -153,17 +158,17 @@ def chat(
 
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
-        for msg in step(manager.log, no_confirm, stream=stream):  # pragma: no cover
+        for msg in step(manager.log, stream, confirm_func):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
-            if msg.role == "user" and execute_cmd(msg, manager):
+            if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
                 break
 
 
 def step(
     log: Log | list[Message],
-    no_confirm: bool,
-    stream: bool = True,
+    stream: bool,
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
@@ -200,7 +205,7 @@ def step(
         # log response and run tools
         if msg_response:
             yield msg_response.replace(quiet=True)
-            yield from execute_msg(msg_response, ask=not no_confirm)
+            yield from execute_msg(msg_response, confirm=confirm)
     except KeyboardInterrupt:
         clear_interruptible()
         yield Message("system", "Interrupted")

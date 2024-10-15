@@ -13,8 +13,8 @@ from collections.abc import Generator
 from time import sleep
 
 from ..message import Message
-from ..util import ask_execute, print_preview
-from .base import ToolSpec, ToolUse
+from ..util import print_preview
+from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
@@ -149,19 +149,18 @@ def list_sessions() -> Message:
 
 
 def execute_tmux(
-    code: str, ask: bool, args: list[str]
+    code: str,
+    args: list[str],
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Executes a command in tmux and returns the output."""
     assert not args
     cmd = code.strip()
 
-    if ask:
-        print_preview(f"Command: {cmd}", "bash")
-        confirm = ask_execute()
-        print()
-        if not confirm:
-            yield Message("system", "Command execution cancelled.")
-            return
+    print_preview(f"Command: {cmd}", "bash")
+    if not confirm(f"Execute command: {cmd}?"):
+        yield Message("system", "Command execution cancelled.")
+        return
 
     parts = cmd.split(maxsplit=1)
     command = parts[0]

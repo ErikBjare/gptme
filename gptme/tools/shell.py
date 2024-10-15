@@ -16,8 +16,8 @@ from collections.abc import Generator
 import bashlex
 
 from ..message import Message
-from ..util import ask_execute, get_tokenizer, print_preview
-from .base import ToolSpec, ToolUse
+from ..util import get_tokenizer, print_preview
+from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
@@ -238,7 +238,7 @@ def set_shell(shell: ShellSession) -> None:
 
 
 def execute_shell(
-    code: str, ask: bool, args: list[str]
+    code: str, args: list[str], confirm: ConfirmFunc
 ) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
     shell = get_shell()
@@ -248,32 +248,30 @@ def execute_shell(
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
-    confirm = True
-    if ask:
-        print_preview(f"$ {cmd}", "bash")
-        confirm = ask_execute()
-        print()
+    print_preview(f"$ {cmd}", "bash")
+    if not confirm(f"Run command `{cmd}`?"):
+        yield Message("system", "Command not run")
+        return
 
-    if not ask or confirm:
-        try:
-            returncode, stdout, stderr = shell.run(cmd)
-        except Exception as e:
-            yield Message("system", f"Error: {e}")
-            return
-        stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
-        stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
+    try:
+        returncode, stdout, stderr = shell.run(cmd)
+    except Exception as e:
+        yield Message("system", f"Error: {e}")
+        return
+    stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
+    stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
 
-        msg = _format_block_smart("Ran command", cmd, lang="bash") + "\n\n"
-        if stdout:
-            msg += _format_block_smart("", stdout, "stdout") + "\n\n"
-        if stderr:
-            msg += _format_block_smart("", stderr, "stderr") + "\n\n"
-        if not stdout and not stderr:
-            msg += "No output\n"
-        if returncode:
-            msg += f"Return code: {returncode}"
+    msg = _format_block_smart("Ran command", cmd, lang="bash") + "\n\n"
+    if stdout:
+        msg += _format_block_smart("", stdout, "stdout") + "\n\n"
+    if stderr:
+        msg += _format_block_smart("", stderr, "stderr") + "\n\n"
+    if not stdout and not stderr:
+        msg += "No output\n"
+    if returncode:
+        msg += f"Return code: {returncode}"
 
-        yield Message("system", msg)
+    yield Message("system", msg)
 
 
 def _format_block_smart(header: str, cmd: str, lang="") -> str:

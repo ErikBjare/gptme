@@ -20,9 +20,18 @@ mode: Literal["markdown", "xml"] = "markdown"
 exclusive_mode = False
 
 
+class ConfirmFunc(Protocol):
+    def __call__(self, msg: str) -> bool: ...
+
+
+def ask_confirm(msg: str) -> bool:
+    """Asks the user for confirmation."""
+    return input(f"{msg} [y/n] ").lower().startswith("y")
+
+
 class ExecuteFunc(Protocol):
     def __call__(
-        self, code: str, ask: bool, args: list[str]
+        self, code: str, args: list[str], confirm: ConfirmFunc
     ) -> Generator[Message, None, None]: ...
 
 
@@ -88,7 +97,7 @@ class ToolUse:
     content: str
     start: int | None = None
 
-    def execute(self, ask: bool) -> Generator[Message, None, None]:
+    def execute(self, confirm: ConfirmFunc) -> Generator[Message, None, None]:
         """Executes a tool-use tag and returns the output."""
         # noreorder
         from . import get_tool  # fmt: skip
@@ -96,7 +105,7 @@ class ToolUse:
         tool = get_tool(self.tool)
         if tool and tool.execute:
             try:
-                yield from tool.execute(self.content, ask, self.args)
+                yield from tool.execute(self.content, self.args, confirm)
             except Exception as e:
                 # if we are testing, raise the exception
                 if "pytest" in globals():

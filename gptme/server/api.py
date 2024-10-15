@@ -83,6 +83,11 @@ def api_conversation_post(logfile: str):
     return {"status": "ok"}
 
 
+# TODO: add support for confirmation
+def confirm_func(msg: str) -> bool:
+    return True
+
+
 # generate response
 @api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
 def api_conversation_generate(logfile: str):
@@ -100,7 +105,7 @@ def api_conversation_generate(logfile: str):
         f = io.StringIO()
         print("Begin capturing stdout, to pass along command output.")
         with redirect_stdout(f):
-            resp = execute_cmd(manager.log[-1], manager)
+            resp = execute_cmd(manager.log[-1], manager, confirm_func)
         print("Done capturing stdout.")
         if resp:
             manager.write()
@@ -121,7 +126,7 @@ def api_conversation_generate(logfile: str):
     resp_msgs = []
     manager.append(msg)
     resp_msgs.append(msg)
-    for reply_msg in execute_msg(msg, ask=False):
+    for reply_msg in execute_msg(msg, confirm_func):
         manager.append(reply_msg)
         resp_msgs.append(reply_msg)
 

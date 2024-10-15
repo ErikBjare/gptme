@@ -19,8 +19,8 @@ from typing import (
 )
 
 from ..message import Message
-from ..util import ask_execute, print_preview
-from .base import ToolSpec, ToolUse
+from ..util import print_preview
+from .base import ConfirmFunc, ToolSpec, ToolUse
 
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
@@ -93,19 +93,16 @@ def _get_ipython():
     return _ipython
 
 
-def execute_python(code: str, ask: bool, args=None) -> Generator[Message, None, None]:
+def execute_python(
+    code: str, args: list[str], confirm: ConfirmFunc = lambda _: True
+) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
     code = code.strip()
-    if ask:
-        print_preview(code, "python")
-        confirm = ask_execute()
-        print()
-        if not confirm:
-            # early return
-            yield Message("system", "Aborted, user chose not to run command.")
-            return
-    else:
-        print("Skipping confirmation")
+    print_preview(code, "python")
+    if not confirm(f"{code}\n\nExecute this code?"):
+        # early return
+        yield Message("system", "Aborted, user chose not to run command.")
+        return
 
     # Create an IPython instance if it doesn't exist yet
     _ipython = _get_ipython()

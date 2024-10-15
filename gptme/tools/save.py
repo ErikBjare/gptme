@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import ask_execute, print_preview
-from .base import ToolSpec, ToolUse
+from .base import ConfirmFunc, ToolSpec, ToolUse
 from .patch import Patch
 
 # FIXME: this is markdown-specific instructions, thus will confuse the XML mode
@@ -38,7 +38,9 @@ examples_append = f"""
 
 
 def execute_save(
-    code: str, ask: bool, args: list[str]
+    code: str,
+    args: list[str],
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Save code to a file."""
     fn = " ".join(args)
@@ -53,20 +55,13 @@ def execute_save(
 
     # TODO: add check that it doesn't try to write a file with placeholders!
 
-    if ask:
-        if Path(fn).exists():
-            current = Path(fn).read_text()
-            p = Patch(current, code)
-            # TODO: if inefficient save, replace request with patch (and vice versa), or even append
-            print_preview(p.diff_minimal(), "diff")
+    if Path(fn).exists():
+        current = Path(fn).read_text()
+        p = Patch(current, code)
+        # TODO: if inefficient save, replace request with patch (and vice versa), or even append
+        print_preview(p.diff_minimal(), "diff")
 
-        confirm = ask_execute(f"Save to {fn}?")
-        print()
-    else:
-        confirm = True
-        print("Skipping confirmation.")
-
-    if ask and not confirm:
+    if not confirm(f"Save to {fn}?"):
         # early return
         yield Message("system", "Save cancelled.")
         return
@@ -75,31 +70,18 @@ def execute_save(
 
     # if the file exists, ask to overwrite
     if path.exists():
-        if ask:
-            overwrite = ask_execute("File exists, overwrite?")
-            print()
-        else:
-            overwrite = True
-            print("Skipping overwrite confirmation.")
-        if not overwrite:
+        if not confirm("File exists, overwrite?"):
             # early return
             yield Message("system", "Save cancelled.")
             return
 
     # if the folder doesn't exist, ask to create it
     if not path.parent.exists():
-        if ask:
-            create = ask_execute("Folder doesn't exist, create it?")
-            print()
-        else:
-            create = True
-            print("Skipping folder creation confirmation.")
-        if create:
-            path.parent.mkdir(parents=True)
-        else:
+        if not ask_execute("Folder doesn't exist, create it?"):
             # early return
             yield Message("system", "Save cancelled.")
             return
+        path.parent.mkdir(parents=True)
 
     print("Saving to " + fn)
     with open(path, "w") as f:
@@ -108,7 +90,7 @@ def execute_save(
 
 
 def execute_append(
-    code: str, ask: bool, args: list[str]
+    code: str, args: list[str], confirm: ConfirmFunc
 ) -> Generator[Message, None, None]:
     """Append code to a file."""
     fn = " ".join(args)
@@ -119,14 +101,7 @@ def execute_append(
     if not code.endswith("\n"):
         code += "\n"
 
-    if ask:
-        confirm = ask_execute(f"Append to {fn}?")
-        print()
-    else:
-        confirm = True
-        print("Skipping append confirmation.")
-
-    if ask and not confirm:
+    if not confirm(f"Append to {fn}?"):
         # early return
         yield Message("system", "Append cancelled.")
         return

@@ -4,7 +4,7 @@ from gptme.tools.python import callable_signature, execute_python
 
 
 def run(code):
-    return next(execute_python(code, ask=False)).content
+    return next(execute_python(code, [])).content
 
 
 def test_execute_python():

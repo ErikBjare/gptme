@@ -180,6 +180,9 @@ class Message:
     def format(self, oneline: bool = False, highlight: bool = False) -> str:
         return format_msgs([self], oneline=oneline, highlight=highlight)[0]
 
+    def print(self, oneline: bool = False, highlight: bool = True) -> None:
+        print_msg(self, oneline=oneline, highlight=highlight)
+
     def to_toml(self) -> str:
         """Converts a message to a TOML string, for easy editing by hand in editor to then be parsed back."""
         flags = []
