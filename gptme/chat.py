@@ -106,7 +106,9 @@ def chat(
                 while True:
                     set_interruptible()
                     try:
-                        response_msgs = list(step(manager, no_confirm, stream=stream))
+                        response_msgs = list(
+                            step(manager.log, no_confirm, stream=stream)
+                        )
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
                         manager.append(Message("system", "Interrupted"))
@@ -151,7 +153,7 @@ def chat(
 
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
-        for msg in step(manager, no_confirm, stream=stream):  # pragma: no cover
+        for msg in step(manager.log, no_confirm, stream=stream):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, manager):
@@ -159,13 +161,13 @@ def chat(
 
 
 def step(
-    log: Log | LogManager,
+    log: Log | list[Message],
     no_confirm: bool,
     stream: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
-    if isinstance(log, LogManager):
-        log = log.log
+    if isinstance(log, list):
+        log = Log(log)
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -179,9 +181,6 @@ def step(
         or not any(role == "user" for role in [m.role for m in log])
     ):  # pragma: no cover
         inquiry = prompt_user()
-        if not inquiry:
-            # Empty command, ask for input again
-            return
         msg = Message("user", inquiry, quiet=True)
         msg = _include_paths(msg)
         yield msg
@@ -215,7 +214,9 @@ def prompt_user(value=None) -> str:  # pragma: no cover
     termios.tcflush(sys.stdin, termios.TCIFLUSH)
     set_interruptible()
     try:
-        response = prompt_input(PROMPT_USER, value)
+        response = ""
+        while not response:
+            response = prompt_input(PROMPT_USER, value)
     except KeyboardInterrupt:
         print("\nInterrupted. Press Ctrl-D to exit.")
         return ""
