@@ -3,8 +3,7 @@ import logging
 import shutil
 import textwrap
 from collections.abc import Generator
-from copy import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from itertools import islice, zip_longest
 from pathlib import Path
@@ -25,6 +24,44 @@ logger = logging.getLogger(__name__)
 RoleLiteral = Literal["user", "assistant", "system"]
 
 
+@dataclass(frozen=True)
+class Log:
+    messages: list[Message] = field(default_factory=list)
+
+    def __getitem__(self, key):
+        return self.messages[key]
+
+    def __len__(self) -> int:
+        return len(self.messages)
+
+    def __iter__(self) -> Generator[Message, None, None]:
+        yield from self.messages
+
+    def replace(self, **kwargs) -> "Log":
+        return replace(self, **kwargs)
+
+    def append(self, msg: Message) -> "Log":
+        return self.replace(messages=self.messages + [msg])
+
+    def pop(self) -> "Log":
+        return self.replace(messages=self.messages[:-1])
+
+    @classmethod
+    def read_jsonl(cls, path: PathLike, limit=None) -> "Log":
+        gen = _gen_read_jsonl(path)
+        if limit:
+            gen = islice(gen, limit)  # type: ignore
+        return Log(list(gen))
+
+    def write_jsonl(self, path: PathLike) -> None:
+        with open(path, "w") as file:
+            for msg in self.messages:
+                file.write(json.dumps(msg.to_dict()) + "\n")
+
+    def print(self, show_hidden: bool = False):
+        print_msg(self.messages, oneline=False, show_hidden=show_hidden)
+
+
 class LogManager:
     """Manages a conversation log."""
 
@@ -33,7 +70,6 @@ class LogManager:
         log: list[Message] | None = None,
         logdir: PathLike | None = None,
         branch: str | None = None,
-        show_hidden=False,
     ):
         self.current_branch = branch or "main"
 
@@ -47,11 +83,11 @@ class LogManager:
         self.name = self.logdir.name
 
         # load branches from adjacent files
-        self._branches = {self.current_branch: log or []}
+        self._branches = {self.current_branch: Log(log or [])}
         if self.logdir / "conversation.jsonl":
             _branch = "main"
             if _branch not in self._branches:
-                self._branches[_branch] = _read_jsonl(
+                self._branches[_branch] = Log.read_jsonl(
                     self.logdir / "conversation.jsonl"
                 )
         for file in self.logdir.glob("branches/*.jsonl"):
@@ -59,14 +95,19 @@ class LogManager:
                 continue
             _branch = file.stem
             if _branch not in self._branches:
-                self._branches[_branch] = _read_jsonl(file)
+                self._branches[_branch] = Log.read_jsonl(file)
 
-        self.show_hidden = show_hidden
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
 
     @property
-    def log(self) -> list[Message]:
+    def log(self) -> Log:
         return self._branches[self.current_branch]
+
+    @log.setter
+    def log(self, value: Log | list[Message]) -> None:
+        if isinstance(value, list):
+            value = Log(value)
+        self._branches[self.current_branch] = value
 
     @property
     def logfile(self) -> Path:
@@ -74,21 +115,9 @@ class LogManager:
             return get_logs_dir() / self.name / "conversation.jsonl"
         return self.logdir / "branches" / f"{self.current_branch}.jsonl"
 
-    def __getitem__(self, key):
-        return self.log[key]
-
-    def __len__(self):
-        return len(self.log)
-
-    def __iter__(self):
-        return iter(self.log)
-
-    def __bool__(self):
-        return bool(self.log)
-
     def append(self, msg: Message) -> None:
         """Appends a message to the log, writes the log, prints the message."""
-        self.log.append(msg)
+        self.log = self.log.append(msg)
         self.write()
         if not msg.quiet:
             print_msg(msg, oneline=False)
@@ -101,48 +130,47 @@ class LogManager:
         Path(self.logfile).parent.mkdir(parents=True, exist_ok=True)
 
         # write current branch
-        _write_jsonl(self.logfile, self.log)
+        self.log.write_jsonl(self.logfile)
 
         # write other branches
         # FIXME: wont write main branch if on a different branch
         if branches:
             branches_dir = self.logdir / "branches"
             branches_dir.mkdir(parents=True, exist_ok=True)
-            for branch, msgs in self._branches.items():
+            for branch, log in self._branches.items():
                 if branch == "main":
                     continue
                 branch_path = branches_dir / f"{branch}.jsonl"
-                _write_jsonl(branch_path, msgs)
-
-    def print(self, show_hidden: bool | None = None):
-        print_msg(self.log, oneline=False, show_hidden=show_hidden or self.show_hidden)
+                log.write_jsonl(branch_path)
 
     def _save_backup_branch(self, type="edit") -> None:
         """backup the current log to a new branch, usually before editing/undoing"""
         branch_prefix = f"{self.current_branch}-{type}-"
         n = len([b for b in self._branches.keys() if b.startswith(branch_prefix)])
-        self._branches[f"{branch_prefix}{n}"] = copy(self.log)
+        self._branches[f"{branch_prefix}{n}"] = self.log
         self.write()
 
-    def edit(self, new_log: list[Message]) -> None:
+    def edit(self, new_log: Log | list[Message]) -> None:
         """Edits the log."""
+        if isinstance(new_log, list):
+            new_log = Log(new_log)
         self._save_backup_branch(type="edit")
-        self._branches[self.current_branch] = new_log
+        self.log = new_log
         self.write()
 
     def undo(self, n: int = 1, quiet=False) -> None:
         """Removes the last message from the log."""
-        undid = self[-1] if self.log else None
+        undid = self.log[-1] if self.log else None
         if undid and undid.content.startswith("/undo"):
-            self.log.pop()
+            self.log = self.log.pop()
 
         # don't save backup branch if undoing a command
-        if not self[-1].content.startswith("/"):
+        if self.log and not self.log[-1].content.startswith("/"):
             self._save_backup_branch(type="undo")
 
         # Doesn't work for multiple undos in a row, but useful in testing
         # assert undid.content == ".undo"  # assert that the last message is an undo
-        peek = self[-1] if self.log else None
+        peek = self.log[-1] if self.log else None
         if not peek:
             print("[yellow]Nothing to undo.[/]")
             return
@@ -150,28 +178,13 @@ class LogManager:
         if not quiet:
             print("[yellow]Undoing messages:[/yellow]")
         for _ in range(n):
-            undid = self.log.pop()
+            undid = self.log[-1]
+            self.log = self.log.pop()
             if not quiet:
                 print(
                     f"[red]  {undid.role}: {textwrap.shorten(undid.content.strip(), width=50, placeholder='...')}[/]",
                 )
-            peek = self[-1] if self.log else None
-
-    def prepare_messages(self) -> list[Message]:
-        """Prepares the log into messages before sending it to the LLM."""
-        msgs = self.log
-        msgs_reduced = list(reduce_log(msgs))
-
-        if len_tokens(msgs) != len_tokens(msgs_reduced):
-            logger.info(
-                f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
-            )
-        msgs_limited = limit_log(msgs_reduced)
-        if len(msgs_reduced) != len(msgs_limited):
-            logger.info(
-                f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages"
-            )
-        return msgs_limited
+            peek = self.log[-1] if self.log else None
 
     @classmethod
     def load(
@@ -202,13 +215,12 @@ class LogManager:
             if create:
                 logger.debug(f"Creating new logfile {logfile}")
                 Path(logfile).parent.mkdir(parents=True, exist_ok=True)
-                _write_jsonl(logfile, [])
+                Log([]).write_jsonl(logfile)
             else:
                 raise FileNotFoundError(f"Could not find logfile {logfile}")
 
-        msgs = _read_jsonl(logfile)
-        if not msgs:
-            msgs = initial_msgs or [get_prompt()]
+        log = Log.read_jsonl(logfile)
+        msgs = log.messages or initial_msgs or [get_prompt()]
         return cls(msgs, logdir=logdir, branch=branch, **kwargs)
 
     def branch(self, name: str) -> None:
@@ -216,7 +228,7 @@ class LogManager:
         self.write()
         if name not in self._branches:
             logger.info(f"Creating a new branch '{name}'")
-            self._branches[name] = copy(self.log)
+            self._branches[name] = self.log
         self.current_branch = name
 
     def diff(self, branch: str) -> str | None:
@@ -292,6 +304,22 @@ class LogManager:
         return d
 
 
+def prepare_messages(msgs: list[Message]) -> list[Message]:
+    """Prepares the messages before sending to the LLM."""
+    msgs_reduced = list(reduce_log(msgs))
+
+    if len_tokens(msgs) != len_tokens(msgs_reduced):
+        logger.info(
+            f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
+        )
+    msgs_limited = limit_log(msgs_reduced)
+    if len(msgs_reduced) != len(msgs_limited):
+        logger.info(
+            f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages"
+        )
+    return msgs_limited
+
+
 def _conversation_files() -> list[Path]:
     # NOTE: only returns the main conversation, not branches (to avoid duplicates)
     # returns the conversation files sorted by modified time (newest first)
@@ -302,7 +330,7 @@ def _conversation_files() -> list[Path]:
 
 
 @dataclass(frozen=True)
-class Conversation:
+class ConversationMeta:
     name: str
     path: str
     created: float
@@ -311,16 +339,16 @@ class Conversation:
     branches: int
 
 
-def get_conversations() -> Generator[Conversation, None, None]:
+def get_conversations() -> Generator[ConversationMeta, None, None]:
     """Returns all conversations, excluding ones used for testing, evals, etc."""
     for conv_fn in _conversation_files():
-        msgs = _read_jsonl(conv_fn, limit=1)
+        log = Log.read_jsonl(conv_fn, limit=1)
         # TODO: can we avoid reading the entire file? maybe wont even be used, due to user convo filtering
         len_msgs = conv_fn.read_text().count("}\n{")
-        assert len(msgs) <= 1
+        assert len(log) <= 1
         modified = conv_fn.stat().st_mtime
-        first_timestamp = msgs[0].timestamp.timestamp() if msgs else modified
-        yield Conversation(
+        first_timestamp = log[0].timestamp.timestamp() if log else modified
+        yield ConversationMeta(
             name=f"{conv_fn.parent.name}",
             path=str(conv_fn),
             created=first_timestamp,
@@ -330,7 +358,7 @@ def get_conversations() -> Generator[Conversation, None, None]:
         )
 
 
-def get_user_conversations() -> Generator[Conversation, None, None]:
+def get_user_conversations() -> Generator[ConversationMeta, None, None]:
     """Returns all user conversations, excluding ones used for testing, evals, etc."""
     for conv in get_conversations():
         if any(conv.name.startswith(prefix) for prefix in ["tmp", "test-"]) or any(
@@ -348,16 +376,3 @@ def _gen_read_jsonl(path: PathLike) -> Generator[Message, None, None]:
             if "timestamp" in json_data:
                 json_data["timestamp"] = datetime.fromisoformat(json_data["timestamp"])
             yield Message(**json_data, files=files)
-
-
-def _read_jsonl(path: PathLike, limit=None) -> list[Message]:
-    gen = _gen_read_jsonl(path)
-    if limit:
-        gen = islice(gen, limit)  # type: ignore
-    return list(gen)
-
-
-def _write_jsonl(path: PathLike, msgs: list[Message]) -> None:
-    with open(path, "w") as file:
-        for msg in msgs:
-            file.write(json.dumps(msg.to_dict()) + "\n")

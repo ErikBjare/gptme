@@ -1,21 +1,20 @@
 import logging
 from datetime import datetime
 
-from gptme.logmanager import Conversation, _read_jsonl, get_user_conversations
+from gptme.logmanager import ConversationMeta, Log, get_user_conversations
 
 # Set up logging
 logging.basicConfig(level=logging.ERROR)
 
 
-def print_user_messages(conv: Conversation):
+def print_user_messages(conv: ConversationMeta):
     """
     Print all user messages from a single conversation.
 
     :param conversation: A dictionary containing conversation details
     """
     lines = []
-    msgs = _read_jsonl(conv.path)
-    for message in msgs:
+    for message in Log.read_jsonl(conv.path):
         if message.role == "user":
             first_line = message.content.split("\n")[0]
             if first_line.startswith("<system>"):
