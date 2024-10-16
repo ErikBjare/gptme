@@ -99,7 +99,7 @@ def execute_python(
     """Executes a python codeblock and returns the output."""
     code = code.strip()
     print_preview(code, "python")
-    if not confirm(f"{code}\n\nExecute this code?"):
+    if not confirm("Execute this code?"):
         # early return
         yield Message("system", "Aborted, user chose not to run command.")
         return

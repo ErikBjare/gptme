@@ -6,8 +6,11 @@ Lets gptme break down a task into smaller parts, and delegate them to subagents.
 
 import json
 import logging
+import random
+import string
 import threading
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
@@ -16,6 +19,7 @@ from .base import ToolSpec, ToolUse
 if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,18 +36,16 @@ class ReturnType:
 
 @dataclass(frozen=True)
 class Subagent:
-    prompt: str
     agent_id: str
+    prompt: str
     thread: threading.Thread
+    logdir: Path
 
     def get_log(self) -> "LogManager":
         # noreorder
-        from gptme.cli import get_logdir  # fmt: skip
-
         from ..logmanager import LogManager  # fmt: skip
 
-        name = f"subagent-{self.agent_id}"
-        return LogManager.load(get_logdir(name))
+        return LogManager.load(self.logdir)
 
     def status(self) -> ReturnType:
         if self.thread.is_alive():
@@ -67,7 +69,7 @@ def _extract_json(s: str) -> str:
     return s[first_brace : last_brace + 1]
 
 
-def subagent(prompt: str, agent_id: str):
+def subagent(agent_id: str, prompt: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
     from gptme import chat  # fmt: skip
@@ -75,8 +77,12 @@ def subagent(prompt: str, agent_id: str):
 
     from ..prompts import get_prompt  # fmt: skip
 
+    def random_string(n):
+        s = string.ascii_lowercase + string.digits
+        return "".join(random.choice(s) for _ in range(n))
+
     name = f"subagent-{agent_id}"
-    logdir = get_logdir(name)
+    logdir = get_logdir(name + "-" + random_string(4))
 
     def run_subagent():
         prompt_msgs = [Message("user", prompt)]
@@ -110,7 +116,7 @@ def subagent(prompt: str, agent_id: str):
         daemon=True,
     )
     t.start()
-    _subagents.append(Subagent(prompt, agent_id, t))
+    _subagents.append(Subagent(agent_id, prompt, t, logdir))
 
 
 def subagent_status(agent_id: str) -> dict:
@@ -138,12 +144,13 @@ def subagent_wait(agent_id: str) -> dict:
 
 
 examples = f"""
-User: compute fib 69 using a subagent
-Assistant: Starting a subagent to compute the 69th Fibonacci number.
-{ToolUse("ipython", [], 'subagent("compute the 69th Fibonacci number", "fib-69")').to_output()}
+User: compute fib 13 using a subagent
+Assistant: Starting a subagent to compute the 13th Fibonacci number.
+{ToolUse("ipython", [], 'subagent("fib-13", "compute the 13th Fibonacci number")').to_output()}
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-{ToolUse("ipython", [], 'subagent_wait("fib-69")').to_output()}
+{ToolUse("ipython", [], 'subagent_wait("fib-13")').to_output()}
+System: {{"status": "success", "result": "The 13th Fibonacci number is 233"}}.
 """
 
 

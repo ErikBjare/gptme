@@ -11,6 +11,7 @@ from .message import Message, len_tokens, msgs2dicts
 if TYPE_CHECKING:
     from anthropic import Anthropic
 
+
 anthropic: "Anthropic | None" = None
 
 
