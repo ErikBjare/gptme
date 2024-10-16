@@ -601,10 +601,10 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>docker
-<span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>git
 
 <span class="gu">### Examples</span>
 
@@ -674,16 +674,17 @@ System:
 <span class="gu">### Examples</span>
 
 
-User: compute fib 69 using a subagent
-Assistant: Starting a subagent to compute the 69th Fibonacci number.
+User: compute fib 13 using a subagent
+Assistant: Starting a subagent to compute the 13th Fibonacci number.
 <span class="sb">```ipython</span>
-<span class="n">subagent</span><span class="p">(</span><span class="s2">&quot;compute the 69th Fibonacci number&quot;</span><span class="p">,</span> <span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
+<span class="n">subagent</span><span class="p">(</span><span class="s2">&quot;fib-13&quot;</span><span class="p">,</span> <span class="s2">&quot;compute the 13th Fibonacci number&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
 <span class="sb">```ipython</span>
-<span class="n">subagent_wait</span><span class="p">(</span><span class="s2">&quot;fib-69&quot;</span><span class="p">)</span>
+<span class="n">subagent_wait</span><span class="p">(</span><span class="s2">&quot;fib-13&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
+System: {&quot;status&quot;: &quot;success&quot;, &quot;result&quot;: &quot;The 13th Fibonacci number is 233&quot;}.
 
 
 <span class="gu">## tmux</span>
@@ -890,7 +891,7 @@ The following libraries are available:
 
 
 The following functions are available in the REPL:
-<span class="k">-</span><span class="w"> </span>subagent(prompt: str, agent_id: str): Runs a subagent and returns the resulting JSON output.
+<span class="k">-</span><span class="w"> </span>subagent(agent_id: str, prompt: str): Runs a subagent and returns the resulting JSON output.
 <span class="k">-</span><span class="w"> </span>subagent_status(agent_id: str) -&gt; dict: Returns the status of a subagent.
 <span class="k">-</span><span class="w"> </span>subagent_wait(agent_id: str) -&gt; dict: Waits for a subagent to finish. Timeout is 1 minute.
 <span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str: Read the text of a webpage and return the text in Markdown format.
@@ -966,7 +967,7 @@ Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3037</p>
+<p>Tokens: 3060</p>
 </dd></dl>
 
 <dl class="py function">
