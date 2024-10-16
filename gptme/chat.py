@@ -189,6 +189,7 @@ def step(
         msg = Message("user", inquiry, quiet=True)
         msg = _include_paths(msg)
         yield msg
+        log = log.append(msg)
 
     # generate response and run tools
     try:
