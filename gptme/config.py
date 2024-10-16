@@ -7,7 +7,7 @@ from pathlib import Path
 
 import tomlkit
 from pydantic import BaseModel, Field, HttpUrl
-from tomlkit import TOMLDocument
+from tomlkit import TOMLDocument, comment
 from tomlkit.container import Container
 
 from .util import console, path_with_tilde
@@ -125,6 +125,30 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
     global _config
     _config = load_config()
 
+def comment_out(key: str, extra_comment: str): # progma: no cover
+    doc: TOMLDocument | Container = _load_config()
+
+    # Set the value
+    keypath = key.split(".")
+    d = doc
+    for key in keypath[:-1]:
+        d = d.get(key, {})
+
+
+    _key = keypath[-1]
+    if value := d.get(_key, None):
+        # drop old
+        del d[_key]
+        # comment out
+        d.add(comment(f"{_key} = {value} # {extra_comment}"))
+
+    # Write the config
+    with open(config_path, "w") as config_file:
+        tomlkit.dump(doc, config_file)
+
+    # Reload config
+    global _config
+    _config = load_config()
 
 def get_workspace_prompt(workspace: str) -> str:
     project_config_paths = [

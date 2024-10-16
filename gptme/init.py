@@ -1,12 +1,20 @@
 import atexit
 import logging
 import readline
+from dataclasses import dataclass
 from typing import Any, cast
 
 from dotenv import load_dotenv
 from rich.prompt import Prompt
 
-from .config import LLMAPIConfig, Provider, config_path, load_config, set_config_value
+from .config import (
+    LLMAPIConfig,
+    Provider,
+    comment_out,
+    config_path,
+    load_config,
+    set_config_value,
+)
 from .dirs import get_readline_history_file
 from .llm import init_llm
 from .models import get_recommended_model, set_default_model
@@ -21,7 +29,48 @@ _init_done = False
 # else create from config or env var
 
 
+@dataclass
+class Migration:
+    old_key: str
+    new_key: str
+    value: str
+
+def migrate_config() -> bool:
+    to_migrate_new:list[Migration] = []
+    config = load_config()
+    if "MODEL" in config.env:
+        original_model = config.get_env_required("MODEL")
+        provider, model = original_model.split("/", 1)
+        to_migrate_new.append(Migration("env.MODEL", "env.API_MODEL", model))
+        to_migrate_new.append(Migration("env.MODEL","env.API_PROVIDER", provider))
+
+    mapping = {
+        "ANTHROPIC_API_KEY": "API_KEY",
+        "OPENROUTER_API_KEY": "API_KEY",
+        "OPENAI_API_KEY": "API_KEY",
+        "OPENAI_API_BASE": "API_ENDPOINT",
+    }
+    for old, new in mapping.items():
+        if old in config.env:
+            to_migrate_new.append(Migration(f"env.{old}", f"env.{new}", config.get_env_required(old)))
+
+    if not to_migrate_new:
+        return False
+
+
+    console.rule("Migrating existing config, due to upgrade...")
+    console.print(f"Updating {config_path}")
+    for migration_item in to_migrate_new:
+        console.print(f"{migration_item.new_key} -> {migration_item.old_key}")
+        set_config_value(migration_item.new_key, migration_item.value)
+        comment_out(migration_item.old_key, "DEPRECATED")
+    console.rule("Migrating config completed")
+    return True
+
+
 def create_from_config(override_model: str | None = None) -> LLMAPIConfig | None:
+    migrate_config()
+
     config = load_config()
     try:
         raw_model = config.get_env("API_MODEL")
@@ -38,6 +87,7 @@ def create_from_config(override_model: str | None = None) -> LLMAPIConfig | None
         logger.debug(f"Load llm config from config file error, {e}")
         return None
 
+
 def create_from_prompt(override_model: str | None = None) -> LLMAPIConfig:
     """Interactively ask user for API key"""
     console.print("""You can get one at:
@@ -51,7 +101,13 @@ def create_from_prompt(override_model: str | None = None) -> LLMAPIConfig:
     endpoint = _prompt_api_endpoint(provider)
     model = _prompt_api_model()
 
-    return LLMAPIConfig(endpoint=cast(Any, endpoint), token=api_key, provider=Provider(provider), model=override_model if override_model else model)
+    return LLMAPIConfig(
+        endpoint=cast(Any, endpoint),
+        token=api_key,
+        provider=Provider(provider),
+        model=override_model if override_model else model,
+    )
+
 
 def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None):
     global _init_done
@@ -68,10 +124,12 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
 
     # get from config
     #  if not model:
-        #  model = config.get_env("MODEL")
+    #  model = config.get_env("MODEL")
 
     if (llm_cfg := create_from_config(model)) is None:
-        console.print(f"No correct config found in config file {config_path} or environment variables. Please provide it in the config file or environment variables.")
+        console.print(
+            f"No correct config found in config file {config_path} or environment variables. Please provide it in the config file or environment variables."
+        )
         console.print("or input in below.")
         llm_cfg = create_from_prompt(model)
         llm_cfg.save_to_config()
@@ -138,13 +196,21 @@ def _prompt_api_key() -> str:  # pragma: no cover
 
 def _prompt_api_endpoint(provider: Provider) -> str | None:  # pragma: no cover
     """Interactively ask user for API endpoint"""
-    val = input(f"Custom API endpoint set for [{provider.value}] (leave blank if using official api):").strip()
+    val = input(
+        f"Custom API endpoint set for [{provider.value}] (leave blank if using official api):"
+    ).strip()
     return val if val else None
+
 
 def _prompt_api_provider() -> Provider:  # pragma: no cover
     """Interactively ask user for llm provider"""
-    val= Prompt.ask("LLM Provider", choices=[x.value for x in Provider], default=Provider.OPENAI.value).strip()
+    val = Prompt.ask(
+        "LLM Provider",
+        choices=[x.value for x in Provider],
+        default=Provider.OPENAI.value,
+    ).strip()
     return Provider(val)
+
 
 def _prompt_api_model() -> str | None:  # pragma: no cover
     """Interactively ask user for llm model"""
@@ -162,7 +228,7 @@ def ask_for_api_key() -> tuple[str, str, str]:  # pragma: no cover
      """)
     # Save to config
     api_key, provider, env_var = _prompt_api_key()
-        
+
     set_config_value(f"env.{env_var}", api_key)
     console.print(f"API key saved to config at {config_path}")
     console.print(f"Successfully set up {provider} API key.")
