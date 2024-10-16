@@ -3,11 +3,10 @@ import shutil
 import sys
 from collections.abc import Iterator
 from functools import lru_cache
-from typing import Literal
 
 from rich import print
 
-from .config import get_config
+from .config import LLMAPIConfig, Provider
 from .constants import PROMPT_ASSISTANT
 from .llm_anthropic import chat as chat_anthropic
 from .llm_anthropic import get_client as get_anthropic_client
@@ -24,21 +23,24 @@ from .tools import ToolUse
 logger = logging.getLogger(__name__)
 
 
-Provider = Literal["openai", "anthropic", "azure", "openrouter", "local"]
+#  Provider = Literal["openai", "anthropic", "azure", "openrouter", "local"]
 
 
-def init_llm(llm: str):
+def init_llm(llm_cfg: LLMAPIConfig):
     # set up API_KEY (if openai) and API_BASE (if local)
-    config = get_config()
-
-    if llm in ["openai", "azure", "openrouter", "local"]:
-        init_openai(llm, config)
+    if llm_cfg.provider in [
+        Provider.OPENAI,
+        Provider.AZURE_OPENAI,
+        Provider.OPENROUTER,
+        Provider.LOCAL,
+    ]:
+        init_openai(llm_cfg)
         assert get_openai_client()
-    elif llm == "anthropic":
-        init_anthropic(config)
+    elif llm_cfg.provider == Provider.ANTHROPIC:
+        init_anthropic(llm_cfg)
         assert get_anthropic_client()
     else:
-        print(f"Error: Unknown LLM: {llm}")
+        print(f"Error: Unknown LLM: {llm_cfg.provider.value}")
         sys.exit(1)
 
 

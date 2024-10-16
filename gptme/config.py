@@ -2,9 +2,11 @@ import glob
 import logging
 import os
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
 import tomlkit
+from pydantic import BaseModel, Field, HttpUrl
 from tomlkit import TOMLDocument
 from tomlkit.container import Container
 
@@ -154,6 +156,47 @@ def get_workspace_prompt(workspace: str) -> str:
             [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
         )
     return ""
+
+
+class Provider(str, Enum):
+    OPENAI = "openai"
+    AZURE_OPENAI = "azure"
+    ANTHROPIC = "anthropic"
+    OPENROUTER = "openrouter"
+    LOCAL = "local"
+
+    def __repr__(self) -> str:
+        return self.value
+
+
+class LLMAPIConfig(BaseModel):
+    endpoint: HttpUrl | None = Field(default=None)
+    token: str
+    provider: Provider
+    model: str | None
+
+    _envvar_api_key: str = "API_KEY"
+    _envvar_provider: str = "API_PROVIDER"
+    _envvar_model: str = "API_MODEL"
+
+    @property
+    def _envvar_endpoint(self) -> str:
+        if self.provider == Provider.OPENAI or self.provider == Provider.AZURE_OPENAI:
+            return "API_ENDPOINT"
+        return ""
+
+    def save_to_config(self):
+        set_config_value(f"env.{self._envvar_api_key}", self.token)
+        set_config_value(f"env.{self._envvar_provider}", self.provider.value)
+        if not self._envvar_endpoint:
+            logger.warning(
+                f"Provider {self.provider.value} has no custom endpoint, skipping saving to config"
+            )
+            return
+        if self.model:
+            set_config_value(f"env.{self._envvar_model}", self.model)
+        if self.endpoint:
+            set_config_value(f"env.{self._envvar_endpoint}", str(self.endpoint))
 
 
 if __name__ == "__main__":

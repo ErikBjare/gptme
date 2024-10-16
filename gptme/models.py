@@ -4,6 +4,8 @@ from typing import TypedDict
 
 from typing_extensions import NotRequired
 
+from gptme.config import Provider
+
 from .llm_openai_models import OPENAI_MODELS
 
 logger = logging.getLogger(__name__)
@@ -70,54 +72,49 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
 }
 
 
-def set_default_model(model: str) -> None:
-    modelmeta = get_model(model)
+def set_default_model(model: str, provider: Provider) -> None:
+    modelmeta = get_model(model, provider)
     assert modelmeta
     global DEFAULT_MODEL
     DEFAULT_MODEL = modelmeta
 
 
-def get_model(model: str | None = None) -> ModelMeta:
+def get_model(model: str | None = None, provider: Provider | None = None) -> ModelMeta:
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
         return DEFAULT_MODEL
 
-    # if only provider is given, get recommended model
-    if model in PROVIDERS:
-        provider = model
+    if provider and not model:
         model = get_recommended_model(provider)
-        return get_model(f"{provider}/{model}")
 
-    if any(f"{provider}/" in model for provider in PROVIDERS):
-        provider, model = model.split("/", 1)
+    logger.debug("provider: %s, model: %s", provider, model)
+    # TODO: convert to ModelMeta from LLMAPIConfig
+    if provider in [x for x in Provider]:
         if provider not in MODELS or model not in MODELS[provider]:
-            if provider not in ["openrouter", "local"]:
-                logger.warning(
-                    f"Unknown model {model} from {provider}, using fallback metadata"
-                )
-            return ModelMeta(provider=provider, model=model, context=128_000)
+            if provider not in (Provider.OPENROUTER, Provider.LOCAL):
+                logger.warning( f"Unknown model {model} from {provider}, using fallback metadata")
+            return ModelMeta(provider=provider.value, model=model, context=128_000)
     else:
         # try to find model in all providers
-        for provider in MODELS:
-            if model in MODELS[provider]:
-                break
-        else:
+        all_models = [model for prov in MODELS.values() for model in prov.values()]
+        logger.debug("all_models: %s", all_models)
+        if model not in all_models:
             logger.warning(f"Unknown model {model}, using fallback metadata")
             return ModelMeta(provider="unknown", model=model, context=128_000)
 
     return ModelMeta(
-        provider=provider,
+        provider=provider.value,
         model=model,
         **MODELS[provider][model],
     )
 
 
-def get_recommended_model(provider: str) -> str:  # pragma: no cover
-    if provider == "openai":
+def get_recommended_model(provider: Provider) -> str:  # pragma: no cover
+    if provider == Provider.OPENAI:
         return "gpt-4o"
-    elif provider == "openrouter":
+    elif provider == Provider.OPENROUTER:
         return "meta-llama/llama-3.1-405b-instruct"
-    elif provider == "anthropic":
+    elif provider ==Provider.ANTHROPIC:
         return "claude-3-5-sonnet-20240620"
     else:
         raise ValueError(f"Unknown provider {provider}")

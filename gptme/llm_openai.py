@@ -2,6 +2,9 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
+from gptme.config import Provider
+from gptme.llm import LLMAPIConfig
+
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
 
@@ -20,31 +23,26 @@ openrouter_headers = {
 }
 
 
-def init(llm: str, config):
+def init(llm_cfg: LLMAPIConfig):
     global openai
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
-    if llm == "openai":
-        api_key = config.get_env_required("OPENAI_API_KEY")
-        base_url = config.get_env("OPENAI_API_BASE") or "https://api.openai.com/v1"
-        openai = OpenAI(api_key=api_key, base_url=base_url)
-    elif llm == "azure":
-        api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
-        azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
+    # FIXME: refactor to merge same constructors
+    if llm_cfg.provider == Provider.OPENAI:
+        base_url = llm_cfg.endpoint or "https://api.openai.com/v1"
+        openai = OpenAI(api_key=llm_cfg.token, base_url=str(base_url))
+    elif llm_cfg.provider == Provider.AZURE_OPENAI:
         openai = AzureOpenAI(
-            api_key=api_key,
+            api_key=llm_cfg.token,
             api_version="2023-07-01-preview",
-            azure_endpoint=azure_endpoint,
+            azure_endpoint=str(llm_cfg.endpoint),
         )
-    elif llm == "openrouter":
-        api_key = config.get_env_required("OPENROUTER_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
-    elif llm == "local":
-        api_base = config.get_env_required("OPENAI_API_BASE")
-        api_key = config.get_env("OPENAI_API_KEY") or "ollama"
-        openai = OpenAI(api_key=api_key, base_url=api_base)
+    elif llm_cfg.provider == Provider.OPENROUTER:
+        openai = OpenAI(api_key=llm_cfg.token, base_url="https://openrouter.ai/api/v1")
+    elif llm_cfg.provider == Provider.LOCAL:
+        openai = OpenAI(api_key=llm_cfg.token, base_url=str(llm_cfg.endpoint))
     else:
-        raise ValueError(f"Unknown LLM: {llm}")
+        raise ValueError(f"Unknown LLM: {llm_cfg.provider.value}")
 
     assert openai, "LLM not initialized"
 

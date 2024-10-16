@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Literal, TypedDict
 
 from typing_extensions import Required
 
+from gptme.config import LLMAPIConfig
+
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, len_tokens, msgs2dicts
 
@@ -12,13 +14,12 @@ if TYPE_CHECKING:
 anthropic: "Anthropic | None" = None
 
 
-def init(config):
+def init(llm_cfg: LLMAPIConfig):
     global anthropic
-    api_key = config.get_env_required("ANTHROPIC_API_KEY")
     from anthropic import Anthropic  # fmt: skip
 
     anthropic = Anthropic(
-        api_key=api_key,
+        api_key=llm_cfg.token,
         max_retries=5,
     )
 
