@@ -3419,4 +3419,4 @@ server = ["flask"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "043894e5aad0f1d3bfb95134b3469d5eba53ce7f8e8f5e83bef97ff90ee483cb"
+content-hash = "3ba152571e67437778da5335107c5362ba65615a70007a5079655c28abc02d8b"
