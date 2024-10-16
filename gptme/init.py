@@ -1,19 +1,112 @@
 import atexit
 import logging
 import readline
+from dataclasses import dataclass
+from typing import Any, cast
 
 from dotenv import load_dotenv
+from rich.prompt import Prompt
 
-from .config import config_path, load_config, set_config_value
+from .config import (
+    LLMAPIConfig,
+    Provider,
+    comment_out,
+    config_path,
+    load_config,
+    set_config_value,
+)
 from .dirs import get_readline_history_file
 from .llm import init_llm
-from .models import PROVIDERS, get_recommended_model, set_default_model
+from .models import get_recommended_model, set_default_model
 from .tabcomplete import register_tabcomplete
 from .tools import init_tools
 from .util import console
 
 logger = logging.getLogger(__name__)
 _init_done = False
+
+# if config not set, use prompt to create the init-object
+# else create from config or env var
+
+
+@dataclass
+class Migration:
+    old_key: str
+    new_key: str
+    value: str
+
+def migrate_config() -> bool:
+    to_migrate_new:list[Migration] = []
+    config = load_config()
+    if "MODEL" in config.env:
+        original_model = config.get_env_required("MODEL")
+        provider, model = original_model.split("/", 1)
+        to_migrate_new.append(Migration("env.MODEL", "env.API_MODEL", model))
+        to_migrate_new.append(Migration("env.MODEL","env.API_PROVIDER", provider))
+
+    mapping = {
+        "ANTHROPIC_API_KEY": "API_KEY",
+        "OPENROUTER_API_KEY": "API_KEY",
+        "OPENAI_API_KEY": "API_KEY",
+        "OPENAI_API_BASE": "API_ENDPOINT",
+    }
+    for old, new in mapping.items():
+        if old in config.env:
+            to_migrate_new.append(Migration(f"env.{old}", f"env.{new}", config.get_env_required(old)))
+
+    if not to_migrate_new:
+        return False
+
+
+    console.rule("Migrating existing config, due to upgrade...")
+    console.print(f"Updating {config_path}")
+    for migration_item in to_migrate_new:
+        console.print(f"{migration_item.new_key} -> {migration_item.old_key}")
+        set_config_value(migration_item.new_key, migration_item.value)
+        comment_out(migration_item.old_key, "DEPRECATED")
+    console.rule("Migrating config completed")
+    return True
+
+
+def create_from_config(override_model: str | None = None) -> LLMAPIConfig | None:
+    migrate_config()
+
+    config = load_config()
+    try:
+        raw_model = config.get_env("API_MODEL")
+        endpoint = config.get_env("API_ENDPOINT")
+        api_key = config.get_env_required("API_KEY")
+        provider = config.get_env_required("API_PROVIDER")
+        return LLMAPIConfig(
+            endpoint=cast(Any, endpoint),
+            token=api_key,
+            provider=Provider(provider),
+            model=override_model if override_model else raw_model,
+        )
+    except KeyError as e:
+        logger.debug(f"Load llm config from config file error, {e}")
+        return None
+
+
+def create_from_prompt(override_model: str | None = None) -> LLMAPIConfig:
+    """Interactively ask user for API key"""
+    console.print("""You can get one at:
+     - OpenAI: https://platform.openai.com/account/api-keys
+     - Anthropic: https://console.anthropic.com/settings/keys
+     - OpenRouter: https://openrouter.ai/settings/keys
+     - or other providers that support openapi format api.
+     """)
+    provider = _prompt_api_provider()
+    api_key = _prompt_api_key()
+    endpoint = _prompt_api_endpoint(provider)
+    model = _prompt_api_model()
+
+    return LLMAPIConfig(
+        endpoint=cast(Any, endpoint),
+        token=api_key,
+        provider=Provider(provider),
+        model=override_model if override_model else model,
+    )
 
 
 def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None):
@@ -30,42 +123,26 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     config = load_config()
 
     # get from config
-    if not model:
-        model = config.get_env("MODEL")
+    #  if not model:
+    #  model = config.get_env("MODEL")
 
-    if not model:  # pragma: no cover
-        # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
-        if config.get_env("OPENAI_API_KEY"):
-            console.log("Found OpenAI API key, using OpenAI provider")
-            model = "openai"
-        elif config.get_env("ANTHROPIC_API_KEY"):
-            console.log("Found Anthropic API key, using Anthropic provider")
-            model = "anthropic"
-        elif config.get_env("OPENROUTER_API_KEY"):
-            console.log("Found OpenRouter API key, using OpenRouter provider")
-            model = "openrouter"
-        # ask user for API key
-        elif interactive:
-            model, _ = ask_for_api_key()
-
-    # fail
-    if not model:
-        raise ValueError("No API key found, couldn't auto-detect provider")
-
-    if any(model.startswith(f"{provider}/") for provider in PROVIDERS):
-        provider, model = model.split("/", 1)
-    else:
-        provider, model = model, None
-
-    # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
-    init_llm(provider)
-
-    if not model:
-        model = get_recommended_model(provider)
-        console.log(
-            f"No model specified, using recommended model for provider: {model}"
+    if (llm_cfg := create_from_config(model)) is None:
+        console.print(
+            f"No correct config found in config file {config_path} or environment variables. Please provide it in the config file or environment variables."
         )
-    set_default_model(model)
+        console.print("or input in below.")
+        llm_cfg = create_from_prompt(model)
+        llm_cfg.save_to_config()
+    logger.debug("current LLMConfig: %s", llm_cfg)
+
+    init_llm(llm_cfg)
+
+    if not llm_cfg.model:
+        llm_cfg.model = get_recommended_model(llm_cfg.provider)
+        console.log(
+            f"No model specified in config file ({config_path}) or env var (MODEL), using recommended model for provider: {model}"
+        )
+    set_default_model(llm_cfg.model, llm_cfg.provider)
 
     if interactive:
         _load_readline_history()
@@ -113,32 +190,50 @@ def _load_readline_history() -> None:  # pragma: no cover
     atexit.register(readline.write_history_file, history_file)
 
 
-def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
-    api_key = input("Your OpenAI, Anthropic, or OpenRouter API key: ").strip()
-    if api_key.startswith("sk-ant-"):
-        return api_key, "anthropic", "ANTHROPIC_API_KEY"
-    elif api_key.startswith("sk-or-"):
-        return api_key, "openrouter", "OPENROUTER_API_KEY"
-    elif api_key.startswith("sk-"):
-        return api_key, "openai", "OPENAI_API_KEY"
-    else:
-        console.print("Invalid API key format. Please try again.")
-        return _prompt_api_key()
+def _prompt_api_key() -> str:  # pragma: no cover
+    return input("Your OpenAI, Anthropic, or OpenRouter API key: ").strip()
 
 
-def ask_for_api_key():  # pragma: no cover
+def _prompt_api_endpoint(provider: Provider) -> str | None:  # pragma: no cover
+    """Interactively ask user for API endpoint"""
+    val = input(
+        f"Custom API endpoint set for [{provider.value}] (leave blank if using official api):"
+    ).strip()
+    return val if val else None
+
+
+def _prompt_api_provider() -> Provider:  # pragma: no cover
+    """Interactively ask user for llm provider"""
+    val = Prompt.ask(
+        "LLM Provider",
+        choices=[x.value for x in Provider],
+        default=Provider.OPENAI.value,
+    ).strip()
+    return Provider(val)
+
+
+def _prompt_api_model() -> str | None:  # pragma: no cover
+    """Interactively ask user for llm model"""
+    val = input("LLM Model (leave blank if using recommended model):").strip()
+    return val if val else None
+
+
+def ask_for_api_key() -> tuple[str, str, str]:  # pragma: no cover
     """Interactively ask user for API key"""
     console.print("No API key set for OpenAI, Anthropic, or OpenRouter.")
-    console.print(
-        """You can get one at:
- - OpenAI: https://platform.openai.com/account/api-keys
- - Anthropic: https://console.anthropic.com/settings/keys
- - OpenRouter: https://openrouter.ai/settings/keys
- """
-    )
+    console.print("""You can get one at:
+     - OpenAI: https://platform.openai.com/account/api-keys
+     - Anthropic: https://console.anthropic.com/settings/keys
+     - OpenRouter: https://openrouter.ai/settings/keys
+     """)
     # Save to config
     api_key, provider, env_var = _prompt_api_key()
+
     set_config_value(f"env.{env_var}", api_key)
     console.print(f"API key saved to config at {config_path}")
     console.print(f"Successfully set up {provider} API key.")
-    return provider, api_key
+
+    api_endpoint, key = _prompt_api_endpoint(provider)
+    set_config_value(f"env.{key}", api_endpoint)
+
+    return provider + "/", api_key, api_endpoint

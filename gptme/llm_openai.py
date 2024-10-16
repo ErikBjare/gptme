@@ -2,6 +2,9 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
+from gptme.config import Provider
+from gptme.llm import LLMAPIConfig
+
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
 
@@ -20,31 +23,32 @@ openrouter_headers = {
 }
 
 
-def init(llm: str, config):
-    global openai
+def build_client(llm_cfg: LLMAPIConfig) -> "OpenAI | None":
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
-    if llm == "openai":
-        api_key = config.get_env_required("OPENAI_API_KEY")
-        openai = OpenAI(api_key=api_key)
-    elif llm == "azure":
-        api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
-        azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
-        openai = AzureOpenAI(
-            api_key=api_key,
+    base_url = llm_cfg.endpoint
+    if llm_cfg.provider == Provider.AZURE_OPENAI:
+        return AzureOpenAI(
+            api_key=llm_cfg.token,
             api_version="2023-07-01-preview",
-            azure_endpoint=azure_endpoint,
+            azure_endpoint=str(base_url),
         )
-    elif llm == "openrouter":
-        api_key = config.get_env_required("OPENROUTER_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
-    elif llm == "local":
-        api_base = config.get_env_required("OPENAI_API_BASE")
-        api_key = config.get_env("OPENAI_API_KEY") or "ollama"
-        openai = OpenAI(api_key=api_key, base_url=api_base)
-    else:
-        raise ValueError(f"Unknown LLM: {llm}")
 
+    if llm_cfg.provider == Provider.OPENAI:
+        base_url = base_url or "https://api.openai.com/v1"
+    elif llm_cfg.provider == Provider.OPENROUTER:
+        base_url = base_url or "https://openrouter.ai/api/v1"
+
+    if not base_url:
+        raise ValueError(
+            f"Provider {llm_cfg.provider} has no official endpoint, should provide endpoint from config"
+        )
+    return OpenAI(api_key=llm_cfg.token, base_url=str(base_url))
+
+
+def init(llm_cfg: LLMAPIConfig):
+    global openai
+    openai = build_client(llm_cfg)
     assert openai, "LLM not initialized"
 
 

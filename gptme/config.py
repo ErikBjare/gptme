@@ -2,10 +2,12 @@ import glob
 import logging
 import os
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
 import tomlkit
-from tomlkit import TOMLDocument
+from pydantic import BaseModel, Field, HttpUrl
+from tomlkit import TOMLDocument, comment
 from tomlkit.container import Container
 
 from .util import console, path_with_tilde
@@ -19,11 +21,11 @@ class Config:
     env: dict
 
     def get_env(self, key: str, default: str | None = None) -> str | None:
-        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        """Gets an environment variable, checks the config file if it's not set in the environment."""
         return os.environ.get(key) or self.env.get(key) or default
 
     def get_env_required(self, key: str) -> str:
-        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        """Gets an environment variable, checks the config file if it's not set in the environment."""
         if val := os.environ.get(key) or self.env.get(key):
             return val
         raise KeyError(  # pragma: no cover
@@ -124,6 +126,31 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
     _config = load_config()
 
 
+def comment_out(key: str, extra_comment: str):  # progma: no cover
+    doc: TOMLDocument | Container = _load_config()
+
+    # Set the value
+    keypath = key.split(".")
+    d = doc
+    for key in keypath[:-1]:
+        d = d.get(key, {})
+
+    _key = keypath[-1]
+    if value := d.get(_key, None):
+        # drop old
+        del d[_key]
+        # comment out
+        d.add(comment(f"{_key} = {value} # {extra_comment}"))
+
+    # Write the config
+    with open(config_path, "w") as config_file:
+        tomlkit.dump(doc, config_file)
+
+    # Reload config
+    global _config
+    _config = load_config()
+
+
 def get_workspace_prompt(workspace: str) -> str:
     project_config_paths = [
         p
@@ -154,6 +181,60 @@ def get_workspace_prompt(workspace: str) -> str:
             [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
         )
     return ""
+
+
+class Provider(str, Enum):
+    OPENAI = "openai"
+    AZURE_OPENAI = "azure"
+    ANTHROPIC = "anthropic"
+    OPENROUTER = "openrouter"
+    LOCAL = "local"
+
+    def is_openrouter(self) -> bool: 
+        return self == Provider.OPENROUTER
+    def is_openai_alike(self) -> bool:
+        return self in [
+            Provider.OPENAI,
+            Provider.AZURE_OPENAI,
+            Provider.OPENROUTER,
+            Provider.LOCAL,
+        ]
+
+    def is_anthropic_alike(self) -> bool:
+        return self == Provider.ANTHROPIC
+
+    def __repr__(self) -> str:
+        return self.value
+
+
+class LLMAPIConfig(BaseModel):
+    endpoint: HttpUrl | None = Field(default=None)
+    token: str
+    provider: Provider
+    model: str | None
+
+    _envvar_api_key: str = "API_KEY"
+    _envvar_provider: str = "API_PROVIDER"
+    _envvar_model: str = "API_MODEL"
+
+    @property
+    def _envvar_endpoint(self) -> str:
+        if self.provider == Provider.OPENAI or self.provider == Provider.AZURE_OPENAI:
+            return "API_ENDPOINT"
+        return ""
+
+    def save_to_config(self):
+        set_config_value(f"env.{self._envvar_api_key}", self.token)
+        set_config_value(f"env.{self._envvar_provider}", self.provider.value)
+        if not self._envvar_endpoint:
+            logger.warning(
+                f"Provider {self.provider.value} has no custom endpoint, skipping saving to config"
+            )
+            return
+        if self.model:
+            set_config_value(f"env.{self._envvar_model}", self.model)
+        if self.endpoint:
+            set_config_value(f"env.{self._envvar_endpoint}", str(self.endpoint))
 
 
 if __name__ == "__main__":

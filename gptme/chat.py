@@ -60,6 +60,7 @@ def chat(
         logger.info("Disabled streaming for OpenAI's O1 (not supported)")
         stream = False
 
+    console.log(f"Using model {get_model()}")
     console.log(f"Using logdir {path_with_tilde(logdir)}")
     manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
 

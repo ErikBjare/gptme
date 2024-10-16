@@ -28,6 +28,8 @@ tomlkit = "*"
 typing-extensions = "*"
 platformdirs = "^4.3"
 lxml = "*"
+pydantic = "^2.9.2"
+
 
 # tools
 ipython = "^8.17.2"
@@ -91,6 +93,9 @@ all = [
     # datascience
     "matplotlib", "pandas", "numpy", "pillow",
 ]
+
+[tool.mypy]
+plugins = "pydantic.mypy"
 
 [tool.ruff]
 target-version = "py310"
