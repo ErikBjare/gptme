@@ -125,7 +125,8 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
     global _config
     _config = load_config()
 
-def comment_out(key: str, extra_comment: str): # progma: no cover
+
+def comment_out(key: str, extra_comment: str):  # progma: no cover
     doc: TOMLDocument | Container = _load_config()
 
     # Set the value
@@ -133,7 +134,6 @@ def comment_out(key: str, extra_comment: str): # progma: no cover
     d = doc
     for key in keypath[:-1]:
         d = d.get(key, {})
-
 
     _key = keypath[-1]
     if value := d.get(_key, None):
@@ -149,6 +149,7 @@ def comment_out(key: str, extra_comment: str): # progma: no cover
     # Reload config
     global _config
     _config = load_config()
+
 
 def get_workspace_prompt(workspace: str) -> str:
     project_config_paths = [
@@ -188,6 +189,19 @@ class Provider(str, Enum):
     ANTHROPIC = "anthropic"
     OPENROUTER = "openrouter"
     LOCAL = "local"
+
+    def is_openrouter(self) -> bool: 
+        return self == Provider.OPENROUTER
+    def is_openai_alike(self) -> bool:
+        return self in [
+            Provider.OPENAI,
+            Provider.AZURE_OPENAI,
+            Provider.OPENROUTER,
+            Provider.LOCAL,
+        ]
+
+    def is_anthropic_alike(self) -> bool:
+        return self == Provider.ANTHROPIC
 
     def __repr__(self) -> str:
         return self.value

@@ -17,7 +17,7 @@ from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
 from .message import Message, format_msgs, len_tokens
-from .models import MODELS, get_summary_model
+from .models import MODELS, get_model, get_summary_model
 from .tools import ToolUse
 
 logger = logging.getLogger(__name__)
@@ -56,20 +56,20 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 
 
 def _chat_complete(messages: list[Message], model: str) -> str:
-    provider = _client_to_provider()
-    if provider in ["openai", "azure", "openrouter"]:
+    provider = get_provider()
+    if provider.is_openai_alike():
         return chat_openai(messages, model)
-    elif provider == "anthropic":
+    elif provider.is_anthropic_alike():
         return chat_anthropic(messages, model)
     else:
         raise ValueError("LLM not initialized")
 
 
 def _stream(messages: list[Message], model: str) -> Iterator[str]:
-    provider = _client_to_provider()
-    if provider in ["openai", "azure", "openrouter"]:
+    provider = get_provider()
+    if provider.is_openai_alike():
         return stream_openai(messages, model)
-    elif provider == "anthropic":
+    elif provider.is_anthropic_alike():
         return stream_anthropic(messages, model)
     else:
         raise ValueError("LLM not initialized")
@@ -107,21 +107,9 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
     return Message("assistant", output)
 
 
-def _client_to_provider() -> Provider:
-    openai_client = get_openai_client()
-    anthropic_client = get_anthropic_client()
-    assert openai_client or anthropic_client, "No client initialized"
-    if openai_client:
-        if "openai" in openai_client.base_url.host:
-            return "openai"
-        elif "openrouter" in openai_client.base_url.host:
-            return "openrouter"
-        else:
-            return "azure"
-    elif anthropic_client:
-        return "anthropic"
-    else:
-        raise ValueError("Unknown client type")
+def get_provider() -> Provider:
+    model = get_model()
+    return Provider(model.provider)
 
 
 def _summarize_str(content: str) -> str:
@@ -139,9 +127,10 @@ def _summarize_str(content: str) -> str:
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
-    provider = _client_to_provider()
+    provider = get_provider()
     model = get_summary_model(provider)
-    context_limit = MODELS[provider][model]["context"]
+    context_limit = MODELS[provider.value][model]["context"]
+    logger.debug("using model [%s] to summarize content, context_limit: [%s]", model, context_limit)
     if len_tokens(messages) > context_limit:
         raise ValueError(
             f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages)}"
@@ -183,7 +172,7 @@ IMPORTANT: output only the name, no preamble or postamble.
         + msgs
         + [Message("user", "Now, generate a name for this conversation.")]
     )
-    name = _chat_complete(msgs, model=get_summary_model(_client_to_provider())).strip()
+    name = _chat_complete(msgs, model=get_summary_model(get_provider())).strip()
     return name
 
 

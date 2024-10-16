@@ -120,12 +120,11 @@ def get_recommended_model(provider: Provider) -> str:  # pragma: no cover
         raise ValueError(f"Unknown provider {provider}")
 
 
-def get_summary_model(provider: str) -> str:  # pragma: no cover
-    if provider == "openai":
-        return "gpt-4o-mini"
-    elif provider == "openrouter":
+def get_summary_model(provider: Provider) -> str:  # pragma: no cover
+    if provider.is_openrouter():
         return "meta-llama/llama-3.1-8b-instruct"
-    elif provider == "anthropic":
+    if provider.is_openai_alike():
+        return "gpt-4o-mini"
+    if provider.is_anthropic_alike():
         return "claude-3-haiku-20240307"
-    else:
-        raise ValueError(f"Unknown provider {provider}")
+    raise ValueError(f"Unknown provider {provider}")
