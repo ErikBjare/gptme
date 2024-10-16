@@ -62,7 +62,6 @@ An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limi
 - 🚀 [Getting Started](#-getting-started)
 - 🛠 [Usage](#-usage)
 - 📊 [Stats](#-stats)
-- 💻 [Development](#-development)
 - 🔗 [Links](#-links)
 
 ## 🎥 Demos
