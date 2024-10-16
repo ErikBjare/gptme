@@ -39,7 +39,7 @@
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -409,15 +409,15 @@ document.write(`
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     267888 |       gptme.commands
-     272444 |     gptme.chat
-     289461 |   gptme.cli
-     338356 | gptme
-     367568 | openai
+     359502 | gptme
+     575398 |       openai._models
+     578416 |     openai.types.batch
+     629347 |   openai.types
+     926785 | openai
 
-real	0m1.502s
-user	0m1.291s
-sys	0m0.202s
+real	0m2.086s
+user	0m1.889s
+sys	0m0.204s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -434,7 +434,7 @@ classified 26 files
       26 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (817.3 files/s, 128686.1 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (793.7 files/s, 124977.1 lines/s)
 ----------------------------------------------------------------------------------------
 File                                      blank        comment           code
 ----------------------------------------------------------------------------------------
@@ -481,7 +481,7 @@ classified 16 files
       16 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (741.4 files/s, 115518.6 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (742.8 files/s, 115732.2 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -518,7 +518,7 @@ classified 7 files
        7 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (736.9 files/s, 89274.1 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (702.5 files/s, 85098.3 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -546,7 +546,7 @@ classified 18 files
       18 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1168.7 files/s, 85963.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1136.2 files/s, 83570.5 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -585,7 +585,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (640.6 files/s, 77427.6 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (619.1 files/s, 74827.8 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -614,7 +614,7 @@ classified 81 files
       81 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.07 s (1184.6 files/s, 142677.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.07 s (1163.7 files/s, 140166.0 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
