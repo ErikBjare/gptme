@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     # noreorder
     from ..logmanager import LogManager  # fmt: skip
 
+
 logger = logging.getLogger(__name__)
 
 Status = Literal["running", "success", "failure"]
@@ -32,8 +33,8 @@ class ReturnType:
 
 @dataclass(frozen=True)
 class Subagent:
-    prompt: str
     agent_id: str
+    prompt: str
     thread: threading.Thread
 
     def get_log(self) -> "LogManager":
@@ -67,7 +68,7 @@ def _extract_json(s: str) -> str:
     return s[first_brace : last_brace + 1]
 
 
-def subagent(prompt: str, agent_id: str):
+def subagent(agent_id: str, prompt: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
     from gptme import chat  # fmt: skip
@@ -110,7 +111,7 @@ def subagent(prompt: str, agent_id: str):
         daemon=True,
     )
     t.start()
-    _subagents.append(Subagent(prompt, agent_id, t))
+    _subagents.append(Subagent(agent_id, prompt, t))
 
 
 def subagent_status(agent_id: str) -> dict:
@@ -138,12 +139,13 @@ def subagent_wait(agent_id: str) -> dict:
 
 
 examples = f"""
-User: compute fib 69 using a subagent
-Assistant: Starting a subagent to compute the 69th Fibonacci number.
-{ToolUse("ipython", [], 'subagent("compute the 69th Fibonacci number", "fib-69")').to_output()}
+User: compute fib 13 using a subagent
+Assistant: Starting a subagent to compute the 13th Fibonacci number.
+{ToolUse("ipython", [], 'subagent("fib-13", "compute the 13th Fibonacci number")').to_output()}
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-{ToolUse("ipython", [], 'subagent_wait("fib-69")').to_output()}
+{ToolUse("ipython", [], 'subagent_wait("fib-13")').to_output()}
+System: {{"status": "success", "result": "The 13th Fibonacci number is 233"}}.
 """
 
 
