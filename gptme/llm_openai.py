@@ -23,27 +23,32 @@ openrouter_headers = {
 }
 
 
-def init(llm_cfg: LLMAPIConfig):
-    global openai
+def build_client(llm_cfg: LLMAPIConfig) -> "OpenAI | None":
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
-    # FIXME: refactor to merge same constructors
-    if llm_cfg.provider == Provider.OPENAI:
-        base_url = llm_cfg.endpoint or "https://api.openai.com/v1"
-        openai = OpenAI(api_key=llm_cfg.token, base_url=str(base_url))
-    elif llm_cfg.provider == Provider.AZURE_OPENAI:
-        openai = AzureOpenAI(
+    base_url = llm_cfg.endpoint
+    if llm_cfg.provider == Provider.AZURE_OPENAI:
+        return AzureOpenAI(
             api_key=llm_cfg.token,
             api_version="2023-07-01-preview",
-            azure_endpoint=str(llm_cfg.endpoint),
+            azure_endpoint=str(base_url),
         )
-    elif llm_cfg.provider == Provider.OPENROUTER:
-        openai = OpenAI(api_key=llm_cfg.token, base_url="https://openrouter.ai/api/v1")
-    elif llm_cfg.provider == Provider.LOCAL:
-        openai = OpenAI(api_key=llm_cfg.token, base_url=str(llm_cfg.endpoint))
-    else:
-        raise ValueError(f"Unknown LLM: {llm_cfg.provider.value}")
 
+    if llm_cfg.provider == Provider.OPENAI:
+        base_url = base_url or "https://api.openai.com/v1"
+    elif llm_cfg.provider == Provider.OPENROUTER:
+        base_url = base_url or "https://openrouter.ai/api/v1"
+
+    if not base_url:
+        raise ValueError(
+            f"Provider {llm_cfg.provider} has no official endpoint, should provide endpoint from config"
+        )
+    return OpenAI(api_key=llm_cfg.token, base_url=str(base_url))
+
+
+def init(llm_cfg: LLMAPIConfig):
+    global openai
+    openai = build_client(llm_cfg)
     assert openai, "LLM not initialized"
 
 
