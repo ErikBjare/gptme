@@ -6,8 +6,11 @@ Lets gptme break down a task into smaller parts, and delegate them to subagents.
 
 import json
 import logging
+import random
+import string
 import threading
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
@@ -36,15 +39,13 @@ class Subagent:
     agent_id: str
     prompt: str
     thread: threading.Thread
+    logdir: Path
 
     def get_log(self) -> "LogManager":
         # noreorder
-        from gptme.cli import get_logdir  # fmt: skip
-
         from ..logmanager import LogManager  # fmt: skip
 
-        name = f"subagent-{self.agent_id}"
-        return LogManager.load(get_logdir(name))
+        return LogManager.load(self.logdir)
 
     def status(self) -> ReturnType:
         if self.thread.is_alive():
@@ -76,8 +77,12 @@ def subagent(agent_id: str, prompt: str):
 
     from ..prompts import get_prompt  # fmt: skip
 
+    def random_string(n):
+        s = string.ascii_lowercase + string.digits
+        return "".join(random.choice(s) for _ in range(n))
+
     name = f"subagent-{agent_id}"
-    logdir = get_logdir(name)
+    logdir = get_logdir(name + "-" + random_string(4))
 
     def run_subagent():
         prompt_msgs = [Message("user", prompt)]
@@ -111,7 +116,7 @@ def subagent(agent_id: str, prompt: str):
         daemon=True,
     )
     t.start()
-    _subagents.append(Subagent(agent_id, prompt, t))
+    _subagents.append(Subagent(agent_id, prompt, t, logdir))
 
 
 def subagent_status(agent_id: str) -> dict:
