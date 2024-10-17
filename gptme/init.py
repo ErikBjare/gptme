@@ -61,7 +61,7 @@ def migrate_config() -> bool:
     console.rule("Migrating existing config, due to upgrade...")
     console.print(f"Updating {config_path}")
     for migration_item in to_migrate_new:
-        console.print(f"{migration_item.new_key} -> {migration_item.old_key}")
+        console.print(f"{migration_item.old_key} -> {migration_item.new_key}")
         set_config_value(migration_item.new_key, migration_item.value)
         comment_out(migration_item.old_key, "DEPRECATED")
     console.rule("Migrating config completed")
