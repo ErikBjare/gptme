@@ -49,6 +49,7 @@ def migrate_config() -> bool:
         "OPENROUTER_API_KEY": "API_KEY",
         "OPENAI_API_KEY": "API_KEY",
         "OPENAI_API_BASE": "API_ENDPOINT",
+        "OPENAI_BASE_URL": "API_ENDPOINT",
     }
     for old, new in mapping.items():
         if old in config.env:
