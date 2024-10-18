@@ -22,6 +22,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    examples
    demos
    tools
+   config
    providers
    server
    automation
