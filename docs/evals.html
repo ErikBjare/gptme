@@ -423,18 +423,18 @@ docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</spa
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/*/eval_results.csv
 Model                                     hello           hello-patch     hello-ask       prime100        init-git         init-rust      whois-superuserlabs-ceo
 ----------------------------------------  --------------  --------------  --------------  --------------  ---------------  -------------  -------------------------
-anthropic/claude-3-5-sonnet-20240620      ✅ 22/22 632tk  ✅ 22/22 540tk  ✅ 22/22 707tk  ✅ 22/22 857tk  ✅ 22/22 1074tk  ✅ 4/4 1504tk  🔶 3/4 1306tk
-anthropic/claude-3-haiku-20240307         ✅ 22/22 385tk  ✅ 22/22 396tk  ✅ 22/22 434tk  ❌ 4/22 714tk   🔶 16/22 844tk   🔶 3/4 670tk   ✅ 4/4 1535tk
+anthropic/claude-3-5-sonnet-20240620      ✅ 23/23 631tk  ✅ 23/23 538tk  ✅ 23/23 707tk  ✅ 23/23 865tk  ✅ 23/23 1080tk  ✅ 4/4 1504tk  🔶 3/4 1306tk
+anthropic/claude-3-haiku-20240307         ✅ 23/23 384tk  ✅ 23/23 391tk  ✅ 23/23 434tk  ❌ 4/23 710tk   🔶 16/23 831tk   🔶 3/4 670tk   ✅ 4/4 1535tk
 openai/gpt-4-turbo                        ✅ 3/3 255tk    ✅ 3/3 312tk    ✅ 3/3 376tk    ✅ 3/3 527tk    ✅ 4/4 590tk     ✅ 4/4 784tk   ✅ 6/7 819tk
-openai/gpt-4o                             ✅ 23/23 276tk  ✅ 23/23 301tk  ✅ 23/23 367tk  🔶 14/23 439tk  ✅ 23/23 684tk   ✅ 5/5 663tk   ✅ 5/5 1253tk
-openai/gpt-4o-mini                        ✅ 24/24 261tk  ✅ 24/24 321tk  ✅ 24/24 380tk  ✅ 24/24 587tk  ✅ 20/24 747tk   ✅ 6/6 813tk   ✅ 6/6 951tk
+openai/gpt-4o                             ✅ 24/24 277tk  ✅ 24/24 301tk  ✅ 24/24 367tk  🔶 14/24 438tk  ✅ 24/24 684tk   ✅ 5/5 663tk   ✅ 5/5 1253tk
+openai/gpt-4o-mini                        ✅ 25/25 260tk  ✅ 25/25 320tk  ✅ 25/25 379tk  ✅ 25/25 586tk  ✅ 21/25 749tk   ✅ 6/6 813tk   ✅ 6/6 951tk
 openai/o1-mini                            ✅ 3/3 354tk    ✅ 3/3 431tk    ✅ 3/3 460tk    🔶 2/3 567tk    🔶 3/5 2222tk    🔶 1/5 1412tk  🔶 2/3 813tk
 openai/o1-preview                         ✅ 2/2 308tk    ✅ 2/2 570tk    🔶 1/2 549tk    ✅ 2/2 490tk    ✅ 3/3 823tk     ✅ 1/1 656tk   ✅ 1/1 1998tk
 google/gemini-flash-1.5                   ✅ 2/2 225tk    ✅ 2/2 401tk    ✅ 2/2 430tk    ❌ 0/2 296tk    ✅ 1/1 686tk     ❌ 0/1 661tk   ✅ 1/1 1014tk
 google/gemini-pro-1.5                     ✅ 1/1 341tk    ✅ 1/1 419tk    ✅ 1/1 456tk    ✅ 1/1 676tk    🔶 2/3 431tk     🔶 1/2 1016tk  ✅ 2/2 1308tk
 google/gemma-2-27b-it                     ✅ 1/1 288tk    ✅ 1/1 384tk    ✅ 1/1 446tk    ✅ 1/1 714tk    ✅ 1/1 570tk     ❌ 0/1 535tk   ❌ 0/1 235tk
 google/gemma-2-9b-it                      ❌ 0/2 186tk    ✅ 2/2 370tk    ✅ 2/2 368tk    ❌ 0/2 545tk    ✅ 1/1 492tk     ❌ 0/1 1730tk  ❌ 0/1 352tk
-meta-llama/llama-3.1-405b-instruct        🔶 15/23 195tk  🔶 17/23 446tk  🔶 15/23 320tk  🔶 18/23 386tk  🔶 10/23 357tk   🔶 2/5 255tk   ❌ 0/5 85tk
+meta-llama/llama-3.1-405b-instruct        🔶 15/24 187tk  🔶 17/24 427tk  🔶 16/24 326tk  🔶 19/24 391tk  🔶 10/24 342tk   🔶 2/5 255tk   ❌ 0/5 85tk
 meta-llama/llama-3.1-70b-instruct         ✅ 5/6 367tk    ✅ 5/6 424tk    ✅ 6/6 452tk    🔶 2/6 546tk    ✅ 5/6 813tk     🔶 3/4 682tk   🔶 2/3 1461tk
 meta-llama/llama-3.1-8b-instruct          ✅ 1/1 277tk    ✅ 1/1 441tk    ❌ 0/1 400tk    ❌ 0/1 5095tk   ✅ 1/1 2266tk    ❓ N/A         ❓ N/A
 meta-llama/llama-3.2-11b-vision-instruct  ✅ 2/2 352tk    ✅ 2/2 493tk    ❌ 0/2 479tk    ✅ 2/2 2643tk   ❓ N/A           ❓ N/A         ❓ N/A
