@@ -248,8 +248,8 @@ def execute_shell(
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
-    print_preview(f"$ {cmd}", "bash")
-    if not confirm(f"Run command `{cmd}`?"):
+    print_preview(cmd, "bash")
+    if not confirm("Run command?"):
         yield Message("system", "Command not run")
         return
 
