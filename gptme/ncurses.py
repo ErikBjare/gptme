@@ -250,7 +250,7 @@ def _role_color(role: str) -> int:
     )
 
 
-def main(stdscr, use_color: bool):
+def _main(stdscr, use_color: bool):
     app = MessageApp(stdscr, use_color)
     app.add_message("Welcome to the Message App!")
     app.add_message(
@@ -262,11 +262,15 @@ def main(stdscr, use_color: bool):
     app.run()
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Message App with optional color support"
     )
     parser.add_argument("--no-color", action="store_true", help="Disable color output")
     args = parser.parse_args()
 
-    curses.wrapper(lambda stdscr: main(stdscr, not args.no_color))
+    curses.wrapper(lambda stdscr: _main(stdscr, not args.no_color))
+
+
+if __name__ == "__main__":
+    main()
