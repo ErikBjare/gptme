@@ -1,7 +1,6 @@
 import argparse
 import curses
 import textwrap
-from typing import List, Optional
 
 
 class Message:
@@ -14,13 +13,13 @@ class Message:
 class MessageApp:
     def __init__(self, stdscr, use_color: bool = True):
         self.stdscr = stdscr
-        self.messages: List[Message] = []
+        self.messages: list[Message] = []
         self.input_buffer: str = ""
         self.cursor_y: int = 0
         self.cursor_x: int = 0
         self.scroll_offset: int = 0
         self.mode: str = "normal"
-        self.selected_message: Optional[Message] = None
+        self.selected_message: Message | None = None
         self.current_role: str = "user"
         self.use_color: bool = curses.has_colors() and use_color
 
