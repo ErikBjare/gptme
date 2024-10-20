@@ -50,7 +50,6 @@ instructions = f"""
 When you send a message containing bash code, it will be executed in a stateful bash shell.
 The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
-{'The platform is macOS.' if is_macos else ''}
 
 These programs are available, among others:
 {shell_programs_str}
