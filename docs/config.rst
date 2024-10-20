@@ -37,7 +37,7 @@ Here is an example:
 
     # Uncomment to use with Ollama
     #MODEL = "local/<model-name>"
-    #OPENAI_BASE_URL = "http://localhost:11434/v1"
+    #OPENAI_API_BASE = "http://localhost:11434/v1"
 
 The ``prompt`` section contains options for the prompt.
 
