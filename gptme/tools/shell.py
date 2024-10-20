@@ -243,15 +243,27 @@ def execute_shell(
     """Executes a shell command and returns the output."""
     shell = get_shell()
     assert not args
+    whitelist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo"]
+    whitelisted = True 
 
     cmd = code.strip()
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
-    print_preview(cmd, "bash")
-    if not confirm("Run command?"):
-        yield Message("system", "Command not run")
-        return
+    #NOTE: This does not handle control flow words like if, for, while.
+    regex = r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)"
+
+    for match in re.finditer(regex, cmd):
+        for group in match.groups():
+            if group and group not in whitelist_commands:
+                whitelisted = False
+                break 
+
+    if not whitelisted:
+        print_preview(cmd, "bash")
+        if not confirm("Run command?"):
+            yield Message("system", "Command not run")
+            return
 
     try:
         returncode, stdout, stderr = shell.run(cmd)
@@ -261,7 +273,7 @@ def execute_shell(
     stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
     stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
 
-    msg = _format_block_smart("Ran command", cmd, lang="bash") + "\n\n"
+    msg = _format_block_smart(f"Ran {'whitelisted ' if whitelisted else ''}command", cmd, lang="bash") + "\n\n"
     if stdout:
         msg += _format_block_smart("", stdout, "stdout") + "\n\n"
     if stderr:
