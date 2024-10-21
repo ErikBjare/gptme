@@ -256,7 +256,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/providers.md" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/providers.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -286,7 +286,7 @@
       
       
       
-      <li><a href="_sources/providers.md" target="_blank"
+      <li><a href="_sources/providers.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -296,7 +296,7 @@
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
   </span>
-<span class="btn__text-container">.md</span>
+<span class="btn__text-container">.rst</span>
 </a>
 </li>
       
@@ -383,7 +383,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-ollama">Local/Ollama</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
 </ul>
             </nav>
         </div>
@@ -405,7 +405,7 @@ gptme<span class="w"> </span>--model<span class="w"> </span>openrouter/meta-llam
 gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama/llama3.2:1b<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 </pre></div>
 </div>
-<p>On first startup, if <code class="docutils literal notranslate"><span class="pre">--model</span></code> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
+<p>On first startup, if <cite>–model</cite> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
 <section id="openai">
 <h2>OpenAI<a class="headerlink" href="#openai" title="Link to this heading">#</a></h2>
 <p>To use OpenAI, set your API key:</p>
@@ -427,8 +427,8 @@ gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama/llama3.
 </pre></div>
 </div>
 </section>
-<section id="local-ollama">
-<h2>Local/Ollama<a class="headerlink" href="#local-ollama" title="Link to this heading">#</a></h2>
+<section id="local">
+<h2>Local<a class="headerlink" href="#local" title="Link to this heading">#</a></h2>
 <p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.</p>
 <p>Here’s we will cover how to achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code>.</p>
 <p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, then you can run it with:</p>
@@ -436,6 +436,11 @@ gptme<span class="w"> </span>--model<span class="w"> </span>local/ollama/llama3.
 ollama<span class="w"> </span>serve
 <span class="nv">OPENAI_BASE_URL</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:11434/v1&quot;</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class="w"> </span>-m<span class="w"> </span>local/llama3.2:1b
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Small models will not reliably follow the system prompt, and will thus fail to use tools, severely limiting the usefulness of gptme.</p>
+<p>The smallest model which performs somewhat adequately is Llama 3.1 70B. You can find an overview of how different models perform on the <a class="reference internal" href="evals.html"><span class="doc">Evals</span></a> page.</p>
 </div>
 </section>
 </section>
@@ -488,7 +493,7 @@ ollama<span class="w"> </span>serve
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-ollama">Local/Ollama</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
 </ul>
   </nav></div>
 
