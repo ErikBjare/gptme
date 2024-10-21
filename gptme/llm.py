@@ -3,7 +3,6 @@ import shutil
 import sys
 from collections.abc import Iterator
 from functools import lru_cache
-from typing import Literal
 
 from rich import print
 
@@ -18,20 +17,17 @@ from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
 from .message import Message, format_msgs, len_tokens
-from .models import MODELS, get_summary_model
+from .models import MODELS, Provider, get_summary_model
 from .tools import ToolUse
 
 logger = logging.getLogger(__name__)
-
-
-Provider = Literal["openai", "anthropic", "azure", "openrouter", "local"]
 
 
 def init_llm(llm: str):
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
 
-    if llm in ["openai", "azure", "openrouter", "local"]:
+    if llm in ["openai", "azure", "openrouter", "local", "xai"]:
         init_openai(llm, config)
         assert get_openai_client()
     elif llm == "anthropic":

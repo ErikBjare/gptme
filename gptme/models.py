@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Literal, TypedDict, get_args
 
 from typing_extensions import NotRequired
 
@@ -32,7 +32,8 @@ class _ModelDictMeta(TypedDict):
 
 
 # available providers
-PROVIDERS = ["openai", "anthropic", "azure", "openrouter", "local"]
+Provider = Literal["openai", "anthropic", "azure", "openrouter", "xai", "local"]
+PROVIDERS = get_args(Provider)
 
 # default model
 DEFAULT_MODEL: ModelMeta | None = None
