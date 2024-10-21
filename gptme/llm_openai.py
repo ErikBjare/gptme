@@ -21,14 +21,14 @@ openrouter_headers = {
 }
 
 
-def init(llm: str, config: Config):
+def init(provider: str, config: Config):
     global openai
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
-    if llm == "openai":
+    if provider == "openai":
         api_key = config.get_env_required("OPENAI_API_KEY")
         openai = OpenAI(api_key=api_key)
-    elif llm == "azure":
+    elif provider == "azure":
         api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
         azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
         openai = AzureOpenAI(
@@ -36,10 +36,13 @@ def init(llm: str, config: Config):
             api_version="2023-07-01-preview",
             azure_endpoint=azure_endpoint,
         )
-    elif llm == "openrouter":
+    elif provider == "openrouter":
         api_key = config.get_env_required("OPENROUTER_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
-    elif llm == "local":
+    elif provider == "xai":
+        api_key = config.get_env_required("XAI_API_KEY")
+        openai = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+    elif provider == "local":
         # OPENAI_API_BASE renamed to OPENAI_BASE_URL: https://github.com/openai/openai-python/issues/745
         api_base = config.get_env("OPENAI_API_BASE")
         api_base = api_base or config.get_env("OPENAI_BASE_URL")
@@ -48,9 +51,9 @@ def init(llm: str, config: Config):
         api_key = config.get_env("OPENAI_API_KEY") or "ollama"
         openai = OpenAI(api_key=api_key, base_url=api_base)
     else:
-        raise ValueError(f"Unknown LLM: {llm}")
+        raise ValueError(f"Unknown provider: {provider}")
 
-    assert openai, "LLM not initialized"
+    assert openai, "Provider not initialized"
 
 
 def get_client() -> "OpenAI | None":
