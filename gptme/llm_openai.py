@@ -39,6 +39,9 @@ def init(llm: str, config: Config):
     elif llm == "openrouter":
         api_key = config.get_env_required("OPENROUTER_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
+    elif llm == "deepseek":
+        api_key = config.get_env_required("DEEPSEEK_API_KEY")
+        openai = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
     elif llm == "local":
         # OPENAI_API_BASE renamed to OPENAI_BASE_URL: https://github.com/openai/openai-python/issues/745
         api_base = config.get_env("OPENAI_API_BASE")
