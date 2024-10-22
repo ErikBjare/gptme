@@ -1,7 +1,13 @@
 import atexit
 import logging
+import os
+import re
+import shutil
+import subprocess
+import tempfile
 import urllib.parse
 from dataclasses import dataclass
+from pathlib import Path
 
 from playwright.sync_api import (
     ElementHandle,
@@ -46,6 +52,19 @@ def load_page(url: str) -> Page:
     page.goto(url)
 
     return page
+
+
+def read_url(url: str) -> str:
+    """Read the text of a webpage and return the text in Markdown format."""
+    page = load_page(url)
+
+    # Get the HTML of the body
+    body_html = page.inner_html("body")
+
+    # Convert the HTML to Markdown
+    markdown = html_to_markdown(body_html)
+
+    return markdown
 
 
 def search_google(query: str) -> str:
@@ -169,3 +188,64 @@ def _list_results_duckduckgo(page) -> str:
             desc = result.query_selector("span").inner_text().strip().split("\n")[0]
             hits.append(SearchResult(title, url, desc))
     return titleurl_to_list(hits)
+
+
+def screenshot_url(url: str, path: Path | str | None = None) -> Path:
+    """Take a screenshot of a webpage and save it to a file."""
+    logger.info(f"Taking screenshot of '{url}' and saving to '{path}'")
+    page = load_page(url)
+
+    if path is None:
+        path = tempfile.mktemp(suffix=".png")
+    else:
+        # create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    # Take the screenshot
+    page.screenshot(path=path)
+
+    print(f"Screenshot saved to {path}")
+    return Path(path)
+
+
+def html_to_markdown(html):
+    # check that pandoc is installed
+    if not shutil.which("pandoc"):
+        raise Exception("Pandoc is not installed. Needed for browsing.")
+
+    p = subprocess.Popen(
+        ["pandoc", "-f", "html", "-t", "markdown"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    stdout, stderr = p.communicate(input=html.encode())
+
+    if p.returncode != 0:
+        raise Exception(f"Pandoc returned error code {p.returncode}: {stderr.decode()}")
+
+    # Post-process the output to remove :::
+    markdown = stdout.decode()
+    markdown = "\n".join(
+        line for line in markdown.split("\n") if not line.strip().startswith(":::")
+    )
+
+    # Post-process the output to remove div tags
+    markdown = markdown.replace("<div>", "").replace("</div>", "")
+
+    # replace [\n]{3,} with \n\n
+    markdown = re.sub(r"[\n]{3,}", "\n\n", markdown)
+
+    # replace {...} with ''
+    markdown = re.sub(r"\{(#|style|target|\.)[^}]*\}", "", markdown)
+
+    # strip inline images, like: data:image/png;base64,...
+    re_strip_data = re.compile(r"!\[[^\]]*\]\(data:image[^)]*\)")
+
+    # test cases
+    assert re_strip_data.sub("", "![test](data:image/png;base64,123)") == ""
+    assert re_strip_data.sub("", "![test](data:image/png;base64,123) test") == " test"
+
+    markdown = re_strip_data.sub("", markdown)
+
+    return markdown
