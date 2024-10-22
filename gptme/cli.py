@@ -16,7 +16,7 @@ from .commands import _gen_help
 from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
 from .init import init_logging
-from .interrupt import handle_keyboard_interrupt
+from .interrupt import handle_keyboard_interrupt, set_interruptible
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
@@ -219,6 +219,7 @@ def main(
         workspace_path = Path(workspace) if workspace else None
 
     # register a handler for Ctrl-C
+    set_interruptible()  # prepare, user should be able to Ctrl+C until user prompt ready
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
 
     chat(
