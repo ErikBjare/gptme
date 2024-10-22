@@ -54,8 +54,7 @@ You first need to install ``ollama``, then you can run it with:
 
     ollama pull llama3.2:1b
     ollama serve
-    OPENAI_BASE_URL="http://127.0.0.1:11434/v1" gptme 'hello' -m local/llama3.2:1b
-
+    OPENAI_API_BASE="http://127.0.0.1:11434/v1" gptme 'hello' -m local/llama3.2:1b
 .. note::
 
     Small models will not reliably follow the system prompt, and will thus fail to use tools, severely limiting the usefulness of gptme.
