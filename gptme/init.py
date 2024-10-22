@@ -1,13 +1,19 @@
 import atexit
 import logging
 import readline
+from typing import cast
 
 from dotenv import load_dotenv
 
 from .config import config_path, load_config, set_config_value
 from .dirs import get_readline_history_file
 from .llm import init_llm
-from .models import PROVIDERS, get_recommended_model, set_default_model
+from .models import (
+    PROVIDERS,
+    Provider,
+    get_recommended_model,
+    set_default_model,
+)
 from .tabcomplete import register_tabcomplete
 from .tools import init_tools
 from .util import console
@@ -53,9 +59,9 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
         raise ValueError("No API key found, couldn't auto-detect provider")
 
     if any(model.startswith(f"{provider}/") for provider in PROVIDERS):
-        provider, model = model.split("/", 1)
+        provider, model = cast(tuple[Provider, str], model.split("/", 1))
     else:
-        provider, model = model, None
+        provider, model = cast(tuple[Provider, str], (model, None))
 
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
     init_llm(provider)

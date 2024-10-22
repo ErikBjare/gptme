@@ -1,6 +1,11 @@
 import logging
 from dataclasses import dataclass
-from typing import Literal, TypedDict, get_args
+from typing import (
+    Literal,
+    TypedDict,
+    cast,
+    get_args,
+)
 
 from typing_extensions import NotRequired
 
@@ -40,7 +45,7 @@ DEFAULT_MODEL: ModelMeta | None = None
 
 # known models metadata
 # TODO: can we get this from the API?
-MODELS: dict[str, dict[str, _ModelDictMeta]] = {
+MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
     "openai": OPENAI_MODELS,
     "anthropic": {
         "claude-3-opus-20240229": {
@@ -48,6 +53,12 @@ MODELS: dict[str, dict[str, _ModelDictMeta]] = {
             "max_output": 4096,
             "price_input": 15,
             "price_output": 75,
+        },
+        "claude-3-5-sonnet-20241022": {
+            "context": 200_000,
+            "max_output": 4096,
+            "price_input": 3,
+            "price_output": 15,
         },
         "claude-3-5-sonnet-20240620": {
             "context": 200_000,
@@ -85,12 +96,12 @@ def get_model(model: str | None = None) -> ModelMeta:
 
     # if only provider is given, get recommended model
     if model in PROVIDERS:
-        provider = model
+        provider = cast(Provider, model)
         model = get_recommended_model(provider)
         return get_model(f"{provider}/{model}")
 
     if any(f"{provider}/" in model for provider in PROVIDERS):
-        provider, model = model.split("/", 1)
+        provider, model = cast(tuple[Provider, str], model.split("/", 1))
         if provider not in MODELS or model not in MODELS[provider]:
             if provider not in ["openrouter", "local"]:
                 logger.warning(
@@ -113,18 +124,18 @@ def get_model(model: str | None = None) -> ModelMeta:
     )
 
 
-def get_recommended_model(provider: str) -> str:  # pragma: no cover
+def get_recommended_model(provider: Provider) -> str:  # pragma: no cover
     if provider == "openai":
         return "gpt-4o"
     elif provider == "openrouter":
         return "meta-llama/llama-3.1-405b-instruct"
     elif provider == "anthropic":
-        return "claude-3-5-sonnet-20240620"
+        return "claude-3-5-sonnet-20241022"
     else:
-        raise ValueError(f"Unknown provider {provider}")
+        raise ValueError(f"Provider {provider} did not have a recommended model")
 
 
-def get_summary_model(provider: str) -> str:  # pragma: no cover
+def get_summary_model(provider: Provider) -> str:  # pragma: no cover
     if provider == "openai":
         return "gpt-4o-mini"
     elif provider == "openrouter":
@@ -132,4 +143,4 @@ def get_summary_model(provider: str) -> str:  # pragma: no cover
     elif provider == "anthropic":
         return "claude-3-haiku-20240307"
     else:
-        raise ValueError(f"Unknown provider {provider}")
+        raise ValueError(f"Provider {provider} did not have a summary model")
