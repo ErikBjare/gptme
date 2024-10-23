@@ -61,13 +61,9 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
         provider, model = cast(tuple[Provider, str], (model, None))
 
     # set up API_KEY and API_BASE, needs to be done before loading history to avoid saving API_KEY
+    model = model or get_recommended_model(provider)
+    console.log(f"Using model: {provider}/{model}")
     init_llm(provider)
-
-    if not model:
-        model = get_recommended_model(provider)
-        console.log(
-            f"No model specified, using recommended model for provider: {model}"
-        )
     set_default_model(model)
 
     if interactive:
