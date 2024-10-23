@@ -18,6 +18,10 @@ If pipx is not installed, you can install it using pip:
 
     pip install --user pipx
 
+.. note::
+
+   Windows is not directly supported, but you can run gptme using WSL or Docker.
+
 Usage
 -----
 
