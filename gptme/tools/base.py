@@ -1,4 +1,6 @@
+import json
 import logging
+import re
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from textwrap import indent
@@ -19,6 +21,7 @@ InitFunc: TypeAlias = Callable[[], "ToolSpec"]
 mode: Literal["markdown", "xml"] = "markdown"
 exclusive_mode = False
 
+toolcall_re = re.compile(r"@(\w+): (\{.*?\})")
 
 ConfirmFunc = Callable[[str], bool]
 
@@ -161,6 +164,13 @@ class ToolUse:
         tool_uses.sort(key=lambda x: x.start or 0)
         for tool_use in tool_uses:
             yield tool_use
+
+        # check if its a toolcall
+        if match := toolcall_re.search(content):
+            toolname, args = match.group(1), json.loads(match.group(2))
+            args_list = [args["path"]] if "path" in args else []
+            content = args.get("content") or args.get("code")
+            yield ToolUse(toolname, args=args_list, content=content)
 
     @classmethod
     def _iter_from_markdown(cls, content: str) -> Generator["ToolUse", None, None]:
