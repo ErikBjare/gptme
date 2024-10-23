@@ -2,7 +2,6 @@ import errno
 import logging
 import os
 import re
-import readline
 import sys
 import termios
 import urllib.parse
@@ -18,6 +17,7 @@ from .llm import reply
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .models import get_model
+from .readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
@@ -228,7 +228,7 @@ def prompt_user(value=None) -> str:  # pragma: no cover
             print("\nInterrupted. Press Ctrl-D to exit.")
     clear_interruptible()
     if response:
-        readline.add_history(response)
+        add_history(response)  # readline history
     return response
 
 
