@@ -252,7 +252,7 @@ def execute_shell(
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
-    for match in re.finditer(cmd_regex, cmd):
+    for match in cmd_regex.finditer(cmd):
         for group in match.groups():
             if group and group not in whitelist_commands:
                 whitelisted = False
