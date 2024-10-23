@@ -236,6 +236,8 @@ def set_shell(shell: ShellSession) -> None:
     global _shell
     _shell = shell
 
+#NOTE: This does not handle control flow words like if, for, while.
+cmd_regex = re.compile(r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)")
 
 def execute_shell(
     code: str, args: list[str], confirm: ConfirmFunc
@@ -250,10 +252,7 @@ def execute_shell(
     if cmd.startswith("$ "):
         cmd = cmd[len("$ ") :]
 
-    #NOTE: This does not handle control flow words like if, for, while.
-    regex = r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)"
-
-    for match in re.finditer(regex, cmd):
+    for match in cmd_regex.finditer(cmd):
         for group in match.groups():
             if group and group not in whitelist_commands:
                 whitelisted = False
