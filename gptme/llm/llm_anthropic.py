@@ -47,7 +47,7 @@ class MessagePart(TypedDict, total=False):
     cache_control: dict[str, str]
 
 
-def chat(messages: list[Message], model: str) -> str:
+def chat(messages: list[Message], model: str, tools) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
@@ -60,6 +60,7 @@ def chat(messages: list[Message], model: str) -> str:
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
+        tools=tools,
     )
     content = response.content
     assert content
@@ -67,7 +68,7 @@ def chat(messages: list[Message], model: str) -> str:
     return content[0].text  # type: ignore
 
 
-def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
+def stream(messages: list[Message], model: str, tools) -> Generator[str, None, None]:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
@@ -80,6 +81,7 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
+        tools=tools,
     ) as stream:
         yield from stream.text_stream
 
