@@ -30,6 +30,10 @@ history_examples = [
 ]
 
 
+def add_history(line: str) -> None:  # pragma: no cover
+    readline.add_history(line)
+
+
 def load_readline_history() -> None:  # pragma: no cover
     logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
