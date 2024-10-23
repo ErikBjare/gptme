@@ -1,3 +1,10 @@
+"""
+Very WIP ncurses UI for gptme.
+
+- [x] basic chat app
+- [ ] gptme integration
+"""
+
 import argparse
 import curses
 import textwrap
