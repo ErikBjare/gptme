@@ -1,4 +1,5 @@
 import errno
+import json
 import logging
 import os
 import re
@@ -12,7 +13,7 @@ from .commands import action_descriptions, execute_cmd
 from .constants import PROMPT_USER
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
-from .llm import reply
+from .llm import build_tools_dict, reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
@@ -207,13 +208,29 @@ def step(
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
+        tools = []
+        toolsapi = True
+        if toolsapi:
+            tools = build_tools_dict()
+
         # generate response
-        msg_response = reply(msgs, get_model().model, stream)
+        msg_response = reply(msgs, get_model().model, stream, tools)
+        # TODO: check for tooluse responses
 
         # log response and run tools
         if msg_response:
             yield msg_response.replace(quiet=True)
             yield from execute_msg(msg_response, confirm)
+            if toolsapi:
+                toolcall_re = re.compile(r"@(\w+): (\{.*?\})")
+                # if matches exactly
+                if match := toolcall_re.match(msg_response.content):
+                    print(f"{match.group(1)=}")
+                    print(f"{match.group(2)=}")
+                    toolname, args = match.group(1), json.loads(match.group(2))
+                    yield from ToolUse(
+                        toolname, args=[args["path"]], content=args["content"]
+                    ).execute(confirm)
     except KeyboardInterrupt:
         clear_interruptible()
         yield Message("system", "Interrupted")

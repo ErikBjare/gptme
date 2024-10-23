@@ -12,7 +12,6 @@ from .models import Provider, get_model
 if TYPE_CHECKING:
     from openai import OpenAI
 
-
 openai: "OpenAI | None" = None
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,7 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
         yield msg
 
 
-def chat(messages: list[Message], model: str) -> str:
+def chat(messages: list[Message], model: str, tools) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
@@ -121,6 +120,7 @@ def chat(messages: list[Message], model: str) -> str:
         messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
+        tools=tools,
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
@@ -130,7 +130,7 @@ def chat(messages: list[Message], model: str) -> str:
     return content
 
 
-def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
+def stream(messages: list[Message], model: str, tools) -> Generator[str, None, None]:
     assert openai, "LLM not initialized"
     stop_reason = None
 
@@ -148,6 +148,7 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         stream=True,
+        tools=tools,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
         # max_tokens=(
@@ -161,9 +162,14 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
             # Got a chunk with no choices, Azure always sends one of these at the start
             continue
         stop_reason = chunk.choices[0].finish_reason  # type: ignore
-        content = chunk.choices[0].delta.content  # type: ignore
-        if content:
+        if content := chunk.choices[0].delta.content:
             yield content
+        # TODO: propagate tool calls back better, this is a bit hacky
+        for tool_call in chunk.choices[0].delta.tool_calls or ():
+            if name := tool_call.function.name:
+                yield "@" + name + ": "
+            if args := tool_call.function.arguments:
+                yield args
     logger.debug(f"Stop reason: {stop_reason}")
 
 
