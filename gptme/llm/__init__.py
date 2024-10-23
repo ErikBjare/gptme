@@ -49,15 +49,12 @@ def spec2tool(spec: ToolSpec) -> Tool:
         name = spec.block_types[0]
     description = spec.desc
 
-    if spec.functions:
-        logger.warn("functions not supported yet")
-
     return {
         "type": "function",
         "function": {
             "name": name,
             "description": description,
-            "parameters": None,
+            "parameters": None,  # TODO: set
             "strict": False,
         },
     }

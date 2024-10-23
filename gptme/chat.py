@@ -1,5 +1,4 @@
 import errno
-import json
 import logging
 import os
 import re
@@ -221,16 +220,6 @@ def step(
         if msg_response:
             yield msg_response.replace(quiet=True)
             yield from execute_msg(msg_response, confirm)
-            if toolsapi:
-                toolcall_re = re.compile(r"@(\w+): (\{.*?\})")
-                # if matches exactly
-                if match := toolcall_re.match(msg_response.content):
-                    print(f"{match.group(1)=}")
-                    print(f"{match.group(2)=}")
-                    toolname, args = match.group(1), json.loads(match.group(2))
-                    yield from ToolUse(
-                        toolname, args=[args["path"]], content=args["content"]
-                    ).execute(confirm)
     except KeyboardInterrupt:
         clear_interruptible()
         yield Message("system", "Interrupted")
