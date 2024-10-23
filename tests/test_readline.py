@@ -1,7 +1,7 @@
 import os
 import sys
 
-from gptme.tabcomplete import _matches
+from gptme.readline import _matches
 
 
 def test_matches():
