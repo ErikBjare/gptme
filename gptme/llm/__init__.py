@@ -35,12 +35,21 @@ class Function(TypedDict):
     name: str
     description: str
     parameters: dict | None  # JSON Schema
-    strict: bool  # = False
+    # strict: bool  # = False
 
 
-class Tool(TypedDict):
+class ToolOpenAI(TypedDict):
     type: str  # = "function"
     function: Function
+
+
+class ToolAnthropic(TypedDict):
+    name: str
+    description: str
+    input_schema: dict
+
+
+Tool = ToolOpenAI | ToolAnthropic
 
 
 def spec2tool(spec: ToolSpec) -> Tool:
@@ -49,15 +58,47 @@ def spec2tool(spec: ToolSpec) -> Tool:
         name = spec.block_types[0]
     description = spec.desc
 
-    return {
-        "type": "function",
-        "function": {
+    # TODO: construct intelligently with detailed/specific content/path arg descriptions
+    param_schema = {
+        "type": "object",
+        "properties": {
+            "content": {
+                "type": "string",
+                "description": "Code or content",
+            },
+            "path": {
+                "type": "string",
+                "description": "The path to the file, if applicable",
+            },
+            # "unit": {
+            #     "type": "string",
+            #     "enum": ["celsius", "fahrenheit"],
+            #     "description": "The unit of temperature, either 'celsius' or 'fahrenheit'"
+            # }
+        },
+        "required": ["content"],
+    }
+
+    # TODO: are input_schema and parameters the same? (both JSON Schema?)
+    provider = _client_to_provider()
+    if provider == "anthropic":
+        return {
             "name": name,
             "description": description,
-            "parameters": None,  # TODO: set
-            "strict": False,
-        },
-    }
+            "input_schema": param_schema,  # TODO: set
+        }
+    elif provider in ["openai", "azure", "openrouter"]:
+        return {
+            "type": "function",
+            "function": {
+                "name": name,
+                "description": description,
+                "parameters": param_schema,
+                # "strict": False,  # not supported by OpenRouter
+            },
+        }
+    else:
+        raise ValueError("Provider doesn't support tools API")
 
 
 def build_tools_dict() -> list[Tool]:
