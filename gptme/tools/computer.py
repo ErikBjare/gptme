@@ -3,7 +3,6 @@ Tool for computer interaction through X11, including screen capture, keyboard, a
 Similar to Anthropic's computer use demo, but integrated with gptme's architecture.
 """
 
-import asyncio
 import os
 import shlex
 import shutil
@@ -91,9 +90,7 @@ def run_xdotool(cmd: str, display: str | None = None) -> str:
     """Run an xdotool command with optional display setting."""
     display_prefix = f"DISPLAY={display} " if display else ""
     full_cmd = f"{display_prefix}xdotool {cmd}"
-    proc = subprocess.Popen(
-        full_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    )
+    proc = subprocess.Popen(full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
         raise RuntimeError(f"xdotool command failed: {stderr.decode()}")
@@ -173,7 +170,9 @@ def computer_action(
                 x, y = scale_coordinates(
                     ScalingSource.COMPUTER, width, height, width, height
                 )
-                os.system(f"convert {path} -resize {x}x{y}! {path}")
+                subprocess.run(
+                    f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
+                )
                 yield Message("system", f"Screenshot saved to {path}", files=[path])
 
         elif action == "cursor_position":
