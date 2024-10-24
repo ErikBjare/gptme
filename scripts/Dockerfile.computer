@@ -51,16 +51,16 @@ RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
 RUN python3.10 -m pip install --upgrade pip && \
     python3.10 -m pip install poetry
 
-# Copy desktop environment configs (at the end for faster rebuilds)
-RUN mkdir -p $HOME/.config
-COPY --chown=$USERNAME:$USERNAME image/.config $HOME/.config
-RUN ls -la $HOME/.config/tint2/
-
 # Set up project
 WORKDIR /app
 COPY --chown=$USERNAME:$USERNAME . /app
 RUN poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi -E server
+
+# Copy desktop environment configs (at the end for faster rebuilds)
+RUN mkdir -p $HOME && chmod 777 $HOME
+COPY scripts/computer_home $HOME
+RUN chown -R $USERNAME:$USERNAME $HOME
 
 # Switch to non-root user
 USER $USERNAME

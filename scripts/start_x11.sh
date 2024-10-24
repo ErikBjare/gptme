@@ -94,4 +94,4 @@ sleep 1
 
 # Start gptme server
 echo "Starting gptme server..."
-python3 -m gptme.server
+python3 -m gptme.server --host 0.0.0.0 --port 8081
