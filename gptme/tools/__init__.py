@@ -6,6 +6,7 @@ from ..message import Message
 from .base import ConfirmFunc, ToolSpec, ToolUse
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
+from .computer import tool as computer_tool
 from .gh import tool as gh_tool
 from .patch import tool as patch_tool
 from .python import register_function
@@ -43,6 +44,7 @@ all_tools: list[ToolSpec] = [
     youtube_tool,
     screenshot_tool,
     vision_tool,
+    computer_tool,
     # python tool is loaded last to ensure all functions are registered
     python_tool,
 ]
