@@ -2,7 +2,12 @@ import base64
 import logging
 from collections.abc import Generator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
+from openai.types.chat import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCall,
+    ChoiceDeltaToolCallFunction,
+)
 
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
@@ -46,7 +51,9 @@ def init(provider: Provider, config: Config):
         openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
     elif provider == "gemini":
         api_key = config.get_env_required("GEMINI_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://generativelanguage.googleapis.com/v1beta")
+        openai = OpenAI(
+            api_key=api_key, base_url="https://generativelanguage.googleapis.com/v1beta"
+        )
     elif provider == "xai":
         api_key = config.get_env_required("XAI_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
@@ -142,7 +149,7 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
 
     from openai._types import NOT_GIVEN  # fmt: skip
 
-    for chunk in openai.chat.completions.create(
+    for chunk_raw in openai.chat.completions.create(
         model=model,
         messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
@@ -158,18 +165,30 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
     ):
-        if not chunk.choices:  # type: ignore
+        # Cast the chunk to the correct type
+        chunk = cast(ChatCompletionChunk, chunk_raw)
+
+        if not chunk.choices:
             # Got a chunk with no choices, Azure always sends one of these at the start
             continue
-        stop_reason = chunk.choices[0].finish_reason  # type: ignore
-        if content := chunk.choices[0].delta.content:
-            yield content
-        # TODO: propagate tool calls back better, this is a bit hacky
-        for tool_call in chunk.choices[0].delta.tool_calls or ():
-            if name := tool_call.function.name:
-                yield "@" + name + ": "
-            if args := tool_call.function.arguments:
-                yield args
+
+        choice = chunk.choices[0]
+        stop_reason = choice.finish_reason
+        delta = choice.delta
+
+        if delta.content is not None:
+            yield delta.content
+
+        # Handle tool calls
+        if delta.tool_calls:
+            for tool_call in delta.tool_calls:
+                if isinstance(tool_call, ChoiceDeltaToolCall) and tool_call.function:
+                    func = tool_call.function
+                    if isinstance(func, ChoiceDeltaToolCallFunction):
+                        if func.name:
+                            yield "@" + func.name + ": "
+                        if func.arguments:
+                            yield func.arguments
     logger.debug(f"Stop reason: {stop_reason}")
 
 
