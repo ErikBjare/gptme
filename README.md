@@ -183,6 +183,9 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 🏆 Advanced evals for testing frontier capabilities
 - 🤖 Long-running agents and advanced agent architectures
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
+- 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
+- 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
+- 🌐 Web UI frontend (see docs for [server][docs-server])
 
 ### 🛠 Use Cases
 
@@ -310,5 +313,7 @@ Options:
 [docs-tools-patch]: https://gptme.org/docs/tools.html#patch
 [docs-tools-browser]: https://gptme.org/docs/tools.html#browser
 [docs-bot]: https://gptme.org/docs/bot.html
+[docs-server]: https://gptme.org/docs/server.html
 [docs-evals]: https://gptme.org/docs/evals.html
 [docs-server]: https://gptme.org/docs/server.html
+[anthropic-computer-use]: https://www.anthropic.com/news/3-5-models-and-computer-use
