@@ -17,6 +17,10 @@ build:
 build-docker:
 	docker build . -t gptme:latest -f scripts/Dockerfile
 	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval
+	# TODO: add gptme-server image
+
+build-docker-computer:
+	docker build . -t gptme-computer:latest -f scripts/Dockerfile.computer
 
 build-docker-full:
 	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
