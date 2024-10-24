@@ -262,7 +262,7 @@ def execute_shell(
     if not whitelisted:
         print_preview(cmd, "bash")
         if not confirm("Run command?"):
-            yield Message("system", "Command not run")
+            yield Message("system", "User chose not to run command.")
             return
 
     try:
