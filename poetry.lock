@@ -2499,6 +2499,20 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "python-xlib"
+version = "0.33"
+description = "Python X Library"
+optional = true
+python-versions = "*"
+files = [
+    {file = "python-xlib-0.33.tar.gz", hash = "sha256:55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32"},
+    {file = "python_xlib-0.33-py2.py3-none-any.whl", hash = "sha256:c3534038d42e0df2f1392a1b30a15a4ff5fdc2b86cfa94f072bf11b10a164398"},
+]
+
+[package.dependencies]
+six = ">=1.10.0"
+
+[[package]]
 name = "pytz"
 version = "2024.2"
 description = "World timezone definitions, modern and historical"
@@ -3411,12 +3425,13 @@ files = [
 requests = "*"
 
 [extras]
-all = ["flask", "matplotlib", "numpy", "pandas", "pillow", "playwright"]
+all = ["flask", "matplotlib", "numpy", "pandas", "pillow", "playwright", "python-xlib"]
 browser = ["playwright"]
+computer = ["pillow", "python-xlib"]
 datascience = ["matplotlib", "numpy", "pandas", "pillow"]
 server = ["flask"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "043894e5aad0f1d3bfb95134b3469d5eba53ce7f8e8f5e83bef97ff90ee483cb"
+content-hash = "1a818642af5d1853c1f8bbc628218757ec088e756a1098e5caca4b4403268258"

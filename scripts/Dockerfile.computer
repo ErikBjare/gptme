@@ -1,0 +1,93 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_PRIORITY=high
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install \
+    build-essential \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
+    # UI Requirements
+    xvfb \
+    xterm \
+    xdotool \
+    scrot \
+    imagemagick \
+    sudo \
+    mutter \
+    x11vnc \
+    tint2 \
+    x11-apps \
+    # Tools
+    make \
+    git \
+    tmux \
+    curl \
+    pandoc \
+    netcat-openbsd \
+    net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install noVNC for web access
+RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
+    git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
+    ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
+
+# Create user and setup environment
+ENV USERNAME=computeruse
+ENV HOME=/home/$USERNAME
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    mkdir -p /workspace && \
+    mkdir -p /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
+    chown -R $USERNAME:$USERNAME /workspace
+
+# Install Poetry and dependencies
+RUN python3.10 -m pip install --upgrade pip && \
+    python3.10 -m pip install poetry
+
+# Copy desktop environment configs (at the end for faster rebuilds)
+RUN mkdir -p $HOME/.config
+COPY --chown=$USERNAME:$USERNAME image/.config $HOME/.config
+RUN ls -la $HOME/.config/tint2/
+
+# Set up project
+WORKDIR /app
+COPY --chown=$USERNAME:$USERNAME . /app
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi -E server
+
+# Switch to non-root user
+USER $USERNAME
+WORKDIR $HOME
+
+# Configure git
+RUN git config --global user.name "gptme" && \
+    git config --global user.email "gptme@superuserlabs.org" && \
+    git config --global init.defaultBranch main
+
+# Set up environment
+ENV PYTHONPATH=/app
+ENV PATH="/usr/local/bin:$PATH"
+ENV DISPLAY_NUM=1
+ENV WIDTH=1024
+ENV HEIGHT=768
+ENV DISPLAY=:${DISPLAY_NUM}
+
+# Copy and setup startup script
+COPY --chown=$USERNAME:$USERNAME scripts/start_x11.sh /app/
+RUN chmod +x /app/start_x11.sh
+
+# Set working directory
+WORKDIR /workspace
+
+# Expose ports
+EXPOSE 5000 6080 8080
+
+# Start services
+CMD ["/app/start_x11.sh"]
