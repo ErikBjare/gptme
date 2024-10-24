@@ -13,7 +13,7 @@ from .config import get_workspace_prompt
 from .constants import PROMPT_USER
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
-from .llm import reply
+from .llm import build_tools_dict, reply
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .models import get_model
@@ -201,8 +201,14 @@ def step(
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
+        tools = []
+        toolsapi = True
+        if toolsapi:
+            tools = build_tools_dict()
+
         # generate response
-        msg_response = reply(msgs, get_model().model, stream)
+        msg_response = reply(msgs, get_model().model, stream, tools)
+        # TODO: check for tooluse responses
 
         # log response and run tools
         if msg_response:

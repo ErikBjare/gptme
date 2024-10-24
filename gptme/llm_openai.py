@@ -1,6 +1,11 @@
 import logging
 from collections.abc import Generator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
+from openai.types.chat import ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCall,
+    ChoiceDeltaToolCallFunction,
+)
 
 from .config import Config
 from .constants import TEMPERATURE, TOP_P
@@ -8,7 +13,6 @@ from .message import Message, msgs2dicts
 
 if TYPE_CHECKING:
     from openai import OpenAI
-
 
 openai: "OpenAI | None" = None
 logger = logging.getLogger(__name__)
@@ -71,7 +75,7 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
         yield msg
 
 
-def chat(messages: list[Message], model: str) -> str:
+def chat(messages: list[Message], model: str, tools) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
@@ -87,6 +91,7 @@ def chat(messages: list[Message], model: str) -> str:
         messages=msgs2dicts(messages, openai=True),  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
+        tools=tools,
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
@@ -96,15 +101,16 @@ def chat(messages: list[Message], model: str) -> str:
     return content
 
 
-def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
+def stream(messages: list[Message], model: str, tools) -> Generator[str, None, None]:
     assert openai, "LLM not initialized"
     stop_reason = None
-    for chunk in openai.chat.completions.create(
+    for chunk_raw in openai.chat.completions.create(
         model=model,
         messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         stream=True,
+        tools=tools,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
         # max_tokens=(
@@ -114,11 +120,28 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
     ):
-        if not chunk.choices:  # type: ignore
+        # Cast the chunk to the correct type
+        chunk = cast(ChatCompletionChunk, chunk_raw)
+
+        if not chunk.choices:
             # Got a chunk with no choices, Azure always sends one of these at the start
             continue
-        stop_reason = chunk.choices[0].finish_reason  # type: ignore
-        content = chunk.choices[0].delta.content  # type: ignore
-        if content:
-            yield content
+
+        choice = chunk.choices[0]
+        stop_reason = choice.finish_reason
+        delta = choice.delta
+
+        if delta.content is not None:
+            yield delta.content
+
+        # Handle tool calls
+        if delta.tool_calls:
+            for tool_call in delta.tool_calls:
+                if isinstance(tool_call, ChoiceDeltaToolCall) and tool_call.function:
+                    func = tool_call.function
+                    if isinstance(func, ChoiceDeltaToolCallFunction):
+                        if func.name:
+                            yield "@" + func.name + ": "
+                        if func.arguments:
+                            yield func.arguments
     logger.debug(f"Stop reason: {stop_reason}")
