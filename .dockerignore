@@ -11,6 +11,7 @@ gptme.toml
 # Build scripts
 scripts
 !scripts/start_x11.sh
+!scripts/computer_home
 .github
 
 # Build/test/coverage/docs/prof directories

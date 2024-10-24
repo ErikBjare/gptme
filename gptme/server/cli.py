@@ -16,7 +16,19 @@ logger = logging.getLogger(__name__)
     default=None,
     help="Model to use by default, can be overridden in each request.",
 )
-def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
+@click.option(
+    "--host",
+    default="127.0.0.1",
+    help="Host to bind the server to.",
+)
+@click.option(
+    "--port",
+    default="5000",
+    help="Port to run the server on.",
+)
+def main(
+    debug: bool, verbose: bool, model: str | None, host: str, port: str
+):  # pragma: no cover
     """
     Starts a server and web UI for gptme.
 
@@ -37,4 +49,4 @@ def main(debug: bool, verbose: bool, model: str | None):  # pragma: no cover
     click.echo("Initialization complete, starting server")
 
     app = create_app()
-    app.run(debug=debug)
+    app.run(debug=debug, host=host, port=int(port))
