@@ -1,0 +1,23 @@
+# Use the main Dockerfile as the base image
+FROM gptme:latest
+
+# Install server dependencies
+USER root
+WORKDIR /app
+RUN poetry install -E server --without=dev
+
+# Switch back to non-root user
+USER appuser
+
+# Set the working directory
+WORKDIR /workspace
+
+# Expose the server port
+EXPOSE 5000
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
+
+# Set the entrypoint to run the server
+ENTRYPOINT ["python", "-m", "gptme.server", "--host", "0.0.0.0"]

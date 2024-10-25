@@ -52,18 +52,5 @@ ENV PYTHONPATH=/app
 # Set the working directory
 WORKDIR /workspace
 
-# Expose port 5000
-EXPOSE 5000
-
-# Healthcheck
-# TODO: only relevant for server
-#HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-#    CMD curl -f http://localhost:5000/ || exit 1
-
-# TODO: make into separate image
-# CMD ["poetry", "run", "python", "-m", "gptme.server"]
-
-RUN poetry config virtualenvs.create false
-
 # Entrypoint if prompt/args given, run the CLI
 ENTRYPOINT ["python", "-m", "gptme"]
