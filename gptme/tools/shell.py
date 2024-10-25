@@ -236,8 +236,10 @@ def set_shell(shell: ShellSession) -> None:
     global _shell
     _shell = shell
 
-#NOTE: This does not handle control flow words like if, for, while.
+
+# NOTE: This does not handle control flow words like if, for, while.
 cmd_regex = re.compile(r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)")
+
 
 def execute_shell(
     code: str, args: list[str], confirm: ConfirmFunc
@@ -245,8 +247,8 @@ def execute_shell(
     """Executes a shell command and returns the output."""
     shell = get_shell()
     assert not args
-    whitelist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo"]
-    whitelisted = True 
+    whitelist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
+    whitelisted = True
 
     cmd = code.strip()
     if cmd.startswith("$ "):
@@ -256,7 +258,7 @@ def execute_shell(
         for group in match.groups():
             if group and group not in whitelist_commands:
                 whitelisted = False
-                break 
+                break
 
     if not whitelisted:
         print_preview(cmd, "bash")
@@ -272,7 +274,12 @@ def execute_shell(
     stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
     stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
 
-    msg = _format_block_smart(f"Ran {'whitelisted ' if whitelisted else ''}command", cmd, lang="bash") + "\n\n"
+    msg = (
+        _format_block_smart(
+            f"Ran {'whitelisted ' if whitelisted else ''}command", cmd, lang="bash"
+        )
+        + "\n\n"
+    )
     if stdout:
         msg += _format_block_smart("", stdout, "stdout") + "\n\n"
     if stderr:
