@@ -41,6 +41,24 @@ To use OpenRouter, set your API key:
 
     export OPENROUTER_API_KEY="your-api-key"
 
+Groq
+----
+
+To use Groq, set your API key:
+
+.. code-block:: sh
+
+    export GROQ_API_KEY="your-api-key"
+
+xAI
+---
+
+To use xAI, set your API key:
+
+.. code-block:: sh
+
+    export XAI_API_KEY="your-api-key"
+
 Local
 -----
 

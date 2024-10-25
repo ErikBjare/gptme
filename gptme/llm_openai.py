@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from .config import Config
 from .constants import TEMPERATURE, TOP_P
 from .message import Message, msgs2dicts
+from .models import Provider
 
 if TYPE_CHECKING:
     from openai import OpenAI
@@ -21,7 +22,7 @@ openrouter_headers = {
 }
 
 
-def init(provider: str, config: Config):
+def init(provider: Provider, config: Config):
     global openai
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
@@ -42,6 +43,9 @@ def init(provider: str, config: Config):
     elif provider == "xai":
         api_key = config.get_env_required("XAI_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+    elif provider == "groq":
+        api_key = config.get_env_required("GROQ_API_KEY")
+        openai = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
     elif provider == "local":
         # OPENAI_API_BASE renamed to OPENAI_BASE_URL: https://github.com/openai/openai-python/issues/745
         api_base = config.get_env("OPENAI_API_BASE")

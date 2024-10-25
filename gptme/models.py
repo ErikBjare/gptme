@@ -37,8 +37,10 @@ class _ModelDictMeta(TypedDict):
 
 
 # available providers
-Provider = Literal["openai", "anthropic", "azure", "openrouter", "xai", "local"]
-PROVIDERS = get_args(Provider)
+Provider = Literal["openai", "anthropic", "azure", "openrouter", "groq", "xai", "local"]
+PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
+PROVIDERS_OPENAI: list[Provider]
+PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "local"]
 
 # default model
 DEFAULT_MODEL: ModelMeta | None = None
