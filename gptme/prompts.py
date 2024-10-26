@@ -230,7 +230,7 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
 
     yield Message( "system", prompt,)
 
-regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
+regex = re.compile(r'^NAME=["']?([^"']+)["']?')
 def get_system_distro() -> str:
     """Get the system distribution name."""
 
