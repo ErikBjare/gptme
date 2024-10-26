@@ -232,7 +232,7 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
 
 def get_system_distro() -> str:
     """Get the system distribution name."""
-    regex = r"^NAME=\"?([^\"]+)\"?"
+    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
 
     if os.path.exists("/etc/os-release"):
         with open("/etc/os-release") as f:
