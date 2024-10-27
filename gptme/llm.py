@@ -25,6 +25,7 @@ from .models import (
     get_summary_model,
 )
 from .tools import ToolUse
+from .util import console
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ def init_llm(llm: str):
         init_anthropic(config)
         assert get_anthropic_client()
     else:
-        print(f"Error: Unknown LLM: {llm}")
+        console.log(f"Error: Unknown LLM: {llm}")
         sys.exit(1)
 
 
@@ -58,7 +59,7 @@ def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
 
 def _chat_complete(messages: list[Message], model: str) -> str:
     provider = _client_to_provider()
-    if provider in ["openai", "azure", "openrouter"]:
+    if provider in PROVIDERS_OPENAI:
         return chat_openai(messages, model)
     elif provider == "anthropic":
         return chat_anthropic(messages, model)
@@ -68,7 +69,7 @@ def _chat_complete(messages: list[Message], model: str) -> str:
 
 def _stream(messages: list[Message], model: str) -> Iterator[str]:
     provider = _client_to_provider()
-    if provider in ["openai", "azure", "openrouter"]:
+    if provider in PROVIDERS_OPENAI:
         return stream_openai(messages, model)
     elif provider == "anthropic":
         return stream_anthropic(messages, model)
