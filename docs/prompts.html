@@ -602,10 +602,10 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>git
-<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
 
@@ -923,7 +923,7 @@ The following functions are available in the REPL:
         max_results (int): Maximum number of messages to display.
         incl_system (bool): Whether to include system messages.
 
-<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Generator:
+<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path:
     Take a screenshot and save it to a file.
 
 <span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Generator: View an image.
