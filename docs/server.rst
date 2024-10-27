@@ -57,35 +57,4 @@ The server provides two interfaces:
 .. warning::
 
    The computer use interface is experimental and has serious security implications.
-   Please use with caution and consider the security considerations below.
-
-Security Considerations
------------------------
-
-When using the computer use interface:
-
-1. Network Security
-   - The server exposes VNC and web interfaces
-   - Consider using SSH tunneling for remote access
-   - Restrict access to trusted networks/users
-   - Use firewall rules to limit port access
-
-2. Container Security
-   - Run with minimal privileges
-   - Mount only necessary directories
-   - Consider using a separate network namespace
-   - Regularly update base images and dependencies
-
-3. Usage Guidelines
-   - Start in view-only mode by default
-   - Require explicit user action to enable interaction
-   - Monitor and audit computer use sessions
-   - Implement timeouts for inactive sessions
-
-4. Data Protection
-   - Don't expose sensitive information in the desktop environment
-   - Be cautious with browser automation and credentials
-   - Consider using ephemeral containers
-   - Regular cleanup of session data
-
-Please also see Anthropic's documentation on `computer use <https://docs.anthropic.com/en/docs/build-with-claude/computer-use>`_ for additional guidance.
+   Please use with caution and see Anthropic's documentation on `computer use <https://docs.anthropic.com/en/docs/build-with-claude/computer-use>`_ for additional guidance.

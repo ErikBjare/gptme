@@ -87,7 +87,11 @@ RUN chmod +x /app/start_x11.sh
 WORKDIR /workspace
 
 # Expose ports
-EXPOSE 5000 6080 8080
+# 5000: Chat view?
+# 6080: noVNC
+# 8080: Chat view?
+# 8081: Chat view?
+EXPOSE 5000 6080 8080 8081
 
 # Start services
 CMD ["/app/start_x11.sh"]
