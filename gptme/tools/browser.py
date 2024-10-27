@@ -24,6 +24,8 @@ import re
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
+from time import sleep
 from typing import Literal
 
 from .base import ToolSpec, ToolUse
@@ -33,6 +35,7 @@ has_playwright = importlib.util.find_spec("playwright") is not None
 # noreorder
 if has_playwright:
     from ._browser_playwright import (  # fmt: skip
+        get_browser,
         load_page,
         search_duckduckgo,
         search_google,
@@ -81,13 +84,83 @@ System:
 """.strip()
 
 
+def has_pdftotext():
+    return shutil.which("pdftotext") is not None
+
+
 def has_browser_tool():
     return has_playwright
 
 
 def read_url(url: str) -> str:
-    """Read the text of a webpage and return the text in Markdown format."""
-    page = load_page(url)
+    """Read the text of a webpage or PDF and return the text in Markdown format."""
+    browser = get_browser()
+    context = browser.new_context()
+    page = context.new_page()
+
+    download_started = False
+    download_result: str | Exception | None = None
+
+    def resultwrapper(f):
+        nonlocal download_result
+        try:
+            download_result = f()
+        except Exception as e:
+            print(f"{e=}")
+            download_result = e
+
+    def on_download(download):
+        nonlocal download_started, download_result
+        download_started = True
+        logger.info(f"Download started: {download.suggested_filename}")
+
+        # Wait for the download process to complete and save the downloaded file somewhere
+        path = Path(tempfile.mkdtemp()) / download.suggested_filename
+        download.save_as(path)
+
+        if path.suffix == ".pdf":
+            if not has_pdftotext():
+                raise Exception(
+                    "pdftotext is not installed. Needed for reading PDF files."
+                )
+
+            # Convert PDF to text
+            result = subprocess.run(
+                ["pdftotext", path, "-"], capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                raise Exception(
+                    f"pdftotext returned error code {result.returncode}: {result.stderr}"
+                )
+
+            return result.stdout
+        else:
+            raise Exception(f"Unsupported file extension: {path.suffix}")
+
+    page.on("download", lambda: resultwrapper(on_download))
+
+    try:
+        page.goto(url, wait_until="domcontentloaded")
+    except Exception as e:
+        print("EXCEPT CAUGHT")
+        print(f"{e=}")
+        # could be download
+        sleep(1)
+        print(f"{download_started=}")
+        if download_started:
+            # wait until download_result is set, or timeout after 10 seconds
+            s = 0
+            while download_result is None and s < 10:
+                s += 1
+                sleep(1)
+                print("...")
+            if download_result is not None:
+                if isinstance(download_result, Exception):
+                    raise download_result from None
+                return download_result
+            else:
+                raise Exception("Download timed out")
+        raise
 
     # Get the HTML of the body
     body_html = page.inner_html("body")
