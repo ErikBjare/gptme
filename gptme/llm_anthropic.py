@@ -38,7 +38,7 @@ class MessagePart(TypedDict, total=False):
 def chat(messages: list[Message], model: str) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages, anthropic=True)
+    messages_dicts = msgs2dicts(messages, provider="anthropic")
     response = anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=messages_dicts,  # type: ignore
@@ -56,7 +56,7 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages, anthropic=True)
+    messages_dicts = msgs2dicts(messages, provider="anthropic")
     with anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=messages_dicts,  # type: ignore
