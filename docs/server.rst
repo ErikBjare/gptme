@@ -26,6 +26,8 @@ The server provides two interfaces:
 
    Access the basic chat interface at http://localhost:5000
 
+   For more usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+
 2. Computer Use Interface
 
    .. code-block:: bash
@@ -52,8 +54,13 @@ The server provides two interfaces:
    - Browser with WebSocket support for VNC
    - Network ports 5000 (API), 8080 (combined view), and 6080 (VNC) available
 
+.. warning::
+
+   The computer use interface is experimental and has serious security implications.
+   Please use with caution and consider the security considerations below.
+
 Security Considerations
----------------------
+-----------------------
 
 When using the computer use interface:
 
@@ -81,4 +88,4 @@ When using the computer use interface:
    - Consider using ephemeral containers
    - Regular cleanup of session data
 
-For more usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+Please also see Anthropic's documentation on `computer use <https://docs.anthropic.com/en/docs/build-with-claude/computer-use>`_ for additional guidance.

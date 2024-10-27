@@ -118,6 +118,7 @@ nitpick_ignore = [
     ("py:class", "flask.app.Flask"),
     ("py:class", "gptme.tools.python.T"),
     ("py:class", "threading.Thread"),
+    ("py:class", "gptme.tools.computer.ScalingSource"),
 ]
 
 # -- Options for HTML output -------------------------------------------------
