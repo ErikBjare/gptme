@@ -54,7 +54,4 @@ The server provides two interfaces:
    - Browser with WebSocket support for VNC
    - Network ports 5000 (API), 8080 (combined view), and 6080 (VNC) available
 
-.. warning::
-
-   The computer use interface is experimental and has serious security implications.
-   Please use with caution and see Anthropic's documentation on `computer use <https://docs.anthropic.com/en/docs/build-with-claude/computer-use>`_ for additional guidance.
+.. include:: computer-use-warning.rst

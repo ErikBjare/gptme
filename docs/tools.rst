@@ -152,30 +152,4 @@ Example usage::
 
 The tool automatically handles screen resolution scaling to ensure optimal performance with LLM vision capabilities.
 
-Security Considerations
-~~~~~~~~~~~~~~~~~~~~~
-
-.. warning::
-   Computer use poses unique risks beyond standard LLM interactions. To minimize risks:
-
-   1. Run in an isolated environment:
-      - Use Docker container with minimal privileges
-      - Consider using a dedicated virtual machine
-      - Limit network access where possible
-
-   2. Protect sensitive data:
-      - Don't expose login credentials or sensitive information
-      - Be cautious with browser automation
-      - Consider using a separate profile/workspace
-
-   3. Implement safeguards:
-      - Require human confirmation for consequential actions
-      - Use view-only mode by default in the web interface
-      - Monitor and log computer use actions
-
-   4. Be aware of prompt injection risks:
-      - The model may follow commands found in viewed content
-      - Screen content could override user instructions
-      - Isolate the environment from sensitive operations
-
-   Always inform users of these risks and obtain appropriate consent before enabling computer use features.
+.. include:: computer-use-warning.rst
