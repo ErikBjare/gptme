@@ -60,6 +60,20 @@ def init(provider: Provider, config: Config):
     assert openai, "Provider not initialized"
 
 
+def get_provider() -> Provider | None:
+    if not openai:
+        return None
+    if "openai.com" in str(openai.base_url):
+        return "openai"
+    if "openrouter.ai" in str(openai.base_url):
+        return "openrouter"
+    if "groq.com" in str(openai.base_url):
+        return "groq"
+    if "x.ai" in str(openai.base_url):
+        return "xai"
+    return None
+
+
 def get_client() -> "OpenAI | None":
     return openai
 
@@ -88,7 +102,7 @@ def chat(messages: list[Message], model: str) -> str:
 
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages, openai=True),  # type: ignore
+        messages=msgs2dicts(messages, provider=get_provider()),  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         extra_headers=(
@@ -105,7 +119,7 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     stop_reason = None
     for chunk in openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(_prep_o1(messages), openai=True),  # type: ignore
+        messages=msgs2dicts(_prep_o1(messages), provider=get_provider()),  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         stream=True,
