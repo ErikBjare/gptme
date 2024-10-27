@@ -7,12 +7,10 @@ import os
 import shlex
 import shutil
 import subprocess
-from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
 from typing import Literal, TypedDict
 
-from ..message import Message
 from .base import ToolSpec
 from .screenshot import _screenshot
 
@@ -99,7 +97,7 @@ def run_xdotool(cmd: str, display: str | None = None) -> str:
 
 def computer_action(
     action: Action, text: str | None = None, coordinate: tuple[int, int] | None = None
-) -> Generator[Message, None, None]:
+) -> None:
     """
     Perform computer interactions through X11.
 
@@ -125,7 +123,7 @@ def computer_action(
             else:  # left_click_drag
                 run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
 
-            yield Message("system", f"Moved mouse to {x},{y}")
+            print(f"Moved mouse to {x},{y}")
 
         elif action in ("key", "type"):
             if not text:
@@ -133,14 +131,14 @@ def computer_action(
 
             if action == "key":
                 run_xdotool(f"key -- {text}", display)
-                yield Message("system", f"Sent key sequence: {text}")
+                print(f"Sent key sequence: {text}")
             else:  # type
                 for chunk in chunks(text, TYPING_GROUP_SIZE):
                     run_xdotool(
                         f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
                         display,
                     )
-                yield Message("system", f"Typed text: {text}")
+                print(f"Typed text: {text}")
 
         elif action in ("left_click", "right_click", "middle_click", "double_click"):
             click_arg = {
@@ -150,7 +148,7 @@ def computer_action(
                 "double_click": "--repeat 2 --delay 500 1",
             }[action]
             run_xdotool(f"click {click_arg}", display)
-            yield Message("system", f"Performed {action}")
+            print(f"Performed {action}")
 
         elif action == "screenshot":
             # Use X11-specific screenshot if available, fall back to native
@@ -173,32 +171,37 @@ def computer_action(
                 subprocess.run(
                     f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
                 )
-                yield Message("system", f"Screenshot saved to {path}", files=[path])
+                # TODO: yield a message with the image (same as vision tool)
+                print(f"Screenshot saved to {path}")  # files=[path]
+            else:
+                print("Error: Screenshot failed")
 
         elif action == "cursor_position":
             output = run_xdotool("getmouselocation --shell", display)
             x = int(output.split("X=")[1].split("\n")[0])
             y = int(output.split("Y=")[1].split("\n")[0])
             x, y = scale_coordinates(ScalingSource.COMPUTER, x, y, width, height)
-            yield Message("system", f"Cursor position: X={x},Y={y}")
+            print(f"Cursor position: X={x},Y={y}")
 
     except Exception as e:
-        yield Message("system", f"Error: Computer action failed: {str(e)}")
+        print(f"Error: Computer action failed: {str(e)}")
 
+
+instructions = """
+Use this tool to interact with the computer through X11.
+Available actions:
+- key: Send key sequence (e.g., "Return", "Control_L+c")
+- type: Type text with realistic delays
+- mouse_move: Move mouse to coordinates
+- left_click, right_click, middle_click, double_click: Mouse clicks
+- left_click_drag: Click and drag to coordinates
+- screenshot: Take a screenshot
+- cursor_position: Get current mouse position
+"""
 
 tool = ToolSpec(
     name="computer",
     desc="Control the computer through X11 (keyboard, mouse, screen)",
-    instructions="""
-    Use this tool to interact with the computer through X11.
-    Available actions:
-    - key: Send key sequence (e.g., "Return", "Control_L+c")
-    - type: Type text with realistic delays
-    - mouse_move: Move mouse to coordinates
-    - left_click, right_click, middle_click, double_click: Mouse clicks
-    - left_click_drag: Click and drag to coordinates
-    - screenshot: Take a screenshot
-    - cursor_position: Get current mouse position
-    """,
+    instructions=instructions,
     functions=[computer_action],
 )
