@@ -224,7 +224,7 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         os_version = platform.mac_ver()[0]
     else:
         os_info = "unknown"
-        os_version = "unknown"
+        os_version = ""
     
     prompt = f"## System Information\n\n**OS:** {os_info}\n**Version:** {os_version}"
 
