@@ -19,26 +19,28 @@ To use the browser tool, you need to have the `playwright` Python package instal
 
 import importlib.util
 import logging
-import os
-import re
 import shutil
-import subprocess
-import tempfile
 from pathlib import Path
 from typing import Literal
 
 from .base import ToolSpec, ToolUse
 
-has_playwright = importlib.util.find_spec("playwright") is not None
+has_playwright = lambda: importlib.util.find_spec("playwright") is not None  # noqa
+has_lynx = lambda: shutil.which("lynx")  # noqa
+browser: Literal["playwright", "lynx"] | None = (
+    "playwright" if has_playwright() else ("lynx" if has_lynx() else None)
+)
 
 # noreorder
-if has_playwright:
-    from ._browser_playwright import (  # fmt: skip
-        load_page,
-        search_duckduckgo,
-        search_google,
+if browser == "playwright":
+    from ._browser_playwright import read_url as read_url_playwright  # fmt: skip
+    from ._browser_playwright import (
+        screenshot_url as screenshot_url_playwright,  # fmt: skip
     )
-
+    from ._browser_playwright import search_duckduckgo, search_google  # fmt: skip
+elif browser == "lynx":
+    from ._browser_lynx import read_url as read_url_lynx  # fmt: skip
+    from ._browser_lynx import search as search_lynx  # fmt: skip
 
 logger = logging.getLogger(__name__)
 
@@ -83,92 +85,43 @@ System:
 
 
 def has_browser_tool():
-    return has_playwright
+    return browser is not None
 
 
 def read_url(url: str) -> str:
-    """Read the text of a webpage and return the text in Markdown format."""
-    page = load_page(url)
-
-    # Get the HTML of the body
-    body_html = page.inner_html("body")
-
-    # Convert the HTML to Markdown
-    markdown = html_to_markdown(body_html)
-
-    return markdown
+    """Read a webpage in a text format."""
+    assert browser
+    if browser == "playwright":
+        return read_url_playwright(url)  # type: ignore
+    elif browser == "lynx":
+        return read_url_lynx(url)  # type: ignore
 
 
 def search(query: str, engine: EngineType = "google") -> str:
     """Search for a query on a search engine."""
     logger.info(f"Searching for '{query}' on {engine}")
+    if browser == "playwright":
+        return search_playwright(query, engine)
+    elif browser == "lynx":
+        return search_lynx(query, engine)  # type: ignore
+    raise ValueError(f"Unknown search engine: {engine}")
+
+
+def search_playwright(query: str, engine: EngineType = "google") -> str:
+    """Search for a query on a search engine using Playwright."""
     if engine == "google":
-        return search_google(query)
+        return search_google(query)  # type: ignore
     elif engine == "duckduckgo":
-        return search_duckduckgo(query)
-    else:
-        raise ValueError(f"Unknown search engine: {engine}")
+        return search_duckduckgo(query)  # type: ignore
+    raise ValueError(f"Unknown search engine: {engine}")
 
 
 def screenshot_url(url: str, path: Path | str | None = None) -> Path:
-    """Take a screenshot of a webpage and save it to a file."""
-    logger.info(f"Taking screenshot of '{url}' and saving to '{path}'")
-    page = load_page(url)
-
-    if path is None:
-        path = tempfile.mktemp(suffix=".png")
-    else:
-        # create the directory if it doesn't exist
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    # Take the screenshot
-    page.screenshot(path=path)
-
-    print(f"Screenshot saved to {path}")
-    return Path(path)
-
-
-def html_to_markdown(html):
-    # check that pandoc is installed
-    if not shutil.which("pandoc"):
-        raise Exception("Pandoc is not installed. Needed for browsing.")
-
-    p = subprocess.Popen(
-        ["pandoc", "-f", "html", "-t", "markdown"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = p.communicate(input=html.encode())
-
-    if p.returncode != 0:
-        raise Exception(f"Pandoc returned error code {p.returncode}: {stderr.decode()}")
-
-    # Post-process the output to remove :::
-    markdown = stdout.decode()
-    markdown = "\n".join(
-        line for line in markdown.split("\n") if not line.strip().startswith(":::")
-    )
-
-    # Post-process the output to remove div tags
-    markdown = markdown.replace("<div>", "").replace("</div>", "")
-
-    # replace [\n]{3,} with \n\n
-    markdown = re.sub(r"[\n]{3,}", "\n\n", markdown)
-
-    # replace {...} with ''
-    markdown = re.sub(r"\{(#|style|target|\.)[^}]*\}", "", markdown)
-
-    # strip inline images, like: data:image/png;base64,...
-    re_strip_data = re.compile(r"!\[[^\]]*\]\(data:image[^)]*\)")
-
-    # test cases
-    assert re_strip_data.sub("", "![test](data:image/png;base64,123)") == ""
-    assert re_strip_data.sub("", "![test](data:image/png;base64,123) test") == " test"
-
-    markdown = re_strip_data.sub("", markdown)
-
-    return markdown
+    """Take a screenshot of a webpage."""
+    assert browser
+    if browser == "playwright":
+        return screenshot_url_playwright(url, path)  # type: ignore
+    raise ValueError("Screenshot not supported with lynx backend")
 
 
 tool = ToolSpec(
