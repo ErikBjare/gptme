@@ -226,7 +226,7 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         os_info = "unknown"
         os_version = ""
     
-    prompt = f"## System Information\n\n**OS:** {os_info}\n**Version:** {os_version}"
+    prompt = f"## System Information\n\n**OS:** {os_info} {os_version}".strip()
 
     yield Message( "system", prompt,)
 
