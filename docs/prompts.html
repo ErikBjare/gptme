@@ -602,10 +602,10 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>pandoc
 
 <span class="gu">### Examples</span>
 
@@ -897,7 +897,7 @@ The following functions are available in the REPL:
 <span class="k">-</span><span class="w"> </span>subagent_wait(agent_id: str) -&gt; dict: Waits for a subagent to finish. Timeout is 1 minute.
 <span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str: Read the text of a webpage and return the text in Markdown format.
 <span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
-<span class="k">-</span><span class="w"> </span>screenshot_url(url: str, filename: Union[str, NoneType]) -&gt; str: Take a screenshot of a webpage and save it to a file.
+<span class="k">-</span><span class="w"> </span>screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage and save it to a file.
 <span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool):
     List recent chat conversations and optionally summarize them using an LLM.
 
@@ -926,7 +926,7 @@ The following functions are available in the REPL:
 <span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path:
     Take a screenshot and save it to a file.
 
-<span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Generator: View an image.
+<span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
 
 <span class="gu">### Examples</span>
 
@@ -968,7 +968,7 @@ Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3060</p>
+<p>Tokens: 3063</p>
 </dd></dl>
 
 <dl class="py function">
