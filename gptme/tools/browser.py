@@ -24,6 +24,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 from typing import Literal
 
 from .base import ToolSpec, ToolUse
@@ -109,21 +110,22 @@ def search(query: str, engine: EngineType = "google") -> str:
         raise ValueError(f"Unknown search engine: {engine}")
 
 
-def screenshot_url(url: str, filename: str | None = None) -> str:
+def screenshot_url(url: str, path: Path | str | None = None) -> Path:
     """Take a screenshot of a webpage and save it to a file."""
-    logger.info(f"Taking screenshot of '{url}' and saving to '{filename}'")
+    logger.info(f"Taking screenshot of '{url}' and saving to '{path}'")
     page = load_page(url)
 
-    if filename is None:
-        filename = tempfile.mktemp(suffix=".png")
+    if path is None:
+        path = tempfile.mktemp(suffix=".png")
     else:
         # create the directory if it doesn't exist
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
     # Take the screenshot
-    page.screenshot(path=filename)
+    page.screenshot(path=path)
 
-    return f"Screenshot saved to {filename}"
+    print(f"Screenshot saved to {path}")
+    return Path(path)
 
 
 def html_to_markdown(html):
