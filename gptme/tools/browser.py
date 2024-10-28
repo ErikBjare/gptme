@@ -20,8 +20,6 @@ To use the browser tool, you need to have the `playwright` Python package instal
 import importlib.util
 import logging
 import shutil
-import subprocess
-import tempfile
 from pathlib import Path
 from typing import Literal
 
