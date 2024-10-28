@@ -67,7 +67,7 @@ An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limi
 ## 🎥 Demos
 
 > [!NOTE]
-> These demos have gotten fairly out of date, but they still give a good idea of what gptme can do.
+> These demos are very out of date and do not reflect the latest capabilities. We hope to update them soon!
 
 <table>
   <tr>
