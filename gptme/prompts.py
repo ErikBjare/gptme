@@ -211,6 +211,7 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     prompt += "\n\n*End of Tools List.*"
     yield Message("system", prompt.strip() + "\n\n")
 
+
 def prompt_systeminfo() -> Generator[Message, None, None]:
     """Generate the system information prompt."""
     if platform.system() == "Linux":
@@ -225,15 +226,18 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
     else:
         os_info = "unknown"
         os_version = ""
-    
+
     prompt = f"## System Information\n\n**OS:** {os_info} {os_version}".strip()
 
-    yield Message( "system", prompt,)
+    yield Message(
+        "system",
+        prompt,
+    )
+
 
 def get_system_distro() -> str:
     """Get the system distribution name."""
-    regex = r"^NAME=\"?([^\"]+)\"?"
-
+    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
     if os.path.exists("/etc/os-release"):
         with open("/etc/os-release") as f:
             for line in f:
@@ -241,6 +245,7 @@ def get_system_distro() -> str:
                 if matches:
                     return matches.string[matches.start(1) : matches.end(1)]
     return "Linux"
+
 
 document_prompt_function(interactive=True)(prompt_gptme)
 document_prompt_function()(prompt_user)
