@@ -12,7 +12,9 @@ To select a provider and model, run ``gptme`` with the ``--model`` flag set to `
     gptme --model openrouter/meta-llama/llama-3.1-70b-instruct "hello"
     gptme --model local/llama3.2:1b "hello"
 
-On first startup, if `--model` is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.
+On first startup, if ``--model`` is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.
+
+You can persist the below environment variables in the :doc:`config` file.
 
 OpenAI
 ------
