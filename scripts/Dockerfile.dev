@@ -1,0 +1,27 @@
+FROM python:3.10-slim
+
+# Install deps
+RUN apt-get update && apt-get install -y \
+    build-essential gcc \
+    # Common tools  \
+    make git tmux curl pandoc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install poetry
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only the files needed for installation
+COPY pyproject.toml poetry.lock* ./
+
+# Install project dependencies
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-interaction --no-ansi --no-root -E server -E browser -E datascience
+
+# Copy the project files
+COPY . /app
+
+# Entrypoint if prompt/args given, run the CLI
+ENTRYPOINT ["python", "-m", "gptme"]

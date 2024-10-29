@@ -18,6 +18,9 @@ build-docker:
 	docker build . -t gptme:latest -f scripts/Dockerfile
 	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval
 
+build-docker-dev:
+	docker build . -t gptme-dev:latest -f scripts/Dockerfile.dev
+
 build-docker-full:
 	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
 

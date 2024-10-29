@@ -1,0 +1,6 @@
+version: 1.3
+build:
+  file: "scripts/Dockerfile.dev"
+  commands:
+    - command: "poetry run pre-commit"
+      description: "Run pre-commit hooks"
