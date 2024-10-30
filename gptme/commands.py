@@ -154,6 +154,7 @@ def handle_cmd(
                 )
         case "export":
             manager.undo(1, quiet=True)
+            manager.write()
             # Get output path from args or use default
             output_path = (
                 Path(args[0]) if args else Path(f"{manager.logfile.parent.name}.html")

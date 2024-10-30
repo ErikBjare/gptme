@@ -39,7 +39,7 @@ def export_chat_to_html(name: str, chat_data: Log, output_path: Path) -> None:
 
     chat_data_json = json.dumps(chat_data_list, indent=2)
 
-    # Modify the template
+    # Embed script and conversation
     standalone_html = replace_or_fail(
         html_template,
         '<script type="module" src="/static/main.js"></script>',
@@ -57,6 +57,14 @@ window.CHAT_DATA = {chat_data_json};
 </script>
         """,
         "main.js script tag",
+    )
+
+    # Set the title
+    standalone_html = replace_or_fail(
+        standalone_html,
+        "<title>gptme</title>",
+        f"<title>{name} - gptme</title>",
+        "title",
     )
 
     # Remove external resources
