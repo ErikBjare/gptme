@@ -113,7 +113,7 @@ def is_generated_name(name: str) -> bool:
     return name.count("-") == 2 and all(word in all_words for word in name.split("-"))
 
 
-def epoch_to_age(epoch):
+def epoch_to_age(epoch, incl_date=False):
     # takes epoch and returns "x minutes ago", "3 hours ago", "yesterday", etc.
     age = datetime.now() - datetime.fromtimestamp(epoch)
     if age < timedelta(minutes=1):
@@ -125,7 +125,11 @@ def epoch_to_age(epoch):
     elif age < timedelta(days=2):
         return "yesterday"
     else:
-        return f"{age.days} days ago ({datetime.fromtimestamp(epoch).strftime('%Y-%m-%d')})"
+        return f"{age.days} days ago" + (
+            " ({datetime.fromtimestamp(epoch).strftime('%Y-%m-%d')})"
+            if incl_date
+            else ""
+        )
 
 
 def print_preview(code: str, lang: str):  # pragma: no cover

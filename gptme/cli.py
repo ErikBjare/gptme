@@ -294,10 +294,14 @@ def pick_log(limit=20) -> Path:  # pragma: no cover
     #     return "-test-" in name or name.startswith("test-")
     # prev_conv_files = [f for f in prev_conv_files if not is_test(f.parent.name)]
 
-    prev_convs = [
-        f"{conv.name:30s} \t{epoch_to_age(conv.modified)} \t{conv.messages:5d} msgs"
-        for conv in convs
-    ]
+    terminal_width = os.get_terminal_size().columns
+
+    prev_convs: list[str] = []
+    for conv in convs:
+        name = conv.name
+        metadata = f"{epoch_to_age(conv.modified)}  {conv.messages:4d} msgs"
+        spacing = terminal_width - len(name) - len(metadata) - 6
+        prev_convs.append(" ".join([name, spacing * " ", metadata]))
 
     options = (
         [
