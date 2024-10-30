@@ -16,6 +16,7 @@ except ImportError:  # pragma: no cover
 
 
 logger = logging.getLogger(__name__)
+init = False
 
 
 # default history if none found
@@ -31,10 +32,18 @@ history_examples = [
 
 
 def add_history(line: str) -> None:  # pragma: no cover
+    if not init:
+        load_readline_history()
+
     readline.add_history(line)
+    readline.write_history_file(get_readline_history_file())
 
 
 def load_readline_history() -> None:  # pragma: no cover
+    global init
+    if init:
+        return
+
     logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
     readline.set_auto_history(True)
@@ -50,6 +59,7 @@ def load_readline_history() -> None:  # pragma: no cover
         logger.exception("Failed to load history file")
 
     atexit.register(readline.write_history_file, history_file)
+    init = True
 
 
 def register_tabcomplete() -> None:  # pragma: no cover
