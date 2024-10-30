@@ -89,8 +89,12 @@ def handle_cmd(
             manager.undo(1, quiet=True)
             manager.write()
             # rename the conversation
-            print("Renaming conversation (enter empty name to auto-generate)")
-            new_name = args[0] if args else input("New name: ")
+            print("Renaming conversation")
+            if args:
+                new_name = args[0]
+            else:
+                print("(enter empty name to auto-generate)")
+                new_name = input("New name: ").strip()
             rename(manager, new_name, confirm)
         case "fork":
             # fork the conversation
@@ -193,8 +197,9 @@ def edit(manager: LogManager) -> Generator[Message, None, None]:  # pragma: no c
 
 def rename(manager: LogManager, new_name: str, confirm: ConfirmFunc) -> None:
     if new_name in ["", "auto"]:
-        new_name = llm.generate_name(prepare_messages(manager.log.messages))
-        assert " " not in new_name
+        msgs = prepare_messages(manager.log.messages)[1:]  # skip system message
+        new_name = llm.generate_name(msgs)
+        assert " " not in new_name, f"Invalid name: {new_name}"
         print(f"Generated name: {new_name}")
         if not confirm("Confirm?"):
             print("Aborting")

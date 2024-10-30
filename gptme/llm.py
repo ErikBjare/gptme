@@ -164,12 +164,17 @@ def generate_name(msgs: list[Message]) -> str:
     """
     # filter out system messages
     msgs = [m for m in msgs if m.role != "system"]
+
+    # TODO: filter out assistant messages? (only for long conversations? or always?)
+    # msgs = [m for m in msgs if m.role != "assistant"]
+
     msgs = (
         [
             Message(
                 "system",
                 """
-The following is a conversation between a user and an assistant. Which we will generate a name for.
+The following is a conversation between a user and an assistant.
+You should generate a descriptive name for it.
 
 The name should be 3-6 words describing the conversation, separated by dashes. Examples:
  - install-llama
@@ -183,7 +188,12 @@ IMPORTANT: output only the name, no preamble or postamble.
             )
         ]
         + msgs
-        + [Message("user", "Now, generate a name for this conversation.")]
+        + [
+            Message(
+                "user",
+                "That was the context of the conversation. Now, answer with a descriptive name for this conversation according to system instructions.",
+            )
+        ]
     )
     name = _chat_complete(msgs, model=get_summary_model(_client_to_provider())).strip()
     return name
