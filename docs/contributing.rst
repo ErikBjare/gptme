@@ -9,6 +9,35 @@ We welcome contributions to the project. Here is some information to get you sta
 .. contents::
    :local:
 
+Install
+-------
+
+Checkout the code and, at the root of the project, create a virtual environment:
+
+.. code-block:: bash
+
+   python3 -m venv .venv
+
+Activate the virtual environment:
+
+.. code-block:: bash
+
+   source .venv/bin/activate
+
+Install Poetry:
+
+.. code-block:: bash
+
+   pip install poetry
+
+Build the project:
+
+.. code-block:: bash
+
+   make build
+
+You can now start ``gptme`` from your development environment using the regular commands.
+
 Tests
 -----
 
