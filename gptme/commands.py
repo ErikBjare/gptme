@@ -2,10 +2,12 @@ import logging
 import re
 import sys
 from collections.abc import Generator
+from pathlib import Path
 from time import sleep
 from typing import Literal
 
 from . import llm
+from .export import export_chat_to_html
 from .logmanager import LogManager, prepare_messages
 from .message import (
     Message,
@@ -35,6 +37,7 @@ Actions = Literal[
     "tokens",
     "help",
     "exit",
+    "export",
 ]
 
 action_descriptions: dict[Actions, str] = {
@@ -50,6 +53,7 @@ action_descriptions: dict[Actions, str] = {
     "tools": "Show available tools",
     "help": "Show this help message",
     "exit": "Exit the program",
+    "export": "Export conversation as standalone HTML",
 }
 COMMANDS = list(action_descriptions.keys())
 
@@ -144,6 +148,15 @@ def handle_cmd(
     {tool.desc.rstrip(".")}
     tokens (example): {len_tokens(tool.examples)}"""
                 )
+        case "export":
+            manager.undo(1, quiet=True)
+            # Get output path from args or use default
+            output_path = (
+                Path(args[0]) if args else Path(f"{manager.logfile.parent.name}.html")
+            )
+            # Export the chat
+            export_chat_to_html(manager.log, output_path)
+            print(f"Exported conversation to {output_path}")
         case _:
             # the case for python, shell, and other block_types supported by tools
             tooluse = ToolUse(name, [], full_args)

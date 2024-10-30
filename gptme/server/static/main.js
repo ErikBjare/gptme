@@ -47,10 +47,24 @@ new Vue({
     conversationsLimit: 20,
   },
   async mounted() {
-    this.getConversations();
-    // if the hash is set, select that conversation
-    if (window.location.hash) {
-      this.selectConversation(window.location.hash.slice(1));
+    // Check for embedded data first
+    if (window.CHAT_DATA) {
+      this.conversations = [{
+        name: "Exported Chat",
+        messages: CHAT_DATA.length,
+        modified: new Date(CHAT_DATA[CHAT_DATA.length - 1].timestamp).getTime() / 1000,
+      }];
+      this.selectedConversation = "Exported Chat";
+      this.chatLog = CHAT_DATA;
+      this.branch = "main";
+      this.branches = {"main": CHAT_DATA};
+    } else {
+      // Normal API mode
+      await this.getConversations();
+      // if the hash is set, select that conversation
+      if (window.location.hash) {
+        await this.selectConversation(window.location.hash.slice(1));
+      }
     }
     // remove display-none class from app
     document.getElementById("app").classList.remove("hidden");
@@ -244,6 +258,12 @@ new Vue({
     },
     mdToHtml(md) {
       // TODO: Use DOMPurify.sanitize
+      // First unescape any HTML entities in the markdown
+      md = md.replace(/&([^;]+);/g, (match, entity) => {
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = match;
+        return textarea.value;
+      });
       md = this.wrapThinkingInDetails(md);
       let html = marked.parse(md);
       html = this.wrapBlockInDetails(html);
