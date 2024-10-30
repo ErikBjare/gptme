@@ -1,5 +1,5 @@
-import json
 import html
+import json
 from pathlib import Path
 
 from .logmanager import Log
@@ -13,7 +13,7 @@ def replace_or_fail(html: str, old: str, new: str, desc: str = "") -> str:
     return result
 
 
-def export_chat_to_html(chat_data: Log, output_path: Path) -> None:
+def export_chat_to_html(name: str, chat_data: Log, output_path: Path) -> None:
     """Export a chat log to a self-contained HTML file"""
 
     # Read the template files
@@ -45,8 +45,8 @@ def export_chat_to_html(chat_data: Log, output_path: Path) -> None:
         '<script type="module" src="/static/main.js"></script>',
         f"""
 <script>
-const CHAT_DATA = {chat_data_json};
-window.CHAT_DATA = CHAT_DATA;
+window.CHAT_NAME = {json.dumps(name)};
+window.CHAT_DATA = {chat_data_json};
 </script>
 <script>
     window.addEventListener('load', function() {{

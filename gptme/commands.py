@@ -155,7 +155,7 @@ def handle_cmd(
                 Path(args[0]) if args else Path(f"{manager.logfile.parent.name}.html")
             )
             # Export the chat
-            export_chat_to_html(manager.log, output_path)
+            export_chat_to_html(manager.name, manager.log, output_path)
             print(f"Exported conversation to {output_path}")
         case _:
             # the case for python, shell, and other block_types supported by tools
