@@ -246,8 +246,8 @@ def execute_shell(
     """Executes a shell command and returns the output."""
     shell = get_shell()
     assert not args
-    whitelist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
-    whitelisted = True
+    allowlist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
+    allowlisted = True
 
     cmd = code.strip()
     if cmd.startswith("$ "):
@@ -255,11 +255,11 @@ def execute_shell(
 
     for match in cmd_regex.finditer(cmd):
         for group in match.groups():
-            if group and group not in whitelist_commands:
-                whitelisted = False
+            if group and group not in allowlist_commands:
+                allowlisted = False
                 break
 
-    if not whitelisted:
+    if not allowlisted:
         print_preview(cmd, "bash")
         if not confirm("Run command?"):
             yield Message("system", "Command not run")
@@ -275,7 +275,7 @@ def execute_shell(
 
     msg = (
         _format_block_smart(
-            f"Ran {'whitelisted ' if whitelisted else ''}command", cmd, lang="bash"
+            f"Ran {'allowlisted ' if allowlisted else ''}command", cmd, lang="bash"
         )
         + "\n\n"
     )
