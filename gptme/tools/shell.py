@@ -260,7 +260,7 @@ def execute_shell(
                 break
 
     if not allowlisted:
-        print_preview(cmd, "bash")
+        print_preview(cmd, "bash", True)
         if not confirm("Run command?"):
             yield Message("system", "User chose not to run command.")
             return

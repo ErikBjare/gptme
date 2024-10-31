@@ -10,6 +10,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from .clipboard import copy, set_copytext
+
 import tiktoken
 from rich import print
 from rich.console import Console
@@ -132,9 +134,27 @@ def epoch_to_age(epoch, incl_date=False):
         )
 
 
-def print_preview(code: str, lang: str):  # pragma: no cover
+copiable = False
+
+
+def set_copiable():
+    global copiable
+    copiable = True
+
+
+def clear_copiable():
+    global copiable
+    copiable = False
+
+
+def print_preview(code: str, lang: str, copy: bool = False):  # pragma: no cover
     print()
     print("[bold white]Preview[/bold white]")
+
+    if copy:
+        set_copiable()
+        set_copytext(code)
+
     # NOTE: we can set background_color="default" to remove background
     print(Syntax(code.strip("\n"), lang))
     print()
@@ -148,9 +168,15 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
     termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
 
     choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
+    copystr = r"\[c] to copy" if copiable else ""
     answer = console.input(
-        f"[bold bright_yellow on red] {question} {choicestr} [/] ",
+        f"[bold bright_yellow on red] {question} {choicestr}{copystr} [/] ",
     )
+    if copiable and "c" == answer.lower().strip():
+        if copy():
+            print("Copied to clipboard.")
+            return False
+
     global override_auto
     if answer.lower() in [
         "auto"
@@ -309,3 +335,24 @@ def path_with_tilde(path: Path) -> str:
     if path_str.startswith(home):
         return path_str.replace(home, "~", 1)
     return path_str
+
+
+def get_system_distro() -> str:
+    """Get the system distribution name."""
+    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
+    if os.path.exists("/etc/os-release"):
+        with open("/etc/os-release") as f:
+            for line in f:
+                matches = re.search(regex, line)
+                if matches:
+                    return matches.string[matches.start(1) : matches.end(1)]
+    return "Linux"
+
+
+@functools.lru_cache
+def get_installed_programs(candidates: tuple[str, ...]) -> set[str]:
+    installed = set()
+    for candidate in candidates:
+        if shutil.which(candidate) is not None:
+            installed.add(candidate)
+    return installed
