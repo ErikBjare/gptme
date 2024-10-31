@@ -9,6 +9,28 @@ We welcome contributions to the project. Here is some information to get you sta
 .. contents::
    :local:
 
+Install
+-------
+
+.. code-block:: bash
+
+   # checkout the code and navigate to the root of the project
+   git clone https://github.com/ErikBjare/gptme.git
+   cd gptme
+   
+   # install poetry (if not installed)
+   pipx install poetry
+   
+   # activate the virtualenv
+   poetry shell
+
+   # build the project
+   make build
+
+You can now start ``gptme`` from your development environment using the regular commands.
+
+You can also install it in editable mode with ``pipx`` using ``pipx install -e .`` which will let you use your development version of gptme regardless of venv.
+
 Tests
 -----
 
