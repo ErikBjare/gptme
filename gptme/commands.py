@@ -62,7 +62,7 @@ def execute_cmd(msg: Message, log: LogManager, confirm: ConfirmFunc) -> bool:
     """Executes any user-command, returns True if command was executed."""
     assert msg.role == "user"
 
-    # if message starts with ., treat as command
+    # if message starts with / treat as command
     # when command has been run,
     if msg.content[:1] in ["/"]:
         for resp in handle_cmd(msg.content, log, confirm):
