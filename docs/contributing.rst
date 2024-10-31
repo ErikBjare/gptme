@@ -12,32 +12,24 @@ We welcome contributions to the project. Here is some information to get you sta
 Install
 -------
 
-Checkout the code and, at the root of the project, create a virtual environment:
-
 .. code-block:: bash
 
-   python3 -m venv .venv
+   # checkout the code and navigate to the root of the project
+   git clone https://github.com/ErikBjare/gptme.git
+   cd gptme
+   
+   # install poetry (if not installed)
+   pipx install poetry
+   
+   # activate the virtualenv
+   poetry shell
 
-Activate the virtual environment:
-
-.. code-block:: bash
-
-   source .venv/bin/activate
-
-Install Poetry:
-
-.. code-block:: bash
-
-   pip install poetry
-
-Build the project:
-
-.. code-block:: bash
-
+   # build the project
    make build
 
 You can now start ``gptme`` from your development environment using the regular commands.
 
+You can also install it in editable mode with ``pipx`` using ``pipx install -e .`` which will let you use your development version of gptme regardless of venv.
 Tests
 -----
 
