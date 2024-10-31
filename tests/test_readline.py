@@ -1,11 +1,15 @@
 import os
 import sys
+from pathlib import Path
 
 from gptme.readline import _matches
 
+project_root = Path(__file__).parent.parent
+
 
 def test_matches():
-    # echo cwd
+    # make sure we are in the right directory
+    os.chdir(project_root)
     print(os.getcwd())
 
     # dirs
