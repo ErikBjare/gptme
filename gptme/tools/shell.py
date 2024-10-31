@@ -16,15 +16,13 @@ from collections.abc import Generator
 import bashlex
 
 from ..message import Message
-from ..util import get_tokenizer, print_preview
+from ..util import get_tokenizer, print_preview, get_installed_programs
 from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
 
-@functools.lru_cache
-def get_installed_programs() -> set[str]:
-    candidates = [
+candidates = (
         # platform-specific
         "brew",
         "apt-get",
@@ -35,15 +33,10 @@ def get_installed_programs() -> set[str]:
         "pandoc",
         "git",
         "docker",
-    ]
-    installed = set()
-    for candidate in candidates:
-        if shutil.which(candidate) is not None:
-            installed.add(candidate)
-    return installed
+    )
 
 
-shell_programs_str = "\n".join(f"- {prog}" for prog in get_installed_programs())
+shell_programs_str = "\n".join(f"- {prog}" for prog in get_installed_programs(candidates))
 is_macos = sys.platform == "darwin"
 
 instructions = f"""

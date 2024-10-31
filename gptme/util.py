@@ -1,6 +1,9 @@
 import io
 import logging
 import random
+import os
+import shutil
+import functools
 import re
 import sys
 import termios
@@ -335,18 +338,6 @@ def path_with_tilde(path: Path) -> str:
     if path_str.startswith(home):
         return path_str.replace(home, "~", 1)
     return path_str
-
-
-def get_system_distro() -> str:
-    """Get the system distribution name."""
-    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release") as f:
-            for line in f:
-                matches = re.search(regex, line)
-                if matches:
-                    return matches.string[matches.start(1) : matches.end(1)]
-    return "Linux"
 
 
 @functools.lru_cache
