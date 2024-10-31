@@ -30,6 +30,7 @@ Install
 You can now start ``gptme`` from your development environment using the regular commands.
 
 You can also install it in editable mode with ``pipx`` using ``pipx install -e .`` which will let you use your development version of gptme regardless of venv.
+
 Tests
 -----
 
