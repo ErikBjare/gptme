@@ -11,8 +11,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Literal, TypedDict
 
-from .base import ToolSpec
+from ..message import Message
+from .base import ToolSpec, ToolUse
 from .screenshot import _screenshot
+from .vision import view_image
 
 # Constants from Anthropic's implementation
 TYPING_DELAY_MS = 12
@@ -85,23 +87,27 @@ def scale_coordinates(
 
 
 def run_xdotool(cmd: str, display: str | None = None) -> str:
-    """Run an xdotool command with optional display setting."""
+    """Run an xdotool command with optional display setting and wait for completion."""
     env = os.environ.copy()
     if display:
         env["DISPLAY"] = display
-    full_cmd = f"xdotool {cmd}"
-    proc = subprocess.Popen(
-        full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=env
-    )
-    stdout, stderr = proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError(f"xdotool command failed: {stderr.decode()}")
-    return stdout.decode()
+    try:
+        result = subprocess.run(
+            f"xdotool {cmd}",
+            shell=True,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"xdotool command failed: {e.stderr}") from e
 
 
-def computer_action(
+def computer(
     action: Action, text: str | None = None, coordinate: tuple[int, int] | None = None
-) -> None:
+) -> Message | None:
     """
     Perform computer interactions through X11.
 
@@ -114,81 +120,74 @@ def computer_action(
     width = int(os.getenv("WIDTH", "1024"))
     height = int(os.getenv("HEIGHT", "768"))
 
-    try:
-        if action in ("mouse_move", "left_click_drag"):
-            if not coordinate:
-                raise ValueError(f"coordinate is required for {action}")
+    if action in ("mouse_move", "left_click_drag"):
+        if not coordinate:
+            raise ValueError(f"coordinate is required for {action}")
+        x, y = scale_coordinates(
+            ScalingSource.API, coordinate[0], coordinate[1], width, height
+        )
+
+        if action == "mouse_move":
+            run_xdotool(f"mousemove --sync {x} {y}", display)
+        else:  # left_click_drag
+            run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
+
+        print(f"Moved mouse to {x},{y}")
+    elif action in ("key", "type"):
+        if not text:
+            raise ValueError(f"text is required for {action}")
+
+        if action == "key":
+            run_xdotool(f"key -- {text}", display)
+            print(f"Sent key sequence: {text}")
+        else:  # type
+            for chunk in chunks(text, TYPING_GROUP_SIZE):
+                run_xdotool(
+                    f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
+                    display,
+                )
+            print(f"Typed text: {text}")
+    elif action in ("left_click", "right_click", "middle_click", "double_click"):
+        click_arg = {
+            "left_click": "1",
+            "right_click": "3",
+            "middle_click": "2",
+            "double_click": "--repeat 2 --delay 500 1",
+        }[action]
+        run_xdotool(f"click {click_arg}", display)
+        print(f"Performed {action}")
+    elif action == "screenshot":
+        # Use X11-specific screenshot if available, fall back to native
+        output_dir = Path(OUTPUT_DIR)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        path = output_dir / "screenshot.png"
+
+        if shutil.which("gnome-screenshot"):
+            run_xdotool(f"gnome-screenshot -f {path} -p", display)
+        elif os.name == "posix":
+            path = _screenshot(path)  # Use existing screenshot function
+        else:
+            raise NotImplementedError("Screenshot not supported on this platform")
+
+        # Scale if needed
+        if path.exists():
             x, y = scale_coordinates(
-                ScalingSource.API, coordinate[0], coordinate[1], width, height
+                ScalingSource.COMPUTER, width, height, width, height
             )
+            subprocess.run(
+                f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
+            )
+            return view_image(path)
+        else:
+            print("Error: Screenshot failed")
+    elif action == "cursor_position":
+        output = run_xdotool("getmouselocation --shell", display)
+        x = int(output.split("X=")[1].split("\n")[0])
+        y = int(output.split("Y=")[1].split("\n")[0])
+        x, y = scale_coordinates(ScalingSource.COMPUTER, x, y, width, height)
+        print(f"Cursor position: X={x},Y={y}")
 
-            if action == "mouse_move":
-                run_xdotool(f"mousemove --sync {x} {y}", display)
-            else:  # left_click_drag
-                run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
-
-            print(f"Moved mouse to {x},{y}")
-
-        elif action in ("key", "type"):
-            if not text:
-                raise ValueError(f"text is required for {action}")
-
-            if action == "key":
-                run_xdotool(f"key -- {text}", display)
-                print(f"Sent key sequence: {text}")
-            else:  # type
-                for chunk in chunks(text, TYPING_GROUP_SIZE):
-                    run_xdotool(
-                        f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
-                        display,
-                    )
-                print(f"Typed text: {text}")
-
-        elif action in ("left_click", "right_click", "middle_click", "double_click"):
-            click_arg = {
-                "left_click": "1",
-                "right_click": "3",
-                "middle_click": "2",
-                "double_click": "--repeat 2 --delay 500 1",
-            }[action]
-            run_xdotool(f"click {click_arg}", display)
-            print(f"Performed {action}")
-
-        elif action == "screenshot":
-            # Use X11-specific screenshot if available, fall back to native
-            output_dir = Path(OUTPUT_DIR)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            path = output_dir / "screenshot.png"
-
-            if shutil.which("gnome-screenshot"):
-                run_xdotool(f"gnome-screenshot -f {path} -p", display)
-            elif os.name == "posix":
-                _screenshot(path)  # Use existing screenshot function
-            else:
-                raise NotImplementedError("Screenshot not supported on this platform")
-
-            # Scale if needed
-            if path.exists():
-                x, y = scale_coordinates(
-                    ScalingSource.COMPUTER, width, height, width, height
-                )
-                subprocess.run(
-                    f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
-                )
-                # TODO: yield a message with the image (same as vision tool)
-                print(f"Screenshot saved to {path}")  # files=[path]
-            else:
-                print("Error: Screenshot failed")
-
-        elif action == "cursor_position":
-            output = run_xdotool("getmouselocation --shell", display)
-            x = int(output.split("X=")[1].split("\n")[0])
-            y = int(output.split("Y=")[1].split("\n")[0])
-            x, y = scale_coordinates(ScalingSource.COMPUTER, x, y, width, height)
-            print(f"Cursor position: X={x},Y={y}")
-
-    except Exception as e:
-        print(f"Error: Computer action failed: {str(e)}")
+    raise ValueError(f"Invalid action: {action}")
 
 
 instructions = """
@@ -199,13 +198,22 @@ Available actions:
 - mouse_move: Move mouse to coordinates
 - left_click, right_click, middle_click, double_click: Mouse clicks
 - left_click_drag: Click and drag to coordinates
-- screenshot: Take a screenshot
+- screenshot: Take and view a screenshot
 - cursor_position: Get current mouse position
+"""
+
+examples = f"""
+#### View a screenshot
+> User: What do you see on the screen?
+> Assistant:
+{ToolUse("ipython", [], 'computer("screenshot")').to_output()}
+> System: Viewing image...
 """
 
 tool = ToolSpec(
     name="computer",
     desc="Control the computer through X11 (keyboard, mouse, screen)",
     instructions=instructions,
-    functions=[computer_action],
+    examples=examples,
+    functions=[computer],
 )

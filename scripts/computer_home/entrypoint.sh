@@ -5,7 +5,7 @@ set -e
 ./novnc_startup.sh
 
 # Start gptme server
-python3 -m gptme.server --host 0.0.0.0 --port 8080 --tools computer,vision
+python3 -m gptme.server --host 0.0.0.0 --port 8080 --tools python,computer
 
 # Keep the container running
 tail -f /dev/null

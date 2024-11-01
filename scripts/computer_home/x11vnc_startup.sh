@@ -4,11 +4,8 @@ echo "starting vnc"
 (x11vnc -display $DISPLAY \
     -forever \
     -shared \
-    -wait 50 \
-    -noxdamage \
     -rfbport 5900 \
     -nopw \
-    -speeds 1,1 \
     2>/tmp/x11vnc_stderr.log) &
 
 x11vnc_pid=$!

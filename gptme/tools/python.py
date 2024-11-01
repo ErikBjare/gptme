@@ -115,16 +115,18 @@ def execute_python(
         result = _ipython.run_cell(code, silent=False, store_history=False)
 
     output = ""
+    # TODO: should we include captured stdout with messages like these?
+    # used by vision tool
     if isinstance(result.result, Message):
         yield result.result
         return
 
     if result.result is not None:
         output += f"Result:\n```\n{result.result}\n```\n\n"
+
     # only show stdout if there is no result
     elif captured.stdout:
         output += f"```stdout\n{captured.stdout.rstrip()}\n```\n\n"
-
     if captured.stderr:
         output += f"```stderr\n{captured.stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
