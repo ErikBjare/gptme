@@ -1,6 +1,6 @@
 # gptme.vim
 
-A Vim plugin for [gptme](https://gptme.org) integration, allowing you to interact with gptme directly from your editor.
+A Vim plugin for [gptme][gptme] integration, allowing you to interact with gptme directly from your editor.
 
 ## Features
 
@@ -10,6 +10,8 @@ A Vim plugin for [gptme](https://gptme.org) integration, allowing you to interac
 - Configurable context size and key mappings
 
 ## Installation
+
+The plugin assumes you have [gptme][gptme] installed and available in your PATH.
 
 ### Using a Plugin Manager
 
@@ -23,28 +25,23 @@ Then run:
 
     :PlugInstall
 
-### Manual Installation
-
-Copy the contents of this directory to your ~/.vim directory:
-
-    cp -r plugin doc ~/.vim/
-
 ## Usage
 
 The plugin provides both a command and a default mapping:
 
-- `:gptme` - Prompts for input and runs gptme with context
-- `<Leader>g` - Same as :gptme (usually `\g`)
+- `:Gptme` - Prompts for input and runs gptme with context
+- `<Leader>g` - Same as `:Gptme`
 
 When invoked, it will:
 1. Prompt for your input
-2. Get context from around your cursor
-3. Run gptme with both inputs
-4. Show the result in a new buffer
+1. Get lines around cursor as context
+1. Get file content as context
+1. Run gptme with the prompt and context interactively in a new buffer
 
 ## Configuration
 
 You can configure the following settings in your `.vimrc`:
+
 ### Context Lines
 
 Set the number of context lines to include before and after cursor (default: 3):
@@ -59,8 +56,10 @@ Disable default key mappings:
 
 If you disable the default mappings, you can set your own:
 
-    nnoremap <Leader>G :gptme<CR>
+    nnoremap <Leader>G :Gptme<CR>
 
 ## License
 
 Same as Vim itself - see `:help license`
+
+[gptme]: https://gptme.org
