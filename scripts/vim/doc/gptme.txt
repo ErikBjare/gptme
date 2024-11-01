@@ -1,0 +1,42 @@
+*gptme.txt*  gptme integration for Vim
+
+Author:  Erik Bjäreholt
+License: Same terms as Vim itself (see |license|)
+
+INTRODUCTION                                    *gptme*
+
+This plugin provides integration with gptme (https://gptme.org), allowing you to
+interact with gptme directly from Vim.
+
+USAGE                                          *gptme-usage*
+
+The plugin provides both a command and a default mapping:
+
+    :Gptme                      Prompts for input and runs gptme with context
+    <Leader>g                   Same as :Gptme
+
+When invoked, it will:
+1. Prompt for your input
+2. Get context from around your cursor
+3. Run gptme with both inputs
+4. Show the result in a new buffer
+
+CONFIGURATION                                  *gptme-config*
+
+                                              *g:gptme_context_lines*
+Number of context lines to include before and after cursor (default: 3)
+>
+    let g:gptme_context_lines = 5
+<
+
+                                              *g:gptme_no_mappings*
+Disable default key mappings (default: 0)
+>
+    let g:gptme_no_mappings = 1
+<
+
+ABOUT                                         *gptme-about*
+gptme.vim plugin version 0.1
+Latest version at: https://github.com/ErikBjare/gptme
+
+ vim:tw=78:ts=8:ft=help:norl:
