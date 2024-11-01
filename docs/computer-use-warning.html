@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Server &#8212; gptme</title>
+    <title>&lt;no title&gt; &#8212; gptme</title>
   
   
   
@@ -43,12 +43,10 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'server';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'computer-use-warning';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Automation" href="automation.html" />
-    <link rel="prev" title="Providers" href="providers.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -111,6 +109,8 @@
       
       
       
+        
+      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -159,14 +159,14 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
@@ -256,7 +256,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/server.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/computer-use-warning.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -286,7 +286,7 @@
       
       
       
-      <li><a href="_sources/server.rst" target="_blank"
+      <li><a href="_sources/computer-use-warning.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -370,7 +370,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Server</h1>
+    <h1><no title></h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -379,9 +379,9 @@ document.write(`
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-ui">Web UI</a></li>
+                <ul class="simple visible nav section-nav flex-column">
 </ul>
+
             </nav>
         </div>
     </div>
@@ -392,68 +392,11 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="server">
-<h1>Server<a class="headerlink" href="#server" title="Link to this heading">#</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The server and web UI is still in development and does not have all the features of the CLI.
-It does not support streaming, doesn’t ask for confirmation before executing, lacks the ability to interrupt responses and tool calls, etc.</p>
-</div>
-<p>gptme has a minimal REST API with very minimalistic web UI.</p>
-<p>It can be started by running the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
-</pre></div>
-</div>
-<section id="web-ui">
-<h2>Web UI<a class="headerlink" href="#web-ui" title="Link to this heading">#</a></h2>
-<p>The server provides two interfaces:</p>
-<ol class="arabic">
-<li><p>Basic Chat Interface</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
-</pre></div>
-</div>
-<p>Access the basic chat interface at <a class="reference external" href="http://localhost:5000">http://localhost:5000</a></p>
-<p>For more usage, see <a class="reference internal" href="cli.html#gptme-server"><span class="std std-ref">the CLI documentation</span></a>.</p>
-</li>
-<li><p>Computer Use Interface</p>
-<p>Requires Docker.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ErikBjare/gptme.git
-<span class="nb">cd</span><span class="w"> </span>gptme
-<span class="c1"># Build container</span>
-make<span class="w"> </span>build-docker-computer
-<span class="c1"># Run container</span>
-docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>~/.config/gptme:/home/computeruse/.config/gptme<span class="w"> </span>-p<span class="w"> </span><span class="m">6080</span>:6080<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>gptme-computer:latest
-</pre></div>
-</div>
-<p>The computer use interface provides:</p>
-<ul class="simple">
-<li><p>Combined view at <a class="reference external" href="http://localhost:8080/computer">http://localhost:8080/computer</a></p></li>
-<li><p>Chat view at <a class="reference external" href="http://localhost:8080">http://localhost:8080</a></p></li>
-<li><p>Desktop view at <a class="reference external" href="http://localhost:6080/vnc.html">http://localhost:6080/vnc.html</a></p></li>
-</ul>
-<p>Features:</p>
-<ul class="simple">
-<li><p>Split view with chat on the left, desktop on the right</p></li>
-<li><p>Toggle for view-only/interactive desktop mode</p></li>
-<li><p>Fullscreen support</p></li>
-<li><p>Automatic screen scaling for optimal LLM vision</p></li>
-</ul>
-<p>Requirements:</p>
-<ul class="simple">
-<li><p>Docker for running the server with X11 support</p></li>
-<li><p>Browser with WebSocket support for VNC</p></li>
-<li><p>Network ports 6080 (VNC) and 8080 (web UI) available</p></li>
-</ul>
-</li>
-</ol>
-<div class="admonition warning">
+  <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The computer use interface is experimental and has serious security implications.
 Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
 </div>
-</section>
-</section>
 
 
                 </article>
@@ -466,24 +409,6 @@ Please use with caution and see Anthropic’s documentation on <a class="referen
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="providers.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Providers</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="automation.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Automation</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
@@ -499,9 +424,9 @@ Please use with caution and see Anthropic’s documentation on <a class="referen
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-ui">Web UI</a></li>
+    <ul class="simple visible nav section-nav flex-column">
 </ul>
+
   </nav></div>
 
 </div></div>

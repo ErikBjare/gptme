@@ -391,6 +391,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
 </ul>
             </nav>
         </div>
@@ -431,6 +432,7 @@ document.write(`
 <ul>
 <li><p><a class="reference internal" href="#screenshot">Screenshot</a></p></li>
 <li><p><a class="reference internal" href="#vision">Vision</a></p></li>
+<li><p><a class="reference internal" href="#computer">Computer</a></p></li>
 </ul>
 </li>
 <li><p>Chat management</p>
@@ -448,9 +450,9 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>pandoc
 </pre></div>
 </div>
@@ -1333,6 +1335,83 @@ If False, uses a simple strategy showing snippets of the first and last messages
 </dd></dl>
 
 </section>
+<section id="computer">
+<h2>Computer<a class="headerlink" href="#computer" title="Link to this heading">#</a></h2>
+<p>Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.
+Similar to Anthropic’s computer use demo, but integrated with gptme’s architecture.</p>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">Resolution</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">ScalingSource</span></span></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Split string into chunks for typing simulation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">computer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'key'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'type'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mouse_move'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click_drag'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'right_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'middle_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'screenshot'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cursor_position'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span></dt>
+<dd><p>Perform computer interactions through X11.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> – The type of action to perform</p></li>
+<li><p><strong>text</strong> – Text to type or key sequence to send</p></li>
+<li><p><strong>coordinate</strong> – X,Y coordinates for mouse actions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">run_xdotool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Run an xdotool command with optional display setting and wait for completion.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">scale_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ScalingSource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Scale coordinates to/from recommended resolutions.</p>
+</dd></dl>
+
+<p>The computer tool provides direct interaction with the desktop environment through X11, allowing for:</p>
+<ul class="simple">
+<li><p>Keyboard input simulation</p></li>
+<li><p>Mouse control (movement, clicks, dragging)</p></li>
+<li><p>Screen capture with automatic scaling</p></li>
+<li><p>Cursor position tracking</p></li>
+</ul>
+<p>To use the computer tool, see the instructions for <a class="reference internal" href="server.html"><span class="doc">Server</span></a>.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Type text</span>
+<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello, World!&quot;</span><span class="p">)</span>
+
+<span class="c1"># Move mouse and click</span>
+<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;mouse_move&quot;</span><span class="p">,</span> <span class="n">coordinate</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;left_click&quot;</span><span class="p">)</span>
+
+<span class="c1"># Take screenshot</span>
+<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;screenshot&quot;</span><span class="p">)</span>
+
+<span class="c1"># Send keyboard shortcuts</span>
+<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Control_L+c&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The tool automatically handles screen resolution scaling to ensure optimal performance with LLM vision capabilities.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The computer use interface is experimental and has serious security implications.
+Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
+</div>
+</section>
 </section>
 
 
@@ -1391,6 +1470,7 @@ If False, uses a simple strategy showing snippets of the first and last messages
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#browser">Browser</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
 </ul>
   </nav></div>
 

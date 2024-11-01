@@ -429,6 +429,28 @@ git<span class="w"> </span>commit<span class="w"> </span>-F<span class="w"> </sp
 </pre></div>
 </div>
 <p>These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.</p>
+<p class="rubric">Computer Use Examples</p>
+<p>Using the computer tool for GUI automation and desktop interaction (requires running the server with computer use support):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start server with computer use support</span>
+docker<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>-p<span class="w"> </span><span class="m">6080</span>:6080<span class="w"> </span>ghcr.io/erikbjare/gptme:latest-server
+
+<span class="c1"># Then in another terminal:</span>
+
+<span class="c1"># Open and interact with an application</span>
+gptme<span class="w"> </span><span class="s1">&#39;open firefox and navigate to example.com&#39;</span>
+
+<span class="c1"># GUI automation with visual feedback</span>
+gptme<span class="w"> </span><span class="s1">&#39;create a simple drawing in xpaint&#39;</span>
+
+<span class="c1"># Desktop automation with keyboard/mouse</span>
+gptme<span class="w"> </span><span class="s1">&#39;open calculator and compute 15 * 23&#39;</span>
+</pre></div>
+</div>
+<p>The computer use interface at <a class="reference external" href="http://localhost:8080">http://localhost:8080</a> provides a split view with:
+- Chat interface on the left
+- Desktop view on the right
+- Controls for toggling interaction mode</p>
+<p>This enables complex GUI automation tasks with visual feedback and confirmation.</p>
 </section>
 
 

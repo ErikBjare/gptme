@@ -64,3 +64,30 @@ Generate docstrings for all functions in a file:
    gptme --non-interactive "Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters." $@
 
 These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.
+
+.. rubric:: Computer Use Examples
+
+Using the computer tool for GUI automation and desktop interaction (requires running the server with computer use support):
+
+.. code-block:: bash
+
+    # Start server with computer use support
+    docker run -p 5000:5000 -p 8080:8080 -p 6080:6080 ghcr.io/erikbjare/gptme:latest-server
+
+    # Then in another terminal:
+
+    # Open and interact with an application
+    gptme 'open firefox and navigate to example.com'
+
+    # GUI automation with visual feedback
+    gptme 'create a simple drawing in xpaint'
+
+    # Desktop automation with keyboard/mouse
+    gptme 'open calculator and compute 15 * 23'
+
+The computer use interface at http://localhost:8080 provides a split view with:
+- Chat interface on the left
+- Desktop view on the right
+- Controls for toggling interaction mode
+
+This enables complex GUI automation tasks with visual feedback and confirmation.
