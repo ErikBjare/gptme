@@ -30,16 +30,23 @@ The server provides two interfaces:
 
 2. Computer Use Interface
 
+   Requires Docker.
+
    .. code-block:: bash
 
-       # Run with computer use support (requires Docker)
-       docker run -p 5000:5000 -p 8080:8080 -p 6080:6080 ghcr.io/erikbjare/gptme:latest-server
+       # Clone the repository
+       git clone https://github.com/ErikBjare/gptme.git
+       cd gptme
+       # Build container
+       make build-docker-computer
+       # Run container
+       docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 5000:5000 -p 6080:6080 -p 8080:8080 gptme-computer:latest
 
    The computer use interface provides:
 
-   - Combined chat and desktop view at http://localhost:8080
-   - Desktop-only view at http://localhost:6080/vnc.html
-   - Chat-only view at http://localhost:5000
+   - Combined view at http://localhost:8080/computer
+   - Chat view at http://localhost:8080
+   - Desktop view at http://localhost:6080/vnc.html
 
    Features:
 
@@ -52,6 +59,6 @@ The server provides two interfaces:
 
    - Docker for running the server with X11 support
    - Browser with WebSocket support for VNC
-   - Network ports 5000 (API), 8080 (combined view), and 6080 (VNC) available
+   - Network ports 6080 (VNC) and 8080 (web UI) available
 
 .. include:: computer-use-warning.rst

@@ -86,9 +86,13 @@ def scale_coordinates(
 
 def run_xdotool(cmd: str, display: str | None = None) -> str:
     """Run an xdotool command with optional display setting."""
-    display_prefix = f"DISPLAY={display} " if display else ""
-    full_cmd = f"{display_prefix}xdotool {cmd}"
-    proc = subprocess.Popen(full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    env = os.environ.copy()
+    if display:
+        env["DISPLAY"] = display
+    full_cmd = f"xdotool {cmd}"
+    proc = subprocess.Popen(
+        full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=env
+    )
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
         raise RuntimeError(f"xdotool command failed: {stderr.decode()}")

@@ -309,5 +309,13 @@ new Vue({
       this.conversationsLimit += 100;
       await this.getConversations();
     },
+    handleKeyDown(e) {
+      // If Enter is pressed without Shift
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();  // Prevent default newline
+        this.sendMessage();  // Send the message
+      }
+      // If Shift+Enter, let the default behavior happen (create newline)
+    },
   },
 });

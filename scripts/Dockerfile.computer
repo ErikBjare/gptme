@@ -37,7 +37,7 @@ RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# Create user and setup environment
+# Create user
 ENV USERNAME=computeruse
 ENV HOME=/home/$USERNAME
 RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
@@ -46,6 +46,14 @@ RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
     mkdir -p /tmp/.X11-unix && \
     chmod 1777 /tmp/.X11-unix && \
     chown -R $USERNAME:$USERNAME /workspace
+
+# Set up environment
+ENV PYTHONPATH=/app
+ENV PATH="/usr/local/bin:$PATH"
+ENV DISPLAY_NUM=1
+ENV WIDTH=1024
+ENV HEIGHT=768
+ENV DISPLAY=:${DISPLAY_NUM}
 
 # Install Poetry and dependencies
 RUN python3.10 -m pip install --upgrade pip && \
@@ -74,27 +82,21 @@ RUN git config --global user.name "gptme" && \
     git config --global user.email "gptme@superuserlabs.org" && \
     git config --global init.defaultBranch main
 
-# Set up environment
-ENV PYTHONPATH=/app
-ENV PATH="/usr/local/bin:$PATH"
-ENV DISPLAY_NUM=1
-ENV WIDTH=1024
-ENV HEIGHT=768
-ENV DISPLAY=:${DISPLAY_NUM}
-
-# Copy and setup startup script
-COPY --chown=$USERNAME:$USERNAME scripts/start_x11.sh /app/
-RUN chmod +x /app/start_x11.sh
+# Copy startup scripts
+COPY --chown=$USERNAME:$USERNAME scripts/computer_home/* $HOME/
+RUN chmod +x $HOME/*.sh
 
 # Set working directory
 WORKDIR /workspace
 
 # Expose ports
-# 5000: Chat view?
-# 6080: noVNC
-# 8080: Chat view?
-# 8081: Chat view?
-EXPOSE 5000 6080 8080 8081
+# 6080: noVNC web interface
+# 8080: Chat view
+EXPOSE 6080 8080
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080 || exit 1
 
 # Start services
-CMD ["/app/start_x11.sh"]
+WORKDIR $HOME
+ENTRYPOINT ["./entrypoint.sh"]
