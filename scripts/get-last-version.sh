@@ -6,5 +6,8 @@
 # Get the version tag from the command line
 version=$1
 
+# strip anything with a `-` prefix
+version=$(echo $version | sed 's/-.*//')
+
 # Get the previous version tag
 git tag --sort=-version:refname | grep -A 1 $version | tail -n 1

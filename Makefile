@@ -101,12 +101,13 @@ version:
 	wget -O $@ https://raw.githubusercontent.com/ActivityWatch/activitywatch/master/scripts/build_changelog.py
 	chmod +x $@
 
-dist/CHANGELOG.md: version ./scripts/build_changelog.py
-	VERSION=$$(git describe --tags --abbrev=0) && \
+.PHONY: dist/CHANGELOG.md
+dist/CHANGELOG.md: ./scripts/build_changelog.py
+	VERSION=$$(git describe --tags) && \
 	PREV_VERSION=$$(./scripts/get-last-version.sh $${VERSION}) && \
 		./scripts/build_changelog.py --range $${PREV_VERSION}...$${VERSION} --project-title gptme --org ErikBjare --repo gptme --output $@
 
-release: dist/CHANGELOG.md
+release: version dist/CHANGELOG.md
 	@VERSION=$$(git describe --tags --abbrev=0) && \
 		echo "Releasing version $${VERSION}"; \
 		read -p "Press enter to continue" && \
