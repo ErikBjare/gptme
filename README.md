@@ -186,6 +186,8 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
 - 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
 - 🌐 Web UI frontend (see docs for [server][docs-server])
+- 📝 vim plugin (see [...])
+
 
 ### 🛠 Use Cases
 
