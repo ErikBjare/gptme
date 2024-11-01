@@ -214,10 +214,9 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
 def prompt_systeminfo() -> Generator[Message, None, None]:
     """Generate the system information prompt."""
     if platform.system() == "Linux":
-        os_info = platform.freedesktop_os_release().get("NAME", "Linux")
-        os_version = platform.freedesktop_os_release().get(
-            "VERSION_ID", platform.freedesktop_os_release().get("BUILD_ID", "")
-        )
+        release_info = platform.freedesktop_os_release()
+        os_info = release_info.get("NAME", "Linux")
+        os_version = release_info.get("VERSION_ID") or release_info.get("BUILD_ID", "")
     elif platform.system() == "Windows":
         os_info = "Windows"
         os_version = platform.version()
