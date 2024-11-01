@@ -44,7 +44,7 @@ function! s:gptme() range
     let l:cmd = 'gptme ' . shellescape(l:prompt) . ' ' . shellescape(l:filename)
 
     " Debug: Show command (optional)
-    echom "Command: " . l:cmd
+    " echom "Command: " . l:cmd
 
     " Open terminal in a new window
     vertical new
