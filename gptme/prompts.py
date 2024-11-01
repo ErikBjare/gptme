@@ -6,7 +6,6 @@ When prompting, it is important to provide clear instructions and avoid any ambi
 """
 
 import logging
-import re
 import os
 import platform
 import subprocess
@@ -215,8 +214,10 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
 def prompt_systeminfo() -> Generator[Message, None, None]:
     """Generate the system information prompt."""
     if platform.system() == "Linux":
-        os_info = get_system_distro()
-        os_version = get_system_distro_version()
+        os_info = platform.freedesktop_os_release().get("NAME", "Linux")
+        os_version = platform.freedesktop_os_release().get(
+            "VERSION_ID", platform.freedesktop_os_release().get("BUILD_ID", "")
+        )
     elif platform.system() == "Windows":
         os_info = "Windows"
         os_version = platform.version()
@@ -233,30 +234,6 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         "system",
         prompt,
     )
-
-
-def get_system_distro() -> str:
-    """Get the system distribution name."""
-    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release") as f:
-            for line in f:
-                matches = re.search(regex, line)
-                if matches:
-                    return matches.string[matches.start(1) : matches.end(1)]
-    return "Linux"
-
-
-def get_system_distro_version() -> str:
-    """Get the system distribution version."""
-    regex = re.compile(r"^BUILD_ID=\"?([^\"]+)\"?")
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release") as f:
-            for line in f:
-                matches = re.search(regex, line)
-                if matches:
-                    return matches.string[matches.start(1) : matches.end(1)]
-    return ""
 
 
 document_prompt_function(interactive=True)(prompt_gptme)
