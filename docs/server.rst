@@ -40,7 +40,7 @@ The server provides two interfaces:
        # Build container
        make build-docker-computer
        # Run container
-       docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 5000:5000 -p 6080:6080 -p 8080:8080 gptme-computer:latest
+       docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 6080:6080 -p 8080:8080 gptme-computer:latest
 
    The computer use interface provides:
 
