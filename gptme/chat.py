@@ -15,6 +15,7 @@ from .llm import reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
+from .prompt import add_history, get_input
 from .prompts import get_workspace_prompt
 from .tools import (
     ToolFormat,
@@ -35,7 +36,6 @@ from .util.ask_execute import ask_execute
 from .util.context import use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
-from .util.readline import add_history
 
 logger = logging.getLogger(__name__)
 
@@ -255,27 +255,31 @@ def prompt_user(value=None) -> str:  # pragma: no cover
         try:
             set_interruptible()
             response = prompt_input(PROMPT_USER, value)
+            if response:
+                add_history(response)
         except KeyboardInterrupt:
             print("\nInterrupted. Press Ctrl-D to exit.")
+        except EOFError:
+            print("\nGoodbye!")
+            sys.exit(0)
     clear_interruptible()
-    if response:
-        add_history(response)  # readline history
     return response
 
 
 def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
+    """Get input using prompt_toolkit with fish-style suggestions."""
     prompt = prompt.strip() + ": "
     if value:
         console.print(prompt + value)
-    else:
-        prompt = rich_to_str(prompt, color_system="256")
+        return value
+    prompt = rich_to_str(prompt, color_system="256")
 
-        # https://stackoverflow.com/a/53260487/965332
-        original_stdout = sys.stdout
-        sys.stdout = sys.__stdout__
-        value = input(prompt.strip() + " ")
-        sys.stdout = original_stdout
-    return value
+    # TODO: Implement LLM suggestions
+    def get_suggestions(text: str) -> list[str]:
+        # This would be replaced with actual LLM suggestions
+        return []
+
+    return get_input(prompt, llm_suggest_callback=get_suggestions)
 
 
 def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
