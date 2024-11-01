@@ -381,7 +381,6 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.get_prompt"><code class="docutils literal notranslate"><span class="pre">get_prompt()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.get_system_distro"><code class="docutils literal notranslate"><span class="pre">get_system_distro()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_full"><code class="docutils literal notranslate"><span class="pre">prompt_full()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_gptme"><code class="docutils literal notranslate"><span class="pre">prompt_gptme()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_project"><code class="docutils literal notranslate"><span class="pre">prompt_project()</span></code></a></li>
@@ -410,12 +409,6 @@ It is used to instruct the LLM about its role, how to use tools, and provide con
 <dt class="sig sig-object py" id="gptme.prompts.get_prompt">
 <span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">get_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'full'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'short'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.prompts.get_prompt" title="Link to this definition">#</a></dt>
 <dd><p>Get the initial system prompt.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="gptme.prompts.get_system_distro">
-<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">get_system_distro</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.prompts.get_system_distro" title="Link to this definition">#</a></dt>
-<dd><p>Get the system distribution name.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -506,10 +499,10 @@ gptme is a CLI to interact with large language models in a Chat-style interface,
 <p>Example output:</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gu">## System Information</span>
 
-<span class="gs">**OS:**</span> Ubuntu 6.5.0-1025-azure
+<span class="gs">**OS:**</span> Ubuntu 22.04
 </pre></div>
 </div>
-<p>Tokens: 21</p>
+<p>Tokens: 14</p>
 </dd></dl>
 
 <dl class="py function">
@@ -624,8 +617,8 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 These programs are available, among others:
 <span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>git
-<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
 
@@ -1056,7 +1049,6 @@ No specific preferences set.
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.get_prompt"><code class="docutils literal notranslate"><span class="pre">get_prompt()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.get_system_distro"><code class="docutils literal notranslate"><span class="pre">get_system_distro()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_full"><code class="docutils literal notranslate"><span class="pre">prompt_full()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_gptme"><code class="docutils literal notranslate"><span class="pre">prompt_gptme()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_project"><code class="docutils literal notranslate"><span class="pre">prompt_project()</span></code></a></li>
