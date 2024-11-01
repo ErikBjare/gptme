@@ -50,6 +50,12 @@ all_tools: list[ToolSpec] = [
 ]
 loaded_tools: list[ToolSpec] = []
 
+# Tools that are disabled by default, unless explicitly enabled
+# TODO: find a better way to handle this
+tools_default_disabled = [
+    "computer",
+]
+
 
 def init_tools(allowlist=None) -> None:
     """Runs initialization logic for tools."""
@@ -62,6 +68,9 @@ def init_tools(allowlist=None) -> None:
             continue
         if tool in loaded_tools:
             continue
+        if tool.name in tools_default_disabled:
+            if not allowlist or tool.name not in allowlist:
+                continue
         load_tool(tool)
 
     for tool_name in allowlist or []:
