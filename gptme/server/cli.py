@@ -26,8 +26,14 @@ logger = logging.getLogger(__name__)
     default="5000",
     help="Port to run the server on.",
 )
+@click.option("--tools", default=None, help="Tools to enable, comma separated.")
 def main(
-    debug: bool, verbose: bool, model: str | None, host: str, port: str
+    debug: bool,
+    verbose: bool,
+    model: str | None,
+    host: str,
+    port: str,
+    tools: str | None,
 ):  # pragma: no cover
     """
     Starts a server and web UI for gptme.
@@ -35,7 +41,11 @@ def main(
     Note that this is very much a work in progress, and is not yet ready for normal use.
     """
     init_logging(verbose)
-    init(model, interactive=False, tool_allowlist=None)
+    init(
+        model,
+        interactive=False,
+        tool_allowlist=None if tools is None else tools.split(","),
+    )
 
     # if flask not installed, ask the user to install `server` extras
     try:

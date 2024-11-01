@@ -123,17 +123,7 @@ The computer tool provides direct interaction with the desktop environment throu
 - Screen capture with automatic scaling
 - Cursor position tracking
 
-To use the computer tool, you need to:
-
-1. Install gptme with computer support::
-
-    pip install "gptme[computer]"
-
-2. Run gptme server with X11 support::
-
-    docker run -p 5000:5000 -p 8080:8080 -p 6080:6080 ghcr.io/erikbjare/gptme:latest-server
-
-3. Access the combined interface at http://localhost:8080
+To use the computer tool, see the instructions for :doc:`server`.
 
 Example usage::
 
