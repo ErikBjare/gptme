@@ -6,7 +6,6 @@ When prompting, it is important to provide clear instructions and avoid any ambi
 """
 
 import logging
-import re
 import os
 import platform
 import subprocess
@@ -215,8 +214,9 @@ def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
 def prompt_systeminfo() -> Generator[Message, None, None]:
     """Generate the system information prompt."""
     if platform.system() == "Linux":
-        os_info = get_system_distro()
-        os_version = platform.uname().release
+        release_info = platform.freedesktop_os_release()
+        os_info = release_info.get("NAME", "Linux")
+        os_version = release_info.get("VERSION_ID") or release_info.get("BUILD_ID", "")
     elif platform.system() == "Windows":
         os_info = "Windows"
         os_version = platform.version()
@@ -233,18 +233,6 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         "system",
         prompt,
     )
-
-
-def get_system_distro() -> str:
-    """Get the system distribution name."""
-    regex = re.compile(r"^NAME=\"?([^\"]+)\"?")
-    if os.path.exists("/etc/os-release"):
-        with open("/etc/os-release") as f:
-            for line in f:
-                matches = re.search(regex, line)
-                if matches:
-                    return matches.string[matches.start(1) : matches.end(1)]
-    return "Linux"
 
 
 document_prompt_function(interactive=True)(prompt_gptme)
