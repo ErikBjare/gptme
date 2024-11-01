@@ -16,12 +16,49 @@ It can be started by running the following command:
 Web UI
 ------
 
-.. code-block:: bash
+The server provides two interfaces:
 
-    gptme-server
+1. Basic Chat Interface
 
-This should let you view your chats in a web browser and make basic requests.
+   .. code-block:: bash
 
-You can then access the web UI by visiting http://localhost:5000 in your browser.
+       gptme-server
 
-For more usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+   Access the basic chat interface at http://localhost:5000
+
+   For more usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+
+2. Computer Use Interface
+
+   Requires Docker.
+
+   .. code-block:: bash
+
+       # Clone the repository
+       git clone https://github.com/ErikBjare/gptme.git
+       cd gptme
+       # Build container
+       make build-docker-computer
+       # Run container
+       docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 6080:6080 -p 8080:8080 gptme-computer:latest
+
+   The computer use interface provides:
+
+   - Combined view at http://localhost:8080/computer
+   - Chat view at http://localhost:8080
+   - Desktop view at http://localhost:6080/vnc.html
+
+   Features:
+
+   - Split view with chat on the left, desktop on the right
+   - Toggle for view-only/interactive desktop mode
+   - Fullscreen support
+   - Automatic screen scaling for optimal LLM vision
+
+   Requirements:
+
+   - Docker for running the server with X11 support
+   - Browser with WebSocket support for VNC
+   - Network ports 6080 (VNC) and 8080 (web UI) available
+
+.. include:: computer-use-warning.rst

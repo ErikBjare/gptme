@@ -148,6 +148,18 @@ def root():
     return current_app.send_static_file("index.html")
 
 
+# serve computer interface
+@api.route("/computer")
+def computer():
+    return current_app.send_static_file("computer.html")
+
+
+# serve chat interface (for embedding in computer view)
+@api.route("/chat")
+def chat():
+    return current_app.send_static_file("index.html")
+
+
 @api.route("/favicon.png")
 def favicon():
     return flask.send_from_directory(media_path, "logo.png")

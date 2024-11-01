@@ -151,8 +151,9 @@
                   <textarea
                     class="flex-grow border rounded-lg p-3 mb-2 md:mb-0 md:mr-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                     v-model="newMessage"
-                    placeholder="Type your message"
+                    placeholder="Type your message (Enter to send, Shift+Enter for newline)"
                     rows="3"
+                    @keydown="handleKeyDown"
                     ></textarea>
                   <button
                     type="submit"

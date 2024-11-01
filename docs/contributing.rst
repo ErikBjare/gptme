@@ -17,10 +17,10 @@ Install
    # checkout the code and navigate to the root of the project
    git clone https://github.com/ErikBjare/gptme.git
    cd gptme
-   
+
    # install poetry (if not installed)
    pipx install poetry
-   
+
    # activate the virtualenv
    poetry shell
 

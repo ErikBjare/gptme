@@ -18,7 +18,7 @@ def _screenshot(path: Path) -> Path:
             subprocess.run(["screencapture", str(path)], check=True)
         else:  # Linux
             # TODO: add support for specifying window/fullscreen?
-            subprocess.run(["scrot", str(path)], check=True)  # --focused
+            subprocess.run(["scrot", "--overwrite", str(path)], check=True)  # --focused
     else:
         raise NotImplementedError(
             "Screenshot functionality is only available on macOS and Linux."

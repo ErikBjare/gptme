@@ -10,6 +10,7 @@ gptme.toml
 
 # Build scripts
 scripts
+!scripts/computer_home
 .github
 
 # Build/test/coverage/docs/prof directories

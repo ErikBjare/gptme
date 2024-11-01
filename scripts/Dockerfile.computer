@@ -1,0 +1,102 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_PRIORITY=high
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install \
+    build-essential \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
+    # UI Requirements
+    xvfb \
+    xterm \
+    xdotool \
+    scrot \
+    imagemagick \
+    sudo \
+    mutter \
+    x11vnc \
+    tint2 \
+    x11-apps \
+    # Tools
+    make \
+    git \
+    tmux \
+    curl \
+    pandoc \
+    netcat-openbsd \
+    net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install noVNC for web access
+RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \
+    git clone --branch v0.12.0 https://github.com/novnc/websockify /opt/noVNC/utils/websockify && \
+    ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
+
+# Create user
+ENV USERNAME=computeruse
+ENV HOME=/home/$USERNAME
+RUN useradd -m -s /bin/bash -d $HOME $USERNAME && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    mkdir -p /workspace && \
+    mkdir -p /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
+    chown -R $USERNAME:$USERNAME /workspace
+
+# Set up environment
+ENV PYTHONPATH=/app
+ENV PATH="/usr/local/bin:$PATH"
+ENV DISPLAY_NUM=1
+ENV WIDTH=1024
+ENV HEIGHT=768
+ENV DISPLAY=:${DISPLAY_NUM}
+
+# Install Poetry and dependencies
+RUN python3.10 -m pip install --upgrade pip && \
+    python3.10 -m pip install poetry
+
+# Set up project
+WORKDIR /app
+COPY --chown=$USERNAME:$USERNAME pyproject.toml poetry.lock /app/
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction --no-ansi -E server --no-root
+
+COPY --chown=$USERNAME:$USERNAME . /app
+RUN poetry install --no-interaction --no-ansi -E server
+
+# Copy desktop environment configs (at the end for faster rebuilds)
+RUN mkdir -p $HOME && chmod 777 $HOME
+COPY scripts/computer_home $HOME
+RUN chown -R $USERNAME:$USERNAME $HOME
+
+# Switch to non-root user
+USER $USERNAME
+WORKDIR $HOME
+
+# Configure git
+RUN git config --global user.name "gptme" && \
+    git config --global user.email "gptme@superuserlabs.org" && \
+    git config --global init.defaultBranch main
+
+# Copy startup scripts
+COPY --chown=$USERNAME:$USERNAME scripts/computer_home/* $HOME/
+RUN chmod +x $HOME/*.sh
+
+# Set working directory
+WORKDIR /workspace
+
+# Expose ports
+# 6080: noVNC web interface
+# 8080: Chat view
+EXPOSE 6080 8080
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080 || exit 1
+
+# Start services
+WORKDIR $HOME
+ENTRYPOINT ["./entrypoint.sh"]

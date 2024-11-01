@@ -6,6 +6,7 @@ from ..message import Message
 from .base import ConfirmFunc, ToolSpec, ToolUse
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
+from .computer import tool as computer_tool
 from .gh import tool as gh_tool
 from .patch import tool as patch_tool
 from .python import register_function
@@ -43,10 +44,17 @@ all_tools: list[ToolSpec] = [
     youtube_tool,
     screenshot_tool,
     vision_tool,
+    computer_tool,
     # python tool is loaded last to ensure all functions are registered
     python_tool,
 ]
 loaded_tools: list[ToolSpec] = []
+
+# Tools that are disabled by default, unless explicitly enabled
+# TODO: find a better way to handle this
+tools_default_disabled = [
+    "computer",
+]
 
 
 def init_tools(allowlist=None) -> None:
@@ -60,11 +68,14 @@ def init_tools(allowlist=None) -> None:
             continue
         if tool in loaded_tools:
             continue
+        if tool.name in tools_default_disabled:
+            if not allowlist or tool.name not in allowlist:
+                continue
         load_tool(tool)
 
     for tool_name in allowlist or []:
         if not has_tool(tool_name):
-            logger.warning(f"Tool '{tool_name}' not found")
+            raise ValueError(f"Tool '{tool_name}' not found")
 
 
 def load_tool(tool: ToolSpec) -> None:

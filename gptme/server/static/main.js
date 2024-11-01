@@ -190,29 +190,52 @@ new Vue({
       this.selectConversation(name);
     },
     async sendMessage() {
+      const messageContent = this.newMessage;
+      // Clear input immediately
+      this.newMessage = "";
+
+      // Add message to chat log immediately
+      const tempMessage = {
+        role: "user",
+        content: messageContent,
+        timestamp: new Date().toISOString(),
+        html: this.mdToHtml(messageContent)
+      };
+      this.chatLog.push(tempMessage);
+      this.scrollToBottom();
+
+      // Send to server
       const payload = JSON.stringify({
         role: "user",
-        content: this.newMessage,
+        content: messageContent,
         branch: this.branch,
       });
-      const req = await fetch(`${apiRoot}/${this.selectedConversation}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: payload,
-      });
-      if (!req.ok) {
-        this.error = req.statusText;
-        return;
+
+      try {
+        const req = await fetch(`${apiRoot}/${this.selectedConversation}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: payload,
+        });
+
+        if (!req.ok) {
+            throw new Error(req.statusText);
+        }
+
+        await req.json();
+        // Reload conversation to get server-side state
+        await this.selectConversation(this.selectedConversation, this.branch);
+        // Generate response
+        this.generate();
+      } catch (error) {
+        this.error = error.toString();
+        // Remove temporary message on error
+        this.chatLog.pop();
+        // Refill input
+        this.newMessage = messageContent;
       }
-      console.log(req);
-      console.log(await req.json());
-      this.newMessage = "";
-      // reload conversation
-      await this.selectConversation(this.selectedConversation, this.branch);
-      // generate
-      this.generate();
     },
     async generate() {
       this.generating = true;
@@ -308,6 +331,14 @@ new Vue({
     async loadMoreConversations() {
       this.conversationsLimit += 100;
       await this.getConversations();
+    },
+    handleKeyDown(e) {
+      // If Enter is pressed without Shift
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();  // Prevent default newline
+        this.sendMessage();  // Send the message
+      }
+      // If Shift+Enter, let the default behavior happen (create newline)
     },
   },
 });
