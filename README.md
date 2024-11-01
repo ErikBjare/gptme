@@ -177,16 +177,16 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
 - 📊 [Evaluation suite][docs-evals] for testing capabilities of different models
+- 📝 [gptme.vim][gptme.vim] for easy integration with vim
 
 ### 🚧 In progress
 
-- 🏆 Advanced evals for testing frontier capabilities
-- 🤖 Long-running agents and advanced agent architectures
+- 🌐 Web UI frontend (see docs for [server][docs-server])
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
+- 🤖 Long-running agents and advanced agent architectures
 - 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
-- 🌐 Web UI frontend (see docs for [server][docs-server])
-- 📝 vim plugin (see [...])
+- 🏆 Advanced evals for testing frontier capabilities
 
 
 ### 🛠 Use Cases
@@ -304,6 +304,7 @@ Options:
 [website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
+[gptme.vim]: https://github.com/ErikBjare/gptme/tree/master/scripts/vim
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html
 [docs-examples]: https://gptme.org/docs/examples.html

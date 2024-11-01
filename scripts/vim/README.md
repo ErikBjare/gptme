@@ -1,4 +1,4 @@
-# gptme Vim Plugin
+# gptme.vim
 
 A Vim plugin for [gptme](https://gptme.org) integration, allowing you to interact with gptme directly from your editor.
 
