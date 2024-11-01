@@ -5,7 +5,13 @@ Browser tool by calling lynx --dump
 import subprocess
 
 
-def read_url(url):
+def read_url(url, cookies: dict | None = None) -> str:
+    # TODO: create and set LYNX_CFG to use custom lynx config file (needed to save cookies, which I need to debug how cookies should be read)
+    if cookies:
+        # save them to file to be read by lynx
+        with open("cookies.txt", "w") as f:
+            for k, v in cookies.items():
+                f.write(f"{k}\t{v}\n")
     return subprocess.run(
         ["lynx", "--dump", url, "--display_charset=utf-8"], stdout=subprocess.PIPE
     ).stdout.decode("utf-8")
@@ -13,6 +19,7 @@ def read_url(url):
 
 def search(query, engine="google"):
     if engine == "google":
+        # TODO: needs a CONSENT cookie
         return read_url(f"https://www.google.com/search?q={query}")
     elif engine == "duckduckgo":
         return read_url(f"https://duckduckgo.com/?q={query}")
