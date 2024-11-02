@@ -404,21 +404,35 @@ document.write(`
   <section id="are-we-tiny">
 <h1>Are we tiny?<a class="headerlink" href="#are-we-tiny" title="Link to this heading">#</a></h1>
 <p>gptme is intended to be small and simple, and focus on doing the right thing in the right way, rather than all the things in all the ways.</p>
-<p>Since it is built by a single developer, there are limits imposed to how large things can get before it becomes too much to handle. Being aggressive about keeping things small and simple is a way to keep the project maintainable and fun to work on. The fastest way to kill a project is to make it too big and complex, and suffer burnout as a result.</p>
+<p>The benefits of this approach are many:</p>
+<ul class="simple">
+<li><p>It is easier to understand and maintain.</p></li>
+<li><p>It is easier to contribute to.</p></li>
+<li><p>It is easier to learn.</p></li>
+<li><p>It is easier to extend.</p></li>
+<li><p>It is more fun to work on.</p></li>
+</ul>
+<p>Being aggressive about keeping things small and simple is a way to keep the project maintainable and fun to work on. The fastest way to kill a project is to make it too big and complex, and suffer burnout as a result.</p>
+<p>Another major benefit of keeping things small and simple is that it makes it easier for AI to understand and work with the codebase.
+This is a major goal of the project, and it is important to keep in mind that the simpler the codebase is, the easier it will be for AI to work with it:</p>
+<blockquote>
+<div><p><em>“The simpler your API is, the more effectively the AI can harness it when generating code.”</em></p>
+<p class="attribution">—<a class="reference external" href="https://x.com/kennethreitz42/status/1852750768920518768">Kenneth Reitz</a> (and many others)</p>
+</div></blockquote>
 <p>To that end, in this document we will present some statistics about the current state of the project, trying to be mindful to keep an eye on this page and make sure we are not growing too much.</p>
 <section id="startup-time">
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     267383 |       gptme.commands
-     271729 |     gptme.chat
-     288575 |   gptme.cli
-     336079 | gptme
-     347265 | openai
+     265935 |       gptme.commands
+     270231 |     gptme.chat
+     287278 |   gptme.cli
+     335045 | gptme
+     339218 | openai
 
-real	0m1.423s
-user	0m1.279s
-sys	0m0.159s
+real	0m1.420s
+user	0m1.212s
+sys	0m0.220s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -435,7 +449,7 @@ classified 28 files
       28 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (803.2 files/s, 133968.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (800.5 files/s, 133504.6 lines/s)
 ----------------------------------------------------------------------------------------
 File                                      blank        comment           code
 ----------------------------------------------------------------------------------------
@@ -484,7 +498,7 @@ classified 18 files
       18 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (790.7 files/s, 123175.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (783.4 files/s, 122034.5 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -523,7 +537,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (779.6 files/s, 100370.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (791.1 files/s, 101849.1 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -552,7 +566,7 @@ classified 18 files
       18 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1171.7 files/s, 85862.4 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1192.4 files/s, 87380.0 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -591,7 +605,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (646.1 files/s, 78103.1 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (649.7 files/s, 78529.5 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -620,7 +634,7 @@ classified 85 files
       85 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.07 s (1134.1 files/s, 142243.3 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.07 s (1148.1 files/s, 143995.4 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
