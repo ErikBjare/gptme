@@ -43,6 +43,6 @@ We are working on making the evals more robust, informative, and challenging.
 Other evals
 -----------
 
-We have considered running gptme on other evals, such as SWE-Bench, but have not yet done so.
+We have considered running gptme on other evals such as SWE-Bench, but have not finished it (see `PR #142 <https://github.com/ErikBjare/gptme/pull/142>`_).
 
 If you are interested in running gptme on other evals, drop a comment in the issues!
