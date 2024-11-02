@@ -3,7 +3,25 @@ Are we tiny?
 
 gptme is intended to be small and simple, and focus on doing the right thing in the right way, rather than all the things in all the ways.
 
-Since it is built by a single developer, there are limits imposed to how large things can get before it becomes too much to handle. Being aggressive about keeping things small and simple is a way to keep the project maintainable and fun to work on. The fastest way to kill a project is to make it too big and complex, and suffer burnout as a result.
+The benefits of this approach are many:
+
+- It is easier to understand and maintain.
+- It is easier to contribute to.
+- It is easier to learn.
+- It is easier to extend.
+- It is more fun to work on.
+
+Being aggressive about keeping things small and simple is a way to keep the project maintainable and fun to work on. The fastest way to kill a project is to make it too big and complex, and suffer burnout as a result.
+
+Another major benefit of keeping things small and simple is that it makes it easier for AI to understand and work with the codebase.
+This is a major goal of the project, and it is important to keep in mind that the simpler the codebase is, the easier it will be for AI to work with it:
+
+..
+
+    *"The simpler your API is, the more effectively the AI can harness it when generating code."*
+
+    -- `Kenneth Reitz <https://x.com/kennethreitz42/status/1852750768920518768>`_ (and many others)
+
 
 To that end, in this document we will present some statistics about the current state of the project, trying to be mindful to keep an eye on this page and make sure we are not growing too much.
 
