@@ -14,6 +14,7 @@ from itertools import islice
 
 import flask
 from flask import current_app, request
+from flask_cors import CORS
 
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
@@ -165,8 +166,16 @@ def favicon():
     return flask.send_from_directory(media_path, "logo.png")
 
 
-def create_app() -> flask.Flask:
-    """Create the Flask app."""
+def create_app(cors_origin: str | None = None) -> flask.Flask:
+    """Create the Flask app.
+
+    Args:
+        cors_origin: CORS origin to allow. Use '*' to allow all origins.
+    """
     app = flask.Flask(__name__, static_folder=static_path)
     app.register_blueprint(api)
+
+    if cors_origin:
+        CORS(app, resources={r"/api/*": {"origins": cors_origin}})
+
     return app

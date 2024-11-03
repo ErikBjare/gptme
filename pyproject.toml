@@ -53,6 +53,7 @@ pillow = {version = "*", optional=true}
 
 # server
 flask = {version = "^3.0", optional=true}
+flask-cors = {version = "^4.0", optional=true}
 
 [tool.poetry.group.dev.dependencies]
 # lint
@@ -83,13 +84,13 @@ types-tabulate = "*"
 types-lxml = "*"
 
 [tool.poetry.extras]
-server = ["flask"]
+server = ["flask", "flask-cors"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
 all = [
     # server
-    "flask",
+    "flask", "flask-cors",
     # browser
     "playwright",
     # datascience

@@ -27,6 +27,11 @@ logger = logging.getLogger(__name__)
     help="Port to run the server on.",
 )
 @click.option("--tools", default=None, help="Tools to enable, comma separated.")
+@click.option(
+    "--cors-origin",
+    default=None,
+    help="CORS origin to allow. Use '*' to allow all origins.",
+)
 def main(
     debug: bool,
     verbose: bool,
@@ -34,6 +39,7 @@ def main(
     host: str,
     port: str,
     tools: str | None,
+    cors_origin: str | None,
 ):  # pragma: no cover
     """
     Starts a server and web UI for gptme.
@@ -58,5 +64,5 @@ def main(
         exit(1)
     click.echo("Initialization complete, starting server")
 
-    app = create_app()
+    app = create_app(cors_origin=cors_origin)
     app.run(debug=debug, host=host, port=int(port))
