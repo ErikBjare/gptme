@@ -142,10 +142,14 @@ def get_workspace_prompt(workspace: str) -> str:
         with open(project_config_path) as f:
             project_config = tomlkit.load(f)
             project = ProjectConfig(**project_config)  # type: ignore
-            # expand with glob
-            files = [p for file in project.files for p in glob.glob(file)]
-            for file in files:
-                if not Path(file).exists():
+            files = []
+            for file in project.files:
+                # expand user
+                file = str(Path(file).expanduser())
+                # expand with glob
+                if new_files := glob.glob(file):
+                    files.extend(new_files)
+                else:
                     logger.error(
                         f"File {file} specified in project config does not exist"
                     )
