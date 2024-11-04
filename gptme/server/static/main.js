@@ -239,30 +239,82 @@ new Vue({
     },
     async generate() {
       this.generating = true;
-      const req = await fetch(
-        `${apiRoot}/${this.selectedConversation}/generate`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ branch: this.branch }),
+      let currentMessage = {
+        role: "assistant",
+        content: "",
+        timestamp: new Date().toISOString(),
+      };
+      this.chatLog.push(currentMessage);
+
+      try {
+        // Create EventSource with POST method using fetch
+        const response = await fetch(
+          `${apiRoot}/${this.selectedConversation}/generate`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ branch: this.branch }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      );
-      this.generating = false;
-      if (!req.ok) {
-        this.error = req.statusText;
-        return;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const {value, done} = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          // Parse SSE data
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.error) {
+                this.error = data.error;
+                break;
+              }
+
+              if (data.stored === false) {
+                // Streaming token from assistant
+                currentMessage.content += data.content;
+                currentMessage.html = this.mdToHtml(currentMessage.content);
+                this.scrollToBottom();
+              } else {
+                // Tool output or stored message
+                if (data.role === "system") {
+                  this.cmdout = data.content;
+                } else {
+                  // Add as a new message
+                  const newMsg = {
+                    role: data.role,
+                    content: data.content,
+                    timestamp: new Date().toISOString(),
+                    html: this.mdToHtml(data.content),
+                  };
+                  this.chatLog.push(newMsg);
+                }
+              }
+            }
+          }
+        }
+
+        // After streaming is complete, reload to ensure we have the server's state
+        this.generating = false;
+        await this.selectConversation(this.selectedConversation, this.branch);
+      } catch (error) {
+        this.error = error.toString();
+        this.generating = false;
+        // Remove the temporary message on error
+        this.chatLog.pop();
       }
-      // req.json() can contain (not stored) responses to /commands,
-      // or the result of the generation.
-      // if it's unsaved results of a command, we need to display it
-      const data = await req.json();
-      if (data.length == 1 && data[0].stored === false) {
-        this.cmdout = data[0].content;
-      }
-      // reload conversation
-      await this.selectConversation(this.selectedConversation, this.branch);
     },
     changeBranch(branch) {
       this.branch = branch;
