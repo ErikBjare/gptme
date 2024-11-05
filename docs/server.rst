@@ -13,52 +13,66 @@ It can be started by running the following command:
 
     gptme-server
 
+For more CLI usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+
+There are a few different interfaces available:
+
 Web UI
 ------
 
-The server provides two interfaces:
+A basic chat interface with minimal dependencies that is bundled with the server.
 
-1. Basic Chat Interface
+Simply start the server to access the interface at http://localhost:5000
 
-   .. code-block:: bash
+Fancy Web UI
+------------
 
-       gptme-server
+A modern, feature-rich web interface for gptme is available as a separate project `gptme-webui <https://github.com/ErikBjare/gptme-webui>`_. It is mainly built with `gptengineer.app <https://gptengineer.app>`_.
 
-   Access the basic chat interface at http://localhost:5000
+To use gptme-webui, see the `gptme-webui README <https://github.com/ErikBjare/gptme-webui>`_.
 
-   For more usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+Features:
 
-2. Computer Use Interface
+- Modern React-based interface with shadcn/ui
+- Streaming of responses
+- Mobile-friendly design
+- Dark mode support
+- Offline/exports support
 
-   Requires Docker.
 
-   .. code-block:: bash
-
-       # Clone the repository
-       git clone https://github.com/ErikBjare/gptme.git
-       cd gptme
-       # Build container
-       make build-docker-computer
-       # Run container
-       docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 6080:6080 -p 8080:8080 gptme-computer:latest
-
-   The computer use interface provides:
-
-   - Combined view at http://localhost:8080/computer
-   - Chat view at http://localhost:8080
-   - Desktop view at http://localhost:6080/vnc.html
-
-   Features:
-
-   - Split view with chat on the left, desktop on the right
-   - Toggle for view-only/interactive desktop mode
-   - Fullscreen support
-   - Automatic screen scaling for optimal LLM vision
-
-   Requirements:
-
-   - Docker for running the server with X11 support
-   - Browser with WebSocket support for VNC
-   - Network ports 6080 (VNC) and 8080 (web UI) available
+Computer Use Interface
+----------------------
 
 .. include:: computer-use-warning.rst
+
+The computer use interface provides a split view with a chat on the left and a desktop on the right.
+
+Requires Docker.
+
+.. code-block:: bash
+
+   # Clone the repository
+   git clone https://github.com/ErikBjare/gptme.git
+   cd gptme
+   # Build container
+   make build-docker-computer
+   # Run container
+   docker run -v ~/.config/gptme:/home/computeruse/.config/gptme -p 6080:6080 -p 8080:8080 gptme-computer:latest
+
+The computer use interface provides:
+
+- Combined view at http://localhost:8080/computer
+- Chat view at http://localhost:8080
+- Desktop view at http://localhost:6080/vnc.html
+
+Features:
+
+- Split view with chat on the left, desktop on the right
+- Toggle for view-only/interactive desktop mode
+- Fullscreen support
+- Automatic screen scaling for optimal LLM vision
+
+Requirements:
+
+- Docker for running the server with X11 support
+- Network ports 6080 (VNC) and 8080 (web UI) available
