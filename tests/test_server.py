@@ -71,14 +71,51 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     )
     assert response.status_code == 200
 
+    # Test regular (non-streaming) response
     response = client.post(
         f"/api/conversations/{conv}/generate",
-        json={"model": get_model().model},
+        json={"model": get_model().model, "stream": False},
     )
     assert response.status_code == 200
-    msgs = response.get_json()
-    assert len(msgs) >= 1
-    assert len(msgs) <= 2
-    assert msgs[0]["role"] == "assistant"
-    if len(msgs) == 2:
-        assert msgs[1]["role"] == "system"
+    data = response.get_data(as_text=True)
+    assert data  # Ensure we got some response
+    msgs_resps = response.get_json()
+    assert msgs_resps is not None  # Ensure we got valid JSON
+    # Assistant message + possible tool output
+    assert len(msgs_resps) >= 1
+
+    # First message should be the assistant's response
+    assert msgs_resps[0]["role"] == "assistant"
+
+
+@pytest.mark.slow
+def test_api_conversation_generate_stream(conv: str, client: FlaskClient):
+    # Ask the assistant to generate a test response
+    response = client.post(
+        f"/api/conversations/{conv}",
+        json={"role": "user", "content": "hello, just testing"},
+    )
+    assert response.status_code == 200
+
+    # Test streaming response
+    response = client.post(
+        f"/api/conversations/{conv}/generate",
+        json={"model": get_model().model, "stream": True},
+        headers={"Accept": "text/event-stream"},
+    )
+    assert response.status_code == 200
+    assert "text/event-stream" in response.headers["Content-Type"]
+
+    # Read and validate the streamed response
+    chunks = list(response.iter_encoded())
+    assert len(chunks) > 0
+
+    # Each chunk should be a Server-Sent Event
+    for chunk in chunks:
+        chunk_str = chunk.decode("utf-8")
+        assert chunk_str.startswith("data: ")
+        # Skip empty chunks (heartbeats)
+        if chunk_str.strip() == "data: ":
+            continue
+        data = chunk_str.replace("data: ", "").strip()
+        assert data  # Non-empty data

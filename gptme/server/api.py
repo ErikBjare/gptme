@@ -7,6 +7,7 @@ See here for instructions how to serve matplotlib figures:
 
 import atexit
 import io
+import logging
 from contextlib import redirect_stdout
 from datetime import datetime
 from importlib import resources
@@ -18,11 +19,14 @@ from flask_cors import CORS
 
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
-from ..llm import reply
+from ..llm import _stream
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
 from ..models import get_model
 from ..tools import execute_msg
+from ..tools.base import ToolUse
+
+logger = logging.getLogger(__name__)
 
 api = flask.Blueprint("api", __name__)
 
@@ -94,6 +98,7 @@ def confirm_func(msg: str) -> bool:
 def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
+    stream = req_json.get("stream", False)  # Default to no streaming (backward compat)
     model = req_json.get("model", get_model().model)
 
     # load conversation
@@ -101,8 +106,6 @@ def api_conversation_generate(logfile: str):
 
     # if prompt is a user-command, execute it
     if manager.log[-1].role == "user":
-        # TODO: capture output of command and return it
-
         f = io.StringIO()
         print("Begin capturing stdout, to pass along command output.")
         with redirect_stdout(f):
@@ -118,21 +121,91 @@ def api_conversation_generate(logfile: str):
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)
 
-    # generate response
-    # TODO: add support for streaming
-    msg = reply(msgs, model=model, stream=True)
-    msg = msg.replace(quiet=True)
+    if not msgs:
+        logger.error("No messages to process")
+        return flask.jsonify({"error": "No messages to process"})
 
-    # log response and run tools
-    resp_msgs = []
-    manager.append(msg)
-    resp_msgs.append(msg)
-    for reply_msg in execute_msg(msg, confirm_func):
-        manager.append(reply_msg)
-        resp_msgs.append(reply_msg)
+    if not stream:
+        # Non-streaming response
+        try:
+            # Get complete response
+            output = "".join(_stream(msgs, model))
 
-    return flask.jsonify(
-        [{"role": msg.role, "content": msg.content} for msg in resp_msgs]
+            # Store the message
+            msg = Message("assistant", output)
+            msg = msg.replace(quiet=True)
+            manager.append(msg)
+
+            # Execute any tools
+            reply_msgs = list(execute_msg(msg, confirm_func))
+            for reply_msg in reply_msgs:
+                manager.append(reply_msg)
+
+            # Return all messages
+            response = [{"role": "assistant", "content": output, "stored": True}]
+            response.extend(
+                {"role": msg.role, "content": msg.content, "stored": True}
+                for msg in reply_msgs
+            )
+            return flask.jsonify(response)
+
+        except Exception as e:
+            logger.exception("Error during generation")
+            return flask.jsonify({"error": str(e)})
+
+    # Streaming response
+    def generate():
+        # Start with an empty message
+        output = ""
+        try:
+            logger.info(f"Starting generation for conversation {logfile}")
+
+            # Prepare messages for the model
+            if not msgs:
+                logger.error("No messages to process")
+                yield f"data: {flask.json.dumps({'error': 'No messages to process'})}\n\n"
+                return
+
+            # Stream tokens from the model
+            logger.debug(f"Starting token stream with model {model}")
+            for char in (char for chunk in _stream(msgs, model) for char in chunk):
+                output += char
+                # Send each token as a JSON event
+                yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
+
+                # Check for complete tool uses
+                tooluses = list(ToolUse.iter_from_content(output))
+                if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
+                    logger.debug("Found runnable tool use, breaking stream")
+                    break
+
+            # Store the complete message
+            logger.debug(f"Storing complete message: {output[:100]}...")
+            msg = Message("assistant", output)
+            msg = msg.replace(quiet=True)
+            manager.append(msg)
+
+            # Execute any tools and stream their output
+            for reply_msg in execute_msg(msg, confirm_func):
+                logger.debug(
+                    f"Tool output: {reply_msg.role} - {reply_msg.content[:100]}..."
+                )
+                manager.append(reply_msg)
+                yield f"data: {flask.json.dumps({'role': reply_msg.role, 'content': reply_msg.content, 'stored': True})}\n\n"
+
+        except Exception as e:
+            logger.exception("Error during generation")
+            yield f"data: {flask.json.dumps({'error': str(e)})}\n\n"
+        finally:
+            logger.info("Generation complete")
+
+    return flask.Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # Disable buffering in nginx
+        },
     )
 
 
