@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gptme"
 version = "0.22.0"
-description = "A fancy CLI to interact with LLMs in a Chat-style interface, with additional capabilities like executing commands on the local machine."
+description = "Personal AI assistant in your terminal that can use the shell, run code, edit files, browse the web, and use vision. An unconstrained local alternative to ChatGPT's Code Interpreter."
 authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
 readme = "README.md"
 license = "MIT"
