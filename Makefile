@@ -27,7 +27,7 @@ build-docker-dev:
 	docker build . -t gptme-dev:latest -f scripts/Dockerfile.dev
 
 build-docker-full:
-	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval --build-arg RUST=yes --build-arg BROWSER=yes
+	docker build . -t gptme-eval:latest -f scripts/Dockerfile.eval --build-arg RUST=yes --build-arg PLAYWRIGHT=no
 
 test:
 	@# if SLOW is not set, pass `-m "not slow"` to skip slow tests

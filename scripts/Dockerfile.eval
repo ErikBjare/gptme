@@ -21,13 +21,15 @@ RUN if [ "$RUST" = "yes" ]; then \
         apt-get update && apt-get install build-essential -y; \
     fi
 
-# Install playwright if browser is enabled
-ARG BROWSER=no
+# Install playwright if enabled, else just install lynx
+ARG PLAYWRIGHT=no
 USER root
-RUN if [ "$BROWSER" = "yes" ]; then \
+RUN if [ "$PLAYWRIGHT" = "yes" ]; then \
         poetry install -E browser --without=dev; \
         poetry run playwright install-deps; \
         su appuser -c "poetry run playwright install chromium"; \
+    else \
+        apt-get update && apt-get install lynx -y; \
     fi
 
 # Create eval_results directory
@@ -41,4 +43,4 @@ RUN git config --global user.email "gptme@superuserlabs.org"
 RUN git config --global init.defaultBranch main
 
 # Add an entry point for running evals
-ENTRYPOINT ["poetry", "run", "python", "-m", "gptme.eval"]
+ENTRYPOINT ["python", "-m", "gptme.eval"]
