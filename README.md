@@ -167,6 +167,14 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - 📝 Automatic naming of conversations
   - 💬 Optional basic [Web UI and REST API][docs-server]
 
+### 🛠 Use Cases
+
+- 🖥 **Development:** Write and run code faster with AI assistance.
+- 🎯 **Shell Expert:** Get the right command using natural language (no more memorizing flags!).
+- 📊 **Data Analysis:** Process and analyze data directly in your terminal.
+- 🎓 **Interactive Learning:** Experiment with new technologies or codebases hands-on.
+- 🤖 **Agents & Tools:** Experiment with agents & tools in a local environment.
+
 ### 🛠  Developer perks
 
 - 🧰 Easy to extend
@@ -187,14 +195,6 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 🤖 Long-running agents and advanced agent architectures
 - 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
 - 🏆 Advanced evals for testing frontier capabilities
-
-### 🛠 Use Cases
-
-- 🖥 **Development:** Write and run code faster with AI assistance.
-- 🎯 **Shell Expert:** Get the right command using natural language (no more memorizing flags!).
-- 📊 **Data Analysis:** Process and analyze data directly in your terminal.
-- 🎓 **Interactive Learning:** Experiment with new technologies or codebases hands-on.
-- 🤖 **Agents & Tools:** Experiment with agents & tools in a local environment.
 
 ## 🚀 Getting Started
 
