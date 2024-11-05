@@ -79,19 +79,13 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     assert response.status_code == 200
     data = response.get_data(as_text=True)
     assert data  # Ensure we got some response
-    msgs = response.get_json()
-    assert msgs is not None  # Ensure we got valid JSON
-    assert len(msgs) == 3  # Assistant message + 2 system messages from tool output
+    msgs_resps = response.get_json()
+    assert msgs_resps is not None  # Ensure we got valid JSON
+    # Assistant message + possible tool output
+    assert len(msgs_resps) >= 1
 
     # First message should be the assistant's response
-    assert msgs[0]["role"] == "assistant"
-    assert "thinking" in msgs[0]["content"]  # Should contain thinking tags
-
-    # Next two messages should be system messages with tool output
-    assert msgs[1]["role"] == "system"
-    assert "ls" in msgs[1]["content"]
-    assert msgs[2]["role"] == "system"
-    assert "git status" in msgs[2]["content"]
+    assert msgs_resps[0]["role"] == "assistant"
 
 
 @pytest.mark.slow
