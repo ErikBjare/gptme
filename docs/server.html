@@ -381,6 +381,8 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-ui">Web UI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fancy-web-ui">Fancy Web UI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer-use-interface">Computer Use Interface</a></li>
 </ul>
             </nav>
         </div>
@@ -404,18 +406,34 @@ It does not support streaming, doesn’t ask for confirmation before executing, 
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
 </pre></div>
 </div>
+<p>For more CLI usage, see <a class="reference internal" href="cli.html#gptme-server"><span class="std std-ref">the CLI documentation</span></a>.</p>
+<p>There are a few different interfaces available:</p>
 <section id="web-ui">
 <h2>Web UI<a class="headerlink" href="#web-ui" title="Link to this heading">#</a></h2>
-<p>The server provides two interfaces:</p>
-<ol class="arabic">
-<li><p>Basic Chat Interface</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
-</pre></div>
+<p>A basic chat interface with minimal dependencies that is bundled with the server.</p>
+<p>Simply start the server to access the interface at <a class="reference external" href="http://localhost:5000">http://localhost:5000</a></p>
+</section>
+<section id="fancy-web-ui">
+<h2>Fancy Web UI<a class="headerlink" href="#fancy-web-ui" title="Link to this heading">#</a></h2>
+<p>A modern, feature-rich web interface for gptme is available as a separate project <a class="reference external" href="https://github.com/ErikBjare/gptme-webui">gptme-webui</a>. It is mainly built with <a class="reference external" href="https://gptengineer.app">gptengineer.app</a>.</p>
+<p>To use gptme-webui, see the <a class="reference external" href="https://github.com/ErikBjare/gptme-webui">gptme-webui README</a>.</p>
+<p>Features:</p>
+<ul class="simple">
+<li><p>Modern React-based interface with shadcn/ui</p></li>
+<li><p>Streaming of responses</p></li>
+<li><p>Mobile-friendly design</p></li>
+<li><p>Dark mode support</p></li>
+<li><p>Offline/exports support</p></li>
+</ul>
+</section>
+<section id="computer-use-interface">
+<h2>Computer Use Interface<a class="headerlink" href="#computer-use-interface" title="Link to this heading">#</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The computer use interface is experimental and has serious security implications.
+Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
 </div>
-<p>Access the basic chat interface at <a class="reference external" href="http://localhost:5000">http://localhost:5000</a></p>
-<p>For more usage, see <a class="reference internal" href="cli.html#gptme-server"><span class="std std-ref">the CLI documentation</span></a>.</p>
-</li>
-<li><p>Computer Use Interface</p>
+<p>The computer use interface provides a split view with a chat on the left and a desktop on the right.</p>
 <p>Requires Docker.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ErikBjare/gptme.git
@@ -442,16 +460,8 @@ docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </sp
 <p>Requirements:</p>
 <ul class="simple">
 <li><p>Docker for running the server with X11 support</p></li>
-<li><p>Browser with WebSocket support for VNC</p></li>
 <li><p>Network ports 6080 (VNC) and 8080 (web UI) available</p></li>
 </ul>
-</li>
-</ol>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The computer use interface is experimental and has serious security implications.
-Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
-</div>
 </section>
 </section>
 
@@ -501,6 +511,8 @@ Please use with caution and see Anthropic’s documentation on <a class="referen
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#web-ui">Web UI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fancy-web-ui">Fancy Web UI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer-use-interface">Computer Use Interface</a></li>
 </ul>
   </nav></div>
 
