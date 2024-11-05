@@ -71,14 +71,57 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     )
     assert response.status_code == 200
 
+    # Test regular (non-streaming) response
     response = client.post(
         f"/api/conversations/{conv}/generate",
-        json={"model": get_model().model},
+        json={"model": get_model().model, "stream": False},
     )
     assert response.status_code == 200
+    data = response.get_data(as_text=True)
+    assert data  # Ensure we got some response
     msgs = response.get_json()
-    assert len(msgs) >= 1
-    assert len(msgs) <= 2
+    assert msgs is not None  # Ensure we got valid JSON
+    assert len(msgs) == 3  # Assistant message + 2 system messages from tool output
+
+    # First message should be the assistant's response
     assert msgs[0]["role"] == "assistant"
-    if len(msgs) == 2:
-        assert msgs[1]["role"] == "system"
+    assert "thinking" in msgs[0]["content"]  # Should contain thinking tags
+
+    # Next two messages should be system messages with tool output
+    assert msgs[1]["role"] == "system"
+    assert "ls" in msgs[1]["content"]
+    assert msgs[2]["role"] == "system"
+    assert "git status" in msgs[2]["content"]
+
+
+@pytest.mark.slow
+def test_api_conversation_generate_stream(conv: str, client: FlaskClient):
+    # Ask the assistant to generate a test response
+    response = client.post(
+        f"/api/conversations/{conv}",
+        json={"role": "user", "content": "hello, just testing"},
+    )
+    assert response.status_code == 200
+
+    # Test streaming response
+    response = client.post(
+        f"/api/conversations/{conv}/generate",
+        json={"model": get_model().model, "stream": True},
+        headers={"Accept": "text/event-stream"},
+    )
+    assert response.status_code == 200
+    assert "text/event-stream" in response.headers["Content-Type"]
+
+    # Read and validate the streamed response
+    chunks = list(response.iter_encoded())
+    assert len(chunks) > 0
+
+    # Each chunk should be a Server-Sent Event
+    for chunk in chunks:
+        chunk_str = chunk.decode("utf-8")
+        assert chunk_str.startswith("data: ")
+        # Skip empty chunks (heartbeats)
+        if chunk_str.strip() == "data: ":
+            continue
+        data = chunk_str.replace("data: ", "").strip()
+        assert data  # Non-empty data

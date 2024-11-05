@@ -98,6 +98,7 @@ def confirm_func(msg: str) -> bool:
 def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
+    stream = req_json.get("stream", False)  # Default to no streaming (backward compat)
     model = req_json.get("model", get_model().model)
 
     # load conversation
@@ -105,8 +106,6 @@ def api_conversation_generate(logfile: str):
 
     # if prompt is a user-command, execute it
     if manager.log[-1].role == "user":
-        # TODO: capture output of command and return it
-
         f = io.StringIO()
         print("Begin capturing stdout, to pass along command output.")
         with redirect_stdout(f):
@@ -122,6 +121,39 @@ def api_conversation_generate(logfile: str):
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)
 
+    if not msgs:
+        logger.error("No messages to process")
+        return flask.jsonify({"error": "No messages to process"})
+
+    if not stream:
+        # Non-streaming response
+        try:
+            # Get complete response
+            output = "".join(_stream(msgs, model))
+
+            # Store the message
+            msg = Message("assistant", output)
+            msg = msg.replace(quiet=True)
+            manager.append(msg)
+
+            # Execute any tools
+            reply_msgs = list(execute_msg(msg, confirm_func))
+            for reply_msg in reply_msgs:
+                manager.append(reply_msg)
+
+            # Return all messages
+            response = [{"role": "assistant", "content": output, "stored": True}]
+            response.extend(
+                {"role": msg.role, "content": msg.content, "stored": True}
+                for msg in reply_msgs
+            )
+            return flask.jsonify(response)
+
+        except Exception as e:
+            logger.exception("Error during generation")
+            return flask.jsonify({"error": str(e)})
+
+    # Streaming response
     def generate():
         # Start with an empty message
         output = ""
