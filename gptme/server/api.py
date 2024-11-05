@@ -104,20 +104,6 @@ def api_conversation_generate(logfile: str):
     # load conversation
     manager = LogManager.load(logfile, branch=req_json.get("branch", "main"))
 
-    # if prompt is a user-command, execute it
-    if manager.log[-1].role == "user":
-        f = io.StringIO()
-        print("Begin capturing stdout, to pass along command output.")
-        with redirect_stdout(f):
-            resp = execute_cmd(manager.log[-1], manager, confirm_func)
-        print("Done capturing stdout.")
-        if resp:
-            manager.write()
-            output = f.getvalue()
-            return flask.jsonify(
-                [{"role": "system", "content": output, "stored": False}]
-            )
-
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)
 
@@ -155,8 +141,16 @@ def api_conversation_generate(logfile: str):
 
     # Streaming response
     def generate():
+        # Check if client disconnected
+        def client_disconnected():
+            # FIXME: throws `RuntimeError: Working outside of request context.`
+            # return (
+            #     request.environ.get("werkzeug.server.shutdown")
+            #     or flask.request.headers.get("Connection") == "close"
+            # )
+            pass
+
         # Start with an empty message
-        output = ""
         try:
             logger.info(f"Starting generation for conversation {logfile}")
 
@@ -166,9 +160,32 @@ def api_conversation_generate(logfile: str):
                 yield f"data: {flask.json.dumps({'error': 'No messages to process'})}\n\n"
                 return
 
+            # if prompt is a user-command, execute it
+            last_msg = manager.log[-1]
+            if last_msg.role == "user" and last_msg.content.startswith("/"):
+                f = io.StringIO()
+                print("Begin capturing stdout, to pass along command output.")
+                with redirect_stdout(f):
+                    resp = execute_cmd(manager.log[-1], manager, confirm_func)
+                print("Done capturing stdout.")
+                output = f.getvalue().strip()
+                if resp and output:
+                    print(f"Replying with command output: {output}")
+                    manager.write()
+                    yield f"data: {flask.json.dumps({'role': 'system', 'content': output, 'stored': False})}\n\n"
+                    return
+
             # Stream tokens from the model
             logger.debug(f"Starting token stream with model {model}")
+            output = ""
+            interrupted = False
             for char in (char for chunk in _stream(msgs, model) for char in chunk):
+                # Check if client disconnected
+                if client_disconnected():
+                    logger.info("Client disconnected, stopping generation")
+                    interrupted = True
+                    break
+
                 output += char
                 # Send each token as a JSON event
                 yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
@@ -179,11 +196,17 @@ def api_conversation_generate(logfile: str):
                     logger.debug("Found runnable tool use, breaking stream")
                     break
 
+            if interrupted:
+                output += "\n[interrupted]"
+
             # Store the complete message
             logger.debug(f"Storing complete message: {output[:100]}...")
             msg = Message("assistant", output)
             msg = msg.replace(quiet=True)
             manager.append(msg)
+            yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True, 'interrupted': interrupted})}\n\n"
+            if interrupted:
+                return
 
             # Execute any tools and stream their output
             for reply_msg in execute_msg(msg, confirm_func):
@@ -193,11 +216,13 @@ def api_conversation_generate(logfile: str):
                 manager.append(reply_msg)
                 yield f"data: {flask.json.dumps({'role': reply_msg.role, 'content': reply_msg.content, 'stored': True})}\n\n"
 
+        except GeneratorExit:
+            logger.info("Client disconnected during generation")
         except Exception as e:
             logger.exception("Error during generation")
             yield f"data: {flask.json.dumps({'error': str(e)})}\n\n"
         finally:
-            logger.info("Generation complete")
+            logger.info("Generation completed")
 
     return flask.Response(
         generate(),
