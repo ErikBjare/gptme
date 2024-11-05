@@ -51,6 +51,7 @@ DEFAULT_MODEL: ModelMeta | None = None
 # TODO: can we get this from the API?
 MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
     "openai": OPENAI_MODELS,
+    # https://docs.anthropic.com/en/docs/about-claude/models
     "anthropic": {
         "claude-3-opus-20240229": {
             "context": 200_000,
@@ -60,7 +61,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
         },
         "claude-3-5-sonnet-20241022": {
             "context": 200_000,
-            "max_output": 4096,
+            "max_output": 8192,
             "price_input": 3,
             "price_output": 15,
         },
@@ -70,6 +71,12 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_input": 3,
             "price_output": 15,
         },
+        "claude-3-5-haiku-20241022": {
+            "context": 200_000,
+            "max_output": 8192,
+            "price_input": 1,
+            "price_output": 5,
+        },
         "claude-3-haiku-20240307": {
             "context": 200_000,
             "max_output": 4096,
@@ -77,12 +84,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_output": 1.25,
         },
     },
-    "local": {
-        # 8B
-        "llama3": {
-            "context": 8193,
-        },
-    },
+    "local": {},
 }
 
 
