@@ -200,12 +200,18 @@ def main(
     models = _model or [
         "openai/gpt-4o",
         "openai/gpt-4o-mini",
-        "anthropic/claude-3-5-sonnet-20240620",
-        "anthropic/claude-3-haiku-20240307",
+        "anthropic/claude-3-5-sonnet-20241022",
+        "anthropic/claude-3-5-haiku-20241022",
         "openrouter/meta-llama/llama-3.1-405b-instruct",
     ]
 
-    results_files = [f for f in eval_names_or_result_files if f.endswith(".csv")]
+    results_files = []
+    for f in eval_names_or_result_files:
+        p = Path(f)
+        if p.suffix == ".csv":
+            results_files.append(f)
+        if (p / "eval_results.csv").exists():
+            results_files.append(str(p / "eval_results.csv"))
     eval_names = [f for f in eval_names_or_result_files if f not in results_files]
     if len(results_files) >= 2:
         aggregate_and_display_results(results_files)
@@ -223,7 +229,7 @@ def main(
         elif suite := suites.get(eval_name) or suites.get(eval_name.replace("-", "_")):
             evals_to_run.extend(suite)
         else:
-            raise ValueError(f"Test {eval_name} not found")
+            raise ValueError(f"Test or results '{eval_name}' not found")
 
     if not evals_to_run:
         evals_to_run = tests_default
