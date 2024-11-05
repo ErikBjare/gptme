@@ -188,15 +188,13 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
 - 🏆 Advanced evals for testing frontier capabilities
 
-
 ### 🛠 Use Cases
 
-- 🎯 **Shell Copilot:** Figure out the right shell command using natural language (no more memorizing flags!).
-- 🖥 **Development:** Write, test, and run code with AI assistance.
-- 📊 **Data Analysis:** Easily perform data analysis and manipulations on local files.
-- 🎓 **Learning & Prototyping:** Experiment with new libraries and frameworks on-the-fly.
-- 🤖 **Agents & Tools:** Experiment with agents and tools in a local environment.
-
+- 🖥 **Development:** Write and run code faster with AI assistance.
+- 🎯 **Shell Expert:** Get the right command using natural language (no more memorizing flags!).
+- 📊 **Data Analysis:** Process and analyze data directly in your terminal.
+- 🎓 **Interactive Learning:** Experiment with new technologies or codebases hands-on.
+- 🤖 **Agents & Tools:** Experiment with agents & tools in a local environment.
 
 ## 🚀 Getting Started
 
