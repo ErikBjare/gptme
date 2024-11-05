@@ -8,6 +8,7 @@ See here for instructions how to serve matplotlib figures:
 import atexit
 import io
 import logging
+from collections.abc import Generator
 from contextlib import redirect_stdout
 from datetime import datetime
 from importlib import resources
@@ -140,17 +141,9 @@ def api_conversation_generate(logfile: str):
             return flask.jsonify({"error": str(e)})
 
     # Streaming response
-    def generate():
-        # Check if client disconnected
-        def client_disconnected():
-            # FIXME: throws `RuntimeError: Working outside of request context.`
-            # return (
-            #     request.environ.get("werkzeug.server.shutdown")
-            #     or flask.request.headers.get("Connection") == "close"
-            # )
-            pass
-
+    def generate() -> Generator[str, None, None]:
         # Start with an empty message
+        output = ""
         try:
             logger.info(f"Starting generation for conversation {logfile}")
 
@@ -177,15 +170,7 @@ def api_conversation_generate(logfile: str):
 
             # Stream tokens from the model
             logger.debug(f"Starting token stream with model {model}")
-            output = ""
-            interrupted = False
             for char in (char for chunk in _stream(msgs, model) for char in chunk):
-                # Check if client disconnected
-                if client_disconnected():
-                    logger.info("Client disconnected, stopping generation")
-                    interrupted = True
-                    break
-
                 output += char
                 # Send each token as a JSON event
                 yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
@@ -196,17 +181,12 @@ def api_conversation_generate(logfile: str):
                     logger.debug("Found runnable tool use, breaking stream")
                     break
 
-            if interrupted:
-                output += "\n[interrupted]"
-
             # Store the complete message
             logger.debug(f"Storing complete message: {output[:100]}...")
             msg = Message("assistant", output)
             msg = msg.replace(quiet=True)
             manager.append(msg)
-            yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True, 'interrupted': interrupted})}\n\n"
-            if interrupted:
-                return
+            yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True})}\n\n"
 
             # Execute any tools and stream their output
             for reply_msg in execute_msg(msg, confirm_func):
@@ -217,7 +197,13 @@ def api_conversation_generate(logfile: str):
                 yield f"data: {flask.json.dumps({'role': reply_msg.role, 'content': reply_msg.content, 'stored': True})}\n\n"
 
         except GeneratorExit:
-            logger.info("Client disconnected during generation")
+            logger.info("Client disconnected during generation, interrupting")
+            if output:
+                output += "\n\n[interrupted]"
+                msg = Message("assistant", output)
+                msg = msg.replace(quiet=True)
+                manager.append(msg)
+            raise
         except Exception as e:
             logger.exception("Error during generation")
             yield f"data: {flask.json.dumps({'error': str(e)})}\n\n"
