@@ -25,7 +25,6 @@ from .base import ConfirmFunc, ToolSpec, ToolUse
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
 
-
 logger = getLogger(__name__)
 
 # TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme venv (for example) in which gptme itself runs
@@ -180,19 +179,14 @@ examples = f"""
 
 #### It can write an example and then execute it:
 > User: compute fib 10
-> Assistant: To compute the 10th Fibonacci number, we write a recursive function:
-{ToolUse("ipython", [], '''
-def fib(n):
-    ...
-''').to_output()}
-Now, let's execute this code to get the 10th Fibonacci number:
+> Assistant: To compute the 10th Fibonacci number, we can execute this code:
 {ToolUse("ipython", [], '''
 def fib(n):
     if n <= 1:
         return n
     return fib(n - 1) + fib(n - 2)
 fib(10)
-''').to_output()}
+'''.strip()).to_output()}
 > System: Executed code block.
 {ToolUse("result", [], "55").to_output()}
 """.strip()
