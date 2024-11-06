@@ -9,7 +9,6 @@ from collections.abc import Generator
 from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
-from .config import get_workspace_prompt
 from .constants import PROMPT_USER
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
@@ -17,6 +16,7 @@ from .llm import reply
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .models import get_model
+from .prompts import get_workspace_prompt
 from .readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
 from .tools.base import ConfirmFunc
@@ -78,7 +78,9 @@ def chat(
     console.log(f"Using workspace at {path_with_tilde(workspace)}")
     os.chdir(workspace)
 
-    workspace_prompt = get_workspace_prompt(str(workspace))
+    workspace_prompt = get_workspace_prompt(workspace)
+    # FIXME: this is hacky
+    # NOTE: needs to run after the workspace is set
     # check if message is already in log, such as upon resume
     if (
         workspace_prompt

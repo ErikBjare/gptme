@@ -5,15 +5,17 @@ It is used to instruct the LLM about its role, how to use tools, and provide con
 When prompting, it is important to provide clear instructions and avoid any ambiguity.
 """
 
+import glob
 import logging
 import os
 import platform
 import subprocess
 from collections.abc import Generator, Iterable
+from pathlib import Path
 from typing import Literal
 
 from .__version__ import __version__
-from .config import get_config
+from .config import get_config, get_project_config
 from .message import Message
 from .tools import loaded_tools
 from .util import document_prompt_function
@@ -233,6 +235,27 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         "system",
         prompt,
     )
+
+
+def get_workspace_prompt(workspace: Path) -> str:
+    # NOTE: needs to run after the workspace is initialized (i.e. initial prompt is constructed)
+    # TODO: update this prompt if the files change
+    # TODO: include `git status/diff/log` summary, and keep it up-to-date
+    if project := get_project_config(workspace):
+        files = []
+        for file in project.files:
+            # expand user
+            file = str(Path(file).expanduser())
+            # expand with glob
+            if new_files := glob.glob(file):
+                files.extend(new_files)
+            else:
+                logger.error(f"File {file} specified in project config does not exist")
+                exit(1)
+        return "\n\nSelected project files, read more with cat:\n" + "\n\n".join(
+            [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
+        )
+    return ""
 
 
 document_prompt_function(interactive=True)(prompt_gptme)

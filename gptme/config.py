@@ -1,4 +1,3 @@
-import glob
 import logging
 import os
 from dataclasses import dataclass, field
@@ -124,12 +123,12 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
     _config = load_config()
 
 
-def get_workspace_prompt(workspace: str) -> str:
+def get_project_config(workspace: Path) -> ProjectConfig | None:
     project_config_paths = [
         p
         for p in (
-            Path(workspace) / "gptme.toml",
-            Path(workspace) / ".github" / "gptme.toml",
+            workspace / "gptme.toml",
+            workspace / ".github" / "gptme.toml",
         )
         if p.exists()
     ]
@@ -141,23 +140,8 @@ def get_workspace_prompt(workspace: str) -> str:
         # load project config
         with open(project_config_path) as f:
             project_config = tomlkit.load(f)
-            project = ProjectConfig(**project_config)  # type: ignore
-            files = []
-            for file in project.files:
-                # expand user
-                file = str(Path(file).expanduser())
-                # expand with glob
-                if new_files := glob.glob(file):
-                    files.extend(new_files)
-                else:
-                    logger.error(
-                        f"File {file} specified in project config does not exist"
-                    )
-                    exit(1)
-        return "\n\nSelected project files, read more with cat:\n" + "\n\n".join(
-            [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
-        )
-    return ""
+        return ProjectConfig(**project_config)  # type: ignore
+    return None
 
 
 if __name__ == "__main__":
