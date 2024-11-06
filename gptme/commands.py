@@ -24,25 +24,25 @@ from .useredit import edit_text_with_editor
 logger = logging.getLogger(__name__)
 
 Actions = Literal[
+    "undo",
     "log",
+    "tools",
     "edit",
     "rename",
     "fork",
     "summarize",
-    "context",
     "replay",
-    "undo",
     "impersonate",
-    "tools",
     "tokens",
+    "export",
     "help",
     "exit",
-    "export",
 ]
 
 action_descriptions: dict[Actions, str] = {
     "undo": "Undo the last action",
     "log": "Show the conversation log",
+    "tools": "Show available tools",
     "edit": "Edit the conversation in your editor",
     "rename": "Rename the conversation",
     "fork": "Create a copy of the conversation with a new name",
@@ -50,10 +50,9 @@ action_descriptions: dict[Actions, str] = {
     "replay": "Re-execute codeblocks in the conversation, wont store output in log",
     "impersonate": "Impersonate the assistant",
     "tokens": "Show the number of tokens used",
-    "tools": "Show available tools",
+    "export": "Export conversation as standalone HTML",
     "help": "Show this help message",
     "exit": "Exit the program",
-    "export": "Export conversation as standalone HTML",
 }
 COMMANDS = list(action_descriptions.keys())
 

@@ -244,6 +244,7 @@ Usage: gptme [OPTIONS] [PROMPTS]...
   Available commands:
     /undo         Undo the last action
     /log          Show the conversation log
+    /tools        Show available tools
     /edit         Edit the conversation in your editor
     /rename       Rename the conversation
     /fork         Create a copy of the conversation with a new name
@@ -251,7 +252,7 @@ Usage: gptme [OPTIONS] [PROMPTS]...
     /replay       Re-execute codeblocks in the conversation, wont store output in log
     /impersonate  Impersonate the assistant
     /tokens       Show the number of tokens used
-    /tools        Show available tools
+    /export       Export conversation as standalone HTML
     /help         Show this help message
     /exit         Exit the program
 
@@ -268,6 +269,10 @@ Options:
   -n, --non-interactive  Force non-interactive mode. Implies --no-confirm.
   --system TEXT          System prompt. Can be 'full', 'short', or something
                          custom.
+  -t, --tools TEXT       Comma-separated list of tools to allow. Available:
+                         read, save, append, patch, shell, subagent, tmux,
+                         browser, gh, chats, screenshot, vision, computer,
+                         python.
   --no-stream            Don't stream responses
   --show-hidden          Show hidden system messages.
   -v, --verbose          Show verbose output.
