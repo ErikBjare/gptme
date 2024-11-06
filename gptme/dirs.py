@@ -13,6 +13,10 @@ def get_readline_history_file() -> Path:
     return get_config_dir() / "history"
 
 
+def get_pt_history_file() -> Path:
+    return get_data_dir() / "history.pt"
+
+
 def get_data_dir() -> Path:
     # used in testing, so must take precedence
     if "XDG_DATA_HOME" in os.environ:
