@@ -615,10 +615,10 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>git
-<span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>apt-get
 
 <span class="gu">### Examples</span>
 
@@ -956,22 +956,13 @@ The following functions are available in the REPL:
 
 <span class="gu">#### It can write an example and then execute it:</span>
 <span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
-<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we write a recursive function:</span>
+<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we can execute this code:</span>
 <span class="sb">```ipython</span>
-
-<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="o">...</span>
-
-<span class="sb">```</span>
-Now, let&#39;s execute this code to get the 10th Fibonacci number:
-<span class="sb">```ipython</span>
-
 <span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">n</span>
     <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
 <span class="sb">```result</span>
@@ -981,7 +972,7 @@ Now, let&#39;s execute this code to get the 10th Fibonacci number:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3051</p>
+<p>Tokens: 3020</p>
 </dd></dl>
 
 <dl class="py function">
