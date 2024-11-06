@@ -22,15 +22,25 @@ RUN apt-get update && \
     x11vnc \
     tint2 \
     x11-apps \
-    # Tools
+    # PPA req
+    software-properties-common \
+    # Tools \
     make \
     git \
     tmux \
     curl \
     pandoc \
     netcat-openbsd \
-    net-tools \
-    && rm -rf /var/lib/apt/lists/*
+    net-tools
+
+# Install Firefox
+RUN sudo add-apt-repository ppa:mozillateam/ppa && \
+    sudo apt-get install -y --no-install-recommends firefox-esr
+
+RUN apt-get remove -y python3-blinker
+
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install noVNC for web access
 RUN git clone --branch v1.5.0 https://github.com/novnc/noVNC.git /opt/noVNC && \

@@ -133,6 +133,7 @@ def computer(
             run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
 
         print(f"Moved mouse to {x},{y}")
+        return None
     elif action in ("key", "type"):
         if not text:
             raise ValueError(f"text is required for {action}")
@@ -147,6 +148,7 @@ def computer(
                     display,
                 )
             print(f"Typed text: {text}")
+        return None
     elif action in ("left_click", "right_click", "middle_click", "double_click"):
         click_arg = {
             "left_click": "1",
@@ -156,6 +158,7 @@ def computer(
         }[action]
         run_xdotool(f"click {click_arg}", display)
         print(f"Performed {action}")
+        return None
     elif action == "screenshot":
         # Use X11-specific screenshot if available, fall back to native
         output_dir = Path(OUTPUT_DIR)
@@ -180,13 +183,14 @@ def computer(
             return view_image(path)
         else:
             print("Error: Screenshot failed")
+        return None
     elif action == "cursor_position":
         output = run_xdotool("getmouselocation --shell", display)
         x = int(output.split("X=")[1].split("\n")[0])
         y = int(output.split("Y=")[1].split("\n")[0])
         x, y = scale_coordinates(ScalingSource.COMPUTER, x, y, width, height)
         print(f"Cursor position: X={x},Y={y}")
-
+        return None
     raise ValueError(f"Invalid action: {action}")
 
 
