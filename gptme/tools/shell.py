@@ -3,12 +3,10 @@ The assistant can execute shell commands with bash by outputting code blocks wit
 """
 
 import atexit
-import functools
 import logging
 import os
 import re
 import select
-import shutil
 import subprocess
 import sys
 from collections.abc import Generator

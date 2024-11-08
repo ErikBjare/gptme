@@ -175,12 +175,15 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
     answer = console.input(
         f"[bold bright_yellow on red] {question} {choicestr}{copystr} [/] ",
     )
-    if copiable and "c" == answer.lower().strip():
+
+    global override_auto
+
+    if not override_auto and copiable and "c" == answer.lower().strip():
         if copy():
             print("Copied to clipboard.")
             return False
+        clear_copiable()
 
-    global override_auto
     if answer.lower() in [
         "auto"
     ]:  # secret option to stop asking for the rest of the session
