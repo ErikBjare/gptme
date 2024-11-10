@@ -157,7 +157,7 @@ def execute_tmux(
     assert not args
     cmd = code.strip()
 
-    print_preview(f"Command: {cmd}", "bash")
+    print_preview(f"Command: {cmd}", "bash", copy=True)
     if not confirm(f"Execute command: {cmd}?"):
         yield Message("system", "Command execution cancelled.")
         return

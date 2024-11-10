@@ -3,12 +3,10 @@ The assistant can execute shell commands with bash by outputting code blocks wit
 """
 
 import atexit
-import functools
 import logging
 import os
 import re
 import select
-import shutil
 import subprocess
 import sys
 from collections.abc import Generator
@@ -16,34 +14,29 @@ from collections.abc import Generator
 import bashlex
 
 from ..message import Message
-from ..util import get_tokenizer, print_preview
+from ..util import get_tokenizer, print_preview, get_installed_programs
 from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
 
-@functools.lru_cache
-def get_installed_programs() -> set[str]:
-    candidates = [
-        # platform-specific
-        "brew",
-        "apt-get",
-        "pacman",
-        # common and useful
-        "ffmpeg",
-        "magick",
-        "pandoc",
-        "git",
-        "docker",
-    ]
-    installed = set()
-    for candidate in candidates:
-        if shutil.which(candidate) is not None:
-            installed.add(candidate)
-    return installed
+candidates = (
+    # platform-specific
+    "brew",
+    "apt-get",
+    "pacman",
+    # common and useful
+    "ffmpeg",
+    "magick",
+    "pandoc",
+    "git",
+    "docker",
+)
 
 
-shell_programs_str = "\n".join(f"- {prog}" for prog in get_installed_programs())
+shell_programs_str = "\n".join(
+    f"- {prog}" for prog in get_installed_programs(candidates)
+)
 is_macos = sys.platform == "darwin"
 
 instructions = f"""
@@ -260,7 +253,7 @@ def execute_shell(
                 break
 
     if not allowlisted:
-        print_preview(cmd, "bash")
+        print_preview(cmd, "bash", True)
         if not confirm("Run command?"):
             yield Message("system", "User chose not to run command.")
             return

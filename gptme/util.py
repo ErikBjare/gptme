@@ -1,6 +1,8 @@
 import io
 import logging
 import random
+import shutil
+import functools
 import re
 import sys
 import termios
@@ -9,6 +11,8 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+
+from .clipboard import copy, set_copytext
 
 import tiktoken
 from rich import print
@@ -132,9 +136,27 @@ def epoch_to_age(epoch, incl_date=False):
         )
 
 
-def print_preview(code: str, lang: str):  # pragma: no cover
+copiable = False
+
+
+def set_copiable():
+    global copiable
+    copiable = True
+
+
+def clear_copiable():
+    global copiable
+    copiable = False
+
+
+def print_preview(code: str, lang: str, copy: bool = False):  # pragma: no cover
     print()
     print("[bold white]Preview[/bold white]")
+
+    if copy:
+        set_copiable()
+        set_copytext(code)
+
     # NOTE: we can set background_color="default" to remove background
     print(Syntax(code.strip("\n"), lang))
     print()
@@ -148,10 +170,19 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
     termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
 
     choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
+    copystr = r"\[c] to copy" if copiable else ""
     answer = console.input(
-        f"[bold bright_yellow on red] {question} {choicestr} [/] ",
+        f"[bold bright_yellow on red] {question} {choicestr}{copystr} [/] ",
     )
+
     global override_auto
+
+    if not override_auto and copiable and "c" == answer.lower().strip():
+        if copy():
+            print("Copied to clipboard.")
+            return False
+        clear_copiable()
+
     if answer.lower() in [
         "auto"
     ]:  # secret option to stop asking for the rest of the session
@@ -309,3 +340,12 @@ def path_with_tilde(path: Path) -> str:
     if path_str.startswith(home):
         return path_str.replace(home, "~", 1)
     return path_str
+
+
+@functools.lru_cache
+def get_installed_programs(candidates: tuple[str, ...]) -> set[str]:
+    installed = set()
+    for candidate in candidates:
+        if shutil.which(candidate) is not None:
+            installed.add(candidate)
+    return installed
