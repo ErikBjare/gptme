@@ -1,7 +1,6 @@
 import io
 import logging
 import random
-import os
 import shutil
 import functools
 import re

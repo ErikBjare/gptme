@@ -21,20 +21,22 @@ logger = logging.getLogger(__name__)
 
 
 candidates = (
-        # platform-specific
-        "brew",
-        "apt-get",
-        "pacman",
-        # common and useful
-        "ffmpeg",
-        "magick",
-        "pandoc",
-        "git",
-        "docker",
-    )
+    # platform-specific
+    "brew",
+    "apt-get",
+    "pacman",
+    # common and useful
+    "ffmpeg",
+    "magick",
+    "pandoc",
+    "git",
+    "docker",
+)
 
 
-shell_programs_str = "\n".join(f"- {prog}" for prog in get_installed_programs(candidates))
+shell_programs_str = "\n".join(
+    f"- {prog}" for prog in get_installed_programs(candidates)
+)
 is_macos = sys.platform == "darwin"
 
 instructions = f"""
