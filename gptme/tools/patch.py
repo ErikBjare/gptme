@@ -22,6 +22,8 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
+The $FILENAME parameter MUST be on the same line as the code block start, not on the line after.
+
 The patch block should be written in the following format:
 
 {ToolUse("patch", ["$FILENAME"], '''
