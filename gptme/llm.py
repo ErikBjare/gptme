@@ -96,12 +96,15 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
             # need to flush stdout to get the print to show up
             sys.stdout.flush()
 
-            # TODO: make this more robust/general, maybe with a callback that runs on each char/chunk
-            # pause inference on finished code-block, letting user run the command before continuing
-            tooluses = list(ToolUse.iter_from_content(output))
-            if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
-                logger.debug("Found tool use, breaking")
-                break
+            # Trigger the tool detection only if the line is finished.
+            # Helps to detect nested start code blocks.
+            if char == "\n":
+                # TODO: make this more robust/general, maybe with a callback that runs on each char/chunk
+                # pause inference on finished code-block, letting user run the command before continuing
+                tooluses = list(ToolUse.iter_from_content(output))
+                if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
+                    logger.debug("Found tool use, breaking")
+                    break
     except KeyboardInterrupt:
         return Message("assistant", output + "... ^C Interrupted")
     finally:

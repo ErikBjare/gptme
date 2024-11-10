@@ -58,6 +58,16 @@ callme()
     ]
 
 
+def test_extract_codeblocks_unfinished_nested():
+    markdown = """
+```python
+def print_readme():
+    print('''Usage:
+```javascript
+"""
+    assert Codeblock.iter_from_markdown(markdown) == []
+
+
 def test_extract_codeblocks_empty():
     assert Codeblock.iter_from_markdown("") == []
 
