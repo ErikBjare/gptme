@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, Literal, TypedDict
 
 from typing_extensions import Required
 
-from .constants import TEMPERATURE, TOP_P
-from .message import Message, len_tokens, msgs2dicts
+from ..constants import TEMPERATURE, TOP_P
+from ..message import Message, len_tokens, msgs2dicts
 
 if TYPE_CHECKING:
     from anthropic import Anthropic

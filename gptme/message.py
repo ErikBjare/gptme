@@ -16,7 +16,7 @@ from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .models import Provider
+from .providers.models import Provider
 from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)

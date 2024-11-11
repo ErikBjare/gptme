@@ -16,7 +16,7 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
-from .models import get_model
+from .providers.models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
 from .tools.base import ConfirmFunc
 from .useredit import edit_text_with_editor

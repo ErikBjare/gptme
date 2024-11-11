@@ -9,16 +9,16 @@ from rich import print
 
 from .config import get_config
 from .constants import PROMPT_ASSISTANT
-from .llm_anthropic import chat as chat_anthropic
-from .llm_anthropic import get_client as get_anthropic_client
-from .llm_anthropic import init as init_anthropic
-from .llm_anthropic import stream as stream_anthropic
-from .llm_openai import chat as chat_openai
-from .llm_openai import get_client as get_openai_client
-from .llm_openai import init as init_openai
-from .llm_openai import stream as stream_openai
+from .providers.llm_anthropic import chat as chat_anthropic
+from .providers.llm_anthropic import get_client as get_anthropic_client
+from .providers.llm_anthropic import init as init_anthropic
+from .providers.llm_anthropic import stream as stream_anthropic
+from .providers.llm_openai import chat as chat_openai
+from .providers.llm_openai import get_client as get_openai_client
+from .providers.llm_openai import init as init_openai
+from .providers.llm_openai import stream as stream_openai
 from .message import Message, format_msgs, len_tokens
-from .models import (
+from .providers.models import (
     MODELS,
     PROVIDERS_OPENAI,
     Provider,

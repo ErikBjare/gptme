@@ -2,9 +2,9 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
-from .config import Config
-from .constants import TEMPERATURE, TOP_P
-from .message import Message, msgs2dicts
+from ..config import Config
+from ..constants import TEMPERATURE, TOP_P
+from ..message import Message, msgs2dicts
 from .models import Provider
 
 if TYPE_CHECKING:
