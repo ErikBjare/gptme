@@ -1,3 +1,4 @@
+from functools import cached_property
 import logging
 from dataclasses import dataclass
 from typing import (
@@ -9,14 +10,24 @@ from typing import (
 
 from typing_extensions import NotRequired
 
+
 from .llm_openai_models import OPENAI_MODELS
 
+
 logger = logging.getLogger(__name__)
+
+# available providers
+Provider = Literal[
+    "openai", "anthropic", "azure", "openrouter", "groq", "xai", "deepseek", "local"
+]
+PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
+PROVIDERS_OPENAI: list[Provider]
+PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", "local"]
 
 
 @dataclass(frozen=True)
 class ModelMeta:
-    provider: str
+    provider: Provider
     model: str
     context: int
     max_output: int | None = None
@@ -25,6 +36,16 @@ class ModelMeta:
     # if price is not set, it is assumed to be 0
     price_input: float = 0
     price_output: float = 0
+
+    @cached_property
+    def manager(self):
+        from .llm_anthropic import AnthropicModelManager
+        from .llm_openai import OpenaiModelManager
+
+        if self.provider not in PROVIDERS_OPENAI:
+            return AnthropicModelManager(model=self)
+        else:
+            return OpenaiModelManager(model=self)
 
 
 class _ModelDictMeta(TypedDict):
@@ -35,14 +56,6 @@ class _ModelDictMeta(TypedDict):
     price_input: NotRequired[float]
     price_output: NotRequired[float]
 
-
-# available providers
-Provider = Literal[
-    "openai", "anthropic", "azure", "openrouter", "groq", "xai", "deepseek", "local"
-]
-PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
-PROVIDERS_OPENAI: list[Provider]
-PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", "local"]
 
 # default model
 DEFAULT_MODEL: ModelMeta | None = None

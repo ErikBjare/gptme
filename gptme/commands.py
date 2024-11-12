@@ -6,7 +6,7 @@ from pathlib import Path
 from time import sleep
 from typing import Literal
 
-from . import llm
+from .providers import llm
 from .export import export_chat_to_html
 from .logmanager import LogManager, prepare_messages
 from .message import (

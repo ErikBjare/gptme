@@ -7,27 +7,68 @@ from typing import cast
 
 from rich import print
 
-from .config import get_config
-from .constants import PROMPT_ASSISTANT
-from .providers.llm_anthropic import chat as chat_anthropic
-from .providers.llm_anthropic import get_client as get_anthropic_client
-from .providers.llm_anthropic import init as init_anthropic
-from .providers.llm_anthropic import stream as stream_anthropic
-from .providers.llm_openai import chat as chat_openai
-from .providers.llm_openai import get_client as get_openai_client
-from .providers.llm_openai import init as init_openai
-from .providers.llm_openai import stream as stream_openai
-from .message import Message, format_msgs, len_tokens
-from .providers.models import (
+from ..config import get_config
+from ..constants import PROMPT_ASSISTANT
+from .llm_anthropic import chat as chat_anthropic
+from .llm_anthropic import get_client as get_anthropic_client
+from .llm_anthropic import init as init_anthropic
+from .llm_anthropic import stream as stream_anthropic
+from .llm_anthropic import (
+    guess_model_from_config as guess_model_from_config_anthropic,
+)
+from .llm_anthropic import (
+    get_model_from_api_key as get_model_from_api_key_anthropic,
+)
+from .llm_openai import chat as chat_openai
+from .llm_openai import get_client as get_openai_client
+from .llm_openai import init as init_openai
+from .llm_openai import stream as stream_openai
+from .llm_openai import (
+    guess_model_from_config as guess_model_from_config_openai,
+)
+from .llm_openai import (
+    get_model_from_api_key as get_model_from_api_key_openai,
+)
+from ..message import Message, format_msgs, len_tokens
+from .models import (
     MODELS,
     PROVIDERS_OPENAI,
     Provider,
     get_summary_model,
 )
-from .tools import ToolUse
-from .util import console
+from ..tools import ToolUse
+from ..util import console
 
 logger = logging.getLogger(__name__)
+
+
+def guess_model_from_config():
+    """
+    Guess the model to use from the configuration.
+    """
+    config = get_config()
+
+    for guesser in [guess_model_from_config_openai, guess_model_from_config_anthropic]:
+        provider = guesser(config)
+        if provider:
+            return provider
+
+    return None
+
+
+def get_model_from_api_key(api_key: str):
+    """
+    Guess the model from the API key prefix.
+    """
+
+    for from_api_key in [
+        get_model_from_api_key_anthropic,
+        get_model_from_api_key_openai,
+    ]:
+        if (model_tuple := from_api_key(api_key)) is not None:
+            return model_tuple
+
+    return None
 
 
 def init_llm(llm: str):

@@ -16,7 +16,7 @@ from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .providers.models import Provider
+from .providers.models import get_model
 from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)
@@ -25,9 +25,6 @@ logger = logging.getLogger(__name__)
 # if you hit this limit, you and/or I f-ed up, and should make the message shorter
 # maybe we should make it possible to store long outputs in files, and link/summarize it/preview it in the message
 max_system_len = 20000
-
-
-ProvidersWithFiles: list[Provider] = ["openai", "anthropic", "openrouter"]
 
 
 @dataclass(frozen=True, eq=False)
@@ -80,10 +77,11 @@ class Message:
 
     def _content_files_list(
         self,
-        provider: Provider,
     ) -> list[dict[str, Any]]:
         # only these providers support files in the content
-        if provider not in ProvidersWithFiles:
+
+        if not get_model().manager.supports_file:
+            # if provider not in ProvidersWithFiles:
             raise ValueError("Provider does not support files in the content")
 
         # combines a content message with a list of files
@@ -126,39 +124,20 @@ class Message:
                 )
                 continue
 
-            if provider == "anthropic":
-                content.append(
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": media_type,
-                            "data": data,
-                        },
-                    }
-                )
-            elif provider == "openai":
-                # OpenAI format
-                content.append(
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:{media_type};base64,{data}"},
-                    }
-                )
-            else:
-                # Storage/wire format (keep files in `files` list)
-                # Do nothing to integrate files into the message content
-                pass
+            file_content = get_model().manager.prepare_file(media_type, data)
+            if file_content:
+                content.append(file_content)
 
         return content
 
-    def to_dict(self, keys=None, provider: Provider | None = None) -> dict:
+    def to_dict(self, keys=None) -> dict:
         """Return a dict representation of the message, serializable to JSON."""
         content: str | list[dict[str, Any]]
-        if provider in ProvidersWithFiles:
+
+        if get_model().manager.supports_file:
             # OpenAI/Anthropic format should include files in the content
             # Some otherwise OpenAI-compatible providers (groq, deepseek?) do not support this
-            content = self._content_files_list(provider)
+            content = self._content_files_list()
         else:
             # storage/wire format should keep the content as a string
             content = self.content
@@ -375,9 +354,9 @@ def toml_to_msgs(toml: str) -> list[Message]:
     ]
 
 
-def msgs2dicts(msgs: list[Message], provider: Provider) -> list[dict]:
+def msgs2dicts(msgs: list[Message]) -> list[dict]:
     """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
-    return [msg.to_dict(keys=["role", "content"], provider=provider) for msg in msgs]
+    return [msg.to_dict(keys=["role", "content"]) for msg in msgs]
 
 
 # TODO: remove model assumption

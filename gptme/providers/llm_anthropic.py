@@ -3,14 +3,45 @@ from typing import TYPE_CHECKING, Literal, TypedDict
 
 from typing_extensions import Required
 
+from .manager import ModelManager
+
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
+from ..util import console
 
 if TYPE_CHECKING:
     from anthropic import Anthropic
 
 
 anthropic: "Anthropic | None" = None
+
+
+class AnthropicModelManager(ModelManager):
+    supports_file = True
+
+    def prepare_file(self, media_type, data):
+        return {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": media_type,
+                "data": data,
+            },
+        }
+
+
+def guess_model_from_config(config):
+    if config.get_env("ANTHROPIC_API_KEY"):
+        console.log("Found Anthropic API key, using Anthropic provider")
+        return "anthropic"
+    return None
+
+
+def get_model_from_api_key(api_key):
+    if api_key.startswith("sk-ant-"):
+        return api_key, "anthropic", "ANTHROPIC_API_KEY"
+
+    return None
 
 
 def init(config):
@@ -38,7 +69,7 @@ class MessagePart(TypedDict, total=False):
 def chat(messages: list[Message], model: str) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages, provider="anthropic")
+    messages_dicts = msgs2dicts(messages)
     response = anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=messages_dicts,  # type: ignore
@@ -56,7 +87,7 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages, provider="anthropic")
+    messages_dicts = msgs2dicts(messages)
     with anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=messages_dicts,  # type: ignore

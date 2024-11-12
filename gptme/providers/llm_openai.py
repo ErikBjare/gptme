@@ -2,10 +2,13 @@ import logging
 from collections.abc import Generator
 from typing import TYPE_CHECKING
 
+from .manager import ModelManager
+
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
 from .models import Provider
+from ..util import console
 
 if TYPE_CHECKING:
     from openai import OpenAI
@@ -20,6 +23,40 @@ openrouter_headers = {
     "HTTP-Referer": "https://github.com/ErikBjare/gptme",
     "X-Title": "gptme",
 }
+
+
+class OpenaiModelManager(ModelManager):
+    @property
+    def supports_file(self):
+        return self.model.provider in ["openai", "openrouter"]
+
+    @property
+    def supports_streaming(self):
+        return self.model.provider != "openai" or self.model.model != "o1"
+
+    def prepare_file(self, media_type, data):
+        return {
+            "type": "image_url",
+            "image_url": {"url": f"data:{media_type};base64,{data}"},
+        }
+
+
+def guess_model_from_config(config):
+    if config.get_env("OPENAI_API_KEY"):
+        console.log("Found OpenAI API key, using OpenAI provider")
+        return "openai"
+    elif config.get_env("OPENROUTER_API_KEY"):
+        console.log("Found OpenRouter API key, using OpenRouter provider")
+        return "openrouter"
+    return None
+
+
+def get_model_from_api_key(api_key):
+    if api_key.startswith("sk-or-"):
+        return api_key, "openrouter", "OPENROUTER_API_KEY"
+    if api_key.startswith("sk-"):
+        return api_key, "openai", "OPENAI_API_KEY"
+    return None
 
 
 def init(provider: Provider, config: Config):
@@ -108,7 +145,7 @@ def chat(messages: list[Message], model: str) -> str:
 
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages, provider=get_provider()),  # type: ignore
+        messages=msgs2dicts(messages),  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         extra_headers=(
@@ -125,7 +162,7 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     stop_reason = None
     for chunk in openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(_prep_o1(messages), provider=get_provider()),  # type: ignore
+        messages=msgs2dicts(_prep_o1(messages)),  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         stream=True,

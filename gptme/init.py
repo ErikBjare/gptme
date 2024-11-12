@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from rich.logging import RichHandler
 
 from .config import config_path, get_config, set_config_value
-from .llm import init_llm
+from .providers.llm import get_model_from_api_key, guess_model_from_config, init_llm
 from .providers.models import (
     PROVIDERS,
     Provider,
@@ -39,18 +39,11 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
 
     if not model:  # pragma: no cover
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
-        if config.get_env("OPENAI_API_KEY"):
-            console.log("Found OpenAI API key, using OpenAI provider")
-            model = "openai"
-        elif config.get_env("ANTHROPIC_API_KEY"):
-            console.log("Found Anthropic API key, using Anthropic provider")
-            model = "anthropic"
-        elif config.get_env("OPENROUTER_API_KEY"):
-            console.log("Found OpenRouter API key, using OpenRouter provider")
-            model = "openrouter"
-        # ask user for API key
-        elif interactive:
-            model, _ = ask_for_api_key()
+        model = guess_model_from_config()
+
+    # ask user for API key
+    if not model and interactive:
+        model, _ = ask_for_api_key()
 
     # fail
     if not model:
@@ -90,12 +83,8 @@ def init_logging(verbose):
 
 def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
     api_key = input("Your OpenAI, Anthropic, or OpenRouter API key: ").strip()
-    if api_key.startswith("sk-ant-"):
-        return api_key, "anthropic", "ANTHROPIC_API_KEY"
-    elif api_key.startswith("sk-or-"):
-        return api_key, "openrouter", "OPENROUTER_API_KEY"
-    elif api_key.startswith("sk-"):
-        return api_key, "openai", "OPENAI_API_KEY"
+    if (found_model_tuple := get_model_from_api_key(api_key)) is not None:
+        return found_model_tuple
     else:
         console.print("Invalid API key format. Please try again.")
         return _prompt_api_key()

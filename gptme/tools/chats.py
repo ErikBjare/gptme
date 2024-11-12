@@ -34,8 +34,8 @@ def list_chats(
             If True, uses an LLM to generate a comprehensive summary.
             If False, uses a simple strategy showing snippets of the first and last messages.
     """
-    from ..llm import summarize  # fmt: skip
     from ..logmanager import LogManager, list_conversations  # fmt: skip
+    from ..providers.llm import summarize  # fmt: skip
 
     conversations = list_conversations(max_results)
     if not conversations:
