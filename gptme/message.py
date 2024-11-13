@@ -16,7 +16,7 @@ from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .providers.models import get_model
+from .llm.models import get_model
 from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class Message:
     ) -> list[dict[str, Any]]:
         # only these providers support files in the content
 
-        if not get_model().manager.supports_file:
+        if not get_model().supports_file:
             # if provider not in ProvidersWithFiles:
             raise ValueError("Provider does not support files in the content")
 
@@ -124,9 +124,13 @@ class Message:
                 )
                 continue
 
-            file_content = get_model().manager.prepare_file(media_type, data)
+            file_content = get_model().prepare_file(media_type, data)
             if file_content:
                 content.append(file_content)
+            else:
+                # Storage/wire format (keep files in `files` list)
+                # Do nothing to integrate files into the message content
+                pass
 
         return content
 
@@ -134,7 +138,7 @@ class Message:
         """Return a dict representation of the message, serializable to JSON."""
         content: str | list[dict[str, Any]]
 
-        if get_model().manager.supports_file:
+        if get_model().supports_file:
             # OpenAI/Anthropic format should include files in the content
             # Some otherwise OpenAI-compatible providers (groq, deepseek?) do not support this
             content = self._content_files_list()

@@ -9,7 +9,7 @@ from collections.abc import Generator
 
 from .codeblock import Codeblock
 from .message import Message, len_tokens
-from .providers.models import get_model
+from .llm.models import get_model
 
 logger = logging.getLogger(__name__)
 

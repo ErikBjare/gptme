@@ -23,7 +23,7 @@ def get_transcript(video_id: str) -> str:
 
 def summarize_transcript(transcript: str) -> str:
     # noreorder
-    from ..providers.llm import summarize as llm_summarize  # fmt: skip
+    from ..llm import summarize as llm_summarize  # fmt: skip
 
     return llm_summarize(transcript).content
 

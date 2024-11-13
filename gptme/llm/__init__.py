@@ -13,22 +13,10 @@ from .llm_anthropic import chat as chat_anthropic
 from .llm_anthropic import get_client as get_anthropic_client
 from .llm_anthropic import init as init_anthropic
 from .llm_anthropic import stream as stream_anthropic
-from .llm_anthropic import (
-    guess_model_from_config as guess_model_from_config_anthropic,
-)
-from .llm_anthropic import (
-    get_model_from_api_key as get_model_from_api_key_anthropic,
-)
 from .llm_openai import chat as chat_openai
 from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
-from .llm_openai import (
-    guess_model_from_config as guess_model_from_config_openai,
-)
-from .llm_openai import (
-    get_model_from_api_key as get_model_from_api_key_openai,
-)
 from ..message import Message, format_msgs, len_tokens
 from .models import (
     MODELS,
@@ -46,12 +34,18 @@ def guess_model_from_config():
     """
     Guess the model to use from the configuration.
     """
+
     config = get_config()
 
-    for guesser in [guess_model_from_config_openai, guess_model_from_config_anthropic]:
-        provider = guesser(config)
-        if provider:
-            return provider
+    if config.get_env("OPENAI_API_KEY"):
+        console.log("Found OpenAI API key, using OpenAI provider")
+        return "openai"
+    elif config.get_env("ANTHROPIC_API_KEY"):
+        console.log("Found Anthropic API key, using Anthropic provider")
+        return "anthropic"
+    elif config.get_env("OPENROUTER_API_KEY"):
+        console.log("Found OpenRouter API key, using OpenRouter provider")
+        return "openrouter"
 
     return None
 
@@ -61,12 +55,12 @@ def get_model_from_api_key(api_key: str):
     Guess the model from the API key prefix.
     """
 
-    for from_api_key in [
-        get_model_from_api_key_anthropic,
-        get_model_from_api_key_openai,
-    ]:
-        if (model_tuple := from_api_key(api_key)) is not None:
-            return model_tuple
+    if api_key.startswith("sk-ant-"):
+        return api_key, "anthropic", "ANTHROPIC_API_KEY"
+    elif api_key.startswith("sk-or-"):
+        return api_key, "openrouter", "OPENROUTER_API_KEY"
+    elif api_key.startswith("sk-"):
+        return api_key, "openai", "OPENAI_API_KEY"
 
     return None
 

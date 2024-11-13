@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from rich.logging import RichHandler
 
 from .config import config_path, get_config, set_config_value
-from .providers.llm import get_model_from_api_key, guess_model_from_config, init_llm
-from .providers.models import (
+from .llm import get_model_from_api_key, guess_model_from_config, init_llm
+from .llm.models import (
     PROVIDERS,
     Provider,
     get_recommended_model,

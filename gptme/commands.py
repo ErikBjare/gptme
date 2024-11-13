@@ -6,7 +6,7 @@ from pathlib import Path
 from time import sleep
 from typing import Literal
 
-from .providers import llm
+from . import llm
 from .export import export_chat_to_html
 from .logmanager import LogManager, prepare_messages
 from .message import (
@@ -16,7 +16,7 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
-from .providers.models import get_model
+from .llm.models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
 from .tools.base import ConfirmFunc
 from .useredit import edit_text_with_editor

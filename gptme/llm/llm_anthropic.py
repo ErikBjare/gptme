@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING, Literal, TypedDict
 
 from typing_extensions import Required
 
-from .manager import ModelManager
+from .models import ModelMeta
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
-from ..util import console
 
 if TYPE_CHECKING:
     from anthropic import Anthropic
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 anthropic: "Anthropic | None" = None
 
 
-class AnthropicModelManager(ModelManager):
+class AnthropicModelMeta(ModelMeta):
     supports_file = True
 
     def prepare_file(self, media_type, data):
@@ -28,20 +27,6 @@ class AnthropicModelManager(ModelManager):
                 "data": data,
             },
         }
-
-
-def guess_model_from_config(config):
-    if config.get_env("ANTHROPIC_API_KEY"):
-        console.log("Found Anthropic API key, using Anthropic provider")
-        return "anthropic"
-    return None
-
-
-def get_model_from_api_key(api_key):
-    if api_key.startswith("sk-ant-"):
-        return api_key, "anthropic", "ANTHROPIC_API_KEY"
-
-    return None
 
 
 def init(config):
