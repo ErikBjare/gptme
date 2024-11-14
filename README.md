@@ -160,6 +160,10 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM [providers][docs-providers]
   - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
+- 💬 Web UI frontend and REST API (optional, see docs for [server][docs-server])
+  - Interact with the assistant from a web interface or via REST API.
+- 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
+  - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
     - Passing a filename as an argument will read the file and include it as context.
@@ -189,11 +193,9 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 ### 🚧 In progress
 
-- 🌐 Web UI frontend (see docs for [server][docs-server])
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
 - 🤖 Long-running agents and advanced agent architectures
-- 💻 "Computer use" as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
@@ -318,6 +320,7 @@ Options:
 [docs-tools-shell]: https://gptme.org/docs/tools.html#shell
 [docs-tools-patch]: https://gptme.org/docs/tools.html#patch
 [docs-tools-browser]: https://gptme.org/docs/tools.html#browser
+[docs-tools-computer]: https://gptme.org/docs/tools.html#computer
 [docs-bot]: https://gptme.org/docs/bot.html
 [docs-server]: https://gptme.org/docs/server.html
 [docs-evals]: https://gptme.org/docs/evals.html
