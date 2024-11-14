@@ -1,4 +1,3 @@
-import base64
 import dataclasses
 import logging
 import shutil
@@ -7,7 +6,7 @@ import textwrap
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 import tomlkit
 from rich.syntax import Syntax
@@ -16,7 +15,6 @@ from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .llm.models import get_model
 from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)
@@ -75,80 +73,12 @@ class Message:
         """Replace attributes of the message."""
         return dataclasses.replace(self, **kwargs)
 
-    def _content_files_list(
-        self,
-    ) -> list[dict[str, Any]]:
-        # only these providers support files in the content
-
-        if not get_model().supports_file:
-            # if provider not in ProvidersWithFiles:
-            raise ValueError("Provider does not support files in the content")
-
-        # combines a content message with a list of files
-        content: list[dict[str, Any]] = (
-            self.content
-            if isinstance(self.content, list)
-            else [{"type": "text", "text": self.content}]
-        )
-        allowed_file_exts = ["jpg", "jpeg", "png", "gif"]
-
-        for f in self.files:
-            ext = f.suffix[1:]
-            if ext not in allowed_file_exts:
-                logger.warning("Unsupported file type: %s", ext)
-                continue
-            if ext == "jpg":
-                ext = "jpeg"
-            media_type = f"image/{ext}"
-            content.append(
-                {
-                    "type": "text",
-                    "text": f"![{f.name}]({f.name}):",
-                }
-            )
-
-            # read file
-            data_bytes = f.read_bytes()
-            data = base64.b64encode(data_bytes).decode("utf-8")
-
-            # check that the file is not too large
-            # anthropic limit is 5MB, seems to measure the base64-encoded size instead of raw bytes
-            # TODO: use compression to reduce file size
-            # print(f"{len(data)=}")
-            if len(data) > 5_000_000:
-                content.append(
-                    {
-                        "type": "text",
-                        "text": "Image size exceeds 5MB. Please upload a smaller image.",
-                    }
-                )
-                continue
-
-            file_content = get_model().prepare_file(media_type, data)
-            if file_content:
-                content.append(file_content)
-            else:
-                # Storage/wire format (keep files in `files` list)
-                # Do nothing to integrate files into the message content
-                pass
-
-        return content
-
     def to_dict(self, keys=None) -> dict:
         """Return a dict representation of the message, serializable to JSON."""
-        content: str | list[dict[str, Any]]
-
-        if get_model().supports_file:
-            # OpenAI/Anthropic format should include files in the content
-            # Some otherwise OpenAI-compatible providers (groq, deepseek?) do not support this
-            content = self._content_files_list()
-        else:
-            # storage/wire format should keep the content as a string
-            content = self.content
 
         d: dict = {
             "role": self.role,
-            "content": content,
+            "content": self.content,
             "timestamp": self.timestamp.isoformat(),
         }
         if self.files:
@@ -158,7 +88,7 @@ class Message:
         if self.hide:
             d["hide"] = True
         if keys:
-            return {k: d[k] for k in keys}
+            return {k: d[k] for k in keys if k in d}
         return d
 
     def to_xml(self) -> str:
@@ -360,7 +290,7 @@ def toml_to_msgs(toml: str) -> list[Message]:
 
 def msgs2dicts(msgs: list[Message]) -> list[dict]:
     """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
-    return [msg.to_dict(keys=["role", "content"]) for msg in msgs]
+    return [msg.to_dict(keys=["role", "content", "files"]) for msg in msgs]
 
 
 # TODO: remove model assumption

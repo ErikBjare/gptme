@@ -30,22 +30,12 @@ class ModelMeta:
     model: str
     context: int
     max_output: int | None = None
+    supports_streaming: bool = True
 
     # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0
     price_input: float = 0
     price_output: float = 0
-
-    @property
-    def supports_streaming(self):
-        return False
-
-    @property
-    def supports_file(self):
-        return False
-
-    def prepare_file(self, media_type: str, data):
-        return None
 
 
 class _ModelDictMeta(TypedDict):
@@ -108,22 +98,19 @@ def set_default_model(model: str) -> None:
     DEFAULT_MODEL = modelmeta
 
 
-def create_meta_model(provider, **kwargs):
-    """
-    Returns the meta model for the given provider.
-    """
-
-    from .llm_anthropic import AnthropicModelMeta
-    from .llm_openai import OpenaiModelMeta
-
+def create_meta_model(provider, model, **kwargs):
     if provider not in PROVIDERS_OPENAI:
-        return AnthropicModelMeta(provider=provider, **kwargs)
+        return ModelMeta(
+            provider=provider,
+            model=model,
+            supports_streaming=provider != "openai" or model != "o1",
+            **kwargs,
+        )
     else:
-        return OpenaiModelMeta(provider=provider, **kwargs)
+        return ModelMeta(provider=provider, model=model, **kwargs)
 
 
 def get_model(model: str | None = None) -> ModelMeta:
-
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
         return DEFAULT_MODEL
@@ -141,7 +128,7 @@ def get_model(model: str | None = None) -> ModelMeta:
                 logger.warning(
                     f"Unknown model {model} from {provider}, using fallback metadata"
                 )
-            return create_meta_model(provider, model=model, context=128_000)
+            return create_meta_model(provider, model, context=128_000)
     else:
         # try to find model in all providers
         for provider in MODELS:
@@ -151,7 +138,7 @@ def get_model(model: str | None = None) -> ModelMeta:
             logger.warning(f"Unknown model {model}, using fallback metadata")
             return ModelMeta(provider="unknown", model=model, context=128_000)
 
-    return create_meta_model(provider, model=model, **MODELS[provider][model])
+    return create_meta_model(provider, model, **MODELS[provider][model])
 
 
 def get_recommended_model(provider: Provider) -> str:  # pragma: no cover

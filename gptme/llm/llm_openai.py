@@ -1,12 +1,13 @@
+import base64
 import logging
 from collections.abc import Generator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from pathlib import Path
 
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
 from .models import Provider
-from .models import ModelMeta
 
 if TYPE_CHECKING:
     from openai import OpenAI
@@ -23,20 +24,7 @@ openrouter_headers = {
 }
 
 
-class OpenaiModelMeta(ModelMeta):
-    @property
-    def supports_file(self):
-        return self.provider in ["openai", "openrouter"]
-
-    @property
-    def supports_streaming(self):
-        return self.provider != "openai" or self.model != "o1"
-
-    def prepare_file(self, media_type, data):
-        return {
-            "type": "image_url",
-            "image_url": {"url": f"data:{media_type};base64,{data}"},
-        }
+ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(provider: Provider, config: Config):
@@ -112,10 +100,75 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
         yield msg
 
 
+def handle_files(message_dicts: list[dict]) -> list[dict]:
+    # only these providers support files in the content
+    support_vision = get_provider() in ["openai", "openrouter"]
+
+    if not support_vision:
+        raise ValueError("Provider does not support files in the content")
+
+    for message_dict in message_dicts:
+        message_content = message_dict["content"]
+
+        # combines a content message with a list of files
+        content: list[dict[str, Any]] = (
+            message_content
+            if isinstance(message_content, list)
+            else [{"type": "text", "text": message_content}]
+        )
+
+        for f in message_dict.get("files", []):
+            f = Path(f)
+            ext = f.suffix[1:]
+            if ext not in ALLOWED_FILE_EXTS:
+                logger.warning("Unsupported file type: %s", ext)
+                continue
+            if ext == "jpg":
+                ext = "jpeg"
+            media_type = f"image/{ext}"
+
+            content.append(
+                {
+                    "type": "text",
+                    "text": f"![{f.name}]({f.name}):",
+                }
+            )
+
+            # read file
+            data_bytes = f.read_bytes()
+            data = base64.b64encode(data_bytes).decode("utf-8")
+
+            # check that the file is not too large
+            # openai limit is 20MB
+            # TODO: use compression to reduce file size
+            # TODO: check that the limit is measured with the base64 for openai
+            # print(f"{len(data)=}")
+            if len(data) > 20 * 1_024 * 1_024:
+                content.append(
+                    {
+                        "type": "text",
+                        "text": "Image size exceeds 20MB. Please upload a smaller image.",
+                    }
+                )
+                continue
+
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:{media_type};base64,{data}"},
+                }
+            )
+
+        message_dict["content"] = content
+
+    return message_dicts
+
+
 def chat(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
+
     is_o1 = model.startswith("o1")
     if is_o1:
         messages = list(_prep_o1(messages))
@@ -123,9 +176,11 @@ def chat(messages: list[Message], model: str) -> str:
     # noreorder
     from openai._types import NOT_GIVEN  # fmt: skip
 
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         extra_headers=(
@@ -140,9 +195,16 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     assert openai, "LLM not initialized"
     stop_reason = None
+
+    is_o1 = model.startswith("o1")
+    if is_o1:
+        messages = list(_prep_o1(messages))
+
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     for chunk in openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(_prep_o1(messages)),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         stream=True,

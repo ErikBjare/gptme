@@ -1,12 +1,16 @@
+import base64
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Literal, TypedDict
+import logging
+from typing import TYPE_CHECKING, Literal, TypedDict, Any
+from pathlib import Path
 
 from typing_extensions import Required
 
-from .models import ModelMeta
-
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
+
+logger = logging.getLogger(__name__)
+
 
 if TYPE_CHECKING:
     from anthropic import Anthropic
@@ -15,18 +19,7 @@ if TYPE_CHECKING:
 anthropic: "Anthropic | None" = None
 
 
-class AnthropicModelMeta(ModelMeta):
-    supports_file = True
-
-    def prepare_file(self, media_type, data):
-        return {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": media_type,
-                "data": data,
-            },
-        }
+ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(config):
@@ -51,10 +44,73 @@ class MessagePart(TypedDict, total=False):
     cache_control: dict[str, str]
 
 
+def handle_files(message_dicts: list[dict]) -> list[dict]:
+    for message_dict in message_dicts:
+        message_content = message_dict["content"]
+
+        # combines a content message with a list of files
+        content: list[dict[str, Any]] = (
+            message_content
+            if isinstance(message_content, list)
+            else [{"type": "text", "text": message_content}]
+        )
+
+        for f in message_dict["files"]:
+            f = Path(f)
+            ext = f.suffix[1:]
+            if ext not in ALLOWED_FILE_EXTS:
+                logger.warning("Unsupported file type: %s", ext)
+                continue
+            if ext == "jpg":
+                ext = "jpeg"
+            media_type = f"image/{ext}"
+
+            content.append(
+                {
+                    "type": "text",
+                    "text": f"![{f.name}]({f.name}):",
+                }
+            )
+
+            # read file
+            data_bytes = f.read_bytes()
+            data = base64.b64encode(data_bytes).decode("utf-8")
+
+            # check that the file is not too large
+            # anthropic limit is 5MB, seems to measure the base64-encoded size instead of raw bytes
+            # TODO: use compression to reduce file size
+            # print(f"{len(data)=}")
+            if len(data) > 5 * 1_024 * 1_024:
+                content.append(
+                    {
+                        "type": "text",
+                        "text": "Image size exceeds 5MB. Please upload a smaller image.",
+                    }
+                )
+                continue
+
+            content.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": media_type,
+                        "data": data,
+                    },
+                }
+            )
+
+        message_dict["content"] = content
+
+    return message_dicts
+
+
 def chat(messages: list[Message], model: str) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages)
+
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     response = anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=messages_dicts,  # type: ignore
@@ -72,7 +128,9 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
-    messages_dicts = msgs2dicts(messages)
+
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     with anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=messages_dicts,  # type: ignore

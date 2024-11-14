@@ -30,41 +30,6 @@ from ..util import console
 logger = logging.getLogger(__name__)
 
 
-def guess_model_from_config():
-    """
-    Guess the model to use from the configuration.
-    """
-
-    config = get_config()
-
-    if config.get_env("OPENAI_API_KEY"):
-        console.log("Found OpenAI API key, using OpenAI provider")
-        return "openai"
-    elif config.get_env("ANTHROPIC_API_KEY"):
-        console.log("Found Anthropic API key, using Anthropic provider")
-        return "anthropic"
-    elif config.get_env("OPENROUTER_API_KEY"):
-        console.log("Found OpenRouter API key, using OpenRouter provider")
-        return "openrouter"
-
-    return None
-
-
-def get_model_from_api_key(api_key: str):
-    """
-    Guess the model from the API key prefix.
-    """
-
-    if api_key.startswith("sk-ant-"):
-        return api_key, "anthropic", "ANTHROPIC_API_KEY"
-    elif api_key.startswith("sk-or-"):
-        return api_key, "openrouter", "OPENROUTER_API_KEY"
-    elif api_key.startswith("sk-"):
-        return api_key, "openai", "OPENAI_API_KEY"
-
-    return None
-
-
 def init_llm(llm: str):
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
@@ -269,3 +234,38 @@ def _summarize_helper(s: str, tok_max_start=400, tok_max_end=400) -> str:
     else:
         summary = _summarize_str(s)
     return summary
+
+
+def guess_model_from_config() -> Provider | None:
+    """
+    Guess the model to use from the configuration.
+    """
+
+    config = get_config()
+
+    if config.get_env("OPENAI_API_KEY"):
+        console.log("Found OpenAI API key, using OpenAI provider")
+        return "openai"
+    elif config.get_env("ANTHROPIC_API_KEY"):
+        console.log("Found Anthropic API key, using Anthropic provider")
+        return "anthropic"
+    elif config.get_env("OPENROUTER_API_KEY"):
+        console.log("Found OpenRouter API key, using OpenRouter provider")
+        return "openrouter"
+
+    return None
+
+
+def get_model_from_api_key(api_key: str) -> tuple[str, Provider, str] | None:
+    """
+    Guess the model from the API key prefix.
+    """
+
+    if api_key.startswith("sk-ant-"):
+        return api_key, "anthropic", "ANTHROPIC_API_KEY"
+    elif api_key.startswith("sk-or-"):
+        return api_key, "openrouter", "OPENROUTER_API_KEY"
+    elif api_key.startswith("sk-"):
+        return api_key, "openai", "OPENAI_API_KEY"
+
+    return None
