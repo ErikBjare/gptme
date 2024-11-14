@@ -1,9 +1,9 @@
+import functools
 import io
 import logging
 import random
-import shutil
-import functools
 import re
+import shutil
 import sys
 import termios
 import textwrap
@@ -12,12 +12,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from .clipboard import copy, set_copytext
-
 import tiktoken
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
+
+from .clipboard import copy, set_copytext
 
 EMOJI_WARN = "⚠️"
 
@@ -166,16 +166,17 @@ override_auto = False
 
 
 def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no cover
+    global override_auto
+    if override_auto:
+        return True
+
     print_bell()  # Ring the bell just before asking for input
     termios.tcflush(sys.stdin, termios.TCIFLUSH)  # flush stdin
 
-    choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}]"
-    copystr = r"\[c] to copy" if copiable else ""
+    choicestr = f"[{'Y' if default else 'y'}/{'n' if default else 'N'}{'/c' if copiable else ''}/?]"
     answer = console.input(
-        f"[bold bright_yellow on red] {question} {choicestr}{copystr} [/] ",
+        f"[bold bright_yellow on red] {question} {choicestr} [/] ",
     )
-
-    global override_auto
 
     if not override_auto and copiable and "c" == answer.lower().strip():
         if copy():
@@ -183,11 +184,25 @@ def ask_execute(question="Execute code?", default=True) -> bool:  # pragma: no c
             return False
         clear_copiable()
 
-    if answer.lower() in [
-        "auto"
-    ]:  # secret option to stop asking for the rest of the session
-        override_auto = True
-    return answer.lower() in (["y", "yes"] + [""] if default else []) or override_auto
+    # secret option to stop asking for the rest of the session
+    if answer.lower() in ["auto"]:
+        return (override_auto := True)
+
+    # secret option to ask for help
+    if answer.lower() in ["help", "h", "?"]:
+        lines = [
+            "Options:",
+            " y - execute the code",
+            " n - do not execute the code",
+            (" c - copy the code to the clipboard\n" if copiable else ""),
+            " auto - stop asking for the rest of the session",
+            f"Default is '{'y' if default else 'n'}' if answer is empty.",
+        ]
+        helptext = "\n".join(line for line in lines if line)
+        print(helptext)
+        return ask_execute(question, default)
+
+    return answer.lower() in (["y", "yes"] + [""] if default else [])
 
 
 def clean_example(s: str, strict=False) -> str:
