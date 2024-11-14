@@ -166,6 +166,7 @@ def computer(
         path = output_dir / "screenshot.png"
 
         if shutil.which("gnome-screenshot"):
+            # FIXME: incorrect call to xdotool
             run_xdotool(f"gnome-screenshot -f {path} -p", display)
         elif os.name == "posix":
             path = _screenshot(path)  # Use existing screenshot function
