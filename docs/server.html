@@ -396,12 +396,12 @@ document.write(`
                   
   <section id="server">
 <h1>Server<a class="headerlink" href="#server" title="Link to this heading">#</a></h1>
+<p>gptme has a minimal REST API with very minimalistic web UI.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The server and web UI is still in development and does not have all the features of the CLI.
-It does not support streaming, doesn’t ask for confirmation before executing, lacks the ability to interrupt responses and tool calls, etc.</p>
+In particular, it doesn’t ever ask for confirmation before executing (yet).</p>
 </div>
-<p>gptme has a minimal REST API with very minimalistic web UI.</p>
 <p>It can be started by running the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-server
 </pre></div>
@@ -410,7 +410,7 @@ It does not support streaming, doesn’t ask for confirmation before executing, 
 <p>There are a few different interfaces available:</p>
 <section id="web-ui">
 <h2>Web UI<a class="headerlink" href="#web-ui" title="Link to this heading">#</a></h2>
-<p>A basic chat interface with minimal dependencies that is bundled with the server.</p>
+<p>A tiny chat interface with minimal dependencies that is bundled with the server.</p>
 <p>Simply start the server to access the interface at <a class="reference external" href="http://localhost:5000">http://localhost:5000</a></p>
 </section>
 <section id="fancy-web-ui">
@@ -425,17 +425,19 @@ It does not support streaming, doesn’t ask for confirmation before executing, 
 <li><p>Mobile-friendly design</p></li>
 <li><p>Dark mode support</p></li>
 <li><p>Offline/exports support</p></li>
+<li><p>Computer use interface integration</p></li>
 </ul>
 </section>
 <section id="computer-use-interface">
 <h2>Computer Use Interface<a class="headerlink" href="#computer-use-interface" title="Link to this heading">#</a></h2>
+<p>The computer use interface provides a split view with a chat on the left and a desktop on the right.</p>
+<p>Requires Docker.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The computer use interface is experimental and has serious security implications.
 Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
 </div>
-<p>The computer use interface provides a split view with a chat on the left and a desktop on the right.</p>
-<p>Requires Docker.</p>
+<p>To run the computer use interface in Docker, follow these steps:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ErikBjare/gptme.git
 <span class="nb">cd</span><span class="w"> </span>gptme
@@ -455,7 +457,6 @@ docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </sp
 <ul class="simple">
 <li><p>Split view with chat on the left, desktop on the right</p></li>
 <li><p>Toggle for view-only/interactive desktop mode</p></li>
-<li><p>Fullscreen support</p></li>
 <li><p>Automatic screen scaling for optimal LLM vision</p></li>
 </ul>
 <p>Requirements:</p>
@@ -463,6 +464,16 @@ docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </sp
 <li><p>Docker for running the server with X11 support</p></li>
 <li><p>Network ports 6080 (VNC) and 8080 (web UI) available</p></li>
 </ul>
+<p class="rubric">Using Computer Use Locally</p>
+<p>You can use the <code class="docutils literal notranslate"><span class="pre">computer</span></code> tool (which enables computer use) locally on Linux without Docker or VNC, but it is not recommended due to security concerns.</p>
+<p>Requirements:
+- X11 server
+- <code class="docutils literal notranslate"><span class="pre">xdotool</span></code> installed</p>
+<p>To enable the <code class="docutils literal notranslate"><span class="pre">computer</span></code> tool, specify a <code class="docutils literal notranslate"><span class="pre">-t/--tools</span></code> list that includes the computer tool (as it is disabled by default):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>-t<span class="w"> </span>computer<span class="w">   </span><span class="c1"># and whichever other tools you want</span>
+</pre></div>
+</div>
+<p>You also want to set a screen resolution that is suitable for the vision model you are using.</p>
 </section>
 </section>
 
