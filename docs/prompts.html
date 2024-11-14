@@ -577,6 +577,8 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
+The $FILENAME parameter MUST be on the same line as the code block start, not on the line after.
+
 The patch block should be written in the following format:
 
 <span class="sb">```patch</span><span class="w"> </span>$FILENAME
@@ -615,10 +617,10 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
 
@@ -972,7 +974,7 @@ The following functions are available in the REPL:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3020</p>
+<p>Tokens: 3043</p>
 </dd></dl>
 
 <dl class="py function">
