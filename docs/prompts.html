@@ -541,6 +541,9 @@ cat<span class="w"> </span>file.txt
 
 <span class="gs">**Instructions:**</span> To write to a file, use a code block with the language tag: <span class="sb">`save &lt;path&gt;`</span>
 
+The path can be relative to the current directory, or absolute.
+If the current directory changes, the path will be relative to the new directory.
+
 <span class="gu">### Examples</span>
 
 <span class="k">&gt; </span><span class="ge">User: write a hello world script to hello.py</span>
@@ -624,9 +627,9 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
+<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
@@ -981,7 +984,7 @@ The following functions are available in the REPL:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3043</p>
+<p>Tokens: 3074</p>
 </dd></dl>
 
 <dl class="py function">
