@@ -14,7 +14,7 @@ from collections.abc import Generator
 import bashlex
 
 from ..message import Message
-from ..util import get_tokenizer, print_preview, get_installed_programs
+from ..util import get_installed_programs, get_tokenizer, print_preview
 from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -120,6 +120,8 @@ class ShellSession:
         self.delimiter = "END_OF_COMMAND_OUTPUT"
 
         # set GIT_PAGER=cat
+        self.run("export PAGER=")
+        self.run("export GH_PAGER=")
         self.run("export GIT_PAGER=cat")
 
     def run(self, code: str, output=True) -> tuple[int | None, str, str]:

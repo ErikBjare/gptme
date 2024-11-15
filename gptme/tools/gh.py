@@ -32,10 +32,14 @@ gh repo create $REPO --public --source . --push
 > User: show workflow
 > Assistant:
 {ToolUse("shell", [], "gh run view $RUN --repo $REPO --log").to_output()}
+
+> User: wait for workflow to finish
+> Assistant:
+{ToolUse("shell", [], "gh run watch $RUN --repo $REPO").to_output()}
 """
 
 # Note: this isn't actually a tool, it only serves prompting purposes
-tool = ToolSpec(
+tool: ToolSpec = ToolSpec(
     name="gh",
     available=has_gh_tool(),
     desc="Interact with GitHub",
