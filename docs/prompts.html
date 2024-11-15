@@ -628,9 +628,9 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 These programs are available, among others:
 <span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>git
 
 <span class="gu">### Examples</span>
 
@@ -874,6 +874,12 @@ gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span
 gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--log
 <span class="sb">```</span>
 
+<span class="k">&gt; </span><span class="ge">User: wait for workflow to finish</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>run<span class="w"> </span>watch<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
+<span class="sb">```</span>
+
 
 <span class="gu">## chats</span>
 
@@ -984,7 +990,7 @@ The following functions are available in the REPL:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3074</p>
+<p>Tokens: 3107</p>
 </dd></dl>
 
 <dl class="py function">
