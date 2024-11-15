@@ -111,6 +111,10 @@ ignore = ["E402", "E501", "B905"]
 #fixable = ["ALL"]
 #unfixable = ["B"]
 
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
