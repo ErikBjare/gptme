@@ -1,6 +1,6 @@
 import pytest
 from click.testing import CliRunner
-from gptme.config import load_config
+from gptme.config import get_config
 from gptme.eval import execute, tests
 from gptme.eval.agents import GPTMe
 from gptme.eval.main import main
@@ -9,7 +9,7 @@ from gptme.eval.main import main
 def _detect_model():
     # detect which model is configured
     # TODO: isn't there already a get_default_model() helper?
-    config = load_config()
+    config = get_config()
     if model := config.get_env("MODEL"):
         return model
     elif config.get_env("OPENAI_API_KEY"):
