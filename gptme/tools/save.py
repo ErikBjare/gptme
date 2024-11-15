@@ -13,6 +13,9 @@ from .patch import Patch
 # FIXME: this is markdown-specific instructions, thus will confuse the XML mode
 instructions = """
 To write to a file, use a code block with the language tag: `save <path>`
+
+The path can be relative to the current directory, or absolute.
+If the current directory changes, the path will be relative to the new directory.
 """.strip()
 
 instructions_append = """
