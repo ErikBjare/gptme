@@ -3,8 +3,6 @@
 import logging
 from pathlib import Path
 
-import gptme_rag
-
 from ..config import get_project_config
 from ..message import Message
 from .base import ConfirmFunc, ToolSpec
@@ -12,12 +10,41 @@ from .base import ConfirmFunc, ToolSpec
 logger = logging.getLogger(__name__)
 
 try:
+    import gptme_rag  # fmt: skip
+
     _HAS_RAG = True
 except ImportError:
     logger.debug("gptme-rag not installed, RAG tool will not be available")
     _HAS_RAG = False
 
-indexer: gptme_rag.Indexer | None = None
+indexer: "gptme_rag.Indexer | None" = None
+
+instructions = """
+Use RAG to index and search project documentation.
+
+Commands:
+- index [paths...] - Index documents in specified paths
+- search <query> - Search indexed documents
+- status - Show index status
+"""
+
+examples = """
+User: Index the current directory
+Assistant: Let me index the current directory with RAG.
+```rag index```
+System: Indexed 1 paths
+
+User: Search for documentation about functions
+Assistant: I'll search for function-related documentation.
+```rag search function documentation```
+System: ### docs/api.md
+Functions are documented using docstrings...
+
+User: Show index status
+Assistant: I'll check the current status of the RAG index.
+```rag status```
+System: Index contains 42 documents
+"""
 
 
 def execute_rag(code: str, args: list[str], confirm: ConfirmFunc) -> Message:
@@ -34,7 +61,7 @@ def execute_rag(code: str, args: list[str], confirm: ConfirmFunc) -> Message:
         return Message("system", f"Indexed {len(paths)} paths")
     elif command == "search":
         query = " ".join(args[1:])
-        docs = indexer.search(query)
+        docs, _ = indexer.search(query)
         return Message(
             "system",
             "\n\n".join(
@@ -49,19 +76,14 @@ def execute_rag(code: str, args: list[str], confirm: ConfirmFunc) -> Message:
         return Message("system", f"Unknown command: {command}")
 
 
-def init_rag() -> ToolSpec:
+def init() -> ToolSpec:
     """Initialize the RAG tool."""
-    if not _HAS_RAG:
-        return ToolSpec(
-            name="rag",
-            desc="RAG (Retrieval-Augmented Generation) for context-aware assistance",
-            available=False,
-        )
-
     config = get_project_config(Path.cwd())
     if config:
         # Initialize RAG with configuration
         global indexer
+        import gptme_rag  # fmt: skip
+
         indexer = gptme_rag.Indexer(
             persist_directory=Path(
                 config.rag.get("index_path", "~/.cache/gptme/rag")
@@ -69,35 +91,16 @@ def init_rag() -> ToolSpec:
             # TODO: use a better default collection name? (e.g. project name)
             collection_name=config.rag.get("collection", "gptme_docs"),
         )
-
-    return ToolSpec(
-        name="rag",
-        desc="RAG (Retrieval-Augmented Generation) for context-aware assistance",
-        instructions="""Use RAG to index and search project documentation.
-
-Commands:
-- index [paths...] - Index documents in specified paths
-- search <query> - Search indexed documents
-- status - Show index status""",
-        examples="""User: Index the current directory
-Assistant: Let me index the current directory with RAG.
-```rag index```
-System: Indexed 1 paths
-
-User: Search for documentation about functions
-Assistant: I'll search for function-related documentation.
-```rag search function documentation```
-System: ### docs/api.md
-Functions are documented using docstrings...
-
-User: Show index status
-Assistant: I'll check the current status of the RAG index.
-```rag status```
-System: Index contains 42 documents""",
-        block_types=["rag"],
-        execute=execute_rag,
-        available=True,
-    )
+    return tool
 
 
-tool = init_rag()
+tool = ToolSpec(
+    name="rag",
+    desc="RAG (Retrieval-Augmented Generation) for context-aware assistance",
+    instructions=instructions,
+    examples=examples,
+    block_types=["rag"],
+    execute=execute_rag,
+    available=_HAS_RAG,
+    init=init,
+)
