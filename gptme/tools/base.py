@@ -23,10 +23,17 @@ exclusive_mode = False
 ConfirmFunc = Callable[[str], bool]
 
 
-class ExecuteFunc(Protocol):
+class ExecuteFuncGen(Protocol):
     def __call__(
         self, code: str, args: list[str], confirm: ConfirmFunc
     ) -> Generator[Message, None, None]: ...
+
+
+class ExecuteFuncMsg(Protocol):
+    def __call__(self, code: str, args: list[str], confirm: ConfirmFunc) -> Message: ...
+
+
+ExecuteFunc: TypeAlias = ExecuteFuncGen | ExecuteFuncMsg
 
 
 @dataclass(frozen=True, eq=False)
@@ -99,7 +106,11 @@ class ToolUse:
         tool = get_tool(self.tool)
         if tool and tool.execute:
             try:
-                yield from tool.execute(self.content, self.args, confirm)
+                ex = tool.execute(self.content, self.args, confirm)
+                if isinstance(ex, Generator):
+                    yield from ex
+                else:
+                    yield ex
             except Exception as e:
                 # if we are testing, raise the exception
                 if "pytest" in globals():

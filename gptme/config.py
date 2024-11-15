@@ -41,6 +41,7 @@ class ProjectConfig:
     """Project-level configuration, such as which files to include in the context by default."""
 
     files: list[str] = field(default_factory=list)
+    rag: dict = field(default_factory=dict)
 
 
 ABOUT_ACTIVITYWATCH = """ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices."""
