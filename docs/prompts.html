@@ -386,6 +386,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_project"><code class="docutils literal notranslate"><span class="pre">prompt_project()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_short"><code class="docutils literal notranslate"><span class="pre">prompt_short()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_systeminfo"><code class="docutils literal notranslate"><span class="pre">prompt_systeminfo()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_timeinfo"><code class="docutils literal notranslate"><span class="pre">prompt_timeinfo()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_tools"><code class="docutils literal notranslate"><span class="pre">prompt_tools()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_user"><code class="docutils literal notranslate"><span class="pre">prompt_user()</span></code></a></li>
 </ul>
@@ -506,6 +507,12 @@ gptme is a CLI to interact with large language models in a Chat-style interface,
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="gptme.prompts.prompt_timeinfo">
+<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_timeinfo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_timeinfo" title="Link to this definition">#</a></dt>
+<dd><p>Generate the current time prompt.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="gptme.prompts.prompt_tools">
 <span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_tools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_tools" title="Link to this definition">#</a></dt>
 <dd><p>Generate the tools overview prompt.</p>
@@ -617,10 +624,10 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
 
@@ -1047,6 +1054,7 @@ No specific preferences set.
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_project"><code class="docutils literal notranslate"><span class="pre">prompt_project()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_short"><code class="docutils literal notranslate"><span class="pre">prompt_short()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_systeminfo"><code class="docutils literal notranslate"><span class="pre">prompt_systeminfo()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_timeinfo"><code class="docutils literal notranslate"><span class="pre">prompt_timeinfo()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_tools"><code class="docutils literal notranslate"><span class="pre">prompt_tools()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.prompts.prompt_user"><code class="docutils literal notranslate"><span class="pre">prompt_user()</span></code></a></li>
 </ul>
