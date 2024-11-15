@@ -3,7 +3,7 @@ from typing import cast
 
 from dotenv import load_dotenv
 
-from .config import config_path, load_config, set_config_value
+from .config import config_path, get_config, set_config_value
 from .llm import init_llm
 from .models import (
     PROVIDERS,
@@ -30,7 +30,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     logger.debug("Started")
     load_dotenv()
 
-    config = load_config()
+    config = get_config()
 
     # get from config
     if not model:

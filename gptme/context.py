@@ -35,6 +35,8 @@ class ContextProvider(ABC):
 class RAGContextProvider(ContextProvider):
     """Context provider using RAG."""
 
+    # TODO: refactor this to share code with rag tool
+
     def __init__(self):
         try:
             self._has_rag = True
@@ -45,7 +47,7 @@ class RAGContextProvider(ContextProvider):
             # Storage configuration
             self.indexer = gptme_rag.Indexer(
                 persist_directory=config.rag.get("index_path", "~/.cache/gptme/rag"),
-                collection_name=config.rag.get("collection", "gptme_docs"),
+                collection_name=config.rag.get("collection", "default"),
             )
 
             # Context enhancement configuration

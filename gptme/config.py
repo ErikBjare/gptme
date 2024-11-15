@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 
 import tomlkit
@@ -73,12 +74,12 @@ _config: Config | None = None
 def get_config() -> Config:
     global _config
     if _config is None:
-        _config = load_config()
+        _config = _load_config()
     return _config
 
 
-def load_config() -> Config:
-    config = _load_config()
+def _load_config() -> Config:
+    config = _load_config_doc()
     assert "prompt" in config, "prompt key missing in config"
     assert "env" in config, "env key missing in config"
     prompt = config.pop("prompt")
@@ -88,7 +89,7 @@ def load_config() -> Config:
     return Config(prompt=prompt, env=env)
 
 
-def _load_config() -> tomlkit.TOMLDocument:
+def _load_config_doc() -> tomlkit.TOMLDocument:
     # Check if the config file exists
     if not os.path.exists(config_path):
         # If not, create it and write some default settings
@@ -106,7 +107,7 @@ def _load_config() -> tomlkit.TOMLDocument:
 
 
 def set_config_value(key: str, value: str) -> None:  # pragma: no cover
-    doc: TOMLDocument | Container = _load_config()
+    doc: TOMLDocument | Container = _load_config_doc()
 
     # Set the value
     keypath = key.split(".")
@@ -121,9 +122,10 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
 
     # Reload config
     global _config
-    _config = load_config()
+    _config = _load_config()
 
 
+@lru_cache
 def get_project_config(workspace: Path) -> ProjectConfig | None:
     project_config_paths = [
         p
