@@ -5184,4 +5184,4 @@ server = ["flask", "flask-cors"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cab733cb45c80054b8008b207e70544389fd59ff91341aa877dca538e00f9d0a"
+content-hash = "1e79823f341ef0399ceb2e2a391ae0f1e74d37c58944865ef882e610aa70bbc3"
