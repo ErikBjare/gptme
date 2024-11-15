@@ -60,6 +60,7 @@ def prompt_full(interactive: bool) -> Generator[Message, None, None]:
         yield from prompt_user()
     yield from prompt_project()
     yield from prompt_systeminfo()
+    yield from prompt_timeinfo()
 
 
 def prompt_short(interactive: bool) -> Generator[Message, None, None]:
@@ -235,6 +236,13 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
         "system",
         prompt,
     )
+
+
+def prompt_timeinfo() -> Generator[Message, None, None]:
+    """Generate the current time prompt."""
+    # TODO: this should be updated when time changes significantly (such as when resuming a session)
+    prompt = f"## Current Time\n\n**UTC:** {subprocess.run(['date', '-u'], capture_output=True, text=True).stdout.strip()}"
+    yield Message("system", prompt)
 
 
 def get_workspace_prompt(workspace: Path) -> str:
