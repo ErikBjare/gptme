@@ -1,11 +1,69 @@
-"""RAG tool for context-aware assistance."""
+"""
+RAG (Retrieval-Augmented Generation) tool for context-aware assistance.
+
+The RAG tool provides context-aware assistance by indexing and searching project documentation.
+
+Installation
+------------
+The RAG tool requires the ``gptme-rag`` package. Install it with::
+
+    pip install "gptme[rag]"
+
+Configuration
+-------------
+Configure RAG in your ``gptme.toml``::
+
+    [rag]
+    # Storage configuration
+    index_path = "~/.cache/gptme/rag"  # Where to store the index
+    collection = "gptme_docs"          # Collection name for documents
+
+    # Context enhancement settings
+    max_tokens = 2000                  # Maximum tokens for context window
+    auto_context = true               # Enable automatic context enhancement
+    min_relevance = 0.5               # Minimum relevance score for including context
+    max_results = 5                   # Maximum number of results to consider
+
+    # Cache configuration
+    [rag.cache]
+    max_embeddings = 10000            # Maximum number of cached embeddings
+    max_searches = 1000               # Maximum number of cached search results
+    embedding_ttl = 86400             # Embedding cache TTL in seconds (24h)
+    search_ttl = 3600                # Search cache TTL in seconds (1h)
+
+Features
+--------
+1. Manual Search and Indexing
+   - Index project documentation with ``rag index``
+   - Search indexed documents with ``rag search``
+   - Check index status with ``rag status``
+
+2. Automatic Context Enhancement
+   - Automatically adds relevant context to user messages
+   - Retrieves semantically similar documents
+   - Manages token budget to avoid context overflow
+   - Preserves conversation flow with hidden context messages
+
+3. Performance Optimization
+   - Intelligent caching system for embeddings and search results
+   - Configurable cache sizes and TTLs
+   - Automatic cache invalidation
+   - Memory-efficient storage
+
+Benefits
+--------
+- Better informed responses through relevant documentation
+- Reduced need for manual context inclusion
+- Automatic token management
+- Seamless integration with conversation flow
+"""
 
 import logging
 from pathlib import Path
 
 from ..config import get_project_config
 from ..message import Message
-from .base import ConfirmFunc, ToolSpec
+from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
@@ -28,21 +86,21 @@ Commands:
 - status - Show index status
 """
 
-examples = """
+examples = f"""
 User: Index the current directory
 Assistant: Let me index the current directory with RAG.
-```rag index```
+{ToolUse("rag", ["index"], "").to_output()}
 System: Indexed 1 paths
 
 User: Search for documentation about functions
 Assistant: I'll search for function-related documentation.
-```rag search function documentation```
+{ToolUse("rag", ["search", "function", "documentation"], "").to_output()}
 System: ### docs/api.md
 Functions are documented using docstrings...
 
 User: Show index status
 Assistant: I'll check the current status of the RAG index.
-```rag status```
+{ToolUse("rag", ["status"], "").to_output()}
 System: Index contains 42 documents
 """
 
@@ -104,3 +162,5 @@ tool = ToolSpec(
     available=_HAS_RAG,
     init=init,
 )
+
+__doc__ = tool.get_doc(__doc__)
