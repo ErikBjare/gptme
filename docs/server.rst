@@ -13,7 +13,7 @@ It can be started by running the following command:
 
     gptme-server
 
-For more CLI usage, see :ref:`the CLI documentation <cli:gptme-server>`.
+For more CLI usage, see the :doc:`cli`.
 
 There are a few different interfaces available:
 

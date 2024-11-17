@@ -323,8 +323,8 @@ def document_prompt_function(*args, **kwargs):
             return func
 
         # noreorder
-        from .message import len_tokens  # fmt: skip
-        from .tools import init_tools  # fmt: skip
+        from ..message import len_tokens  # fmt: skip
+        from ..tools import init_tools  # fmt: skip
 
         init_tools()
 
