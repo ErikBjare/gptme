@@ -2,6 +2,7 @@
 Sets up a KeyboardInterrupt handler to handle Ctrl-C during the chat loop.
 """
 
+import os
 import time
 
 from .util import console
@@ -18,7 +19,10 @@ def handle_keyboard_interrupt(signum, frame):  # pragma: no cover
     global last_interrupt_time
     current_time = time.time()
 
-    if interruptible:
+    # if testing with pytest
+    testing = bool(os.getenv("PYTEST_CURRENT_TEST"))
+
+    if interruptible or testing:
         raise KeyboardInterrupt
 
     # if current_time - last_interrupt_time <= timeout:

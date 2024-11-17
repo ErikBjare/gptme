@@ -23,6 +23,7 @@ def temp_docs(tmp_path):
     return tmp_path
 
 
+@pytest.mark.timeout(func_only=True)
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
 def test_rag_tool_init():
     """Test RAG tool initialization."""
