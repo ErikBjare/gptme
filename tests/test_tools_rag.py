@@ -6,7 +6,8 @@ from unittest.mock import patch
 import pytest
 from gptme import Message
 from gptme.tools.base import ToolSpec
-from gptme.tools.rag import _HAS_RAG, init_rag
+from gptme.tools.rag import _HAS_RAG
+from gptme.tools.rag import init as init_rag
 
 
 @pytest.fixture
