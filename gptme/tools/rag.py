@@ -63,6 +63,7 @@ from pathlib import Path
 
 from ..config import get_project_config
 from ..message import Message
+from ..util import get_project_dir
 from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -139,7 +140,11 @@ def init() -> ToolSpec:
     if not _HAS_RAG:
         return tool
 
-    config = get_project_config(Path.cwd())
+    project_dir = get_project_dir()
+    if not project_dir:
+        return tool
+
+    config = get_project_config(project_dir)
     if config:
         # Initialize RAG with configuration
         global indexer
