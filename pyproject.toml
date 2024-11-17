@@ -15,6 +15,7 @@ include = ["gptme/server/static/**/*", "media/logo.png"]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
+gptme-util = "gptme.util.cli:main"
 gptme-nc = "gptme.ncurses:main"
 
 [tool.poetry.dependencies]

@@ -103,14 +103,14 @@ def context():
 
 
 @context.command("generate")
-@click.argument("path", type=click.Path(exists=True))
-def context_generate(_path: str):
-    """Generate context from a directory."""
-    pass
-    # from ..context import generate_context  # fmt: skip
+@click.argument("query")
+def context_generate(query: str):
+    """Retrieve context for a given query."""
+    from ..context import RAGContextProvider  # fmt: skip
 
-    # ctx = generate_context(path)
-    # print(ctx)
+    provider = RAGContextProvider()
+    ctx = provider.get_context(query)
+    print(ctx)
 
 
 @main.group()

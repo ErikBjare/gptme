@@ -1,14 +1,13 @@
 """Tests for the RAG tool."""
 
-from collections.abc import Generator
 from dataclasses import replace
 from unittest.mock import patch
 
 import pytest
-from gptme import Message
 from gptme.tools.base import ToolSpec
 from gptme.tools.rag import _HAS_RAG
 from gptme.tools.rag import init as init_rag
+from gptme.tools.rag import rag_index, rag_search, rag_status
 
 
 @pytest.fixture
@@ -35,7 +34,6 @@ def test_rag_tool_init():
 
 def test_rag_tool_init_without_gptme_rag():
     """Test RAG tool initialization when gptme-rag is not available."""
-
     tool = init_rag()
     with (
         patch("gptme.tools.rag._HAS_RAG", False),
@@ -47,73 +45,72 @@ def test_rag_tool_init_without_gptme_rag():
         assert tool.available is False
 
 
-def _m2str(tool_execute: Generator[Message, None, None] | Message) -> str:
-    """Convert a execute() call to a string."""
-    if isinstance(tool_execute, Generator):
-        return tool_execute.send(None).content
-    elif isinstance(tool_execute, Message):
-        return tool_execute.content
-
-
-def noconfirm(*args, **kwargs):
-    return True
-
-
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_index_command(temp_docs, tmp_path):
-    """Test the index command."""
+def test_rag_index_function(temp_docs, tmp_path):
+    """Test the index function."""
     with patch("gptme.tools.rag.get_project_config") as mock_config:
         mock_config.return_value.rag = {
             "index_path": str(tmp_path),
             "collection": "test",
         }
 
-        tool = init_rag()
-        assert tool.execute
-        result = _m2str(tool.execute("", ["index", str(temp_docs)], noconfirm))
-        assert "Indexed" in result
+        # Initialize RAG
+        init_rag()
 
-        # Check status after indexing
-        result = _m2str(tool.execute("", ["status"], noconfirm))
+        # Test indexing with specific path
+        result = rag_index(str(temp_docs))
+        assert "Indexed 1 paths" in result
+
+        # Test indexing with default path
+        # FIXME: this is really slow in the gptme directory,
+        # since it contains a lot of files (which are in gitignore, but not respected)
+        result = rag_index(glob="**/*.py")
+        assert "Indexed 1 paths" in result
+
+
+@pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
+def test_rag_search_function(temp_docs, tmp_path):
+    """Test the search function."""
+    with patch("gptme.tools.rag.get_project_config") as mock_config:
+        mock_config.return_value.rag = {
+            "index_path": str(tmp_path),
+            "collection": "test",
+        }
+
+        # Initialize RAG and index documents
+        init_rag()
+        rag_index(str(temp_docs))
+
+        # Search for Python
+        result = rag_search("Python")
+        assert "doc1.md" in result
+        assert "Python functions" in result
+
+        # Search for testing
+        result = rag_search("testing")
+        assert "doc2.md" in result
+        assert "testing practices" in result
+
+
+@pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
+def test_rag_status_function(temp_docs, tmp_path):
+    """Test the status function."""
+    with patch("gptme.tools.rag.get_project_config") as mock_config:
+        mock_config.return_value.rag = {
+            "index_path": str(tmp_path),
+            "collection": "test",
+        }
+
+        # Initialize RAG
+        init_rag()
+
+        # Check initial status
+        result = rag_status()
+        assert "Index contains" in result
+        assert "0" in result
+
+        # Index documents and check status again
+        rag_index(str(temp_docs))
+        result = rag_status()
         assert "Index contains" in result
         assert "2" in result  # Should have indexed 2 documents
-
-
-@pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_search_command(temp_docs):
-    """Test the search command."""
-    tool = init_rag()
-    assert tool.execute
-    # Index first
-    _m2str(tool.execute("", ["index", str(temp_docs)], noconfirm))
-
-    # Search for Python
-    result = _m2str(tool.execute("", ["search", "Python"], noconfirm))
-    assert "doc1.md" in result
-    assert "Python functions" in result
-
-    # Search for testing
-    result = _m2str(tool.execute("", ["search", "testing"], noconfirm))
-    assert "doc2.md" in result
-    assert "testing practices" in result
-
-
-@pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_help_command():
-    """Test the help command."""
-    tool = init_rag()
-    assert tool.execute
-    result = _m2str(tool.execute("", ["help"], noconfirm))
-    assert "Available commands" in result
-    assert "index" in result
-    assert "search" in result
-    assert "status" in result
-
-
-@pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_invalid_command():
-    """Test invalid command handling."""
-    tool = init_rag()
-    assert tool.execute
-    result = _m2str(tool.execute("", ["invalid"], noconfirm))
-    assert "Unknown command" in result
