@@ -3,14 +3,14 @@ RAG (Retrieval-Augmented Generation) tool for context-aware assistance.
 
 The RAG tool provides context-aware assistance by indexing and searching project documentation.
 
-Installation
-------------
+.. rubric:: Installation
+
 The RAG tool requires the ``gptme-rag`` package. Install it with::
 
     pip install "gptme[rag]"
 
-Configuration
--------------
+.. rubric:: Configuration
+
 Configure RAG in your ``gptme.toml``::
 
     [rag]
@@ -31,8 +31,8 @@ Configure RAG in your ``gptme.toml``::
     embedding_ttl = 86400             # Embedding cache TTL in seconds (24h)
     search_ttl = 3600                # Search cache TTL in seconds (1h)
 
-Features
---------
+.. rubric:: Features
+
 1. Manual Search and Indexing
    - Index project documentation with ``rag index``
    - Search indexed documents with ``rag search``
@@ -50,8 +50,8 @@ Features
    - Automatic cache invalidation
    - Memory-efficient storage
 
-Benefits
---------
+.. rubric:: Benefits
+
 - Better informed responses through relevant documentation
 - Reduced need for manual context inclusion
 - Automatic token management

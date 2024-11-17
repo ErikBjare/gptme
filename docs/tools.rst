@@ -116,11 +116,11 @@ Chats
 Computer
 --------
 
+.. include:: computer-use-warning.rst
+
 .. automodule:: gptme.tools.computer
     :members:
     :noindex:
-
-.. include:: computer-use-warning.rst
 
 RAG
 ---

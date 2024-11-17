@@ -4,15 +4,15 @@ Tool for computer interaction through X11, including screen capture, keyboard, a
 The computer tool provides direct interaction with the desktop environment through X11.
 Similar to Anthropic's computer use demo, but integrated with gptme's architecture.
 
-Features
---------
+.. rubric:: Features
+
 - Keyboard input simulation
 - Mouse control (movement, clicks, dragging)
 - Screen capture with automatic scaling
 - Cursor position tracking
 
-Installation
-------------
+.. rubric:: Installation
+
 Requires X11 and xdotool::
 
     # On Debian/Ubuntu
@@ -21,16 +21,16 @@ Requires X11 and xdotool::
     # On Arch Linux
     sudo pacman -S xdotool
 
-Configuration
--------------
+.. rubric:: Configuration
+
 The tool uses these environment variables:
 
 - DISPLAY: X11 display to use (default: ":1")
 - WIDTH: Screen width (default: 1024)
 - HEIGHT: Screen height (default: 768)
 
-Usage
------
+.. rubric:: Usage
+
 The tool supports these actions:
 
 Keyboard:
@@ -85,31 +85,31 @@ Action = Literal[
 ]
 
 
-class Resolution(TypedDict):
+class _Resolution(TypedDict):
     width: int
     height: int
 
 
 # Recommended maximum resolutions for LLM vision
-MAX_SCALING_TARGETS: dict[str, Resolution] = {
-    "XGA": Resolution(width=1024, height=768),  # 4:3
-    "WXGA": Resolution(width=1280, height=800),  # 16:10
-    "FWXGA": Resolution(width=1366, height=768),  # ~16:9
+MAX_SCALING_TARGETS: dict[str, _Resolution] = {
+    "XGA": _Resolution(width=1024, height=768),  # 4:3
+    "WXGA": _Resolution(width=1280, height=800),  # 16:10
+    "FWXGA": _Resolution(width=1366, height=768),  # ~16:9
 }
 
 
-class ScalingSource(Enum):
+class _ScalingSource(Enum):
     COMPUTER = "computer"
     API = "api"
 
 
-def chunks(s: str, chunk_size: int) -> list[str]:
+def _chunks(s: str, chunk_size: int) -> list[str]:
     """Split string into chunks for typing simulation."""
     return [s[i : i + chunk_size] for i in range(0, len(s), chunk_size)]
 
 
-def scale_coordinates(
-    source: ScalingSource, x: int, y: int, current_width: int, current_height: int
+def _scale_coordinates(
+    source: _ScalingSource, x: int, y: int, current_width: int, current_height: int
 ) -> tuple[int, int]:
     """Scale coordinates to/from recommended resolutions."""
     ratio = current_width / current_height
@@ -127,7 +127,7 @@ def scale_coordinates(
     x_scaling_factor = target_dimension["width"] / current_width
     y_scaling_factor = target_dimension["height"] / current_height
 
-    if source == ScalingSource.API:
+    if source == _ScalingSource.API:
         if x > current_width or y > current_height:
             raise ValueError(f"Coordinates {x}, {y} are out of bounds")
         # Scale up
@@ -136,7 +136,7 @@ def scale_coordinates(
     return round(x * x_scaling_factor), round(y * y_scaling_factor)
 
 
-def run_xdotool(cmd: str, display: str | None = None) -> str:
+def _run_xdotool(cmd: str, display: str | None = None) -> str:
     """Run an xdotool command with optional display setting and wait for completion."""
     env = os.environ.copy()
     if display:
@@ -173,14 +173,14 @@ def computer(
     if action in ("mouse_move", "left_click_drag"):
         if not coordinate:
             raise ValueError(f"coordinate is required for {action}")
-        x, y = scale_coordinates(
-            ScalingSource.API, coordinate[0], coordinate[1], width, height
+        x, y = _scale_coordinates(
+            _ScalingSource.API, coordinate[0], coordinate[1], width, height
         )
 
         if action == "mouse_move":
-            run_xdotool(f"mousemove --sync {x} {y}", display)
+            _run_xdotool(f"mousemove --sync {x} {y}", display)
         else:  # left_click_drag
-            run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
+            _run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
 
         print(f"Moved mouse to {x},{y}")
         return None
@@ -189,11 +189,11 @@ def computer(
             raise ValueError(f"text is required for {action}")
 
         if action == "key":
-            run_xdotool(f"key -- {text}", display)
+            _run_xdotool(f"key -- {text}", display)
             print(f"Sent key sequence: {text}")
         else:  # type
-            for chunk in chunks(text, TYPING_GROUP_SIZE):
-                run_xdotool(
+            for chunk in _chunks(text, TYPING_GROUP_SIZE):
+                _run_xdotool(
                     f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
                     display,
                 )
@@ -206,7 +206,7 @@ def computer(
             "middle_click": "2",
             "double_click": "--repeat 2 --delay 500 1",
         }[action]
-        run_xdotool(f"click {click_arg}", display)
+        _run_xdotool(f"click {click_arg}", display)
         print(f"Performed {action}")
         return None
     elif action == "screenshot":
@@ -217,7 +217,7 @@ def computer(
 
         if shutil.which("gnome-screenshot"):
             # FIXME: incorrect call to xdotool
-            run_xdotool(f"gnome-screenshot -f {path} -p", display)
+            _run_xdotool(f"gnome-screenshot -f {path} -p", display)
         elif os.name == "posix":
             path = _screenshot(path)  # Use existing screenshot function
         else:
@@ -225,8 +225,8 @@ def computer(
 
         # Scale if needed
         if path.exists():
-            x, y = scale_coordinates(
-                ScalingSource.COMPUTER, width, height, width, height
+            x, y = _scale_coordinates(
+                _ScalingSource.COMPUTER, width, height, width, height
             )
             subprocess.run(
                 f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
@@ -236,10 +236,10 @@ def computer(
             print("Error: Screenshot failed")
         return None
     elif action == "cursor_position":
-        output = run_xdotool("getmouselocation --shell", display)
+        output = _run_xdotool("getmouselocation --shell", display)
         x = int(output.split("X=")[1].split("\n")[0])
         y = int(output.split("Y=")[1].split("\n")[0])
-        x, y = scale_coordinates(ScalingSource.COMPUTER, x, y, width, height)
+        x, y = _scale_coordinates(_ScalingSource.COMPUTER, x, y, width, height)
         print(f"Cursor position: X={x},Y={y}")
         return None
     raise ValueError(f"Invalid action: {action}")
