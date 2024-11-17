@@ -136,6 +136,9 @@ def execute_rag(code: str, args: list[str], confirm: ConfirmFunc) -> Message:
 
 def init() -> ToolSpec:
     """Initialize the RAG tool."""
+    if not _HAS_RAG:
+        return tool
+
     config = get_project_config(Path.cwd())
     if config:
         # Initialize RAG with configuration

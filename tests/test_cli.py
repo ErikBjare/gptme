@@ -129,7 +129,7 @@ def test_command_rename(args: list[str], runner: CliRunner, name: str):
     args.append("/rename auto")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, (result.output, result.exception)
 
 
 @pytest.mark.slow

@@ -1,6 +1,7 @@
 """Tests for the RAG tool."""
 
 from collections.abc import Generator
+from dataclasses import replace
 from unittest.mock import patch
 
 import pytest
@@ -33,7 +34,12 @@ def test_rag_tool_init():
 
 def test_rag_tool_init_without_gptme_rag():
     """Test RAG tool initialization when gptme-rag is not available."""
-    with patch("gptme.tools.rag._HAS_RAG", False):
+
+    tool = init_rag()
+    with (
+        patch("gptme.tools.rag._HAS_RAG", False),
+        patch("gptme.tools.rag.tool", replace(tool, available=False)),
+    ):
         tool = init_rag()
         assert isinstance(tool, ToolSpec)
         assert tool.name == "rag"
@@ -53,17 +59,23 @@ def noconfirm(*args, **kwargs):
 
 
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_index_command(temp_docs):
+def test_rag_index_command(temp_docs, tmp_path):
     """Test the index command."""
-    tool = init_rag()
-    assert tool.execute
-    result = _m2str(tool.execute("", ["index", str(temp_docs)], noconfirm))
-    assert "Indexed" in result
+    with patch("gptme.tools.rag.get_project_config") as mock_config:
+        mock_config.return_value.rag = {
+            "index_path": str(tmp_path),
+            "collection": "test",
+        }
 
-    # Check status after indexing
-    result = _m2str(tool.execute("", ["status"], noconfirm))
-    assert "Index contains" in result
-    assert "2" in result  # Should have indexed 2 documents
+        tool = init_rag()
+        assert tool.execute
+        result = _m2str(tool.execute("", ["index", str(temp_docs)], noconfirm))
+        assert "Indexed" in result
+
+        # Check status after indexing
+        result = _m2str(tool.execute("", ["status"], noconfirm))
+        assert "Index contains" in result
+        assert "2" in result  # Should have indexed 2 documents
 
 
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")

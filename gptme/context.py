@@ -35,8 +35,9 @@ class ContextProvider(ABC):
 class RAGContextProvider(ContextProvider):
     """Context provider using RAG."""
 
-    # TODO: refactor this to share code with rag tool
+    _has_rag = True  # Class attribute for testing
 
+    # TODO: refactor this to share code with rag tool
     def __init__(self):
         try:
             self._has_rag = True
