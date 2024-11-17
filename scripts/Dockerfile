@@ -7,50 +7,44 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry
-
-# Set the working directory
 WORKDIR /app
 
-# Copy only the files needed for installation
-COPY pyproject.toml poetry.lock* ./
+# Install poetry in its own venv
+RUN python -m venv /opt/poetry && \
+    /opt/poetry/bin/pip install poetry
 
-# Install project dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root --without=dev # -E server -E browser -E datascience
+# Copy files needed for building wheel
+COPY pyproject.toml poetry.lock README.md ./
+COPY gptme gptme/
+
+# Install dependencies and export requirements for server
+RUN /opt/poetry/bin/poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt && \
+    /opt/poetry/bin/poetry export --without-hashes --without dev -E server -f requirements.txt -o requirements-server.txt && \
+    /opt/poetry/bin/poetry build
 
 # Final stage
 FROM python:3.10-slim
 
-# Install git and common tools
-RUN apt-get update && apt-get install -y make git tmux curl pandoc && rm -rf /var/lib/apt/lists/*
-
-# Copy installed packages from builder stage
-COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy the project files
-COPY . /app
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    git \
+    tmux \
+    curl \
+    pandoc \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-RUN poetry config virtualenvs.create false
-RUN poetry install --only-root --no-interaction --no-ansi  # only install the gptme package, no dependencies
 
-# Create a non-root user
-RUN useradd -m appuser
+# Copy wheel and requirements, then install
+COPY --from=builder /app/dist/gptme-*.whl /app/requirements*.txt /tmp/
+RUN pip install /tmp/gptme-*.whl && rm /tmp/gptme-*.whl
 
-# Create workspace and give ownership of to non-root user
-RUN mkdir /workspace && chown -R appuser:appuser /workspace
+# Create non-root user and workspace
+RUN useradd -m appuser && \
+    mkdir /workspace && \
+    chown -R appuser:appuser /workspace
 
-# Switch to the non-root user
 USER appuser
-
-# Set PYTHONPATH
-ENV PYTHONPATH=/app
-
-# Set the working directory
 WORKDIR /workspace
 
-# Entrypoint if prompt/args given, run the CLI
-ENTRYPOINT ["python", "-m", "gptme"]
+ENTRYPOINT ["gptme"]

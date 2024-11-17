@@ -4,7 +4,8 @@ FROM gptme:latest
 # Install server dependencies
 USER root
 WORKDIR /app
-RUN poetry install -E server --without=dev
+COPY --from=gptme:latest /tmp/requirements-server.txt /tmp/
+RUN pip install -r /tmp/requirements-server.txt && rm /tmp/requirements-server.txt
 
 # Switch back to non-root user
 USER appuser
