@@ -1,6 +1,10 @@
-from .models import _ModelDictMeta
+from typing import TYPE_CHECKING
 
-OPENAI_MODELS: dict[str, _ModelDictMeta] = {
+if TYPE_CHECKING:
+    from .models import _ModelDictMeta  # fmt: skip
+
+
+OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
     # GPT-4o
     "gpt-4o": {
         "context": 128_000,
