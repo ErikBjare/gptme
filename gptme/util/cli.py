@@ -25,11 +25,16 @@ def chats():
 @click.option("-n", "--limit", default=20, help="Maximum number of chats to show.")
 def chats_list(limit: int):
     """List conversation logs."""
+    found = False
     for conv in get_user_conversations():
         if limit <= 0:
             break
         print(f"{conv.name}: {conv.messages} messages, last modified {conv.modified}")
         limit -= 1
+        found = True
+
+    if not found:
+        print("No conversations found.")
 
 
 @chats.command("read")
@@ -77,8 +82,15 @@ def tokens_count(text: str | None, model: str, file: str | None):
         print("Error: No text provided. Use --file or pipe text to stdin.")
         return
 
+    # Validate model
+    try:
+        enc = tiktoken.encoding_for_model(model)
+    except KeyError:
+        print(f"Error: Model '{model}' not supported by tiktoken.")
+        print("Supported models include: gpt-4, gpt-3.5-turbo, text-davinci-003")
+        return 1
+
     # Count tokens
-    enc = tiktoken.encoding_for_model(model)
     tokens = enc.encode(text)
     print(f"Token count ({model}): {len(tokens)}")
 
