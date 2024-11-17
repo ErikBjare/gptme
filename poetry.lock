@@ -2498,6 +2498,23 @@ pytest = ">=5.0.0"
 python-dotenv = ">=0.9.1"
 
 [[package]]
+name = "pytest-mock"
+version = "3.14.0"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"},
+    {file = "pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f"},
+]
+
+[package.dependencies]
+pytest = ">=6.2.5"
+
+[package.extras]
+dev = ["pre-commit", "pytest-asyncio", "tox"]
+
+[[package]]
 name = "pytest-profiling"
 version = "1.7.0"
 description = "Profiling plugin for py.test"
@@ -3531,4 +3548,4 @@ server = ["flask", "flask-cors"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "80aab1874f6f188bce645324628fd642236c7fff2859b6acbd242b790ab561e6"
+content-hash = "fc6e6adb9c74703fa2abf164f432eb9006fc2da17b9ab1179836395439492823"

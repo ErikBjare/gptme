@@ -89,7 +89,7 @@ def tokens_count(text: str | None, model: str, file: str | None):
     except KeyError:
         print(f"Error: Model '{model}' not supported by tiktoken.")
         print("Supported models include: gpt-4, gpt-3.5-turbo, text-davinci-003")
-        return 1
+        sys.exit(1)
 
     # Count tokens
     tokens = enc.encode(text)
@@ -167,7 +167,7 @@ def tools_info(tool_name: str):
         print(f"Tool '{tool_name}' not found. Available tools:")
         for t in loaded_tools:
             print(f"- {t.name}")
-        return
+        sys.exit(1)
 
     print(f"Tool: {tool.name}")
     print(f"Description: {tool.desc}")

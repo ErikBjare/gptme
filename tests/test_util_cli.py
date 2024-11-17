@@ -32,35 +32,68 @@ def test_tokens_count():
         assert "Token count" in result.output
 
 
-def test_chats_list(mocker):
+def test_chats_list(tmp_path, mocker):
     """Test the chats list command."""
     runner = CliRunner()
 
-    # Test empty list
-    mocker.patch("gptme.util.cli.get_user_conversations", return_value=[])
+    # Create test conversations
+    logs_dir = tmp_path / "logs"
+    logs_dir.mkdir()
+
+    # Mock both the logs directory and the conversation listing
+    mocker.patch("gptme.dirs.get_logs_dir", return_value=str(logs_dir))
+    mocker.patch("gptme.logmanager.get_user_conversations", return_value=[])
+
+    # Test empty list (should work now since we're using our empty logs_dir)
     result = runner.invoke(main, ["chats", "ls"])
     assert result.exit_code == 0
     assert "No conversations found" in result.output
 
+    # Create test conversation files with names that won't be filtered
+    conv1_dir = logs_dir / "2024-01-01-chat-one"
+    conv1_dir.mkdir()
+    (conv1_dir / "conversation.jsonl").write_text(
+        '{"role": "user", "content": "hello", "timestamp": "2024-01-01T00:00:00"}\n'
+    )
+
+    conv2_dir = logs_dir / "2024-01-01-chat-two"
+    conv2_dir.mkdir()
+    (conv2_dir / "conversation.jsonl").write_text(
+        '{"role": "user", "content": "hello", "timestamp": "2024-01-01T00:00:00"}\n'
+        '{"role": "assistant", "content": "hi", "timestamp": "2024-01-01T00:00:01"}\n'
+    )
+
+    # Create ConversationMeta objects for our test conversations
+    from gptme.logmanager import ConversationMeta
+    import time
+
+    conv1 = ConversationMeta(
+        name="2024-01-01-chat-one",
+        path=str(conv1_dir / "conversation.jsonl"),
+        created=time.time(),
+        modified=time.time(),
+        messages=1,
+        branches=1,
+    )
+    conv2 = ConversationMeta(
+        name="2024-01-01-chat-two",
+        path=str(conv2_dir / "conversation.jsonl"),
+        created=time.time(),
+        modified=time.time(),
+        messages=2,
+        branches=1,
+    )
+
+    # Update the mock to return our test conversations
+    mocker.patch("gptme.logmanager.get_user_conversations", return_value=[conv1, conv2])
+
     # Test with conversations
-    class MockConv:
-        def __init__(self, name, messages, modified):
-            self.name = name
-            self.messages = messages
-            self.modified = modified
-
-    mock_convs = [
-        MockConv("test-1", 5, "2024-01-01"),
-        MockConv("test-2", 10, "2024-01-02"),
-    ]
-    mocker.patch("gptme.util.cli.get_user_conversations", return_value=mock_convs)
-
     result = runner.invoke(main, ["chats", "ls"])
     assert result.exit_code == 0
-    assert "test-1" in result.output
-    assert "test-2" in result.output
-    assert "5 messages" in result.output
-    assert "10 messages" in result.output
+    assert "chat-one" in result.output
+    assert "chat-two" in result.output
+    assert "Messages: 1" in result.output  # First chat has 1 message
+    assert "Messages: 2" in result.output  # Second chat has 2 messages
 
 
 @pytest.mark.skip("Waiting for context module PR")
