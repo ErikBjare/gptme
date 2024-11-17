@@ -120,32 +120,6 @@ Computer
     :members:
     :noindex:
 
-The computer tool provides direct interaction with the desktop environment through X11, allowing for:
-
-- Keyboard input simulation
-- Mouse control (movement, clicks, dragging)
-- Screen capture with automatic scaling
-- Cursor position tracking
-
-To use the computer tool, see the instructions for :doc:`server`.
-
-Example usage::
-
-    # Type text
-    computer(action="type", text="Hello, World!")
-
-    # Move mouse and click
-    computer(action="mouse_move", coordinate=(100, 100))
-    computer(action="left_click")
-
-    # Take screenshot
-    computer(action="screenshot")
-
-    # Send keyboard shortcuts
-    computer(action="key", text="Control_L+c")
-
-The tool automatically handles screen resolution scaling to ensure optimal performance with LLM vision capabilities.
-
 .. include:: computer-use-warning.rst
 
 RAG

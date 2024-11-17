@@ -1,6 +1,56 @@
 """
 Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.
+
+The computer tool provides direct interaction with the desktop environment through X11.
 Similar to Anthropic's computer use demo, but integrated with gptme's architecture.
+
+Features
+--------
+- Keyboard input simulation
+- Mouse control (movement, clicks, dragging)
+- Screen capture with automatic scaling
+- Cursor position tracking
+
+Installation
+------------
+Requires X11 and xdotool::
+
+    # On Debian/Ubuntu
+    sudo apt install xdotool
+
+    # On Arch Linux
+    sudo pacman -S xdotool
+
+Configuration
+-------------
+The tool uses these environment variables:
+
+- DISPLAY: X11 display to use (default: ":1")
+- WIDTH: Screen width (default: 1024)
+- HEIGHT: Screen height (default: 768)
+
+Usage
+-----
+The tool supports these actions:
+
+Keyboard:
+    - key: Send key sequence (e.g., "Return", "Control_L+c")
+    - type: Type text with realistic delays
+
+Mouse:
+    - mouse_move: Move mouse to coordinates
+    - left_click: Click left mouse button
+    - right_click: Click right mouse button
+    - middle_click: Click middle mouse button
+    - double_click: Double click left mouse button
+    - left_click_drag: Click and drag to coordinates
+
+Screen:
+    - screenshot: Take and view a screenshot
+    - cursor_position: Get current mouse position
+
+The tool automatically handles screen resolution scaling to ensure optimal performance
+with LLM vision capabilities.
 """
 
 import os
@@ -208,11 +258,27 @@ Available actions:
 """
 
 examples = f"""
-#### View a screenshot
-> User: What do you see on the screen?
-> Assistant:
+User: Take a screenshot of the desktop
+Assistant: I'll capture the current screen.
 {ToolUse("ipython", [], 'computer("screenshot")').to_output()}
-> System: Viewing image...
+System: Viewing image...
+
+User: Type "Hello, World!" into the active window
+Assistant: I'll type the text with realistic delays.
+{ToolUse("ipython", [], 'computer("type", text="Hello, World!")').to_output()}
+System: Typed text: Hello, World!
+
+User: Move the mouse to coordinates (100, 200) and click
+Assistant: I'll move the mouse and perform a left click.
+{ToolUse("ipython", [], 'computer("mouse_move", coordinate=(100, 200))').to_output()}
+System: Moved mouse to 100,200
+{ToolUse("ipython", [], 'computer("left_click")').to_output()}
+System: Performed left_click
+
+User: Press Ctrl+C
+Assistant: I'll send the Control+C key sequence.
+{ToolUse("ipython", [], 'computer("key", text="Control_L+c")').to_output()}
+System: Sent key sequence: Control_L+c
 """
 
 tool = ToolSpec(
@@ -222,3 +288,5 @@ tool = ToolSpec(
     examples=examples,
     functions=[computer],
 )
+
+__doc__ = tool.get_doc(__doc__)
