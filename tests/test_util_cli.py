@@ -104,5 +104,5 @@ def test_tools_info():
 
     # Test invalid tool
     result = runner.invoke(main, ["tools", "info", "nonexistent-tool"])
-    assert result.exit_code == 0  # returns 0 but shows error message
+    assert result.exit_code != 0  # returns non-zero for not found tool
     assert "not found" in result.output
