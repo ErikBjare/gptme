@@ -1,3 +1,7 @@
+"""
+Utility package for gptme.
+"""
+
 import functools
 import io
 import logging
@@ -17,7 +21,7 @@ from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
 
-from .clipboard import copy, set_copytext
+from ..clipboard import copy, set_copytext
 
 EMOJI_WARN = "⚠️"
 
