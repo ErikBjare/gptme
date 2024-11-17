@@ -383,6 +383,27 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-eval">gptme-eval</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util">gptme-util</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats">chats</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-ls">ls</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-read">read</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context">context</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context-generate">generate</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tokens">tokens</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tokens-count">count</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools">tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools-info">info</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools-list">list</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -403,6 +424,7 @@ document.write(`
 <li><p><a class="reference internal" href="#gptme" id="id1">gptme</a></p></li>
 <li><p><a class="reference internal" href="#gptme-server" id="id2">gptme-server</a></p></li>
 <li><p><a class="reference internal" href="#gptme-eval" id="id3">gptme-eval</a></p></li>
+<li><p><a class="reference internal" href="#gptme-util" id="id4">gptme-util</a></p></li>
 </ul>
 </nav>
 <p>This is the full CLI reference. For a more concise version, run <code class="docutils literal notranslate"><span class="pre">gptme</span> <span class="pre">--help</span></code>.</p>
@@ -600,6 +622,150 @@ Pass eval or suite names to run, or result files to print.</p>
 </dd></dl>
 
 </section>
+<section id="gptme-util">
+<h2>gptme-util<a class="headerlink" href="#gptme-util" title="Link to this heading">#</a></h2>
+<p>Utility commands for gptme.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="gptme-util-chats">
+<h3>chats<a class="headerlink" href="#gptme-util-chats" title="Link to this heading">#</a></h3>
+<p>Commands for managing chat logs.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>chats<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="gptme-util-chats-ls">
+<h4>ls<a class="headerlink" href="#gptme-util-chats-ls" title="Link to this heading">#</a></h4>
+<p>List conversation logs.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>chats<span class="w"> </span>ls<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-ls-n">
+<span id="cmdoption-gptme-util-chats-ls-limit"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--limit</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;limit&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-util-chats-ls-n" title="Link to this definition">#</a></dt>
+<dd><p>Maximum number of chats to show.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-ls-summarize">
+<span class="sig-name descname"><span class="pre">--summarize</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-chats-ls-summarize" title="Link to this definition">#</a></dt>
+<dd><p>Generate LLM-based summaries for chats</p>
+</dd></dl>
+
+</section>
+<section id="gptme-util-chats-read">
+<h4>read<a class="headerlink" href="#gptme-util-chats-read" title="Link to this heading">#</a></h4>
+<p>Read a specific chat log.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>chats<span class="w"> </span><span class="nb">read</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-read-arg-NAME">
+<span class="sig-name descname"><span class="pre">NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-chats-read-arg-NAME" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="gptme-util-context">
+<h3>context<a class="headerlink" href="#gptme-util-context" title="Link to this heading">#</a></h3>
+<p>Commands for context generation.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>context<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="gptme-util-context-generate">
+<h4>generate<a class="headerlink" href="#gptme-util-context-generate" title="Link to this heading">#</a></h4>
+<p>Generate context from a directory.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>context<span class="w"> </span>generate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PATH
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-context-generate-arg-PATH">
+<span class="sig-name descname"><span class="pre">PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-context-generate-arg-PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="gptme-util-tokens">
+<h3>tokens<a class="headerlink" href="#gptme-util-tokens" title="Link to this heading">#</a></h3>
+<p>Commands for token counting.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>tokens<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="gptme-util-tokens-count">
+<h4>count<a class="headerlink" href="#gptme-util-tokens-count" title="Link to this heading">#</a></h4>
+<p>Count tokens in text or file.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>tokens<span class="w"> </span>count<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>TEXT<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tokens-count-m">
+<span id="cmdoption-gptme-util-tokens-count-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-util-tokens-count-m" title="Link to this definition">#</a></dt>
+<dd><p>Model to use for token counting.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tokens-count-f">
+<span id="cmdoption-gptme-util-tokens-count-file"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-util-tokens-count-f" title="Link to this definition">#</a></dt>
+<dd><p>File to count tokens in.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tokens-count-arg-TEXT">
+<span class="sig-name descname"><span class="pre">TEXT</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-tokens-count-arg-TEXT" title="Link to this definition">#</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="gptme-util-tools">
+<h3>tools<a class="headerlink" href="#gptme-util-tools" title="Link to this heading">#</a></h3>
+<p>Tool-related utilities.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>tools<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="gptme-util-tools-info">
+<h4>info<a class="headerlink" href="#gptme-util-tools-info" title="Link to this heading">#</a></h4>
+<p>Show detailed information about a tool.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>tools<span class="w"> </span>info<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TOOL_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tools-info-arg-TOOL_NAME">
+<span class="sig-name descname"><span class="pre">TOOL_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-tools-info-arg-TOOL_NAME" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="gptme-util-tools-list">
+<h4>list<a class="headerlink" href="#gptme-util-tools-list" title="Link to this heading">#</a></h4>
+<p>List available tools.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>tools<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tools-list-available">
+<span id="cmdoption-gptme-util-tools-list-all"></span><span class="sig-name descname"><span class="pre">--available</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-tools-list-available" title="Link to this definition">#</a></dt>
+<dd><p>Show only available tools or all tools</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-tools-list-langtags">
+<span class="sig-name descname"><span class="pre">--langtags</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-tools-list-langtags" title="Link to this definition">#</a></dt>
+<dd><p>Show language tags for code execution</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
 </section>
 
 
@@ -650,6 +816,27 @@ Pass eval or suite names to run, or result files to print.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-server">gptme-server</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-eval">gptme-eval</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util">gptme-util</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats">chats</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-ls">ls</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-read">read</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context">context</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context-generate">generate</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tokens">tokens</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tokens-count">count</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools">tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools-info">info</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-tools-list">list</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

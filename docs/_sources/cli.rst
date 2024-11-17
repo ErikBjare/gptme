@@ -21,3 +21,7 @@ This is the full CLI reference. For a more concise version, run ``gptme --help``
 .. click:: gptme.eval:main
    :prog: gptme-eval
    :nested: full
+
+.. click:: gptme.util.cli:main
+   :prog: gptme-util
+   :nested: full

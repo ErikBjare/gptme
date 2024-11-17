@@ -390,6 +390,7 @@ document.write(`
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.timestamp"><code class="docutils literal notranslate"><span class="pre">Message.timestamp</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.files"><code class="docutils literal notranslate"><span class="pre">Message.files</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.__init__"><code class="docutils literal notranslate"><span class="pre">Message.__init__()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.format"><code class="docutils literal notranslate"><span class="pre">Message.format()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.from_toml"><code class="docutils literal notranslate"><span class="pre">Message.from_toml()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.get_codeblocks"><code class="docutils literal notranslate"><span class="pre">Message.get_codeblocks()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.replace"><code class="docutils literal notranslate"><span class="pre">Message.replace()</span></code></a></li>
@@ -411,6 +412,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logmanager">LogManager</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta"><code class="docutils literal notranslate"><span class="pre">ConversationMeta</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta.__init__"><code class="docutils literal notranslate"><span class="pre">ConversationMeta.__init__()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta.format"><code class="docutils literal notranslate"><span class="pre">ConversationMeta.format()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.Log"><code class="docutils literal notranslate"><span class="pre">Log</span></code></a><ul class="nav section-nav flex-column">
@@ -433,6 +435,7 @@ document.write(`
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.get_conversations"><code class="docutils literal notranslate"><span class="pre">get_conversations()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.get_user_conversations"><code class="docutils literal notranslate"><span class="pre">get_user_conversations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.list_conversations"><code class="docutils literal notranslate"><span class="pre">list_conversations()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.prepare_messages"><code class="docutils literal notranslate"><span class="pre">prepare_messages()</span></code></a></li>
 </ul>
 </li>
@@ -546,6 +549,22 @@ This is not persisted to the log file.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gptme.message.Message.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oneline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.message.Message.format" title="Link to this definition">#</a></dt>
+<dd><p>Format the message for display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>oneline</strong> – Whether to format the message as a single line</p></li>
+<li><p><strong>highlight</strong> – Whether to highlight code blocks</p></li>
+<li><p><strong>max_length</strong> – Maximum length of the message. If None, no truncation is applied.
+If set, will truncate at first newline or max_length, whichever comes first.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gptme.message.Message.from_toml">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_toml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">toml</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#gptme.message.Message.from_toml" title="Link to this definition">#</a></dt>
 <dd><p>Converts a TOML string to a message.</p>
@@ -615,11 +634,17 @@ print(“Hello, world!”)
 <dl class="py class" id="module-gptme.logmanager">
 <dt class="sig sig-object py" id="gptme.logmanager.ConversationMeta">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">ConversationMeta</span></span><a class="headerlink" href="#gptme.logmanager.ConversationMeta" title="Link to this definition">#</a></dt>
-<dd><p>ConversationMeta(name: str, path: str, created: float, modified: float, messages: int, branches: int)</p>
+<dd><p>Metadata about a conversation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gptme.logmanager.ConversationMeta.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.ConversationMeta.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.logmanager.ConversationMeta.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#gptme.logmanager.ConversationMeta.format" title="Link to this definition">#</a></dt>
+<dd><p>Format conversation metadata for display.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -718,6 +743,20 @@ If you want to keep the old log, use fork()</p>
 <dt class="sig sig-object py" id="gptme.logmanager.get_user_conversations">
 <span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">get_user_conversations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.logmanager.ConversationMeta" title="gptme.logmanager.ConversationMeta"><span class="pre">ConversationMeta</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.logmanager.get_user_conversations" title="Link to this definition">#</a></dt>
 <dd><p>Returns all user conversations, excluding ones used for testing, evals, etc.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gptme.logmanager.list_conversations">
+<span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">list_conversations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_test</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.logmanager.ConversationMeta" title="gptme.logmanager.ConversationMeta"><span class="pre">ConversationMeta</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.logmanager.list_conversations" title="Link to this definition">#</a></dt>
+<dd><p>List conversations with a limit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> – Maximum number of conversations to return</p></li>
+<li><p><strong>include_test</strong> – Whether to include test conversations</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -862,6 +901,7 @@ If you want to keep the old log, use fork()</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.timestamp"><code class="docutils literal notranslate"><span class="pre">Message.timestamp</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.files"><code class="docutils literal notranslate"><span class="pre">Message.files</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.__init__"><code class="docutils literal notranslate"><span class="pre">Message.__init__()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.format"><code class="docutils literal notranslate"><span class="pre">Message.format()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.from_toml"><code class="docutils literal notranslate"><span class="pre">Message.from_toml()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.get_codeblocks"><code class="docutils literal notranslate"><span class="pre">Message.get_codeblocks()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.message.Message.replace"><code class="docutils literal notranslate"><span class="pre">Message.replace()</span></code></a></li>
@@ -883,6 +923,7 @@ If you want to keep the old log, use fork()</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logmanager">LogManager</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta"><code class="docutils literal notranslate"><span class="pre">ConversationMeta</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta.__init__"><code class="docutils literal notranslate"><span class="pre">ConversationMeta.__init__()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.ConversationMeta.format"><code class="docutils literal notranslate"><span class="pre">ConversationMeta.format()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.Log"><code class="docutils literal notranslate"><span class="pre">Log</span></code></a><ul class="nav section-nav flex-column">
@@ -905,6 +946,7 @@ If you want to keep the old log, use fork()</p>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.get_conversations"><code class="docutils literal notranslate"><span class="pre">get_conversations()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.get_user_conversations"><code class="docutils literal notranslate"><span class="pre">get_user_conversations()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.list_conversations"><code class="docutils literal notranslate"><span class="pre">list_conversations()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.prepare_messages"><code class="docutils literal notranslate"><span class="pre">prepare_messages()</span></code></a></li>
 </ul>
 </li>
