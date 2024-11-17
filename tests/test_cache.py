@@ -89,8 +89,7 @@ def test_get_cache_singleton():
     assert cache1 is cache2
 
 
-@pytest.mark.asyncio
-async def test_rag_context_provider_with_cache():
+def test_rag_context_provider_with_cache():
     """Test RAG context provider with caching."""
     with patch("gptme.context.RAGContextProvider._has_rag", True):
         provider = RAGContextProvider()
