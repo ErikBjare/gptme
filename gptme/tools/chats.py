@@ -3,6 +3,7 @@ List, search, and summarize past conversation logs.
 """
 
 import logging
+import textwrap
 from pathlib import Path
 
 from ..message import Message
@@ -21,7 +22,9 @@ def _get_matching_messages(log_manager, query: str, system=False) -> list[Messag
     ]
 
 
-def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
+def list_chats(
+    max_results: int = 5, metadata=False, include_summary: bool = False
+) -> None:
     """
     List recent chat conversations and optionally summarize them using an LLM.
 
@@ -41,8 +44,9 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
 
     print(f"Recent conversations (showing up to {max_results}):")
     for i, conv in enumerate(conversations, 1):
-        print(f"\n{i}. {conv.format()}")
-        print(f"   Created: {conv.created}")
+        if metadata:
+            print()  # Add a newline between conversations
+        print(f"{i:2}. {textwrap.indent(conv.format(metadata=True), '    ')[4:]}")
 
         log_path = Path(conv.path)
         log_manager = LogManager.load(log_path)
@@ -50,7 +54,10 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
         # Use the LLM to generate a summary if requested
         if include_summary:
             summary = summarize(log_manager.log.messages)
-            print(f"   Summary: {summary.content}")
+            print(
+                f"\n    Summary:\n{textwrap.indent(summary.content, '    > ', predicate=lambda _: True)}"
+            )
+            print()
 
 
 def search_chats(query: str, max_results: int = 5, system=False) -> None:

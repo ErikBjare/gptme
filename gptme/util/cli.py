@@ -8,8 +8,9 @@ from pathlib import Path
 import click
 
 from ..dirs import get_logs_dir
-from ..logmanager import LogManager, list_conversations
+from ..logmanager import LogManager
 from ..message import Message
+from ..tools.chats import list_chats
 
 
 @click.group()
@@ -26,16 +27,17 @@ def chats():
 
 @chats.command("ls")
 @click.option("-n", "--limit", default=20, help="Maximum number of chats to show.")
-def chats_list(limit: int):
+@click.option(
+    "--summarize", is_flag=True, help="Generate LLM-based summaries for chats"
+)
+def chats_list(limit: int, summarize: bool):
     """List conversation logs."""
+    if summarize:
+        from gptme.init import init  # fmt: skip
 
-    conversations = list_conversations(limit)
-    if not conversations:
-        print("No conversations found.")
-        return
-
-    for conv in conversations:
-        print(conv.format())
+        # This isn't the best way to initialize the model for summarization, but it works for now
+        init("openai/gpt-4o", interactive=False, tool_allowlist=[])
+    list_chats(max_results=limit, include_summary=summarize)
 
 
 @chats.command("read")

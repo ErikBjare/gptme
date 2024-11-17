@@ -340,9 +340,16 @@ class ConversationMeta:
     messages: int
     branches: int
 
-    def format(self) -> str:
-        """Format a conversation for display."""
-        return f"{self.name}: {self.messages} messages, last modified {self.modified}"
+    def format(self, metadata=False) -> str:
+        """Format conversation metadata for display."""
+        output = f"{self.name}"
+        if metadata:
+            output += f"\nMessages: {self.messages}"
+            output += f"\nCreated:  {datetime.fromtimestamp(self.created)}"
+            output += f"\nModified: {datetime.fromtimestamp(self.modified)}"
+            if self.branches > 1:
+                output += f"\n({self.branches} branches)"
+        return output
 
 
 def get_conversations() -> Generator[ConversationMeta, None, None]:
