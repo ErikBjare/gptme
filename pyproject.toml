@@ -82,6 +82,7 @@ myst-parser = "*"
 # types
 types-tabulate = "*"
 types-lxml = "*"
+pylint = "^3.3.1"
 
 [tool.poetry.extras]
 server = ["flask", "flask-cors"]

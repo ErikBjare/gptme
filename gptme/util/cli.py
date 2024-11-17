@@ -5,7 +5,6 @@ CLI for gptme utility commands.
 import sys
 import click
 
-from ..logmanager import get_user_conversations
 from ..message import Message
 
 
@@ -25,16 +24,15 @@ def chats():
 @click.option("-n", "--limit", default=20, help="Maximum number of chats to show.")
 def chats_list(limit: int):
     """List conversation logs."""
-    found = False
-    for conv in get_user_conversations():
-        if limit <= 0:
-            break
-        print(f"{conv.name}: {conv.messages} messages, last modified {conv.modified}")
-        limit -= 1
-        found = True
+    from ..logmanager import list_conversations, format_conversation
 
+    conversations, found = list_conversations(limit)
     if not found:
         print("No conversations found.")
+        return
+
+    for conv in conversations:
+        print(format_conversation(conv))
 
 
 @chats.command("read")
