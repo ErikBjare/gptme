@@ -1098,13 +1098,13 @@ files = [
 
 [[package]]
 name = "gptme-rag"
-version = "0.1.4"
+version = "0.1.5"
 description = "RAG implementation for gptme context management"
 optional = true
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "gptme_rag-0.1.4-py3-none-any.whl", hash = "sha256:047acd2aa5d7aefea467a6b15a4b6c416e5260eaf39d66043275c3b8dd1504d6"},
-    {file = "gptme_rag-0.1.4.tar.gz", hash = "sha256:a972a9de96fbe6d5a0674c7dd9f5443e2159b74316ec210be71744cb02799073"},
+    {file = "gptme_rag-0.1.5-py3-none-any.whl", hash = "sha256:0d93a13d8ffb3d1c4e9938c7c4469e0907c2c51d048816ba8b9a9e2b6ef5c5b1"},
+    {file = "gptme_rag-0.1.5.tar.gz", hash = "sha256:a93f5643556e5b0ded10cad81e80affe87c24ed92cc31d7ac260e96285b0e22e"},
 ]
 
 [package.dependencies]
@@ -5184,4 +5184,4 @@ server = ["flask", "flask-cors"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1e79823f341ef0399ceb2e2a391ae0f1e74d37c58944865ef882e610aa70bbc3"
+content-hash = "24319f2d1054169eb45f031cc6b34fda546e04a6f29b033024c55348f7dfa281"
