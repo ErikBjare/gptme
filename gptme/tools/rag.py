@@ -34,9 +34,9 @@ Configure RAG in your ``gptme.toml``::
 .. rubric:: Features
 
 1. Manual Search and Indexing
-   - Index project documentation with ``rag index``
-   - Search indexed documents with ``rag search``
-   - Check index status with ``rag status``
+   - Index project documentation with ``rag_index``
+   - Search indexed documents with ``rag_search``
+   - Check index status with ``rag_status``
 
 2. Automatic Context Enhancement
    - Automatically adds relevant context to user messages
