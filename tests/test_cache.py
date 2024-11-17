@@ -3,7 +3,6 @@
 import time
 from unittest.mock import Mock, patch
 
-import pytest
 
 from gptme.cache import Cache, RAGCache, get_cache
 from gptme.context import RAGContextProvider
