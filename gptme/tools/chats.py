@@ -2,30 +2,13 @@
 List, search, and summarize past conversation logs.
 """
 
-import itertools
 import logging
 from pathlib import Path
-from textwrap import indent
-from typing import TYPE_CHECKING
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
 
-if TYPE_CHECKING:
-    from ..logmanager import LogManager
-
-
 logger = logging.getLogger(__name__)
-
-
-def _format_message_snippet(msg: Message, max_length: int = 100) -> str:
-    """Format a message snippet for display."""
-    first_newline = msg.content.find("\n")
-    max_length = min(max_length, first_newline) if first_newline != -1 else max_length
-    content = msg.content[:max_length]
-    return f"{msg.role.capitalize()}: {content}" + (
-        "..." if len(content) <= len(msg.content) else ""
-    )
 
 
 def _get_matching_messages(log_manager, query: str, system=False) -> list[Message]:
@@ -38,35 +21,6 @@ def _get_matching_messages(log_manager, query: str, system=False) -> list[Messag
     ]
 
 
-def _summarize_conversation(
-    log_manager: "LogManager", include_summary: bool
-) -> list[str]:
-    """Summarize a conversation."""
-    # noreorder
-    from ..llm import summarize as llm_summarize  # fmt: skip
-
-    summary_lines = []
-    if include_summary:
-        summary = llm_summarize(log_manager.log.messages)
-        summary_lines.append(indent(f"Summary: {summary.content}", "   "))
-    else:
-        non_system_messages = [msg for msg in log_manager.log if msg.role != "system"]
-        if non_system_messages:
-            first_msg = non_system_messages[0]
-            last_msg = non_system_messages[-1]
-
-            summary_lines.append(
-                f"   First message: {_format_message_snippet(first_msg)}"
-            )
-            if last_msg != first_msg:
-                summary_lines.append(
-                    f"   Last message:  {_format_message_snippet(last_msg)}"
-                )
-
-    summary_lines.append(f"   Total messages: {len(log_manager.log)}")
-    return summary_lines
-
-
 def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
     """
     List recent chat conversations and optionally summarize them using an LLM.
@@ -77,24 +31,26 @@ def list_chats(max_results: int = 5, include_summary: bool = False) -> None:
             If True, uses an LLM to generate a comprehensive summary.
             If False, uses a simple strategy showing snippets of the first and last messages.
     """
-    # noreorder
-    from ..logmanager import LogManager, get_user_conversations  # fmt: skip
+    from ..llm import summarize  # fmt: skip
+    from ..logmanager import LogManager, list_conversations  # fmt: skip
 
-    conversations = list(itertools.islice(get_user_conversations(), max_results))
+    conversations = list_conversations(max_results)
     if not conversations:
         print("No conversations found.")
         return
 
     print(f"Recent conversations (showing up to {max_results}):")
     for i, conv in enumerate(conversations, 1):
-        print(f"\n{i}. {conv.name}")
+        print(f"\n{i}. {conv.format()}")
         print(f"   Created: {conv.created}")
 
         log_path = Path(conv.path)
         log_manager = LogManager.load(log_path)
 
-        summary_lines = _summarize_conversation(log_manager, include_summary)
-        print("\n".join(summary_lines))
+        # Use the LLM to generate a summary if requested
+        if include_summary:
+            summary = summarize(log_manager.log.messages)
+            print(f"   Summary: {summary.content}")
 
 
 def search_chats(query: str, max_results: int = 5, system=False) -> None:
@@ -106,11 +62,10 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
         max_results (int): Maximum number of conversations to display.
         system (bool): Whether to include system messages in the search.
     """
-    # noreorder
-    from ..logmanager import LogManager, get_user_conversations  # fmt: skip
+    from ..logmanager import LogManager, list_conversations  # fmt: skip
 
     results: list[dict] = []
-    for conv in get_user_conversations():
+    for conv in list_conversations(max_results):
         log_path = Path(conv.path)
         log_manager = LogManager.load(log_path)
 
@@ -119,37 +74,31 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
         if matching_messages:
             results.append(
                 {
-                    "conversation": conv.name,
+                    "conversation": conv,
                     "log_manager": log_manager,
                     "matching_messages": matching_messages,
                 }
             )
 
-        if len(results) >= max_results:
-            break
-
-    # Sort results by the number of matching messages, in descending order
-    results.sort(key=lambda x: len(x["matching_messages"]), reverse=True)
-
     if not results:
         print(f"No results found for query: '{query}'")
         return
+
+    # Sort results by the number of matching messages, in descending order
+    results.sort(key=lambda x: len(x["matching_messages"]), reverse=True)
 
     print(f"Search results for query: '{query}'")
     print(f"Found matches in {len(results)} conversation(s):")
 
     for i, result in enumerate(results, 1):
-        print(f"\n{i}. Conversation: {result['conversation']}")
+        conversation = result["conversation"]
+        print(f"\n{i}. {conversation.format()}")
         print(f"   Number of matching messages: {len(result['matching_messages'])}")
 
-        summary_lines = _summarize_conversation(
-            result["log_manager"], include_summary=False
-        )
-        print("\n".join(summary_lines))
-
+        # Show sample matches
         print("   Sample matches:")
         for j, msg in enumerate(result["matching_messages"][:3], 1):
-            print(f"     {j}. {_format_message_snippet(msg)}")
+            print(f"     {j}. {msg.format(max_length=100)}")
         if len(result["matching_messages"]) > 3:
             print(
                 f"     ... and {len(result['matching_messages']) - 3} more matching message(s)"
@@ -165,12 +114,9 @@ def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> Non
         max_results (int): Maximum number of messages to display.
         incl_system (bool): Whether to include system messages.
     """
-    # noreorder
-    from ..logmanager import LogManager, get_conversations  # fmt: skip
+    from ..logmanager import LogManager, list_conversations  # fmt: skip
 
-    conversations = list(get_conversations())
-
-    for conv in conversations:
+    for conv in list_conversations():
         if conv.name == conversation:
             log_path = Path(conv.path)
             logmanager = LogManager.load(log_path)
@@ -178,10 +124,8 @@ def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> Non
             i = 0
             for msg in logmanager.log:
                 if msg.role != "system" or incl_system:
-                    print(f"{i}. {_format_message_snippet(msg)}")
+                    print(f"{i}. {msg.format(max_length=100)}")
                     i += 1
-                else:
-                    print(f"{i}. (system message)")
                 if i >= max_results:
                     break
             break

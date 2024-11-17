@@ -9,7 +9,6 @@ from itertools import islice, zip_longest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Literal, TypeAlias
-from collections.abc import Callable
 
 from rich import print
 
@@ -332,12 +331,18 @@ def _conversation_files() -> list[Path]:
 
 @dataclass(frozen=True)
 class ConversationMeta:
+    """Metadata about a conversation."""
+
     name: str
     path: str
     created: float
     modified: float
     messages: int
     branches: int
+
+    def format(self) -> str:
+        """Format a conversation for display."""
+        return f"{self.name}: {self.messages} messages, last modified {self.modified}"
 
 
 def get_conversations() -> Generator[ConversationMeta, None, None]:
@@ -369,28 +374,21 @@ def get_user_conversations() -> Generator[ConversationMeta, None, None]:
         yield conv
 
 
-def format_conversation(conv: ConversationMeta) -> str:
-    """Format a conversation for display."""
-    return f"{conv.name}: {conv.messages} messages, last modified {conv.modified}"
-
-
 def list_conversations(
-    limit: int = 20, formatter: Callable[[ConversationMeta], str] | None = None
-) -> tuple[list[ConversationMeta], bool]:
-    """List conversations with a limit, returns (conversations, found_any)."""
-    if formatter is None:
-        formatter = format_conversation
+    limit: int = 20,
+    include_test: bool = False,
+) -> list[ConversationMeta]:
+    """
+    List conversations with a limit.
 
-    found = False
-    conversations = []
-    for conv in get_user_conversations():
-        if limit <= 0:
-            break
-        conversations.append(conv)
-        limit -= 1
-        found = True
-
-    return conversations, found
+    Args:
+        limit: Maximum number of conversations to return
+        include_test: Whether to include test conversations
+    """
+    conversation_iter = (
+        get_conversations() if include_test else get_user_conversations()
+    )
+    return list(islice(conversation_iter, limit))
 
 
 def _gen_read_jsonl(path: PathLike) -> Generator[Message, None, None]:

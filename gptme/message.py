@@ -183,7 +183,30 @@ class Message:
         attrs = f"role='{self.role}'"
         return f"<message {attrs}>\n{self.content}\n</message>"
 
-    def format(self, oneline: bool = False, highlight: bool = False) -> str:
+    def format(
+        self,
+        oneline: bool = False,
+        highlight: bool = False,
+        max_length: int | None = None,
+    ) -> str:
+        """Format the message for display.
+
+        Args:
+            oneline: Whether to format the message as a single line
+            highlight: Whether to highlight code blocks
+            max_length: Maximum length of the message. If None, no truncation is applied.
+                       If set, will truncate at first newline or max_length, whichever comes first.
+        """
+        if max_length is not None:
+            first_newline = self.content.find("\n")
+            max_length = (
+                min(max_length, first_newline) if first_newline != -1 else max_length
+            )
+            content = self.content[:max_length]
+            if len(content) < len(self.content):
+                content += "..."
+            temp_msg = self.replace(content=content)
+            return format_msgs([temp_msg], oneline=True, highlight=highlight)[0]
         return format_msgs([self], oneline=oneline, highlight=highlight)[0]
 
     def print(self, oneline: bool = False, highlight: bool = True) -> None:

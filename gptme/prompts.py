@@ -17,7 +17,6 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config, get_project_config
 from .message import Message
-from .tools import loaded_tools
 from .util import document_prompt_function
 
 PromptType = Literal["full", "short"]
@@ -199,6 +198,8 @@ def prompt_project() -> Generator[Message, None, None]:
 
 def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
+    from .tools import loaded_tools  # fmt: skip
+
     assert loaded_tools, "No tools loaded"
     prompt = "# Tools Overview"
     for tool in loaded_tools:
