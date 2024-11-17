@@ -40,10 +40,24 @@ class RAGContextProvider(ContextProvider):
     # TODO: refactor this to share code with rag tool
     def __init__(self):
         try:
-            self._has_rag = True
+            # Check if gptme-rag is installed
+            import importlib.util
 
+            if importlib.util.find_spec("gptme_rag") is None:
+                logger.debug(
+                    "gptme-rag not installed, RAG context provider will not be available"
+                )
+                self._has_rag = False
+                return
+
+            # Check if we have a valid config
             config = get_project_config(Path.cwd())
-            assert config
+            if not config or not hasattr(config, "rag"):
+                logger.debug("No RAG configuration found in gptme.toml")
+                self._has_rag = False
+                return
+
+            self._has_rag = True
 
             # Storage configuration
             self.indexer = gptme_rag.Indexer(
@@ -58,10 +72,8 @@ class RAGContextProvider(ContextProvider):
             self.auto_context = config.rag.get("auto_context", True)
             self.min_relevance = config.rag.get("min_relevance", 0.5)
             self.max_results = config.rag.get("max_results", 5)
-        except ImportError:
-            logger.debug(
-                "gptme-rag not installed, RAG context provider will not be available"
-            )
+        except Exception as e:
+            logger.debug(f"Failed to initialize RAG context provider: {e}")
             self._has_rag = False
 
     def get_context(self, query: str, max_tokens: int = 1000) -> list[Context]:
