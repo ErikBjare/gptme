@@ -331,12 +331,25 @@ def _conversation_files() -> list[Path]:
 
 @dataclass(frozen=True)
 class ConversationMeta:
+    """Metadata about a conversation."""
+
     name: str
     path: str
     created: float
     modified: float
     messages: int
     branches: int
+
+    def format(self, metadata=False) -> str:
+        """Format conversation metadata for display."""
+        output = f"{self.name}"
+        if metadata:
+            output += f"\nMessages: {self.messages}"
+            output += f"\nCreated:  {datetime.fromtimestamp(self.created)}"
+            output += f"\nModified: {datetime.fromtimestamp(self.modified)}"
+            if self.branches > 1:
+                output += f"\n({self.branches} branches)"
+        return output
 
 
 def get_conversations() -> Generator[ConversationMeta, None, None]:
@@ -366,6 +379,23 @@ def get_user_conversations() -> Generator[ConversationMeta, None, None]:
         ):
             continue
         yield conv
+
+
+def list_conversations(
+    limit: int = 20,
+    include_test: bool = False,
+) -> list[ConversationMeta]:
+    """
+    List conversations with a limit.
+
+    Args:
+        limit: Maximum number of conversations to return
+        include_test: Whether to include test conversations
+    """
+    conversation_iter = (
+        get_conversations() if include_test else get_user_conversations()
+    )
+    return list(islice(conversation_iter, limit))
 
 
 def _gen_read_jsonl(path: PathLike) -> Generator[Message, None, None]:

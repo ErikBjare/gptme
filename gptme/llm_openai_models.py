@@ -1,15 +1,10 @@
-from typing import TypedDict
-from typing_extensions import NotRequired
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .models import _ModelDictMeta  # fmt: skip
 
 
-class _ModelDictMeta(TypedDict):
-    context: int
-    max_output: NotRequired[int]
-    price_input: NotRequired[float]
-    price_output: NotRequired[float]
-
-
-OPENAI_MODELS: dict[str, _ModelDictMeta] = {
+OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
     # GPT-4o
     "gpt-4o": {
         "context": 128_000,

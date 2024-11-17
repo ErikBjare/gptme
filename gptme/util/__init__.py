@@ -1,3 +1,7 @@
+"""
+Utility package for gptme.
+"""
+
 import functools
 import io
 import logging
@@ -17,7 +21,7 @@ from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
 
-from .clipboard import copy, set_copytext
+from ..clipboard import copy, set_copytext
 
 EMOJI_WARN = "⚠️"
 
@@ -319,8 +323,8 @@ def document_prompt_function(*args, **kwargs):
             return func
 
         # noreorder
-        from .message import len_tokens  # fmt: skip
-        from .tools import init_tools  # fmt: skip
+        from ..message import len_tokens  # fmt: skip
+        from ..tools import init_tools  # fmt: skip
 
         init_tools()
 
