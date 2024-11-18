@@ -2,6 +2,7 @@ import logging
 from typing import cast
 
 from dotenv import load_dotenv
+from rich.logging import RichHandler
 
 from .config import config_path, get_config, set_config_value
 from .llm import init_llm
@@ -77,7 +78,12 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
 
 def init_logging(verbose):
     # log init
-    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO)
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler()],
+    )
     # set httpx logging to WARNING
     logging.getLogger("httpx").setLevel(logging.WARNING)
 

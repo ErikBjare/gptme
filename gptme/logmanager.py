@@ -306,17 +306,18 @@ class LogManager:
 
 def prepare_messages(msgs: list[Message]) -> list[Message]:
     """Prepares the messages before sending to the LLM."""
-    from .context import enhance_messages
+    from .tools._rag_context import _HAS_RAG, enhance_messages  # fmt: skip
 
     # First enhance messages with context
-    msgs_enhanced = enhance_messages(msgs)
+    if _HAS_RAG:
+        msgs = enhance_messages(msgs)
 
     # Then reduce and limit as before
-    msgs_reduced = list(reduce_log(msgs_enhanced))
+    msgs_reduced = list(reduce_log(msgs))
 
-    if len_tokens(msgs_enhanced) != len_tokens(msgs_reduced):
+    if len_tokens(msgs) != len_tokens(msgs_reduced):
         logger.info(
-            f"Reduced log from {len_tokens(msgs_enhanced)//1} to {len_tokens(msgs_reduced)//1} tokens"
+            f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
         )
     msgs_limited = limit_log(msgs_reduced)
     if len(msgs_reduced) != len(msgs_limited):

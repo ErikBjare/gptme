@@ -1101,20 +1101,22 @@ name = "gptme-rag"
 version = "0.1.5"
 description = "RAG implementation for gptme context management"
 optional = true
-python-versions = "<4.0,>=3.10"
-files = [
-    {file = "gptme_rag-0.1.5-py3-none-any.whl", hash = "sha256:0d93a13d8ffb3d1c4e9938c7c4469e0907c2c51d048816ba8b9a9e2b6ef5c5b1"},
-    {file = "gptme_rag-0.1.5.tar.gz", hash = "sha256:a93f5643556e5b0ded10cad81e80affe87c24ed92cc31d7ac260e96285b0e22e"},
-]
+python-versions = "^3.10"
+files = []
+develop = false
 
 [package.dependencies]
-chromadb = ">=0.4.22,<0.5.0"
+chromadb = "^0.4.22"
 click = "*"
 numpy = "<2.0.0"
-psutil = ">=6.1.0,<7.0.0"
+psutil = "^6.1.0"
 rich = "*"
 tiktoken = ">=0.7"
-watchdog = ">=3.0.0,<4.0.0"
+watchdog = "^3.0.0"
+
+[package.source]
+type = "directory"
+url = "../gptme-rag"
 
 [[package]]
 name = "greenlet"
@@ -5184,4 +5186,4 @@ server = ["flask", "flask-cors"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "24319f2d1054169eb45f031cc6b34fda546e04a6f29b033024c55348f7dfa281"
+content-hash = "dfc95fcbe92d66d9563d628075bc5a4bf52a51e35e1987885823c025b7b722c3"

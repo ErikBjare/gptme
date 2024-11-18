@@ -37,7 +37,8 @@ bashlex = "^0.18"
 playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
 youtube_transcript_api = {version = "^0.6.1", optional = true}
 python-xlib = {version = "^0.33", optional = true}  # for X11 interaction
-gptme-rag = {version = "^0.1.5", optional = true}  # for RAG functionality
+#gptme-rag = {version = "^0.1.5", optional = true}  # for RAG functionality
+gptme-rag = {path = "../gptme-rag", optional = true}  # for RAG functionality
 
 # providers
 openai = "^1.0"
@@ -118,8 +119,12 @@ ignore = ["E402", "E501", "B905"]
 #unfixable = ["B"]
 
 [tool.mypy]
-ignore_missing_imports = true
 check_untyped_defs = true
+disable_error_code = "import-untyped"
+
+[[tool.mypy.overrides]]
+module = "langchain.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 markers = [

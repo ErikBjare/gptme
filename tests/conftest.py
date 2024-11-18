@@ -13,7 +13,7 @@ def download_model():
         return
 
     # downloads the model if it doesn't exist
-    from chromadb.utils import embedding_functions  # fmt: skip
+    from chromadb.utils import embedding_functions  # type: ignore # fmt: skip
 
     ef = embedding_functions.DefaultEmbeddingFunction()
     if ef:

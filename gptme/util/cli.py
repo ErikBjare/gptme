@@ -103,14 +103,17 @@ def context():
 
 
 @context.command("generate")
-@click.argument("query")
-def context_generate(query: str):
-    """Retrieve context for a given query."""
-    from ..context import RAGContextProvider  # fmt: skip
+@click.argument("path", type=click.Path(exists=True))
+def context_generate(path: str):
+    """Index a file or directory for context retrieval."""
+    from ..tools.rag import init, rag_index  # fmt: skip
 
-    provider = RAGContextProvider()
-    ctx = provider.get_context(query)
-    print(ctx)
+    # Initialize RAG
+    init()
+
+    # Index the file/directory
+    n_docs = rag_index(path)
+    print(f"Indexed {n_docs} documents")
 
 
 @main.group()

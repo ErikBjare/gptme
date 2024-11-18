@@ -64,18 +64,11 @@ from pathlib import Path
 from ..config import get_project_config
 from ..util import get_project_dir
 from .base import ToolSpec, ToolUse
+from ._rag_context import RAGManager, _HAS_RAG
 
 logger = logging.getLogger(__name__)
 
-try:
-    import gptme_rag  # fmt: skip
-
-    _HAS_RAG = True
-except ImportError:
-    logger.debug("gptme-rag not installed, RAG tool will not be available")
-    _HAS_RAG = False
-
-indexer: "gptme_rag.Indexer | None" = None
+rag_manager: RAGManager | None = None
 
 instructions = """
 Use RAG to index and search project documentation.
@@ -102,18 +95,19 @@ System: Index contains 42 documents
 
 def rag_index(*paths: str, glob: str | None = None) -> str:
     """Index documents in specified paths."""
-    assert indexer is not None, "RAG indexer not initialized"
+    assert rag_manager is not None, "RAG manager not initialized"
     paths = paths or (".",)
     kwargs = {"glob_pattern": glob} if glob else {}
+    total_docs = 0
     for path in paths:
-        indexer.index_directory(Path(path), **kwargs)
-    return f"Indexed {len(paths)} paths"
+        total_docs += rag_manager.index_directory(Path(path), **kwargs)
+    return f"Indexed {len(paths)} paths ({total_docs} documents)"
 
 
 def rag_search(query: str) -> str:
     """Search indexed documents."""
-    assert indexer is not None, "RAG indexer not initialized"
-    docs, _ = indexer.search(query)
+    assert rag_manager is not None, "RAG manager not initialized"
+    docs, _ = rag_manager.search(query)
     return "\n\n".join(
         f"### {doc.metadata['source']}\n{doc.content[:200]}..." for doc in docs
     )
@@ -121,8 +115,8 @@ def rag_search(query: str) -> str:
 
 def rag_status() -> str:
     """Show index status."""
-    assert indexer is not None, "RAG indexer not initialized"
-    return f"Index contains {indexer.collection.count()} documents"
+    assert rag_manager is not None, "RAG manager not initialized"
+    return f"Index contains {rag_manager.get_document_count()} documents"
 
 
 def init() -> ToolSpec:
@@ -137,13 +131,8 @@ def init() -> ToolSpec:
         index_path = Path(config.rag.get("index_path", index_path)).expanduser()
         collection = config.rag.get("collection", project_dir.name)
 
-    import gptme_rag  # fmt: skip
-
-    global indexer
-    indexer = gptme_rag.Indexer(
-        persist_directory=index_path,
-        collection_name=collection,
-    )
+    global rag_manager
+    rag_manager = RAGManager(index_path=index_path, collection=collection)
     return tool
 
 
