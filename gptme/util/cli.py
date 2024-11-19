@@ -104,13 +104,16 @@ def context():
 
 @context.command("generate")
 @click.argument("path", type=click.Path(exists=True))
-def context_generate(_path: str):
-    """Generate context from a directory."""
-    pass
-    # from ..context import generate_context  # fmt: skip
+def context_generate(path: str):
+    """Index a file or directory for context retrieval."""
+    from ..tools.rag import init, rag_index  # fmt: skip
 
-    # ctx = generate_context(path)
-    # print(ctx)
+    # Initialize RAG
+    init()
+
+    # Index the file/directory
+    n_docs = rag_index(path)
+    print(f"Indexed {n_docs} documents")
 
 
 @main.group()

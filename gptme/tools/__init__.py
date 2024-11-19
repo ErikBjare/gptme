@@ -19,6 +19,7 @@ from .subagent import tool as subagent_tool
 from .tmux import tool as tmux_tool
 from .vision import tool as vision_tool
 from .youtube import tool as youtube_tool
+from .rag import tool as rag_tool
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ all_tools: list[ToolSpec] = [
     screenshot_tool,
     vision_tool,
     computer_tool,
+    rag_tool,
     # python tool is loaded last to ensure all functions are registered
     python_tool,
 ]

@@ -1,9 +1,10 @@
 """Tests for the gptme-util CLI."""
 
+import time
 from pathlib import Path
-from click.testing import CliRunner
-import pytest
 
+from click.testing import CliRunner
+from gptme.logmanager import ConversationMeta
 from gptme.util.cli import main
 
 
@@ -64,8 +65,6 @@ def test_chats_list(tmp_path, mocker):
     )
 
     # Create ConversationMeta objects for our test conversations
-    from gptme.logmanager import ConversationMeta
-    import time
 
     conv1 = ConversationMeta(
         name="2024-01-01-chat-one",
@@ -96,17 +95,26 @@ def test_chats_list(tmp_path, mocker):
     assert "Messages: 2" in result.output  # Second chat has 2 messages
 
 
-@pytest.mark.skip("Waiting for context module PR")
-def test_context_generate(tmp_path):
+def test_context_generate(tmp_path, mocker):
     """Test the context generate command."""
     # Create a test file
     test_file = tmp_path / "test.txt"
     test_file.write_text("Hello, world!")
 
+    # Mock RAG dependencies
+    mocker.patch("gptme.tools._rag_context._HAS_RAG", True)
+    mocker.patch("gptme.tools.rag.init")  # Mock the init function
+
+    # Mock the rag_index function
+    mock_index = mocker.patch("gptme.tools.rag.rag_index")
+    mock_index.return_value = 1
+
     runner = CliRunner()
     result = runner.invoke(main, ["context", "generate", str(test_file)])
+
     assert result.exit_code == 0
-    assert "Hello, world!" in result.output
+    mock_index.assert_called_once_with(str(test_file))
+    assert "Indexed 1" in result.output
 
 
 def test_tools_list():

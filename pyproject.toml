@@ -15,6 +15,7 @@ include = ["gptme/server/static/**/*", "media/logo.png"]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
+gptme-util = "gptme.util.cli:main"
 gptme-nc = "gptme.ncurses:main"
 
 [tool.poetry.dependencies]
@@ -36,6 +37,10 @@ bashlex = "^0.18"
 playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
 youtube_transcript_api = {version = "^0.6.1", optional = true}
 python-xlib = {version = "^0.33", optional = true}  # for X11 interaction
+
+# RAG
+gptme-rag = {version = "^0.2.1", optional = true}
+#gptme-rag = {path = "../gptme-rag", optional = true, develop = true}
 
 # providers
 openai = "^1.0"
@@ -89,6 +94,7 @@ server = ["flask", "flask-cors"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
+rag = ["gptme-rag"]  # RAG functionality
 all = [
     # server
     "flask", "flask-cors",
@@ -98,6 +104,8 @@ all = [
     "matplotlib", "pandas", "numpy", "pillow",
     # computer
     "python-xlib",
+    # rag
+    "gptme-rag",
 ]
 
 [tool.ruff]
@@ -113,8 +121,12 @@ ignore = ["E402", "E501", "B905"]
 #unfixable = ["B"]
 
 [tool.mypy]
-ignore_missing_imports = true
 check_untyped_defs = true
+disable_error_code = "import-untyped"
+
+[[tool.mypy.overrides]]
+module = "langchain.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 markers = [

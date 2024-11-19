@@ -1,4 +1,4 @@
-import git
+import git  # type: ignore
 from fnmatch import fnmatch
 from pathlib import Path
 

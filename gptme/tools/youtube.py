@@ -5,8 +5,7 @@ from .base import ToolSpec
 logger = logging.getLogger(__name__)
 
 try:
-    # noreorder
-    from youtube_transcript_api import YouTubeTranscriptApi  # fmt: skip
+    from youtube_transcript_api import YouTubeTranscriptApi  # type: ignore # fmt: skip
 except ImportError:
     YouTubeTranscriptApi = None
 

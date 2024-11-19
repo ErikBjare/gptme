@@ -7,7 +7,6 @@ When prompting, it is important to provide clear instructions and avoid any ambi
 
 import glob
 import logging
-import os
 import platform
 import subprocess
 from collections.abc import Generator, Iterable
@@ -17,7 +16,7 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config, get_project_config
 from .message import Message
-from .util import document_prompt_function
+from .util import document_prompt_function, get_project_dir
 
 PromptType = Literal["full", "short"]
 
@@ -173,19 +172,12 @@ def prompt_project() -> Generator[Message, None, None]:
     """
     Generate the project-specific prompt based on the current Git repository.
     """
-    config_prompt = get_config().prompt
-    try:
-        projectdir = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-        project = os.path.basename(projectdir)
-    except subprocess.CalledProcessError:
-        logger.debug("Unable to determine Git repository root.")
+    projectdir = get_project_dir()
+    if not projectdir:
         return
 
+    config_prompt = get_config().prompt
+    project = projectdir.name
     project_info = config_prompt.get("project", {}).get(
         project, "No specific project context provided."
     )
