@@ -1,6 +1,5 @@
 """Tests for the RAG tool and context enhancement functionality."""
 
-import shutil
 from dataclasses import replace
 from unittest.mock import Mock, patch
 
@@ -26,8 +25,7 @@ pytest.importorskip("gptme_rag")
 @pytest.fixture(scope="function")
 def index_path(tmp_path):
     """Create a temporary index path."""
-    yield tmp_path
-    shutil.rmtree(tmp_path, ignore_errors=True)
+    return tmp_path
 
 
 @pytest.fixture(scope="function")
@@ -39,8 +37,7 @@ def temp_docs(tmp_path):
     doc2 = tmp_path / "doc2.md"
     doc2.write_text("# Another Document\nThis document discusses testing practices.")
 
-    yield tmp_path
-    shutil.rmtree(tmp_path, ignore_errors=True)
+    return tmp_path
 
 
 @pytest.fixture
