@@ -392,6 +392,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rag">RAG</a></li>
 </ul>
             </nav>
         </div>
@@ -440,6 +441,11 @@ document.write(`
 <li><p><a class="reference internal" href="#chats">Chats</a></p></li>
 </ul>
 </li>
+<li><p>Context management</p>
+<ul>
+<li><p><a class="reference internal" href="#rag">RAG</a></p></li>
+</ul>
+</li>
 </ul>
 <section id="shell">
 <h2>Shell<a class="headerlink" href="#shell" title="Link to this heading">#</a></h2>
@@ -451,9 +457,9 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 These programs are available, among others:
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>pandoc
 </pre></div>
 </div>
 <p class="rubric">Examples</p>
@@ -1336,25 +1342,172 @@ If False, uses a simple strategy showing snippets of the first and last messages
 </section>
 <section id="computer">
 <h2>Computer<a class="headerlink" href="#computer" title="Link to this heading">#</a></h2>
-<p>Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The computer use interface is experimental and has serious security implications.
+Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
+</div>
+<p>Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.</p>
+<p>The computer tool provides direct interaction with the desktop environment through X11.
 Similar to Anthropic’s computer use demo, but integrated with gptme’s architecture.</p>
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">Resolution</span></span></dt>
-<dd></dd></dl>
+<p class="rubric">Features</p>
+<ul class="simple">
+<li><p>Keyboard input simulation</p></li>
+<li><p>Mouse control (movement, clicks, dragging)</p></li>
+<li><p>Screen capture with automatic scaling</p></li>
+<li><p>Cursor position tracking</p></li>
+</ul>
+<p class="rubric">Installation</p>
+<p>Requires X11 and xdotool:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># On Debian/Ubuntu</span>
+<span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">xdotool</span>
 
-<dl class="py class">
-<dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">ScalingSource</span></span></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Split string into chunks for typing simulation.</p>
-</dd></dl>
-
-<dl class="py function">
+<span class="c1"># On Arch Linux</span>
+<span class="n">sudo</span> <span class="n">pacman</span> <span class="o">-</span><span class="n">S</span> <span class="n">xdotool</span>
+</pre></div>
+</div>
+<p class="rubric">Configuration</p>
+<p>The tool uses these environment variables:</p>
+<ul class="simple">
+<li><p>DISPLAY: X11 display to use (default: “:1”)</p></li>
+<li><p>WIDTH: Screen width (default: 1024)</p></li>
+<li><p>HEIGHT: Screen height (default: 768)</p></li>
+</ul>
+<p class="rubric">Usage</p>
+<p>The tool supports these actions:</p>
+<dl class="simple">
+<dt>Keyboard:</dt><dd><ul class="simple">
+<li><p>key: Send key sequence (e.g., “Return”, “Control_L+c”)</p></li>
+<li><p>type: Type text with realistic delays</p></li>
+</ul>
+</dd>
+<dt>Mouse:</dt><dd><ul class="simple">
+<li><p>mouse_move: Move mouse to coordinates</p></li>
+<li><p>left_click: Click left mouse button</p></li>
+<li><p>right_click: Click right mouse button</p></li>
+<li><p>middle_click: Click middle mouse button</p></li>
+<li><p>double_click: Double click left mouse button</p></li>
+<li><p>left_click_drag: Click and drag to coordinates</p></li>
+</ul>
+</dd>
+<dt>Screen:</dt><dd><ul class="simple">
+<li><p>screenshot: Take and view a screenshot</p></li>
+<li><p>cursor_position: Get current mouse position</p></li>
+</ul>
+</dd>
+</dl>
+<p>The tool automatically handles screen resolution scaling to ensure optimal performance
+with LLM vision capabilities.</p>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Use this tool to interact with the computer through X11.
+Available actions:
+<span class="k">-</span><span class="w"> </span>key: Send key sequence (e.g., &quot;Return&quot;, &quot;Control_L+c&quot;)
+<span class="k">-</span><span class="w"> </span>type: Type text with realistic delays
+<span class="k">-</span><span class="w"> </span>mouse_move: Move mouse to coordinates
+<span class="k">-</span><span class="w"> </span>left_click, right_click, middle_click, double_click: Mouse clicks
+<span class="k">-</span><span class="w"> </span>left_click_drag: Click and drag to coordinates
+<span class="k">-</span><span class="w"> </span>screenshot: Take and view a screenshot
+<span class="k">-</span><span class="w"> </span>cursor_position: Get current mouse position
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Take a screenshot of the desktop</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll capture the current screen.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("screenshot")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Viewing image...</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Type "Hello, World!" into the active window</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll type the text with realistic delays.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("type", text="Hello, World!")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Typed text: Hello, World!</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Move the mouse to coordinates (100, 200) and click</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll move the mouse and perform a left click.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("mouse_move", coordinate=(100, 200))
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Moved mouse to 100,200<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("left_click")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Performed left_click</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Press Ctrl+C</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll send the Control+C key sequence.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("key", text="Control_L+c")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sent key sequence: Control_L+c</pre>
+  </td>
+</tr>
+</table><dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">computer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'key'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'type'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mouse_move'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click_drag'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'right_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'middle_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'screenshot'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cursor_position'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span></dt>
 <dd><p>Perform computer interactions through X11.</p>
@@ -1369,47 +1522,157 @@ Similar to Anthropic’s computer use demo, but integrated with gptme’s archit
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">run_xdotool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
-<dd><p>Run an xdotool command with optional display setting and wait for completion.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">scale_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ScalingSource</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span></dt>
-<dd><p>Scale coordinates to/from recommended resolutions.</p>
-</dd></dl>
-
-<p>The computer tool provides direct interaction with the desktop environment through X11, allowing for:</p>
-<ul class="simple">
-<li><p>Keyboard input simulation</p></li>
-<li><p>Mouse control (movement, clicks, dragging)</p></li>
-<li><p>Screen capture with automatic scaling</p></li>
-<li><p>Cursor position tracking</p></li>
-</ul>
-<p>To use the computer tool, see the instructions for <a class="reference internal" href="server.html"><span class="doc">Server</span></a>.</p>
-<p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Type text</span>
-<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Hello, World!&quot;</span><span class="p">)</span>
-
-<span class="c1"># Move mouse and click</span>
-<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;mouse_move&quot;</span><span class="p">,</span> <span class="n">coordinate</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
-<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;left_click&quot;</span><span class="p">)</span>
-
-<span class="c1"># Take screenshot</span>
-<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;screenshot&quot;</span><span class="p">)</span>
-
-<span class="c1"># Send keyboard shortcuts</span>
-<span class="n">computer</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Control_L+c&quot;</span><span class="p">)</span>
+</section>
+<section id="rag">
+<h2>RAG<a class="headerlink" href="#rag" title="Link to this heading">#</a></h2>
+<p>RAG (Retrieval-Augmented Generation) tool for context-aware assistance.</p>
+<p>The RAG tool provides context-aware assistance by indexing and searching project documentation.</p>
+<p class="rubric">Installation</p>
+<p>The RAG tool requires the <code class="docutils literal notranslate"><span class="pre">gptme-rag</span></code> package. Install it with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;gptme[rag]&quot;</span>
 </pre></div>
 </div>
-<p>The tool automatically handles screen resolution scaling to ensure optimal performance with LLM vision capabilities.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The computer use interface is experimental and has serious security implications.
-Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
+<p class="rubric">Configuration</p>
+<p>Configure RAG in your <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">rag</span><span class="p">]</span>
+<span class="c1"># Storage configuration</span>
+<span class="n">index_path</span> <span class="o">=</span> <span class="s2">&quot;~/.cache/gptme/rag&quot;</span>  <span class="c1"># Where to store the index</span>
+<span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;gptme_docs&quot;</span>          <span class="c1"># Collection name for documents</span>
+
+<span class="c1"># Context enhancement settings</span>
+<span class="n">max_tokens</span> <span class="o">=</span> <span class="mi">2000</span>                  <span class="c1"># Maximum tokens for context window</span>
+<span class="n">auto_context</span> <span class="o">=</span> <span class="n">true</span>               <span class="c1"># Enable automatic context enhancement</span>
+<span class="n">min_relevance</span> <span class="o">=</span> <span class="mf">0.5</span>               <span class="c1"># Minimum relevance score for including context</span>
+<span class="n">max_results</span> <span class="o">=</span> <span class="mi">5</span>                   <span class="c1"># Maximum number of results to consider</span>
+
+<span class="c1"># Cache configuration</span>
+<span class="p">[</span><span class="n">rag</span><span class="o">.</span><span class="n">cache</span><span class="p">]</span>
+<span class="n">max_embeddings</span> <span class="o">=</span> <span class="mi">10000</span>            <span class="c1"># Maximum number of cached embeddings</span>
+<span class="n">max_searches</span> <span class="o">=</span> <span class="mi">1000</span>               <span class="c1"># Maximum number of cached search results</span>
+<span class="n">embedding_ttl</span> <span class="o">=</span> <span class="mi">86400</span>             <span class="c1"># Embedding cache TTL in seconds (24h)</span>
+<span class="n">search_ttl</span> <span class="o">=</span> <span class="mi">3600</span>                <span class="c1"># Search cache TTL in seconds (1h)</span>
+</pre></div>
 </div>
+<p class="rubric">Features</p>
+<ol class="arabic simple">
+<li><p>Manual Search and Indexing
+- Index project documentation with <code class="docutils literal notranslate"><span class="pre">rag_index</span></code>
+- Search indexed documents with <code class="docutils literal notranslate"><span class="pre">rag_search</span></code>
+- Check index status with <code class="docutils literal notranslate"><span class="pre">rag_status</span></code></p></li>
+<li><p>Automatic Context Enhancement
+- Automatically adds relevant context to user messages
+- Retrieves semantically similar documents
+- Manages token budget to avoid context overflow
+- Preserves conversation flow with hidden context messages</p></li>
+<li><p>Performance Optimization
+- Intelligent caching system for embeddings and search results
+- Configurable cache sizes and TTLs
+- Automatic cache invalidation
+- Memory-efficient storage</p></li>
+</ol>
+<p class="rubric">Benefits</p>
+<ul class="simple">
+<li><p>Better informed responses through relevant documentation</p></li>
+<li><p>Reduced need for manual context inclusion</p></li>
+<li><p>Automatic token management</p></li>
+<li><p>Seamless integration with conversation flow</p></li>
+</ul>
+<p class="rubric">Instructions</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Use RAG to index and search project documentation.
+</pre></div>
+</div>
+<p class="rubric">Examples</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Index the current directory</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Let me index the current directory with RAG.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">rag_index()
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Indexed 1 paths</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Search for documentation about functions</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll search for function-related documentation.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">rag_search("function documentation")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">### docs/api.md
+Functions are documented using docstrings...</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Show index status</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll check the current status of the RAG index.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">rag_status()
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Index contains 42 documents</pre>
+  </td>
+</tr>
+</table><dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.tools.ToolSpec" title="gptme.tools.base.ToolSpec"><span class="pre">ToolSpec</span></a></span></span></dt>
+<dd><p>Initialize the RAG tool.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Index documents in specified paths.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Search indexed documents.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Show index status.</p>
+</dd></dl>
+
 </section>
 </section>
 
@@ -1470,6 +1733,7 @@ Please use with caution and see Anthropic’s documentation on <a class="referen
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vision">Vision</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rag">RAG</a></li>
 </ul>
   </nav></div>
 
