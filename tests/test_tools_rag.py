@@ -1,28 +1,36 @@
 """Tests for the RAG tool and context enhancement functionality."""
 
+import shutil
 from dataclasses import replace
-from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+from gptme.message import Message
+from gptme.tools._rag_context import (
+    Context,
+    RAGManager,
+    _clear_cache,
+    _get_search_results,
+    enhance_messages,
+)
 from gptme.tools.base import ToolSpec
 from gptme.tools.rag import _HAS_RAG
 from gptme.tools.rag import init as init_rag
 from gptme.tools.rag import rag_index, rag_search, rag_status
-from gptme.tools._rag_context import (
-    Context,
-    RAGManager,
-    enhance_messages,
-    _get_search_results,
-    _clear_cache,
-)
-from gptme.message import Message
 
+pytest.importorskip("gptme_rag")
 
 # Fixtures
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
+def index_path(tmp_path):
+    """Create a temporary index path."""
+    yield tmp_path
+    shutil.rmtree(tmp_path, ignore_errors=True)
+
+
+@pytest.fixture(scope="function")
 def temp_docs(tmp_path):
     """Create temporary test documents."""
     doc1 = tmp_path / "doc1.md"
@@ -31,15 +39,16 @@ def temp_docs(tmp_path):
     doc2 = tmp_path / "doc2.md"
     doc2.write_text("# Another Document\nThis document discusses testing practices.")
 
-    return tmp_path
+    yield tmp_path
+    shutil.rmtree(tmp_path, ignore_errors=True)
 
 
 @pytest.fixture
-def mock_rag_manager():
+def mock_rag_manager(index_path):
     """Create a mock RAG manager that returns test contexts."""
     with patch("gptme.tools._rag_context.gptme_rag"):
         manager = RAGManager(
-            index_path=Path("~/.cache/gptme/rag"),
+            index_path=index_path,
             collection="test",
         )
         # Create mock documents
@@ -115,14 +124,26 @@ def test_rag_tool_init_without_gptme_rag():
         assert tool.available is False
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_index_function(temp_docs, tmp_path):
+def test_rag_index_function(temp_docs, index_path, tmp_path):
     """Test the index function."""
-    with patch("gptme.tools.rag.get_project_config") as mock_config:
-        mock_config.return_value.rag = {
-            "index_path": str(tmp_path),
-            "collection": "test",
-        }
+    with (
+        patch("gptme.tools.rag.get_project_config") as mock_config,
+        patch("gptme.tools.rag.get_project_dir") as mock_project_dir,
+    ):
+        # Mock project dir to return the temp path
+        mock_project_dir.return_value = tmp_path
+
+        # Mock config to return an object with a proper .get method
+        class MockConfig:
+            def __init__(self):
+                self.rag = {"index_path": str(index_path), "collection": tmp_path.name}
+
+            def get(self, key, default=None):
+                return self.rag.get(key, default)
+
+        mock_config.return_value = MockConfig()
 
         # Initialize RAG
         init_rag()
@@ -139,13 +160,24 @@ def test_rag_index_function(temp_docs, tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_search_function(temp_docs, tmp_path):
+def test_rag_search_function(temp_docs, index_path, tmp_path):
     """Test the search function."""
-    with patch("gptme.tools.rag.get_project_config") as mock_config:
-        mock_config.return_value.rag = {
-            "index_path": str(tmp_path),
-            "collection": "test",
-        }
+    with (
+        patch("gptme.tools.rag.get_project_config") as mock_config,
+        patch("gptme.tools.rag.get_project_dir") as mock_project_dir,
+    ):
+        # Mock project dir to return the temp path
+        mock_project_dir.return_value = tmp_path
+
+        # Mock config to return an object with a proper .get method
+        class MockConfig:
+            def __init__(self):
+                self.rag = {"index_path": str(index_path), "collection": tmp_path.name}
+
+            def get(self, key, default=None):
+                return self.rag.get(key, default)
+
+        mock_config.return_value = MockConfig()
 
         # Initialize RAG and index documents
         init_rag()
@@ -163,13 +195,24 @@ def test_rag_search_function(temp_docs, tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_RAG, reason="gptme-rag not installed")
-def test_rag_status_function(temp_docs, tmp_path):
+def test_rag_status_function(temp_docs, index_path, tmp_path):
     """Test the status function."""
-    with patch("gptme.tools.rag.get_project_config") as mock_config:
-        mock_config.return_value.rag = {
-            "index_path": str(tmp_path),
-            "collection": "test",
-        }
+    with (
+        patch("gptme.tools.rag.get_project_config") as mock_config,
+        patch("gptme.tools.rag.get_project_dir") as mock_project_dir,
+    ):
+        # Mock project dir to return the temp path
+        mock_project_dir.return_value = tmp_path
+
+        # Mock config to return an object with a proper .get method
+        class MockConfig:
+            def __init__(self):
+                self.rag = {"index_path": str(index_path), "collection": tmp_path.name}
+
+            def get(self, key, default=None):
+                return self.rag.get(key, default)
+
+        mock_config.return_value = MockConfig()
 
         # Initialize RAG
         init_rag()

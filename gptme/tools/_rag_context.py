@@ -64,24 +64,25 @@ class ContextProvider(ABC):
 class RAGManager:
     """Manages RAG functionality for both context enhancement and tool use."""
 
-    def __init__(
-        self, index_path: Path = Path("~/.cache/gptme/rag"), collection: str = "default"
-    ):
+    def __init__(self, index_path: Path | None = None, collection: str | None = None):
         if not _HAS_RAG:
             raise ImportError("gptme-rag not installed")
 
-        self.index_path = index_path.expanduser()
-        self.collection = collection
+        # Load config
+        config = get_project_config(Path.cwd())
+        self.config = config.rag if config and config.rag else {}
+
+        # Use config values if not overridden by parameters
+        self.index_path = Path(
+            index_path or self.config.get("index_path", "~/.cache/gptme/rag")
+        ).expanduser()
+        self.collection = collection or self.config.get("collection", "default")
 
         # Initialize the indexer
         self.indexer = gptme_rag.Indexer(
             persist_directory=self.index_path,
             collection_name=self.collection,
         )
-
-        # Load config
-        config = get_project_config(Path.cwd())
-        self.config = config.rag if config and config.rag else {}
 
         # Context enhancement configuration
         self.context_assembler = gptme_rag.ContextAssembler(
