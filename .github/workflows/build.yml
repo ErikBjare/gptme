@@ -182,7 +182,7 @@ jobs:
     - name: Install dependencies
       run: |
         make build
-        poetry install
+        poetry install -E server -E browser
     - name: Typecheck
       run: |
         make typecheck
