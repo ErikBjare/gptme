@@ -54,22 +54,15 @@ if __name__ == "__main__":
     hello()
 """
 
-    # NOTE: test fails if UPDATED block doesn't have an empty line
     codeblock = """
 <<<<<<< ORIGINAL
 def hello():
     print("hello")
 =======
-
 >>>>>>> UPDATED
 """
-    print(content)
     result = apply(codeblock, content)
-    newline = "\n"
-    newline_escape = "\\n"
-    assert result.startswith(
-        "\n\n"
-    ), f"result: {result.replace(newline, newline_escape)}"
+    assert result.count("\n") == content.count("\n") - 1
 
 
 def test_apply_empty_lines():
