@@ -1539,40 +1539,32 @@ Available actions:
 <p class="rubric">Configuration</p>
 <p>Configure RAG in your <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">rag</span><span class="p">]</span>
-<span class="c1"># Storage configuration</span>
-<span class="n">index_path</span> <span class="o">=</span> <span class="s2">&quot;~/.cache/gptme/rag&quot;</span>  <span class="c1"># Where to store the index</span>
-<span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;gptme_docs&quot;</span>          <span class="c1"># Collection name for documents</span>
-
-<span class="c1"># Context enhancement settings</span>
-<span class="n">max_tokens</span> <span class="o">=</span> <span class="mi">2000</span>                  <span class="c1"># Maximum tokens for context window</span>
-<span class="n">auto_context</span> <span class="o">=</span> <span class="n">true</span>               <span class="c1"># Enable automatic context enhancement</span>
-<span class="n">min_relevance</span> <span class="o">=</span> <span class="mf">0.5</span>               <span class="c1"># Minimum relevance score for including context</span>
-<span class="n">max_results</span> <span class="o">=</span> <span class="mi">5</span>                   <span class="c1"># Maximum number of results to consider</span>
-
-<span class="c1"># Cache configuration</span>
-<span class="p">[</span><span class="n">rag</span><span class="o">.</span><span class="n">cache</span><span class="p">]</span>
-<span class="n">max_embeddings</span> <span class="o">=</span> <span class="mi">10000</span>            <span class="c1"># Maximum number of cached embeddings</span>
-<span class="n">max_searches</span> <span class="o">=</span> <span class="mi">1000</span>               <span class="c1"># Maximum number of cached search results</span>
-<span class="n">embedding_ttl</span> <span class="o">=</span> <span class="mi">86400</span>             <span class="c1"># Embedding cache TTL in seconds (24h)</span>
-<span class="n">search_ttl</span> <span class="o">=</span> <span class="mi">3600</span>                <span class="c1"># Search cache TTL in seconds (1h)</span>
+<span class="n">enabled</span> <span class="o">=</span> <span class="n">true</span>
 </pre></div>
 </div>
 <p class="rubric">Features</p>
 <ol class="arabic simple">
-<li><p>Manual Search and Indexing
-- Index project documentation with <code class="docutils literal notranslate"><span class="pre">rag_index</span></code>
-- Search indexed documents with <code class="docutils literal notranslate"><span class="pre">rag_search</span></code>
-- Check index status with <code class="docutils literal notranslate"><span class="pre">rag_status</span></code></p></li>
-<li><p>Automatic Context Enhancement
-- Automatically adds relevant context to user messages
-- Retrieves semantically similar documents
-- Manages token budget to avoid context overflow
-- Preserves conversation flow with hidden context messages</p></li>
-<li><p>Performance Optimization
-- Intelligent caching system for embeddings and search results
-- Configurable cache sizes and TTLs
-- Automatic cache invalidation
-- Memory-efficient storage</p></li>
+<li><p>Manual Search and Indexing</p>
+<ul class="simple">
+<li><p>Index project documentation with <code class="docutils literal notranslate"><span class="pre">rag_index</span></code></p></li>
+<li><p>Search indexed documents with <code class="docutils literal notranslate"><span class="pre">rag_search</span></code></p></li>
+<li><p>Check index status with <code class="docutils literal notranslate"><span class="pre">rag_status</span></code></p></li>
+</ul>
+</li>
+<li><p>Automatic Context Enhancement</p>
+<ul class="simple">
+<li><p>Automatically adds relevant context to user messages</p></li>
+<li><p>Retrieves semantically similar documents</p></li>
+<li><p>Manages token budget to avoid context overflow</p></li>
+<li><p>Preserves conversation flow with hidden context messages</p></li>
+</ul>
+</li>
+<li><p>Performance Optimization</p>
+<ul class="simple">
+<li><p>Intelligent caching system for embeddings and search results</p></li>
+<li><p>Memory-efficient storage</p></li>
+</ul>
+</li>
 </ol>
 <p class="rubric">Benefits</p>
 <ul class="simple">
