@@ -1,8 +1,13 @@
 import base64
-from collections.abc import Generator
 import logging
-from typing import TYPE_CHECKING, Literal, TypedDict, Any
+from collections.abc import Generator
 from pathlib import Path
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    TypedDict,
+)
 
 from typing_extensions import Required
 
@@ -13,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
-    from anthropic import Anthropic
-
+    from anthropic import Anthropic  # fmt: skip
 
 anthropic: "Anthropic | None" = None
 
@@ -55,7 +59,7 @@ def handle_files(message_dicts: list[dict]) -> list[dict]:
             else [{"type": "text", "text": message_content}]
         )
 
-        for f in message_dict["files"]:
+        for f in message_dict.get("files", []):
             f = Path(f)
             ext = f.suffix[1:]
             if ext not in ALLOWED_FILE_EXTS:

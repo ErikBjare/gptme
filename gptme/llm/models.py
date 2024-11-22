@@ -9,9 +9,7 @@ from typing import (
 
 from typing_extensions import NotRequired
 
-
 from .llm_openai_models import OPENAI_MODELS
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +24,7 @@ PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", 
 
 @dataclass(frozen=True)
 class ModelMeta:
-    provider: Provider
+    provider: Provider | Literal["unknown"]
     model: str
     context: int
     max_output: int | None = None
