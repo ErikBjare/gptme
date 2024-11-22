@@ -2,6 +2,7 @@
 CLI for gptme utility commands.
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -14,9 +15,12 @@ from ..tools.chats import list_chats
 
 
 @click.group()
-def main():
+@click.option("-v", "--verbose", is_flag=True, help="Enable verbose output.")
+def main(verbose: bool = False):
     """Utility commands for gptme."""
-    pass
+
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
 
 
 @main.group()
@@ -180,6 +184,52 @@ def tools_info(tool_name: str):
     if tool.examples:
         print("\nExamples:")
         print(tool.examples)
+
+
+@tools.command("call")
+@click.argument("tool_name")
+@click.argument("function_name")
+@click.option(
+    "--arg",
+    "-a",
+    multiple=True,
+    help="Arguments to pass to the function. Format: key=value",
+)
+def tools_call(tool_name: str, function_name: str, arg: list[str]):
+    """Call a tool with the given arguments."""
+    from ..tools import get_tool, init_tools, loaded_tools  # fmt: skip
+
+    # Initialize tools
+    init_tools()
+
+    tool = get_tool(tool_name)
+    if not tool:
+        print(f"Tool '{tool_name}' not found. Available tools:")
+        for t in loaded_tools:
+            print(f"- {t.name}")
+        sys.exit(1)
+
+    function = (
+        [f for f in tool.functions if f.__name__ == function_name] or None
+        if tool.functions
+        else None
+    )
+    if not function:
+        print(f"Function '{function_name}' not found in tool '{tool_name}'.")
+        if tool.functions:
+            print("Available functions:")
+            for f in tool.functions:
+                print(f"- {f.__name__}")
+        else:
+            print("No functions available for this tool.")
+        sys.exit(1)
+    else:
+        # Parse arguments into a dictionary, ensuring proper typing
+        kwargs = {}
+        for arg_str in arg:
+            key, value = arg_str.split("=", 1)
+            kwargs[key] = value
+        function[0](**kwargs)
 
 
 if __name__ == "__main__":
