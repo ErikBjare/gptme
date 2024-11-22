@@ -5,64 +5,86 @@ Gives the assistant the ability to save whole files, or append to them.
 from collections.abc import Generator
 from pathlib import Path
 
+from .base import Parameter
+
 from ..message import Message
 from ..util import print_preview
 from .base import ConfirmFunc, ToolSpec, ToolUse
 from .patch import Patch
 
-# FIXME: this is markdown-specific instructions, thus will confuse the XML mode
 instructions = """
-To write to a file, use a code block with the language tag: `save <path>`
+Create or overwrite a file with the given content.
 
 The path can be relative to the current directory, or absolute.
 If the current directory changes, the path will be relative to the new directory.
 """.strip()
 
+instructions_format = {
+    "markdown": "To write to a file, use a code block with the language tag: `save <path>`",
+}
+
 instructions_append = """
-To append to a file, use a code block with the language tag: `append <path>`
+Append the given content to a file.`.
 """.strip()
 
-examples = f"""
+instructions_format_append = {
+    "markdown": """
+Use a code block with the language tag: `append <path>` 
+to append the code block content to the file at the given path.""".strip(),
+}
+
+
+def examples(tool_format):
+    return f"""
 > User: write a hello world script to hello.py
-{ToolUse("save", ["hello.py"], 'print("Hello world")').to_output()}
+{ToolUse("save", ["hello.py"], 'print("Hello world")').to_output(tool_format)}
 > System: Saved to `hello.py`
 
 > User: make it all-caps
-{ToolUse("save", ["hello.py"], 'print("HELLO WORLD")').to_output()}
+{ToolUse("save", ["hello.py"], 'print("HELLO WORLD")').to_output(tool_format)}
 > System: Saved to `hello.py`
 """.strip()
 
-examples_append = f"""
+
+def examples_append(tool_format):
+    return f"""
 > User: append a print "Hello world" to hello.py
 > Assistant:
-{ToolUse("append", ["hello.py"], 'print("Hello world")').to_output()}
+{ToolUse("append", ["hello.py"], 'print("Hello world")').to_output(tool_format)}
 > System: Appended to `hello.py`
 """.strip()
 
 
 def execute_save(
-    code: str,
-    args: list[str],
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
     confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Save code to a file."""
-    fn = " ".join(args)
-    if fn.startswith("save "):
-        fn = fn[5:]
-    assert fn, "No filename provided"
-    # strip leading newlines
-    code = code.lstrip("\n")
-    # ensure it ends with a newline
-    if not code.endswith("\n"):
-        code += "\n"
+
+    if code is not None and args is not None:
+        fn: str = " ".join(args)
+        assert fn, "No filename provided"
+        if fn.startswith("save "):
+            fn = fn[5:]
+
+        # strip leading newlines
+        content = code.lstrip("\n")
+        # ensure it ends with a newline
+        if not content.endswith("\n"):
+            content += "\n"
+    elif kwargs is not None:
+        fn = kwargs.get("path", "")
+        assert fn, "No filename provided"
+        content = kwargs.get("content", "")
 
     # TODO: add check that it doesn't try to write a file with placeholders!
-
     path = Path(fn).expanduser()
 
     if path.exists():
         current = path.read_text()
-        p = Patch(current, code)
+        p = Patch(current, content)
         # TODO: if inefficient save, replace request with patch (and vice versa), or even append
         print_preview(p.diff_minimal(), "diff")
 
@@ -88,21 +110,29 @@ def execute_save(
 
     print("Saving to " + fn)
     with open(path, "w") as f:
-        f.write(code)
+        f.write(content)
     yield Message("system", f"Saved to {fn}")
 
 
 def execute_append(
-    code: str, args: list[str], confirm: ConfirmFunc
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Append code to a file."""
-    fn = " ".join(args)
-    assert fn, "No filename provided"
-    # strip leading newlines
-    code = code.lstrip("\n")
-    # ensure it ends with a newline
-    if not code.endswith("\n"):
-        code += "\n"
+
+    if code is not None and args is not None:
+        fn = " ".join(args)
+        assert fn, "No filename provided"
+        # strip leading newlines
+        content = code.lstrip("\n")
+        # ensure it ends with a newline
+        if not content.endswith("\n"):
+            content += "\n"
+    elif kwargs is not None:
+        content = kwargs["content"]
+        fn = kwargs["path"]
 
     if not confirm(f"Append to {fn}?"):
         # early return
@@ -116,7 +146,7 @@ def execute_append(
         return
 
     with open(path, "a") as f:
-        f.write(code)
+        f.write(content)
     yield Message("system", f"Appended to {fn}")
 
 
@@ -124,9 +154,24 @@ tool_save = ToolSpec(
     name="save",
     desc="Write text to file",
     instructions=instructions,
+    instructions_format=instructions_format,
     examples=examples,
     execute=execute_save,
     block_types=["save"],
+    parameters=[
+        Parameter(
+            name="content",
+            type="string",
+            description="The content of the file to save.",
+            required=True,
+        ),
+        Parameter(
+            name="path",
+            type="string",
+            description="The path of the file to save.",
+            required=True,
+        ),
+    ],
 )
 __doc__ = tool_save.get_doc(__doc__)
 
@@ -134,8 +179,23 @@ tool_append = ToolSpec(
     name="append",
     desc="Append text to file",
     instructions=instructions_append,
+    instructions_format=instructions_format_append,
     examples=examples_append,
     execute=execute_append,
     block_types=["append"],
+    parameters=[
+        Parameter(
+            name="content",
+            type="string",
+            description="The content to append to the file.",
+            required=True,
+        ),
+        Parameter(
+            name="path",
+            type="string",
+            description="The path of the file to append to.",
+            required=True,
+        ),
+    ],
 )
 __doc__ = tool_append.get_doc(__doc__)

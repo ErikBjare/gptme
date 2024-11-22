@@ -3,11 +3,13 @@ import logging
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
-from openai.types.chat import ChatCompletionChunk
+from openai.types.chat import ChatCompletionChunk, ChatCompletionToolParam
 from openai.types.chat.chat_completion_chunk import (
     ChoiceDeltaToolCall,
     ChoiceDeltaToolCallFunction,
 )
+
+from ..tools.base import ToolSpec, Parameter
 
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
@@ -109,7 +111,7 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
         yield msg
 
 
-def chat(messages: list[Message], model: str, tools) -> str:
+def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
@@ -120,14 +122,16 @@ def chat(messages: list[Message], model: str, tools) -> str:
 
     messages_dicts = handle_files(msgs2dicts(messages))
 
-    from openai._types import NOT_GIVEN  # fmt: skip
+    from openai import NOT_GIVEN  # fmt: skip
+
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     response = openai.chat.completions.create(
         model=model,
         messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
-        tools=tools,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
         extra_headers=(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
@@ -137,7 +141,9 @@ def chat(messages: list[Message], model: str, tools) -> str:
     return content
 
 
-def stream(messages: list[Message], model: str, tools) -> Generator[str, None, None]:
+def stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Generator[str, None, None]:
     assert openai, "LLM not initialized"
     stop_reason = None
 
@@ -147,7 +153,9 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
 
     messages_dicts = handle_files(msgs2dicts(messages))
 
-    from openai._types import NOT_GIVEN  # fmt: skip
+    from openai import NOT_GIVEN  # fmt: skip
+
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     for chunk_raw in openai.chat.completions.create(
         model=model,
@@ -155,7 +163,7 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         stream=True,
-        tools=tools,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better
         # max_tokens=(
@@ -186,9 +194,10 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
                     func = tool_call.function
                     if isinstance(func, ChoiceDeltaToolCallFunction):
                         if func.name:
-                            yield "@" + func.name + ": "
+                            yield "\n@" + func.name + ": "
                         if func.arguments:
                             yield func.arguments
+
     logger.debug(f"Stop reason: {stop_reason}")
 
 
@@ -257,3 +266,49 @@ def _process_file(msg: dict) -> dict:
 
     msg["content"] = content
     return msg
+
+
+def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+    required = []
+    properties = {}
+
+    for param in parameters:
+        if param.required:
+            required.append(param.name)
+        properties[param.name] = {"type": param.type, "description": param.description}
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+    }
+
+
+def _spec2tool(spec: ToolSpec) -> ChatCompletionToolParam:
+    name = spec.name
+    if spec.block_types:
+        name = spec.block_types[0]
+
+    description = spec.get_instructions("tool")
+    if len(description) > 1024:
+        logger.warning(
+            "Description for tool `%s` is too long ( %d > 1024 chars). Truncating...",
+            spec.name,
+            len(description),
+        )
+        description = description[:1024]
+
+    provider = get_provider()
+    if provider in ["openai", "azure", "openrouter", "local"]:
+        return {
+            "type": "function",
+            "function": {
+                "name": name,
+                "description": description,
+                "parameters": parameters2dict(spec.parameters),
+                # "strict": False,  # not supported by OpenRouter
+            },
+        }
+    else:
+        raise ValueError("Provider doesn't support tools API")

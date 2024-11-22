@@ -10,18 +10,21 @@ from pathlib import Path
 
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
 
-instructions = f"""
+instructions = """
 To patch/modify files, we use an adapted version of git conflict markers.
 
 This can be used to edit files, without having to rewrite the whole file.
-Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
+Only one patch block can be written per tool use. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
 
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
+""".strip()
 
+instructions_format = {
+    "markdown": f"""
 The $PATH parameter MUST be on the same line as the code block start, not on the line after.
 
 The patch block should be written in the following format:
@@ -32,15 +35,26 @@ $ORIGINAL_CONTENT
 =======
 $UPDATED_CONTENT
 >>>>>>> UPDATED
-'''.strip()).to_output()}
+'''.strip()).to_output("markdown")}
 """
+}
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
 DIVIDER = "\n=======\n"
 UPDATED = "\n>>>>>>> UPDATED"
 
+patch_content = """
+<<<<<<< ORIGINAL
+    print("Hello world")
+=======
+    name = input("What is your name? ")
+    print(f"Hello {name}")
+>>>>>>> UPDATED
+""".strip()
 
-examples = f"""
+
+def examples(tool_format):
+    return f"""
 > User: patch `src/hello.py` to ask for the name of the user
 ```src/hello.py
 def hello():
@@ -50,16 +64,9 @@ if __name__ == "__main__":
     hello()
 ```
 > Assistant:
-{ToolUse("patch", ["src/hello.py"], '''
-<<<<<<< ORIGINAL
-    print("Hello world")
-=======
-    name = input("What is your name? ")
-    print(f"Hello {name}")
->>>>>>> UPDATED
-'''.strip()).to_output()}
+{ToolUse("patch", ["src/hello.py"], patch_content).to_output(tool_format)}
 > System: Patch applied
-"""
+""".strip()
 
 
 @dataclass
@@ -172,16 +179,26 @@ def apply(codeblock: str, content: str) -> str:
 
 
 def execute_patch(
-    code: str,
-    args: list[str],
-    confirm: ConfirmFunc,
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc = lambda _: True,
 ) -> Generator[Message, None, None]:
     """
     Applies the patch.
     """
-    fn = " ".join(args)
-    if not fn:
-        yield Message("system", "No path provided")
+
+    if code is not None and args is not None:
+        fn = " ".join(args)
+        if not fn:
+            yield Message("system", "No path provided")
+            return
+    elif kwargs is not None:
+        code = kwargs.get("patch", "")
+        fn = kwargs.get("path", "")
+
+    if code is None:
+        yield Message("system", "No patch provided")
         return
 
     path = Path(fn).expanduser()
@@ -237,5 +254,19 @@ tool = ToolSpec(
     examples=examples,
     execute=execute_patch,
     block_types=["patch"],
+    parameters=[
+        Parameter(
+            name="patch",
+            type="string",
+            description="The patch to apply.",
+            required=True,
+        ),
+        Parameter(
+            name="path",
+            type="string",
+            description="The path of the file to patch.",
+            required=True,
+        ),
+    ],
 )
 __doc__ = tool.get_doc(__doc__)

@@ -18,7 +18,7 @@ from .message import (
 )
 from .llm.models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
-from .tools.base import ConfirmFunc
+from .tools.base import ConfirmFunc, get_tool_format
 from .useredit import edit_text_with_editor
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,7 @@ def handle_cmd(
                     f"""
   # {tool.name}
     {tool.desc.rstrip(".")}
-    tokens (example): {len_tokens(tool.examples)}"""
+    tokens (example): {len_tokens(tool.get_examples(get_tool_format()))}"""
                 )
         case "export":
             manager.undo(1, quiet=True)

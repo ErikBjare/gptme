@@ -3,7 +3,14 @@ from collections.abc import Generator
 from functools import lru_cache
 
 from ..message import Message
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import (
+    ConfirmFunc,
+    ToolSpec,
+    ToolUse,
+    ToolFormat,
+    get_tool_format,
+    set_tool_format,
+)
 from .browser import tool as browser_tool
 from .chats import tool as chats_tool
 from .computer import tool as computer_tool
@@ -27,8 +34,11 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "ToolSpec",
     "ToolUse",
+    "ToolFormat",
     "all_tools",
     "execute_msg",
+    "get_tool_format",
+    "set_tool_format",
 ]
 
 all_tools: list[ToolSpec] = [

@@ -17,21 +17,26 @@ from .__version__ import __version__
 from .config import get_config, get_project_config
 from .message import Message
 from .util import document_prompt_function, get_project_dir
+from .tools import ToolFormat
 
 PromptType = Literal["full", "short"]
 
 logger = logging.getLogger(__name__)
 
 
-def get_prompt(prompt: PromptType | str = "full", interactive: bool = True) -> Message:
+def get_prompt(
+    prompt: PromptType | str = "full",
+    interactive: bool = True,
+    tool_format: ToolFormat = "markdown",
+) -> Message:
     """
     Get the initial system prompt.
     """
     msgs: Iterable
     if prompt == "full":
-        msgs = prompt_full(interactive)
+        msgs = prompt_full(interactive, tool_format)
     elif prompt == "short":
-        msgs = prompt_short(interactive)
+        msgs = prompt_short(interactive, tool_format)
     else:
         msgs = [Message("system", prompt)]
 
@@ -50,10 +55,12 @@ def _join_messages(msgs: list[Message]) -> Message:
     )
 
 
-def prompt_full(interactive: bool) -> Generator[Message, None, None]:
+def prompt_full(
+    interactive: bool, tool_format: ToolFormat
+) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools()
+    yield from prompt_tools(tool_format=tool_format)
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -61,10 +68,12 @@ def prompt_full(interactive: bool) -> Generator[Message, None, None]:
     yield from prompt_timeinfo()
 
 
-def prompt_short(interactive: bool) -> Generator[Message, None, None]:
+def prompt_short(
+    interactive: bool, tool_format: ToolFormat
+) -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools(examples=False)
+    yield from prompt_tools(examples=False, tool_format=tool_format)
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -188,22 +197,23 @@ def prompt_project() -> Generator[Message, None, None]:
     )
 
 
-def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
+def prompt_tools(
+    examples: bool = True, tool_format: ToolFormat = "markdown"
+) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
     from .tools import loaded_tools  # fmt: skip
 
     assert loaded_tools, "No tools loaded"
-    prompt = "# Tools Overview"
-    for tool in loaded_tools:
-        prompt += f"\n\n## {tool.name}"
-        prompt += f"\n\n**Description:** {tool.desc}" if tool.desc else ""
-        prompt += (
-            f"\n\n**Instructions:** {tool.instructions}" if tool.instructions else ""
-        )
-        if tool.examples and examples:
-            prompt += f"\n\n### Examples\n\n{tool.examples}"
 
-    prompt += "\n\n*End of Tools List.*"
+    use_tool = tool_format == "tool"
+
+    prompt = "# Tools aliases" if use_tool else "# Tools Overview"
+    for tool in loaded_tools:
+        if not use_tool or not tool.is_runnable():
+            prompt += tool.get_tool_prompt(examples, tool_format)
+
+    prompt += "\n\n*End of Tools aliases.*" if use_tool else "\n\n*End of Tools List.*"
+
     yield Message("system", prompt.strip() + "\n\n")
 
 

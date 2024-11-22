@@ -4,7 +4,6 @@ import sys
 from collections.abc import Iterator
 from functools import lru_cache
 from typing import cast
-from typing import TypedDict
 
 from rich import print
 
@@ -31,83 +30,6 @@ from ..util import console
 logger = logging.getLogger(__name__)
 
 
-class Function(TypedDict):
-    name: str
-    description: str
-    parameters: dict | None  # JSON Schema
-    # strict: bool  # = False
-
-
-class ToolOpenAI(TypedDict):
-    type: str  # = "function"
-    function: Function
-
-
-class ToolAnthropic(TypedDict):
-    name: str
-    description: str
-    input_schema: dict
-
-
-Tool = ToolOpenAI | ToolAnthropic
-
-
-def spec2tool(spec: ToolSpec) -> Tool:
-    name = spec.name
-    if spec.block_types:
-        name = spec.block_types[0]
-    description = spec.desc
-
-    # TODO: construct intelligently with detailed/specific content/path arg descriptions
-    param_schema = {
-        "type": "object",
-        "properties": {
-            "content": {
-                "type": "string",
-                "description": "Code or content",
-            },
-            "path": {
-                "type": "string",
-                "description": "The path to the file, if applicable",
-            },
-            # "unit": {
-            #     "type": "string",
-            #     "enum": ["celsius", "fahrenheit"],
-            #     "description": "The unit of temperature, either 'celsius' or 'fahrenheit'"
-            # }
-        },
-        "required": ["content"],
-    }
-
-    # TODO: are input_schema and parameters the same? (both JSON Schema?)
-    provider = _client_to_provider()
-    if provider == "anthropic":
-        return {
-            "name": name,
-            "description": description,
-            "input_schema": param_schema,  # TODO: set
-        }
-    elif provider in ["openai", "azure", "openrouter"]:
-        return {
-            "type": "function",
-            "function": {
-                "name": name,
-                "description": description,
-                "parameters": param_schema,
-                # "strict": False,  # not supported by OpenRouter
-            },
-        }
-    else:
-        raise ValueError("Provider doesn't support tools API")
-
-
-def build_tools_dict() -> list[Tool]:
-    """Constructs the tools dict used for the Tools API supported by several providers"""
-    from .tools import loaded_tools  # fmt: skip
-
-    return [spec2tool(spec) for spec in loaded_tools]
-
-
 def init_llm(llm: str):
     # set up API_KEY (if openai) and API_BASE (if local)
     config = get_config()
@@ -128,7 +50,7 @@ def reply(
     messages: list[Message],
     model: str,
     stream: bool = False,
-    tools: list[Tool] | None = None,
+    tools: list[ToolSpec] | None = None,
 ) -> Message:
     if stream:
         return _reply_stream(messages, model, tools)
@@ -141,7 +63,7 @@ def reply(
 
 
 def _chat_complete(
-    messages: list[Message], model: str, tools: list[Tool] | None
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> str:
     provider = _client_to_provider()
     if provider in PROVIDERS_OPENAI:
@@ -153,7 +75,7 @@ def _chat_complete(
 
 
 def _stream(
-    messages: list[Message], model: str, tools: list[Tool] | None
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Iterator[str]:
     provider = _client_to_provider()
     if provider in PROVIDERS_OPENAI:
@@ -164,7 +86,9 @@ def _stream(
         raise ValueError("LLM not initialized")
 
 
-def _reply_stream(messages: list[Message], model: str, tools) -> Message:
+def _reply_stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
 
     def print_clear():

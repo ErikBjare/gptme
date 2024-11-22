@@ -20,7 +20,7 @@ from typing import (
 
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
 
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
@@ -93,10 +93,20 @@ def _get_ipython():
 
 
 def execute_python(
-    code: str, args: list[str], confirm: ConfirmFunc = lambda _: True
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc = lambda _: True,
 ) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
-    code = code.strip()
+
+    if code is not None and args is not None:
+        code = code.strip()
+    elif kwargs is not None:
+        code = kwargs.get("code", "").strip()
+
+    assert code is not None
+
     print_preview(code, "python")
     if not confirm("Execute this code?"):
         # early return
@@ -163,30 +173,37 @@ def get_installed_python_libraries() -> set[str]:
 
 
 instructions = """
-To execute Python code in an interactive IPython session, send a codeblock using the `ipython` language tag.
+This tool execute Python code in an interactive IPython session.
 It will respond with the output and result of the execution.
-If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
 """
 
+instructions_format = {
+    "markdown": """
+To use it, send a codeblock using the `ipython` language tag.
+If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
+"""
+}
 
-examples = f"""
+
+def examples(tool_format):
+    return f"""
 #### Results of the last expression will be displayed, IPython-style:
 > User: What is 2 + 2?
 > Assistant:
-{ToolUse("ipython", [], "2 + 2").to_output()}
+{ToolUse("ipython", [], "2 + 2").to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "4").to_output()}
 
 #### It can write an example and then execute it:
 > User: compute fib 10
 > Assistant: To compute the 10th Fibonacci number, we can execute this code:
-{ToolUse("ipython", [], '''
+{ToolUse("ipython", [], """
 def fib(n):
     if n <= 1:
         return n
     return fib(n - 1) + fib(n - 2)
 fib(10)
-'''.strip()).to_output()}
+""".strip()).to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "55").to_output()}
 """.strip()
@@ -220,6 +237,14 @@ tool = ToolSpec(
         # "python",
         "ipython",
         "py",
+    ],
+    parameters=[
+        Parameter(
+            name="code",
+            type="string",
+            description="The code to execute in the IPython shell.",
+            required=True,
+        ),
     ],
 )
 __doc__ = tool.get_doc(__doc__)

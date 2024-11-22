@@ -3,6 +3,7 @@ import os
 import random
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import gptme.cli
 import gptme.constants
@@ -354,3 +355,42 @@ def test_vision(args: list[str], runner: CliRunner):
     assert result.exit_code == 0
     assert "yes" in result.output
     assert "yes" in result.output
+
+
+@pytest.mark.parametrize(
+    "tool_format, expected, not_expected, use_tools",
+    [
+        ("markdown", ["```shell\nls"], ["<tool-use>\n<shell>\nls"], False),
+        ("xml", ["<tool-use>\n<shell>\nls"], ["```shell\nls"], False),
+        (
+            "tool",
+            ['{"name": "shell"'],
+            ["```shell\nls", "<tool-use>\n<shell>\nls"],
+            True,
+        ),
+    ],
+)
+def test_tool_format_option(
+    args: list[str], runner: CliRunner, tool_format, expected, not_expected, use_tools
+):
+    args.append("--show-hidden")
+    args.append("--tool-format")
+    args.append(tool_format)
+    args.append("test")
+
+    with patch("gptme.chat.reply", return_value=[]) as mock_reply:
+        result = runner.invoke(gptme.cli.main, args)
+
+        mock_reply.assert_called_once()
+
+        # Check that tools are used only with `tool` format
+        if use_tools:
+            assert mock_reply.call_args[0][3] is not None
+        else:
+            assert mock_reply.call_args[0][3] is None
+
+        for expect in expected:
+            assert expect in result.output
+
+        for not_expect in not_expected:
+            assert not_expect not in result.output

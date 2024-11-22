@@ -56,24 +56,29 @@ from .base import ToolSpec, ToolUse
 logger = logging.getLogger(__name__)
 
 instructions = """
-Use RAG to index and search project documentation.
+Use RAG to index and search project documentation. Use `ipython` tool with the following Python functions:
+- rag_index
+- rag_search
+- rag_status
 """
 
-examples = f"""
+
+def examples(tool_format):
+    return f"""
 User: Index the current directory
 Assistant: Let me index the current directory with RAG.
-{ToolUse("ipython", [], "rag_index()").to_output()}
+{ToolUse("ipython", [], "rag_index()").to_output(tool_format)}
 System: Indexed 1 paths
 
 User: Search for documentation about functions
 Assistant: I'll search for function-related documentation.
-{ToolUse("ipython", [], 'rag_search("function documentation")').to_output()}
+{ToolUse("ipython", [], 'rag_search("function documentation")').to_output(tool_format)}
 System: ### docs/api.md
 Functions are documented using docstrings...
 
 User: Show index status
 Assistant: I'll check the current status of the RAG index.
-{ToolUse("ipython", [], "rag_status()").to_output()}
+{ToolUse("ipython", [], "rag_status()").to_output(tool_format)}
 System: Index contains 42 documents
 """
 

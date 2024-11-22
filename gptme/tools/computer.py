@@ -246,7 +246,7 @@ def computer(
 
 
 instructions = """
-Use this tool to interact with the computer through X11.
+Use the following Python function with the `ipython` tool to interact with the computer through X11.
 Available actions:
 - key: Send key sequence (e.g., "Return", "Control_L+c")
 - type: Type text with realistic delays
@@ -257,29 +257,32 @@ Available actions:
 - cursor_position: Get current mouse position
 """
 
-examples = f"""
+
+def examples(tool_format):
+    return f"""
 User: Take a screenshot of the desktop
 Assistant: I'll capture the current screen.
-{ToolUse("ipython", [], 'computer("screenshot")').to_output()}
+{ToolUse("ipython", [], 'computer("screenshot")').to_output(tool_format)}
 System: Viewing image...
 
 User: Type "Hello, World!" into the active window
 Assistant: I'll type the text with realistic delays.
-{ToolUse("ipython", [], 'computer("type", text="Hello, World!")').to_output()}
+{ToolUse("ipython", [], 'computer("type", text="Hello, World!")').to_output(tool_format)}
 System: Typed text: Hello, World!
 
 User: Move the mouse to coordinates (100, 200) and click
 Assistant: I'll move the mouse and perform a left click.
-{ToolUse("ipython", [], 'computer("mouse_move", coordinate=(100, 200))').to_output()}
+{ToolUse("ipython", [], 'computer("mouse_move", coordinate=(100, 200))').to_output(tool_format)}
 System: Moved mouse to 100,200
-{ToolUse("ipython", [], 'computer("left_click")').to_output()}
+{ToolUse("ipython", [], 'computer("left_click")').to_output(tool_format)}
 System: Performed left_click
 
 User: Press Ctrl+C
 Assistant: I'll send the Control+C key sequence.
-{ToolUse("ipython", [], 'computer("key", text="Control_L+c")').to_output()}
+{ToolUse("ipython", [], 'computer("key", text="Control_L+c")').to_output(tool_format)}
 System: Sent key sequence: Control_L+c
 """
+
 
 tool = ToolSpec(
     name="computer",
