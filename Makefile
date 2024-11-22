@@ -136,8 +136,13 @@ clean-test:
 
 cloc: cloc-core cloc-tools cloc-server cloc-tests
 
+FILES_LLM=gptme/llm/*.py
+FILES_CORE=gptme/*.py $(FILES_LLM) gptme/util/*.py gptme/tools/__init__.py gptme/tools/base.py
 cloc-core:
-	cloc gptme/*.py gptme/tools/__init__.py gptme/tools/base.py --by-file
+	cloc $(FILES_CORE) --by-file
+
+cloc-llm:
+	cloc $(FILES_LLM) --by-file
 
 cloc-tools:
 	cloc gptme/tools/*.py --by-file
@@ -146,7 +151,7 @@ cloc-server:
 	cloc gptme/server --by-file
 
 cloc-tests:
-	cloc tests/*.py --by-file
+	cloc tests --by-file
 
 cloc-eval:
 	cloc gptme/eval/**.py --by-file
