@@ -10,6 +10,7 @@ OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
         "context": 128_000,
         "price_input": 5,
         "price_output": 15,
+        "supports_vision": True,
     },
     "gpt-4o-2024-08-06": {
         "context": 128_000,
@@ -26,6 +27,7 @@ OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
         "context": 128_000,
         "price_input": 0.15,
         "price_output": 0.6,
+        "supports_vision": True,
     },
     "gpt-4o-mini-2024-07-18": {
         "context": 128_000,

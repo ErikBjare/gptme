@@ -1,3 +1,4 @@
+import atexit
 import logging
 from typing import cast
 
@@ -58,7 +59,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     model = model or get_recommended_model(provider)
     console.log(f"Using model: {provider}/{model}")
     init_llm(provider)
-    set_default_model(model)
+    set_default_model(f"{provider}/{model}")
 
     if interactive:
         load_readline_history()
@@ -82,7 +83,6 @@ def init_logging(verbose):
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
     # Register cleanup handler
-    import atexit
 
     def cleanup_logging():
         logging.getLogger().removeHandler(handler)

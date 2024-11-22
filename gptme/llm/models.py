@@ -29,6 +29,7 @@ class ModelMeta:
     context: int
     max_output: int | None = None
     supports_streaming: bool = True
+    supports_vision: bool = False
 
     # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0
@@ -40,6 +41,7 @@ class _ModelDictMeta(TypedDict):
     context: int
     max_output: NotRequired[int]
     supports_streaming: NotRequired[bool]
+    supports_vision: NotRequired[bool]
 
     # price in USD per 1M tokens
     price_input: NotRequired[float]
@@ -66,6 +68,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "max_output": 8192,
             "price_input": 3,
             "price_output": 15,
+            "supports_vision": True,
         },
         "claude-3-5-sonnet-20240620": {
             "context": 200_000,
@@ -78,6 +81,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "max_output": 8192,
             "price_input": 1,
             "price_output": 5,
+            "supports_vision": True,
         },
         "claude-3-haiku-20240307": {
             "context": 200_000,
@@ -112,8 +116,8 @@ def get_model(model: str | None = None) -> ModelMeta:
         provider, model = cast(tuple[Provider, str], model.split("/", 1))
         if provider not in MODELS or model not in MODELS[provider]:
             if provider not in ["openrouter", "local"]:
-                logger.warning(
-                    f"Unknown model {model} from {provider}, using fallback metadata"
+                logger.info(
+                    f"Using fallback metadata for unknown model {model} from {provider}"
                 )
             return ModelMeta(provider, model, context=128_000)
     else:
