@@ -4,9 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import (
-    Any,
-)
+from typing import Any
 
 from ..config import get_project_config
 from ..message import Message
@@ -73,10 +71,8 @@ class RAGManager:
         self.config = config.rag if config and config.rag else {}
 
         # Use config values if not overridden by parameters
-        self.index_path = Path(
-            index_path or self.config.get("index_path", "~/.cache/gptme/rag")
-        ).expanduser()
-        self.collection = collection or self.config.get("collection", "default")
+        self.index_path = index_path or Path("~/.cache/gptme/rag").expanduser()
+        self.collection = collection or "default"
 
         # Initialize the indexer
         self.indexer = gptme_rag.Indexer(

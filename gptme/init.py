@@ -71,14 +71,24 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
 
 def init_logging(verbose):
     # log init
+    handler = RichHandler()
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(message)s",
         datefmt="[%X]",
-        handlers=[RichHandler()],
+        handlers=[handler],
     )
     # set httpx logging to WARNING
     logging.getLogger("httpx").setLevel(logging.WARNING)
+
+    # Register cleanup handler
+    import atexit
+
+    def cleanup_logging():
+        logging.getLogger().removeHandler(handler)
+        logging.shutdown()
+
+    atexit.register(cleanup_logging)
 
 
 def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
