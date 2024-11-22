@@ -44,7 +44,19 @@ def hello(name="world"):
     )
 
 
-def test_clear_file():
+def test_apply_clear_file():
+    content = "test"
+    codeblock = """
+<<<<<<< ORIGINAL
+test
+=======
+>>>>>>> UPDATED
+    """
+    result = apply(codeblock, content)
+    assert result == ""
+
+
+def test_apply_rm_function():
     # only remove code in patch
     content = """
 def hello():
