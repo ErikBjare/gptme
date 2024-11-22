@@ -383,6 +383,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#startup-time">Startup time</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lines-of-code">Lines of code</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-core">LoC Core</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-llm">LoC LLM</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-tools">LoC Tools</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-server">LoC Server</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-tests">LoC Tests</a></li>
@@ -424,15 +425,15 @@ This is a major goal of the project, and it is important to keep in mind that th
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     409224 |         openai._types
-     536126 |       openai._models
-     538397 |     openai.types.batch
-     570268 |   openai.types
-     699678 | openai
+     269863 |       gptme.commands
+     278152 |     gptme.chat
+     294959 |   gptme.cli
+     339387 | openai
+     342894 | gptme
 
-real	0m1.860s
-user	0m1.386s
-sys	0m0.159s
+real	0m1.436s
+user	0m1.308s
+sys	0m0.149s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -443,42 +444,75 @@ make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 <h3>LoC Core<a class="headerlink" href="#loc-core" title="Link to this heading">#</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make cloc-core
 make[2]: Entering directory &#39;/home/runner/work/gptme/gptme&#39;
-cloc gptme/*.py gptme/tools/__init__.py gptme/tools/base.py --by-file
-      23 text files.
-classified 23 files
-      23 unique files.                              
+cloc gptme/*.py gptme/llm/*.py gptme/util/*.py gptme/tools/__init__.py gptme/tools/base.py --by-file
+      30 text files.
+classified 30 files
+      30 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (782.8 files/s, 123412.9 lines/s)
--------------------------------------------------------------------------------------
-File                                   blank        comment           code
--------------------------------------------------------------------------------------
-gptme/logmanager.py                       70             55            290
-gptme/chat.py                             50             75            275
-gptme/cli.py                              50             41            260
-gptme/ncurses.py                          39              5            238
-gptme/commands.py                         18             18            204
-gptme/message.py                          45             57            201
-gptme/tools/base.py                       44             59            139
-gptme/prompts.py                          53             77            136
-gptme/config.py                           32             13            107
-gptme/tools/__init__.py                   23             13            106
-gptme/export.py                           17             25             86
-gptme/readline.py                         31             24             83
-gptme/init.py                             25             17             76
-gptme/reduce.py                           24             32             73
-gptme/codeblock.py                        13             10             64
-gptme/clipboard.py                         8              2             35
-gptme/dirs.py                             15              6             22
-gptme/useredit.py                         12             13             21
-gptme/interrupt.py                        13             14             20
-gptme/constants.py                         4             12             14
-gptme/__init__.py                          1              0              8
-gptme/__version__.py                       2              0              7
-gptme/__main__.py                          1              0              3
--------------------------------------------------------------------------------------
-SUM:                                     590            568           2468
--------------------------------------------------------------------------------------
+github.com/AlDanial/cloc v 1.90  T=0.04 s (723.4 files/s, 126241.5 lines/s)
+---------------------------------------------------------------------------------
+File                                          blank        comment           code
+---------------------------------------------------------------------------------
+gptme/logmanager.py                              70             55            290
+gptme/util/__init__.py                           66             29            290
+gptme/chat.py                                    50             75            275
+gptme/cli.py                                     50             41            260
+gptme/ncurses.py                                 39              5            238
+gptme/commands.py                                18             18            204
+gptme/message.py                                 45             57            201
+gptme/llm/__init__.py                            47             39            185
+gptme/llm/llm_openai.py                          43             21            166
+gptme/util/cli.py                                48             28            161
+gptme/llm/llm_anthropic.py                       39             13            142
+gptme/tools/base.py                              44             59            139
+gptme/prompts.py                                 53             77            136
+gptme/llm/llm_openai_models.py                    3              9            130
+gptme/llm/models.py                              24             10            116
+gptme/config.py                                  32             13            107
+gptme/tools/__init__.py                          23             13            106
+gptme/export.py                                  17             25             86
+gptme/readline.py                                31             24             83
+gptme/init.py                                    25             17             76
+gptme/reduce.py                                  24             32             73
+gptme/codeblock.py                               13             10             64
+gptme/clipboard.py                                8              2             35
+gptme/dirs.py                                    15              6             22
+gptme/useredit.py                                12             13             21
+gptme/interrupt.py                               13             14             20
+gptme/constants.py                                4             12             14
+gptme/__init__.py                                 1              0              8
+gptme/__version__.py                              2              0              7
+gptme/__main__.py                                 1              0              3
+---------------------------------------------------------------------------------
+SUM:                                            860            717           3658
+---------------------------------------------------------------------------------
+make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
+</pre></div>
+</div>
+</section>
+<section id="loc-llm">
+<h3>LoC LLM<a class="headerlink" href="#loc-llm" title="Link to this heading">#</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make cloc-llm
+make[2]: Entering directory &#39;/home/runner/work/gptme/gptme&#39;
+cloc gptme/llm/*.py --by-file
+       5 text files.
+classified 5 files
+       5 unique files.                              
+       0 files ignored.
+
+github.com/AlDanial/cloc v 1.90  T=0.01 s (434.3 files/s, 85722.1 lines/s)
+---------------------------------------------------------------------------------
+File                                          blank        comment           code
+---------------------------------------------------------------------------------
+gptme/llm/__init__.py                            47             39            185
+gptme/llm/llm_openai.py                          43             21            166
+gptme/llm/llm_anthropic.py                       39             13            142
+gptme/llm/llm_openai_models.py                    3              9            130
+gptme/llm/models.py                              24             10            116
+---------------------------------------------------------------------------------
+SUM:                                            156             92            739
+---------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -493,7 +527,7 @@ classified 20 files
       20 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (728.5 files/s, 116967.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (796.1 files/s, 127816.6 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -534,7 +568,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (708.5 files/s, 104587.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (728.0 files/s, 107471.6 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -557,13 +591,13 @@ make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 <h3>LoC Tests<a class="headerlink" href="#loc-tests" title="Link to this heading">#</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make cloc-tests
 make[2]: Entering directory &#39;/home/runner/work/gptme/gptme&#39;
-cloc tests/*.py --by-file
-      21 text files.
-classified 21 files
-      21 unique files.                              
+cloc tests --by-file
+      22 text files.
+classified 22 files
+      22 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1137.5 files/s, 88673.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1268.3 files/s, 100195.2 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -574,6 +608,7 @@ tests/test_shell.py                            21             19             63
 tests/test_tools_rag.py                        23             13             54
 tests/test_tools_patch.py                      32             91             48
 tests/test_eval.py                              8              9             47
+tests/test-integration.sh                      22             36             43
 tests/test_message.py                           7             17             39
 tests/test_reduce.py                           10              2             39
 tests/test_util.py                             28             51             38
@@ -589,7 +624,7 @@ tests/test_tools_subagent.py                    7             10             11
 tests/conftest.py                               7              3             10
 tests/test_config.py                            2              0              5
 ------------------------------------------------------------------------------------------
-SUM:                                          349            361            927
+SUM:                                          371            397            970
 ------------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -605,7 +640,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (601.7 files/s, 73185.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (655.7 files/s, 79747.1 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -634,7 +669,7 @@ classified 92 files
       92 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.08 s (1087.8 files/s, 142400.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.09 s (1076.8 files/s, 140954.0 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -788,6 +823,7 @@ make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#startup-time">Startup time</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lines-of-code">Lines of code</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-core">LoC Core</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-llm">LoC LLM</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-tools">LoC Tools</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-server">LoC Server</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loc-tests">LoC Tests</a></li>

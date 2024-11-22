@@ -42,6 +42,12 @@ LoC Core
 .. command-output:: make cloc-core
    :cwd: ..
 
+LoC LLM
+*******
+
+.. command-output:: make cloc-llm
+   :cwd: ..
+
 LoC Tools
 *********
 
