@@ -119,14 +119,26 @@ class Patch:
             if ORIGINAL not in patch:  # pragma: no cover
                 raise ValueError(f"invalid patch, no `{ORIGINAL.strip()}`", patch)
 
-            parts = re.split(
-                f"{re.escape(ORIGINAL)}|{re.escape(DIVIDER)}|{re.escape(UPDATED)}",
-                patch,
-            )
-            if len(parts) != 4:  # pragma: no cover
-                raise ValueError("invalid patch format")
+            # First split on ORIGINAL to get the content after it
+            _, after_original = re.split(re.escape(ORIGINAL), patch, maxsplit=1)
 
-            _, original, modified, _ = parts
+            # Then split on DIVIDER to get the original content
+            if DIVIDER not in after_original:  # pragma: no cover
+                raise ValueError("invalid patch format: missing =======")
+            original, after_divider = re.split(
+                re.escape(DIVIDER), after_original, maxsplit=1
+            )
+
+            # Finally split on UPDATED to get the modified content
+            # Use UPDATED[1:] to ignore the leading newline in the marker,
+            # allowing us to detect truly empty content between ======= and >>>>>>> UPDATED
+            if after_divider.startswith(UPDATED[1:]):
+                # Special case: empty content followed immediately by UPDATED marker
+                modified = ""
+            else:
+                if UPDATED not in after_divider:  # pragma: no cover
+                    raise ValueError("invalid patch format: missing >>>>>>> UPDATED")
+                modified, _ = re.split(re.escape(UPDATED), after_divider, maxsplit=1)
             yield Patch(original, modified)
 
     @classmethod
