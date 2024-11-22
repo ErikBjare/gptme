@@ -22,11 +22,11 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
-The $FILENAME parameter MUST be on the same line as the code block start, not on the line after.
+The $PATH parameter MUST be on the same line as the code block start, not on the line after.
 
 The patch block should be written in the following format:
 
-{ToolUse("patch", ["$FILENAME"], '''
+{ToolUse("patch", ["$PATH"], '''
 <<<<<<< ORIGINAL
 $ORIGINAL_CONTENT
 =======
@@ -41,14 +41,19 @@ UPDATED = "\n>>>>>>> UPDATED"
 
 
 examples = f"""
-> User: patch the file `hello.py` to ask for the name of the user
-> Assistant:
-{ToolUse("patch", ["hello.py"], '''
-<<<<<<< ORIGINAL
+> User: patch `src/hello.py` to ask for the name of the user
+```src/hello.py
 def hello():
     print("Hello world")
+
+if __name__ == "__main__":
+    hello()
+```
+> Assistant:
+{ToolUse("patch", ["src/hello.py"], '''
+<<<<<<< ORIGINAL
+    print("Hello world")
 =======
-def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED
