@@ -50,12 +50,10 @@ from pathlib import Path
 
 from ..config import get_project_config
 from ..util import get_project_dir
-from ._rag_context import _HAS_RAG, RAGManager
+from ._rag_context import _HAS_RAG, get_rag_manager
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
-
-rag_manager: RAGManager | None = None
 
 instructions = """
 Use RAG to index and search project documentation.
@@ -82,19 +80,19 @@ System: Index contains 42 documents
 
 def rag_index(*paths: str, glob: str | None = None) -> str:
     """Index documents in specified paths."""
-    assert rag_manager is not None, "RAG manager not initialized"
+    manager = get_rag_manager()
     paths = paths or (".",)
     kwargs = {"glob_pattern": glob} if glob else {}
     total_docs = 0
     for path in paths:
-        total_docs += rag_manager.index_directory(Path(path), **kwargs)
+        total_docs += manager.index_directory(Path(path), **kwargs)
     return f"Indexed {len(paths)} paths ({total_docs} documents)"
 
 
 def rag_search(query: str) -> str:
     """Search indexed documents."""
-    assert rag_manager is not None, "RAG manager not initialized"
-    docs, _ = rag_manager.search(query)
+    manager = get_rag_manager()
+    docs, _ = manager.search(query)
     return "\n\n".join(
         f"### {doc.metadata['source']}\n{doc.content[:200]}..." for doc in docs
     )
@@ -102,8 +100,8 @@ def rag_search(query: str) -> str:
 
 def rag_status() -> str:
     """Show index status."""
-    assert rag_manager is not None, "RAG manager not initialized"
-    return f"Index contains {rag_manager.get_document_count()} documents"
+    manager = get_rag_manager()
+    return f"Index contains {manager.get_document_count()} documents"
 
 
 _init_run = False
@@ -129,8 +127,8 @@ def init() -> ToolSpec:
         logger.debug("Project configuration not found, not enabling")
         return replace(tool, available=False)
 
-    global rag_manager
-    rag_manager = RAGManager()
+    # Initialize the shared RAG manager
+    get_rag_manager()
     return tool
 
 

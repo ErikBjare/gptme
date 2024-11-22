@@ -11,6 +11,9 @@ from ..message import Message
 
 logger = logging.getLogger(__name__)
 
+# Constant collection name to ensure consistency
+DEFAULT_COLLECTION = "gptme-default"
+
 try:
     import gptme_rag  # type: ignore # fmt: skip
 
@@ -20,8 +23,19 @@ except ImportError:
     _HAS_RAG = False
 
 
+# Shared RAG manager instance
+_rag_manager: "RAGManager | None" = None
+
 # Simple in-memory cache for search results
 _search_cache: dict[str, tuple[list[Any], dict]] = {}
+
+
+def get_rag_manager() -> "RAGManager":
+    """Get or create the shared RAG manager instance."""
+    global _rag_manager
+    if _rag_manager is None:
+        _rag_manager = RAGManager()
+    return _rag_manager
 
 
 def _get_search_results(query: str, n_results: int) -> tuple[list[Any], dict] | None:
@@ -34,11 +48,6 @@ def _set_search_results(
 ) -> None:
     """Cache search results."""
     _search_cache[f"{query}::{n_results}"] = results
-
-
-def _clear_cache() -> None:
-    """Clear the search cache."""
-    _search_cache.clear()
 
 
 @dataclass
@@ -72,7 +81,7 @@ class RAGManager:
 
         # Use config values if not overridden by parameters
         self.index_path = index_path or Path("~/.cache/gptme/rag").expanduser()
-        self.collection = collection or "default"
+        self.collection = collection or DEFAULT_COLLECTION
 
         # Initialize the indexer
         self.indexer = gptme_rag.Indexer(
