@@ -456,9 +456,9 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
+<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>pandoc
 </pre></div>
 </div>
@@ -1004,11 +1004,11 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
-The $FILENAME parameter MUST be on the same line as the code block start, not on the line after.
+The $PATH parameter MUST be on the same line as the code block start, not on the line after.
 
 The patch block should be written in the following format:
 
-<span class="sb">```patch</span><span class="w"> </span>$FILENAME
+<span class="sb">```patch</span><span class="w"> </span>$PATH
 <span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
 <span class="s">$ORIGINAL_CONTENT</span>
 <span class="s">=======</span>
@@ -1023,18 +1023,22 @@ The patch block should be written in the following format:
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">patch the file `hello.py` to ask for the name of the user</pre>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">patch `src/hello.py` to ask for the name of the user<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">src/hello.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">def hello():
+    print("Hello world")
+
+if __name__ == "__main__":
+    hello()
+</pre></div></pre>
   </td>
 </tr>
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch hello.py</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch src/hello.py</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;"><<<<<<< ORIGINAL
-def hello():
     print("Hello world")
 =======
-def hello():
     name = input("What is your name? ")
     print(f"Hello {name}")
 >>>>>>> UPDATED

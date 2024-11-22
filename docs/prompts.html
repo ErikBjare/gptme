@@ -587,11 +587,11 @@ Try to keep the patch as small as possible. Avoid placeholders, as they may make
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
-The $FILENAME parameter MUST be on the same line as the code block start, not on the line after.
+The $PATH parameter MUST be on the same line as the code block start, not on the line after.
 
 The patch block should be written in the following format:
 
-<span class="sb">```patch</span><span class="w"> </span>$FILENAME
+<span class="sb">```patch</span><span class="w"> </span>$PATH
 <span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
 <span class="s">$ORIGINAL_CONTENT</span>
 <span class="s">=======</span>
@@ -603,17 +603,22 @@ The patch block should be written in the following format:
 <span class="gu">### Examples</span>
 
 
-<span class="k">&gt; </span><span class="ge">User: patch the file `hello.py` to ask for the name of the user</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```patch</span><span class="w"> </span>hello.py
-<span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
-<span class="s">def hello():</span>
-<span class="s">    print(&quot;Hello world&quot;)</span>
-<span class="s">=======</span>
-<span class="s">def hello():</span>
-<span class="s">    name = input(&quot;What is your name? &quot;)</span>
-<span class="s">    print(f&quot;Hello {name}&quot;)</span>
-<span class="s">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
+<span class="k">&gt; </span><span class="ge">User: patch `src/hello.py` to ask for the name of the user</span>
+```src/hello.py
+def hello():
+    print(&quot;Hello world&quot;)
+
+if <span class="gs">__name__</span> == &quot;<span class="gs">__main__</span>&quot;:
+    hello()
+<span class="sb">```</span>
+<span class="sb">&gt; Assistant:</span>
+<span class="sb">```patch src/hello.py</span>
+<span class="sb">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
+<span class="sb">    print(&quot;Hello world&quot;)</span>
+<span class="sb">=======</span>
+<span class="sb">    name = input(&quot;What is your name? &quot;)</span>
+<span class="sb">    print(f&quot;Hello {name}&quot;)</span>
+<span class="sb">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Patch applied</span>
 
@@ -627,9 +632,9 @@ The shell will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
+<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>pandoc
 
 <span class="gu">### Examples</span>
@@ -990,7 +995,7 @@ The following functions are available in the REPL:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3107</p>
+<p>Tokens: 3132</p>
 </dd></dl>
 
 <dl class="py function">
