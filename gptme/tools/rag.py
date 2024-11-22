@@ -14,40 +14,26 @@ The RAG tool requires the ``gptme-rag`` package. Install it with::
 Configure RAG in your ``gptme.toml``::
 
     [rag]
-    # Storage configuration
-    index_path = "~/.cache/gptme/rag"  # Where to store the index
-    collection = "gptme_docs"          # Collection name for documents
-
-    # Context enhancement settings
-    max_tokens = 2000                  # Maximum tokens for context window
-    auto_context = true               # Enable automatic context enhancement
-    min_relevance = 0.5               # Minimum relevance score for including context
-    max_results = 5                   # Maximum number of results to consider
-
-    # Cache configuration
-    [rag.cache]
-    max_embeddings = 10000            # Maximum number of cached embeddings
-    max_searches = 1000               # Maximum number of cached search results
-    embedding_ttl = 86400             # Embedding cache TTL in seconds (24h)
-    search_ttl = 3600                # Search cache TTL in seconds (1h)
+    enabled = true
 
 .. rubric:: Features
 
 1. Manual Search and Indexing
+
    - Index project documentation with ``rag_index``
    - Search indexed documents with ``rag_search``
    - Check index status with ``rag_status``
 
 2. Automatic Context Enhancement
+
    - Automatically adds relevant context to user messages
    - Retrieves semantically similar documents
    - Manages token budget to avoid context overflow
    - Preserves conversation flow with hidden context messages
 
 3. Performance Optimization
+
    - Intelligent caching system for embeddings and search results
-   - Configurable cache sizes and TTLs
-   - Automatic cache invalidation
    - Memory-efficient storage
 
 .. rubric:: Benefits
@@ -59,12 +45,13 @@ Configure RAG in your ``gptme.toml``::
 """
 
 import logging
+from dataclasses import replace
 from pathlib import Path
 
 from ..config import get_project_config
 from ..util import get_project_dir
+from ._rag_context import _HAS_RAG, RAGManager
 from .base import ToolSpec, ToolUse
-from ._rag_context import RAGManager, _HAS_RAG
 
 logger = logging.getLogger(__name__)
 
@@ -119,20 +106,31 @@ def rag_status() -> str:
     return f"Index contains {rag_manager.get_document_count()} documents"
 
 
+_init_run = False
+
+
 def init() -> ToolSpec:
     """Initialize the RAG tool."""
-    if not _HAS_RAG:
+    global _init_run
+    if _init_run:
+        return tool
+    _init_run = True
+
+    if not tool.available:
         return tool
 
     project_dir = get_project_dir()
-    index_path = Path("~/.cache/gptme/rag").expanduser()
-    collection = "default"
     if project_dir and (config := get_project_config(project_dir)):
-        index_path = Path(config.rag.get("index_path", index_path)).expanduser()
-        collection = config.rag.get("collection", project_dir.name)
+        enabled = config.rag.get("enabled", False)
+        if not enabled:
+            logger.debug("RAG not enabled in the project configuration")
+            return replace(tool, available=False)
+    else:
+        logger.debug("Project configuration not found, not enabling")
+        return replace(tool, available=False)
 
     global rag_manager
-    rag_manager = RAGManager(index_path=index_path, collection=collection)
+    rag_manager = RAGManager()
     return tool
 
 
