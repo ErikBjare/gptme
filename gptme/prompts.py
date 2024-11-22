@@ -103,6 +103,17 @@ When suggesting code changes, prefer applying patches over examples. Preserve co
 Use the patch tool to edit existing files, or the save tool to overwrite.
 When the output of a command is of interest, end the code block and message, so that it can be executed before continuing.
 
+When using nested codeblocks (codeblocks within codeblocks), always specify a language tag for both the outer and inner blocks.
+This is critical for correct parsing - without language tags, nested blocks may be cut off prematurely.
+For example:
+```python
+print("This is the outer block")
+# Inner block needs a language tag:
+```shell
+echo "This is the inner block"
+```
+```
+
 Do not use placeholders like `$REPO` unless they have been set.
 Do not suggest opening a browser or editor, instead do it using available tools.
 
