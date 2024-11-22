@@ -58,8 +58,10 @@ def execute_save(
 
     # TODO: add check that it doesn't try to write a file with placeholders!
 
-    if Path(fn).exists():
-        current = Path(fn).read_text()
+    path = Path(fn).expanduser()
+
+    if path.exists():
+        current = path.read_text()
         p = Patch(current, code)
         # TODO: if inefficient save, replace request with patch (and vice versa), or even append
         print_preview(p.diff_minimal(), "diff")
@@ -68,8 +70,6 @@ def execute_save(
         # early return
         yield Message("system", "Save cancelled.")
         return
-
-    path = Path(fn).expanduser()
 
     # if the file exists, ask to overwrite
     if path.exists():
