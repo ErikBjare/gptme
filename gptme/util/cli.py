@@ -229,7 +229,8 @@ def tools_call(tool_name: str, function_name: str, arg: list[str]):
         for arg_str in arg:
             key, value = arg_str.split("=", 1)
             kwargs[key] = value
-        function[0](**kwargs)
+        return_val = function[0](**kwargs)
+        print(return_val)
 
 
 if __name__ == "__main__":
