@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
-from .models import Provider
+from .models import Provider, get_model
 
 if TYPE_CHECKING:
     from openai import OpenAI
@@ -165,17 +165,12 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
 
 
 def handle_files(msgs: list[dict]) -> list[dict]:
-    # only these providers support files in the content
-    support_vision = get_provider() in ["openai", "openrouter"]
-
-    if not support_vision:
-        raise ValueError("Provider does not support files in the content")
-
     return [_process_file(msg) for msg in msgs]
 
 
 def _process_file(msg: dict) -> dict:
     message_content = msg["content"]
+    supports_vision = get_model().supports_vision
 
     # combines a content message with a list of files
     content: list[dict[str, Any]] = (
@@ -189,6 +184,9 @@ def _process_file(msg: dict) -> dict:
         ext = f.suffix[1:]
         if ext not in ALLOWED_FILE_EXTS:
             logger.warning("Unsupported file type: %s", ext)
+            continue
+        if not supports_vision:
+            logger.warning("Model does not support vision")
             continue
         if ext == "jpg":
             ext = "jpeg"

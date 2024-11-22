@@ -13,9 +13,9 @@ from .constants import PROMPT_USER
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
 from .llm import reply
+from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
-from .llm.models import get_model
 from .prompts import get_workspace_prompt
 from .readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
@@ -389,7 +389,7 @@ def _parse_prompt_files(prompt: str) -> Path | None:
         # check if prompt is a path, if so, replace it with the contents of that file
         p = Path(prompt)
         if p.exists() and p.is_file() and p.suffix[1:] in allowed_exts:
-            logger.warning("Attaching file to message")
+            logger.info(f"Attaching file {p} to message")
             return p
         else:
             return None
