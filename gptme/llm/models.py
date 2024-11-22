@@ -13,13 +13,22 @@ from .llm_openai_models import OPENAI_MODELS
 
 logger = logging.getLogger(__name__)
 
+# available providers
+Provider = Literal[
+    "openai", "anthropic", "azure", "openrouter", "groq", "xai", "deepseek", "local"
+]
+PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
+PROVIDERS_OPENAI: list[Provider]
+PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", "local"]
+
 
 @dataclass(frozen=True)
 class ModelMeta:
-    provider: str
+    provider: Provider | Literal["unknown"]
     model: str
     context: int
     max_output: int | None = None
+    supports_streaming: bool = True
 
     # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0
@@ -35,14 +44,6 @@ class _ModelDictMeta(TypedDict):
     price_input: NotRequired[float]
     price_output: NotRequired[float]
 
-
-# available providers
-Provider = Literal[
-    "openai", "anthropic", "azure", "openrouter", "groq", "xai", "deepseek", "local"
-]
-PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
-PROVIDERS_OPENAI: list[Provider]
-PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", "local"]
 
 # default model
 DEFAULT_MODEL: ModelMeta | None = None
@@ -95,6 +96,18 @@ def set_default_model(model: str) -> None:
     DEFAULT_MODEL = modelmeta
 
 
+def create_meta_model(provider, model, **kwargs):
+    if provider not in PROVIDERS_OPENAI:
+        return ModelMeta(
+            provider=provider,
+            model=model,
+            supports_streaming=provider != "openai" or model != "o1",
+            **kwargs,
+        )
+    else:
+        return ModelMeta(provider=provider, model=model, **kwargs)
+
+
 def get_model(model: str | None = None) -> ModelMeta:
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
@@ -113,7 +126,7 @@ def get_model(model: str | None = None) -> ModelMeta:
                 logger.warning(
                     f"Unknown model {model} from {provider}, using fallback metadata"
                 )
-            return ModelMeta(provider=provider, model=model, context=128_000)
+            return create_meta_model(provider, model, context=128_000)
     else:
         # try to find model in all providers
         for provider in MODELS:
@@ -123,11 +136,7 @@ def get_model(model: str | None = None) -> ModelMeta:
             logger.warning(f"Unknown model {model}, using fallback metadata")
             return ModelMeta(provider="unknown", model=model, context=128_000)
 
-    return ModelMeta(
-        provider=provider,
-        model=model,
-        **MODELS[provider][model],
-    )
+    return create_meta_model(provider, model, **MODELS[provider][model])
 
 
 def get_recommended_model(provider: Provider) -> str:  # pragma: no cover

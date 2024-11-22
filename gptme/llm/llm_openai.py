@@ -1,10 +1,12 @@
+import base64
 import logging
 from collections.abc import Generator
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from .config import Config
-from .constants import TEMPERATURE, TOP_P
-from .message import Message, msgs2dicts
+from ..config import Config
+from ..constants import TEMPERATURE, TOP_P
+from ..message import Message, msgs2dicts
 from .models import Provider
 
 if TYPE_CHECKING:
@@ -20,6 +22,9 @@ openrouter_headers = {
     "HTTP-Referer": "https://github.com/ErikBjare/gptme",
     "X-Title": "gptme",
 }
+
+
+ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(provider: Provider, config: Config):
@@ -99,6 +104,7 @@ def chat(messages: list[Message], model: str) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
+
     is_o1 = model.startswith("o1")
     if is_o1:
         messages = list(_prep_o1(messages))
@@ -106,9 +112,11 @@ def chat(messages: list[Message], model: str) -> str:
     # noreorder
     from openai._types import NOT_GIVEN  # fmt: skip
 
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     response = openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(messages, provider=get_provider()),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         extra_headers=(
@@ -123,9 +131,16 @@ def chat(messages: list[Message], model: str) -> str:
 def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
     assert openai, "LLM not initialized"
     stop_reason = None
+
+    is_o1 = model.startswith("o1")
+    if is_o1:
+        messages = list(_prep_o1(messages))
+
+    messages_dicts = handle_files(msgs2dicts(messages))
+
     for chunk in openai.chat.completions.create(
         model=model,
-        messages=msgs2dicts(_prep_o1(messages), provider=get_provider()),  # type: ignore
+        messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         stream=True,
@@ -146,3 +161,69 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
         if content:
             yield content
     logger.debug(f"Stop reason: {stop_reason}")
+
+
+def handle_files(msgs: list[dict]) -> list[dict]:
+    # only these providers support files in the content
+    support_vision = get_provider() in ["openai", "openrouter"]
+
+    if not support_vision:
+        raise ValueError("Provider does not support files in the content")
+
+    return [_process_file(msg) for msg in msgs]
+
+
+def _process_file(msg: dict) -> dict:
+    message_content = msg["content"]
+
+    # combines a content message with a list of files
+    content: list[dict[str, Any]] = (
+        message_content
+        if isinstance(message_content, list)
+        else [{"type": "text", "text": message_content}]
+    )
+
+    for f in msg.get("files", []):
+        f = Path(f)
+        ext = f.suffix[1:]
+        if ext not in ALLOWED_FILE_EXTS:
+            logger.warning("Unsupported file type: %s", ext)
+            continue
+        if ext == "jpg":
+            ext = "jpeg"
+        media_type = f"image/{ext}"
+
+        content.append(
+            {
+                "type": "text",
+                "text": f"![{f.name}]({f.name}):",
+            }
+        )
+
+        # read file
+        data_bytes = f.read_bytes()
+        data = base64.b64encode(data_bytes).decode("utf-8")
+
+        # check that the file is not too large
+        # openai limit is 20MB
+        # TODO: use compression to reduce file size
+        # TODO: check that the limit is measured with the base64 for openai
+        # print(f"{len(data)=}")
+        if len(data) > 20 * 1_024 * 1_024:
+            content.append(
+                {
+                    "type": "text",
+                    "text": "Image size exceeds 20MB. Please upload a smaller image.",
+                }
+            )
+            continue
+
+        content.append(
+            {
+                "type": "image_url",
+                "image_url": {"url": f"data:{media_type};base64,{data}"},
+            }
+        )
+
+    msg["content"] = content
+    return msg

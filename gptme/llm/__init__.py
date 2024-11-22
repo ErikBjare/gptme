@@ -7,8 +7,8 @@ from typing import cast
 
 from rich import print
 
-from .config import get_config
-from .constants import PROMPT_ASSISTANT
+from ..config import get_config
+from ..constants import PROMPT_ASSISTANT
 from .llm_anthropic import chat as chat_anthropic
 from .llm_anthropic import get_client as get_anthropic_client
 from .llm_anthropic import init as init_anthropic
@@ -17,15 +17,15 @@ from .llm_openai import chat as chat_openai
 from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
-from .message import Message, format_msgs, len_tokens
+from ..message import Message, format_msgs, len_tokens
 from .models import (
     MODELS,
     PROVIDERS_OPENAI,
     Provider,
     get_summary_model,
 )
-from .tools import ToolUse
-from .util import console
+from ..tools import ToolUse
+from ..util import console
 
 logger = logging.getLogger(__name__)
 
@@ -234,3 +234,38 @@ def _summarize_helper(s: str, tok_max_start=400, tok_max_end=400) -> str:
     else:
         summary = _summarize_str(s)
     return summary
+
+
+def guess_model_from_config() -> Provider | None:
+    """
+    Guess the model to use from the configuration.
+    """
+
+    config = get_config()
+
+    if config.get_env("OPENAI_API_KEY"):
+        console.log("Found OpenAI API key, using OpenAI provider")
+        return "openai"
+    elif config.get_env("ANTHROPIC_API_KEY"):
+        console.log("Found Anthropic API key, using Anthropic provider")
+        return "anthropic"
+    elif config.get_env("OPENROUTER_API_KEY"):
+        console.log("Found OpenRouter API key, using OpenRouter provider")
+        return "openrouter"
+
+    return None
+
+
+def get_model_from_api_key(api_key: str) -> tuple[str, Provider, str] | None:
+    """
+    Guess the model from the API key prefix.
+    """
+
+    if api_key.startswith("sk-ant-"):
+        return api_key, "anthropic", "ANTHROPIC_API_KEY"
+    elif api_key.startswith("sk-or-"):
+        return api_key, "openrouter", "OPENROUTER_API_KEY"
+    elif api_key.startswith("sk-"):
+        return api_key, "openai", "OPENAI_API_KEY"
+
+    return None

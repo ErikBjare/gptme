@@ -15,7 +15,7 @@ from .interrupt import clear_interruptible, set_interruptible
 from .llm import reply
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
-from .models import get_model
+from .llm.models import get_model
 from .prompts import get_workspace_prompt
 from .readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
@@ -56,8 +56,12 @@ def chat(
     # init
     init(model, interactive, tool_allowlist)
 
-    if model and model.startswith("openai/o1") and stream:
-        logger.info("Disabled streaming for OpenAI's O1 (not supported)")
+    if not get_model().supports_streaming and stream:
+        logger.info(
+            "Disabled streaming for '%s/%s' model (not supported)",
+            get_model().provider,
+            get_model().model,
+        )
         stream = False
 
     console.log(f"Using logdir {path_with_tilde(logdir)}")

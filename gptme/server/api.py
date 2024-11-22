@@ -23,7 +23,7 @@ from ..dirs import get_logs_dir
 from ..llm import _stream
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..models import get_model
+from ..llm.models import get_model
 from ..tools import execute_msg
 from ..tools.base import ToolUse
 
