@@ -109,10 +109,9 @@ def chat(messages: list[Message], model: str) -> str:
     if is_o1:
         messages = list(_prep_o1(messages))
 
-    # noreorder
-    from openai._types import NOT_GIVEN  # fmt: skip
-
     messages_dicts = handle_files(msgs2dicts(messages))
+
+    from openai._types import NOT_GIVEN  # fmt: skip
 
     response = openai.chat.completions.create(
         model=model,
@@ -138,11 +137,13 @@ def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
 
     messages_dicts = handle_files(msgs2dicts(messages))
 
+    from openai._types import NOT_GIVEN  # fmt: skip
+
     for chunk in openai.chat.completions.create(
         model=model,
         messages=messages_dicts,  # type: ignore
-        temperature=TEMPERATURE,
-        top_p=TOP_P,
+        temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
+        top_p=TOP_P if not is_o1 else NOT_GIVEN,
         stream=True,
         # the llama-cpp-python server needs this explicitly set, otherwise unreliable results
         # TODO: make this better

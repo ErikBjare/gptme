@@ -39,6 +39,7 @@ class ModelMeta:
 class _ModelDictMeta(TypedDict):
     context: int
     max_output: NotRequired[int]
+    supports_streaming: NotRequired[bool]
 
     # price in USD per 1M tokens
     price_input: NotRequired[float]
@@ -96,18 +97,6 @@ def set_default_model(model: str) -> None:
     DEFAULT_MODEL = modelmeta
 
 
-def create_meta_model(provider, model, **kwargs):
-    if provider not in PROVIDERS_OPENAI:
-        return ModelMeta(
-            provider=provider,
-            model=model,
-            supports_streaming=provider != "openai" or model != "o1",
-            **kwargs,
-        )
-    else:
-        return ModelMeta(provider=provider, model=model, **kwargs)
-
-
 def get_model(model: str | None = None) -> ModelMeta:
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
@@ -126,7 +115,7 @@ def get_model(model: str | None = None) -> ModelMeta:
                 logger.warning(
                     f"Unknown model {model} from {provider}, using fallback metadata"
                 )
-            return create_meta_model(provider, model, context=128_000)
+            return ModelMeta(provider, model, context=128_000)
     else:
         # try to find model in all providers
         for provider in MODELS:
@@ -136,7 +125,7 @@ def get_model(model: str | None = None) -> ModelMeta:
             logger.warning(f"Unknown model {model}, using fallback metadata")
             return ModelMeta(provider="unknown", model=model, context=128_000)
 
-    return create_meta_model(provider, model, **MODELS[provider][model])
+    return ModelMeta(provider, model, **MODELS[provider][model])
 
 
 def get_recommended_model(provider: Provider) -> str:  # pragma: no cover
