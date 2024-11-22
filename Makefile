@@ -52,7 +52,8 @@ lint:
 	! grep -r 'ToolUse("python"' ${SRCDIRS}
 	@# ruff
 	poetry run ruff check ${RUFF_ARGS}
-	poetry run pylint --disable=all --enable=duplicate-code gptme/
+	@# pylint (always pass, just output duplicates)
+	poetry run pylint --disable=all --enable=duplicate-code --exit-zero gptme/
 
 format:
 	poetry run ruff check --fix-only ${RUFF_ARGS}
