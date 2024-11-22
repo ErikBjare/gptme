@@ -19,8 +19,12 @@ def view_image(image_path: Path | str) -> Message:
     return Message("system", f"Viewing image at {image_path}", files=[image_path])
 
 
+instructions = """
+You can use the `view_image(path)` Python function with `ipython` tool to open an image file.
+""".strip()
+
 tool = ToolSpec(
     name="vision",
-    desc="Tools for viewing images",
+    desc="Viewing images",
     functions=[view_image],
 )

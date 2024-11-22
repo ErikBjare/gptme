@@ -143,20 +143,28 @@ def subagent_wait(agent_id: str) -> dict:
     return asdict(status)
 
 
-examples = f"""
+def examples(tool_format):
+    return f"""
 User: compute fib 13 using a subagent
 Assistant: Starting a subagent to compute the 13th Fibonacci number.
-{ToolUse("ipython", [], 'subagent("fib-13", "compute the 13th Fibonacci number")').to_output()}
+{ToolUse("ipython", [], 'subagent("fib-13", "compute the 13th Fibonacci number")').to_output(tool_format)}
 System: Subagent started successfully.
 Assistant: Now we need to wait for the subagent to finish the task.
-{ToolUse("ipython", [], 'subagent_wait("fib-13")').to_output()}
+{ToolUse("ipython", [], 'subagent_wait("fib-13")').to_output(tool_format)}
 System: {{"status": "success", "result": "The 13th Fibonacci number is 233"}}.
-"""
+""".strip()
 
+
+instructions = """
+You can use the following Python function with `ipython` tool to manage subagents:
+- subagent(sub_agent_name, prompt)
+- subagent_status(sub_agent_name)
+- subagent_wait(sub_agent_name)
+""".strip()
 
 tool = ToolSpec(
     name="subagent",
-    desc="A tool to create subagents",
+    desc="Create and manage subagents",
     examples=examples,
     functions=[subagent, subagent_status, subagent_wait],
 )

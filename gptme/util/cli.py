@@ -181,9 +181,9 @@ def tools_info(tool_name: str):
     print(f"Available: {'Yes' if tool.available else 'No'}")
     print("\nInstructions:")
     print(tool.instructions)
-    if tool.examples:
+    if tool.get_examples():
         print("\nExamples:")
-        print(tool.examples)
+        print(tool.get_examples())
 
 
 @tools.command("call")

@@ -9,7 +9,10 @@ from typing import (
     TypedDict,
 )
 
+from anthropic import NOT_GIVEN
 from typing_extensions import Required
+
+from ..tools.base import ToolSpec, Parameter
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
@@ -19,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from anthropic import Anthropic  # fmt: skip
+    from anthropic.types.beta.prompt_caching import PromptCachingBetaToolParam
 
 anthropic: "Anthropic | None" = None
 
@@ -40,6 +44,12 @@ def get_client() -> "Anthropic | None":
     return anthropic
 
 
+class ToolAnthropic(TypedDict):
+    name: str
+    description: str
+    input_schema: dict
+
+
 class MessagePart(TypedDict, total=False):
     type: Required[Literal["text", "image_url"]]
     text: str
@@ -47,11 +57,13 @@ class MessagePart(TypedDict, total=False):
     cache_control: dict[str, str]
 
 
-def chat(messages: list[Message], model: str, tools) -> str:
+def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
+
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     response = anthropic.beta.prompt_caching.messages.create(
         model=model,
@@ -60,7 +72,7 @@ def chat(messages: list[Message], model: str, tools) -> str:
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
-        tools=tools,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
     )
     content = response.content
     assert content
@@ -68,11 +80,15 @@ def chat(messages: list[Message], model: str, tools) -> str:
     return content[0].text  # type: ignore
 
 
-def stream(messages: list[Message], model: str, tools) -> Generator[str, None, None]:
+def stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Generator[str, None, None]:
     assert anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
+
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     with anthropic.beta.prompt_caching.messages.stream(
         model=model,
@@ -81,7 +97,7 @@ def stream(messages: list[Message], model: str, tools) -> Generator[str, None, N
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
-        tools=tools,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
     ) as stream:
         yield from stream.text_stream
 
@@ -195,3 +211,33 @@ def _transform_system_messages(
         system_messages[-1]["cache_control"] = {"type": "ephemeral"}
 
     return messages, system_messages
+
+
+def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+    required = []
+    properties = {}
+
+    for param in parameters:
+        if param.required:
+            required.append(param.name)
+        properties[param.name] = {"type": param.type, "description": param.description}
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+    }
+
+
+def _spec2tool(spec: ToolSpec) -> "PromptCachingBetaToolParam":
+    name = spec.name
+    if spec.block_types:
+        name = spec.block_types[0]
+
+    # TODO: are input_schema and parameters the same? (both JSON Schema?)
+    return {
+        "name": name,
+        "description": spec.get_instructions("tool"),
+        "input_schema": parameters2dict(spec.parameters),
+    }

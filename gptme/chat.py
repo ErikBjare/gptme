@@ -12,12 +12,18 @@ from .commands import action_descriptions, execute_cmd
 from .constants import PROMPT_USER
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
-from .llm import build_tools_dict, reply
+from .llm import reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
-from .tools import ToolUse, execute_msg, has_tool
+from .tools import (
+    ToolFormat,
+    ToolUse,
+    execute_msg,
+    has_tool,
+    loaded_tools,
+)
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
 from .util import (
@@ -44,6 +50,7 @@ def chat(
     show_hidden: bool = False,
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
+    tool_format: ToolFormat = "markdown",
 ):
     """
     Run the chat loop.
@@ -120,7 +127,7 @@ def chat(
                 while True:
                     try:
                         set_interruptible()
-                        response_msgs = list(step(manager.log, stream, confirm_func))
+                        response_msgs = list(step(manager.log, stream, confirm_func, tool_format=tool_format))
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
                         manager.append(Message("system", "Interrupted"))
@@ -165,7 +172,9 @@ def chat(
 
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
-        for msg in step(manager.log, stream, confirm_func):  # pragma: no cover
+        for msg in step(
+            manager.log, stream, confirm_func, tool_format=tool_format
+        ):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
             if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
@@ -176,6 +185,7 @@ def step(
     log: Log | list[Message],
     stream: bool,
     confirm: ConfirmFunc,
+    tool_format: ToolFormat = "markdown",
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
@@ -207,10 +217,9 @@ def step(
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
-        tools = []
-        toolsapi = True
-        if toolsapi:
-            tools = build_tools_dict()
+        tools = None
+        if tool_format == "tool":
+            tools = [t for t in loaded_tools if t.is_runnable()]
 
         # generate response
         msg_response = reply(msgs, get_model().model, stream, tools)

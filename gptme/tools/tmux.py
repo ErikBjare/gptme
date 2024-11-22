@@ -14,7 +14,7 @@ from time import sleep
 
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
 
@@ -149,13 +149,19 @@ def list_sessions() -> Message:
 
 
 def execute_tmux(
-    code: str,
-    args: list[str],
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
     confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Executes a command in tmux and returns the output."""
-    assert not args
-    cmd = code.strip()
+
+    cmd = ""
+    if code is not None and args is not None:
+        assert not args
+        cmd = code.strip()
+    elif kwargs is not None:
+        cmd = kwargs.get("command", "")
 
     print_preview(f"Command: {cmd}", "bash", copy=True)
     if not confirm(f"Execute command: {cmd}?"):
@@ -198,28 +204,30 @@ Available commands:
 # TODO: implement smart-wait, where we wait for n seconds and then until output is stable
 # TODO: change the "commands" to Python functions registered with the Python tool?
 
-examples = f"""
+
+def examples(tool_format):
+    all_examples = f"""
 #### Managing a dev server
 User: Start the dev server
 Assistant: Certainly! To start the dev server we should use tmux:
-{ToolUse("tmux", [], "new_session 'npm run dev'").to_output()}
+{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
 System: Running `npm run dev` in session 0
 
 User: Can you show me the current content of the pane?
 Assistant: Of course! Let's inspect the pane content:
-{ToolUse("tmux", [], "inspect_pane 0").to_output()}
+{ToolUse("tmux", [], "inspect_pane 0").to_output(tool_format)}
 System:
 {ToolUse("output", [], "Server is running on localhost:5600").to_output()}
 
 User: Stop the dev server
 Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
-{ToolUse("tmux", [], "send_keys 0 C-c").to_output()}
+{ToolUse("tmux", [], "send_keys 0 C-c").to_output(tool_format)}
 System: Sent 'C-c' to pane 0
 
 #### Get info from ncurses applications
 User: start top and give me a summary
 Assistant: Sure! Let's start the top command in a tmux session:
-{ToolUse("tmux", [], "new_session 'top'").to_output()}
+{ToolUse("tmux", [], "new_session 'top'").to_output(tool_format)}
 System: Running `top` in session 1.
 {ToolUse("output", [], "(output from top shown here)").to_output()}
 Assistant: The load is...
@@ -227,27 +235,36 @@ Assistant: The load is...
 #### Background process
 User: Start the dev server
 Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
-{ToolUse("tmux", [], "new_session 'npm run dev'").to_output()}
+{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
 
 #### Ending a session
 User: I changed my mind
 Assistant: No problem! Let's kill the session and start over:
-{ToolUse("tmux", [], "list_session 0").to_output()}
+{ToolUse("tmux", [], "list_session 0").to_output(tool_format)}
 System: Active tmux sessions [0]
 Assistant:
-{ToolUse("tmux", [], "kill_session 0").to_output()}
+{ToolUse("tmux", [], "kill_session 0").to_output(tool_format)}
 System: Killed tmux session with ID 0
 """
+    # we want to skip the last two examples in prompting
+    return "####".join(all_examples.split("####")[:-2])
 
 
 tool = ToolSpec(
     name="tmux",
     desc="Executes shell commands in a tmux session",
     instructions=instructions,
-    # we want to skip the last two examples in prompting
-    examples="####".join(examples.split("####")[:-2]),
+    examples=examples,
     execute=execute_tmux,
     block_types=["tmux"],
     available=shutil.which("tmux") is not None,
+    parameters=[
+        Parameter(
+            name="command",
+            type="string",
+            description="The shell command with arguments to execute.",
+            required=True,
+        ),
+    ],
 )
 __doc__ = tool.get_doc(__doc__)

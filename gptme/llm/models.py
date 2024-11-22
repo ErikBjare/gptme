@@ -15,11 +15,28 @@ logger = logging.getLogger(__name__)
 
 # available providers
 Provider = Literal[
-    "openai", "anthropic", "azure", "openrouter", "gemini", "groq", "xai", "deepseek", "local"
+    "openai",
+    "anthropic",
+    "azure",
+    "openrouter",
+    "gemini",
+    "groq",
+    "xai",
+    "deepseek",
+    "local",
 ]
 PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
 PROVIDERS_OPENAI: list[Provider]
-PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "gemini", "xai", "groq", "deepseek", "local"]
+PROVIDERS_OPENAI = [
+    "openai",
+    "azure",
+    "openrouter",
+    "gemini",
+    "xai",
+    "groq",
+    "deepseek",
+    "local",
+]
 
 
 @dataclass(frozen=True)
