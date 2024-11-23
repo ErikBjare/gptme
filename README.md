@@ -164,6 +164,8 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Interact with the assistant from a web interface or via REST API.
 - 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
   - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
+- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
+  - Create your own agent with persistence using [gptme-agent-template][agent-template]
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
     - Passing a filename as an argument will read the file and include it as context.
@@ -195,7 +197,6 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
-- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
@@ -310,6 +311,7 @@ Options:
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
 [gptme.vim]: https://github.com/ErikBjare/gptme/tree/master/scripts/vim
+[agent-template]: https://github.com/ErikBjare/gptme-agent-template
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html
 [docs-examples]: https://gptme.org/docs/examples.html
