@@ -3,6 +3,7 @@ CLI for gptme utility commands.
 """
 
 import logging
+import subprocess
 import sys
 from pathlib import Path
 
@@ -118,6 +119,25 @@ def context_generate(path: str):
     # Index the file/directory
     n_docs = rag_index(path)
     print(f"Indexed {n_docs} documents")
+
+
+@main.group()
+def prompts():
+    """Commands for generating prompts/contexts."""
+    pass
+
+
+@prompts.command("git")
+def prompts_git():
+    """Generate a prompt for a git repository."""
+    # TODO: move the script into gptme
+    output = subprocess.run(
+        ["../gptme-bob/scripts/context-git.sh"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    print(output.stdout.strip())
 
 
 @main.group()
