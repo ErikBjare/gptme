@@ -34,6 +34,7 @@ RUN if [ "$PLAYWRIGHT" = "yes" ]; then \
 
 # Create eval_results directory
 RUN mkdir ./eval_results; chown appuser:appuser ./eval_results
+ENV EVAL_RESULTS_DIR="/app/eval_results"
 
 # Switch back to non-root user
 USER appuser
