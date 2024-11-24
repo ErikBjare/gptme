@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 # available providers
 Provider = Literal[
-    "openai", "anthropic", "azure", "openrouter", "groq", "xai", "deepseek", "local"
+    "openai", "anthropic", "azure", "openrouter", "gemini", "groq", "xai", "deepseek", "local"
 ]
 PROVIDERS: list[Provider] = cast(list[Provider], get_args(Provider))
 PROVIDERS_OPENAI: list[Provider]
-PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "xai", "groq", "deepseek", "local"]
+PROVIDERS_OPENAI = ["openai", "azure", "openrouter", "gemini", "xai", "groq", "deepseek", "local"]
 
 
 @dataclass(frozen=True)
@@ -90,6 +90,17 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_output": 1.25,
         },
     },
+    # https://ai.google.dev/gemini-api/docs/models/gemini#gemini-1.5-flash
+    # https://ai.google.dev/pricing#1_5flash
+    "gemini": {
+        "gemini-1.5-flash-latest": {
+            "context": 1_048_576,
+            "max_output": 8192,
+            "price_input": 0.15,
+            "price_output": 0.60,
+            "supports_vision": True,
+        },
+    },
     "local": {},
 }
 
@@ -137,6 +148,8 @@ def get_recommended_model(provider: Provider) -> str:  # pragma: no cover
         return "gpt-4o"
     elif provider == "openrouter":
         return "meta-llama/llama-3.1-405b-instruct"
+    elif provider == "gemini":
+        return "gemini-1.5-flash-latest"
     elif provider == "anthropic":
         return "claude-3-5-sonnet-20241022"
     else:
@@ -148,6 +161,8 @@ def get_summary_model(provider: Provider) -> str:  # pragma: no cover
         return "gpt-4o-mini"
     elif provider == "openrouter":
         return "meta-llama/llama-3.1-8b-instruct"
+    elif provider == "gemini":
+        return "gemini-1.5-flash-latest"
     elif provider == "anthropic":
         return "claude-3-haiku-20240307"
     else:

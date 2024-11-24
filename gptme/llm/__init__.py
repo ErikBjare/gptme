@@ -121,6 +121,8 @@ def _client_to_provider() -> Provider:
             return "openai"
         elif "openrouter" in openai_client.base_url.host:
             return "openrouter"
+        elif "gemini" in openai_client.base_url.host:
+            return "gemini"
         else:
             return "azure"
     elif anthropic_client:
@@ -252,6 +254,9 @@ def guess_model_from_config() -> Provider | None:
     elif config.get_env("OPENROUTER_API_KEY"):
         console.log("Found OpenRouter API key, using OpenRouter provider")
         return "openrouter"
+    elif config.get_env("GEMINI_API_KEY"):
+        console.log("Found Gemini API key, using Gemini provider")
+        return "gemini"
 
     return None
 
