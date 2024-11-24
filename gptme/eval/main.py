@@ -204,6 +204,7 @@ def main(
         "anthropic/claude-3-5-sonnet-20241022",
         "anthropic/claude-3-5-haiku-20241022",
         "openrouter/meta-llama/llama-3.1-405b-instruct",
+        "gemini/gemini-1.5-flash-latest",
     ]
 
     results_files = []

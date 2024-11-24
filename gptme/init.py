@@ -92,7 +92,7 @@ def init_logging(verbose):
 
 
 def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
-    api_key = input("Your OpenAI, Anthropic, or OpenRouter API key: ").strip()
+    api_key = input("Your OpenAI, Anthropic, OpenRouter, or Gemini API key: ").strip()
     if (found_model_tuple := get_model_from_api_key(api_key)) is not None:
         return found_model_tuple
     else:
@@ -102,12 +102,13 @@ def _prompt_api_key() -> tuple[str, str, str]:  # pragma: no cover
 
 def ask_for_api_key():  # pragma: no cover
     """Interactively ask user for API key"""
-    console.print("No API key set for OpenAI, Anthropic, or OpenRouter.")
+    console.print("No API key set for OpenAI, Anthropic, OpenRouter, or Gemini.")
     console.print(
         """You can get one at:
  - OpenAI: https://platform.openai.com/account/api-keys
  - Anthropic: https://console.anthropic.com/settings/keys
  - OpenRouter: https://openrouter.ai/settings/keys
+ - Gemini: https://aistudio.google.com/app/apikey
  """
     )
     # Save to config

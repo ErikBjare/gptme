@@ -45,6 +45,9 @@ def init(provider: Provider, config: Config):
     elif provider == "openrouter":
         api_key = config.get_env_required("OPENROUTER_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
+    elif provider == "gemini":
+        api_key = config.get_env_required("GEMINI_API_KEY")
+        openai = OpenAI(api_key=api_key, base_url="https://generativelanguage.googleapis.com/v1beta")
     elif provider == "xai":
         api_key = config.get_env_required("XAI_API_KEY")
         openai = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
