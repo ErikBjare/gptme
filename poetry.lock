@@ -42,13 +42,13 @@ files = [
 
 [[package]]
 name = "anthropic"
-version = "0.36.1"
+version = "0.39.0"
 description = "The official Python library for the anthropic API"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "anthropic-0.36.1-py3-none-any.whl", hash = "sha256:908968f89ecdf9747c34cf632e2099668ee515a38293d455ef7ad79a3d4f527c"},
-    {file = "anthropic-0.36.1.tar.gz", hash = "sha256:8a343caa335aefc3ce64e2e559c88ca01af409ace5d8c4f83bd0b586315a43a2"},
+    {file = "anthropic-0.39.0-py3-none-any.whl", hash = "sha256:ea17093ae0ce0e1768b0c46501d6086b5bcd74ff39d68cd2d6396374e9de7c09"},
+    {file = "anthropic-0.39.0.tar.gz", hash = "sha256:94671cc80765f9ce693f76d63a97ee9bef4c2d6063c044e983d21a2e262f63ba"},
 ]
 
 [package.dependencies]
@@ -58,7 +58,6 @@ httpx = ">=0.23.0,<1"
 jiter = ">=0.4.0,<1"
 pydantic = ">=1.9.0,<3"
 sniffio = "*"
-tokenizers = ">=0.13.0"
 typing-extensions = ">=4.7,<5"
 
 [package.extras]
@@ -1010,7 +1009,7 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 name = "fsspec"
 version = "2024.9.0"
 description = "File-system specification"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "fsspec-2024.9.0-py3-none-any.whl", hash = "sha256:a0947d552d8a6efa72cc2c730b12c41d043509156966cca4fb157b0f2a0c574b"},
@@ -1370,7 +1369,7 @@ zstd = ["zstandard (>=0.18.0)"]
 name = "huggingface-hub"
 version = "0.25.2"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
-optional = false
+optional = true
 python-versions = ">=3.8.0"
 files = [
     {file = "huggingface_hub-0.25.2-py3-none-any.whl", hash = "sha256:1897caf88ce7f97fe0110603d8f66ac264e3ba6accdf30cd66cc0fed5282ad25"},
@@ -4404,7 +4403,7 @@ blobfile = ["blobfile (>=2)"]
 name = "tokenizers"
 version = "0.20.1"
 description = ""
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "tokenizers-0.20.1-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:439261da7c0a5c88bda97acb284d49fbdaf67e9d3b623c0bfd107512d22787a9"},
@@ -5184,4 +5183,4 @@ server = ["flask", "flask-cors"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8ba9182b2c6c57a16bde1a5d0f37003f07eb72225f6690af7acd9df5612cfae6"
+content-hash = "a6a12c5e4509d5da912b3777b593b7e9469bf18c2812adfe665a28d48b55164a"
