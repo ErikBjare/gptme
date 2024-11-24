@@ -44,7 +44,7 @@ gptme-rag = {version = "^0.3.1", optional = true}
 
 # providers
 openai = "^1.0"
-anthropic = "^0.36.0"
+anthropic = ">=0.36,<0.40"
 
 # evals
 multiprocessing-logging = "^0.3.4"
