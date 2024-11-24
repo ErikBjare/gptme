@@ -170,7 +170,10 @@ def handle_files(msgs: list[dict]) -> list[dict]:
 
 def _process_file(msg: dict) -> dict:
     message_content = msg["content"]
-    supports_vision = get_model().supports_vision
+    model = get_model()
+    if model.provider == "deepseek":
+        # deepseek does not support files
+        return msg
 
     # combines a content message with a list of files
     content: list[dict[str, Any]] = (
@@ -185,7 +188,7 @@ def _process_file(msg: dict) -> dict:
         if ext not in ALLOWED_FILE_EXTS:
             logger.warning("Unsupported file type: %s", ext)
             continue
-        if not supports_vision:
+        if not model.supports_vision:
             logger.warning("Model does not support vision")
             continue
         if ext == "jpg":

@@ -6,6 +6,7 @@ Inspired by a document by Anton Osika and Axel Theorell.
 
 import csv
 import logging
+import os
 import subprocess
 import sys
 from collections import defaultdict
@@ -319,7 +320,10 @@ def write_results(model_results: dict[str, list[EvalResult]]):
         text=True,
         capture_output=True,
     ).stdout.strip()
-    results_dir = project_dir / "eval_results" / timestamp
+    eval_results_dir = Path(
+        os.environ.get("EVAL_RESULTS_DIR", project_dir / "eval_results")
+    )
+    results_dir = eval_results_dir / timestamp
     results_dir.mkdir(parents=True, exist_ok=True)
 
     csv_filename = results_dir / "eval_results.csv"
