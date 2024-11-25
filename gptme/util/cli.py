@@ -12,6 +12,9 @@ from ..dirs import get_logs_dir
 from ..logmanager import LogManager
 from ..message import Message
 from ..tools.chats import list_chats
+from .cli_context import context as context_group
+
+logger = logging.getLogger(__name__)
 
 
 @click.group()
@@ -21,6 +24,9 @@ def main(verbose: bool = False):
 
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
+
+
+main.add_command(context_group)
 
 
 @main.group()
@@ -98,26 +104,6 @@ def tokens_count(text: str | None, model: str, file: str | None):
     # Count tokens
     tokens = enc.encode(text)
     print(f"Token count ({model}): {len(tokens)}")
-
-
-@main.group()
-def context():
-    """Commands for context generation."""
-    pass
-
-
-@context.command("generate")
-@click.argument("path", type=click.Path(exists=True))
-def context_generate(path: str):
-    """Index a file or directory for context retrieval."""
-    from ..tools.rag import init, rag_index  # fmt: skip
-
-    # Initialize RAG
-    init()
-
-    # Index the file/directory
-    n_docs = rag_index(path)
-    print(f"Indexed {n_docs} documents")
 
 
 @main.group()

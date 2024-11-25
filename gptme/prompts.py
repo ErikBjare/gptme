@@ -241,7 +241,8 @@ def prompt_timeinfo() -> Generator[Message, None, None]:
 def get_workspace_prompt(workspace: Path) -> str:
     # NOTE: needs to run after the workspace is initialized (i.e. initial prompt is constructed)
     # TODO: update this prompt if the files change
-    # TODO: include `git status/diff/log` summary, and keep it up-to-date
+    # TODO: include workspace structure from gptme.util.cli.prompts_workspace
+    # TODO: include git summary from gptme.util.cli.prompts_git
     if project := get_project_config(workspace):
         files = []
         for file in project.files:
