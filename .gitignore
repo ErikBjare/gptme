@@ -20,6 +20,7 @@ tests/output
 docs/_build
 .coverage*
 coverage.xml
+htmlcov
 junit.xml
 __pycache__
 .*cache
