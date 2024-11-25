@@ -2,6 +2,7 @@ import json
 import logging
 import shutil
 import textwrap
+from collections import Counter
 from collections.abc import Generator
 from dataclasses import dataclass, field, replace
 from datetime import datetime
@@ -308,9 +309,26 @@ def prepare_messages(msgs: list[Message]) -> list[Message]:
     """Prepares the messages before sending to the LLM."""
     from .tools._rag_context import _HAS_RAG, enhance_messages  # fmt: skip
 
+    # strip old context
     # First enhance messages with context
     if _HAS_RAG:
         msgs = enhance_messages(msgs)
+
+    # if latest message is a user message, prefix context
+    # if latest message is a system message (like patch applied), then...?
+    in_git_repo = True
+    if in_git_repo:
+        # TODO: if in a git repo, then we want to include `git status -vv` context
+        pass
+        # logger.info("included git status context")
+
+    # TODO: get mentioned files, make sure their latest versions are in context
+    #       sort files by last modified time, and include the top N files by mentions and recency
+    # search for files mentioned in the conversation
+    files = Counter([f for msg in msgs for f in msg.files])
+    print(files)
+
+    # TODO: strip old patches and saves
 
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))

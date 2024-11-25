@@ -117,6 +117,10 @@ def chat(
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
                 if not msg.content.startswith("/"):
+                    # TODO: include paths as files instead of codeblocks, parse codeblocks in prepare_messages instead?
+                    #       this way we can defer reading multiple stale versions of files in requests
+                    #       we should probably ensure that the old file contents get included in exports and such
+                    #       maybe we need seperate modes for this, but I think the refactor makes sense anyway
                     msg = _include_paths(msg)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
