@@ -158,6 +158,8 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Can see images referenced in prompts, screenshots of your desktop, and web pages.
 - 🔄 Self-correcting
   - Output is fed back to the assistant, allowing it to respond and self-correct.
+- 🔌 MCP Support
+  - Can run as a [Model Context Protocol][mcp] server, allowing other applications to use gptme's capabilities.
 - 🤖 Support for several LLM [providers][docs-providers]
   - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
 - 💬 Web UI frontend and REST API (optional, see docs for [server][docs-server])

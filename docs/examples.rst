@@ -63,4 +63,18 @@ Generate docstrings for all functions in a file:
 
    gptme --non-interactive "Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters." $@
 
+.. rubric:: MCP Server
+
+Run gptme as an MCP server to expose its capabilities to other applications:
+
+.. code-block:: bash
+
+   # Run with a workspace
+   gptme-mcp-server --workspace ~/workspace
+
+   # Run with verbose logging
+   gptme-mcp-server -v
+
+For detailed MCP examples and configuration, see :doc:`examples/mcp`.
+
 These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.
