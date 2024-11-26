@@ -17,6 +17,7 @@ gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
 gptme-util = "gptme.util.cli:main"
 gptme-nc = "gptme.ncurses:main"
+gptme-mcp-server = "gptme.mcp.cli_server:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -75,6 +76,7 @@ pytest-dotenv = "^0.5.2"
 pytest-timeout = "^2.2.0"
 pytest-retry = "^1.6.3"
 pytest-mock = "*"
+pytest-asyncio = "^0.24.0"
 greenlet = "*"  # dependency of playwright, but needed for coverage
 
 # docs

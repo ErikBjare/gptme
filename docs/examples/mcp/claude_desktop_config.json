@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "gptme": {
+      "command": "gptme-mcp-server",
+      "args": ["--workspace", "~/workspace"],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      }
+    }
+  }
+}
