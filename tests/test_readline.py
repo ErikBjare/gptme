@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from gptme.readline import _matches
+from gptme.util.readline import _matches
 
 project_root = Path(__file__).parent.parent
 

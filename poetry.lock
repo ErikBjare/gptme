@@ -5173,14 +5173,15 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 type = ["pytest-mypy"]
 
 [extras]
-all = ["flask", "flask-cors", "gptme-rag", "matplotlib", "numpy", "pandas", "pillow", "playwright", "python-xlib"]
+all = ["flask", "flask-cors", "gptme-rag", "matplotlib", "numpy", "pandas", "pillow", "playwright", "python-xlib", "youtube_transcript_api"]
 browser = ["playwright"]
 computer = ["pillow", "python-xlib"]
 datascience = ["matplotlib", "numpy", "pandas", "pillow"]
 rag = ["gptme-rag"]
 server = ["flask", "flask-cors"]
+youtube = ["youtube_transcript_api"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a6a12c5e4509d5da912b3777b593b7e9469bf18c2812adfe665a28d48b55164a"
+content-hash = "c8c24e69c4e57c35efbe16a94baf9b092f3365b40ede02a54f5264ef30121db6"

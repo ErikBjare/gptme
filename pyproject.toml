@@ -11,6 +11,31 @@ packages = [
 
 include = ["gptme/server/static/**/*", "media/logo.png"]
 
+[project]
+name = "gptme"
+dependencies = [
+    "python = \"^3.10\"",
+    "click = \"^8.0\"",
+    "python-dotenv = \"^1.0.0\"",
+    "rich = \"^13.5.2\"",
+    "tabulate = \"*\"",
+    "pick = \"^2.2.0\"",
+    "tiktoken = \">=0.7\"",
+    "tomlkit = \"*\"",
+    "typing-extensions = \"*\"",
+    "platformdirs = \"^4.3\"",
+    "lxml = \"*\"",
+    "ipython = \"^8.17.2\"",
+    "bashlex = \"^0.18\"",
+]
+
+[project.scripts]
+gptme = "gptme.cli:main"
+gptme-server = "gptme.server.cli:main"
+gptme-eval = "gptme.eval.main:main"
+gptme-util = "gptme.util.cli:main"
+gptme-nc = "gptme.ncurses:main"
+
 [tool.poetry.scripts]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"
@@ -31,20 +56,20 @@ typing-extensions = "*"
 platformdirs = "^4.3"
 lxml = "*"
 
+# providers
+openai = "^1.0"
+anthropic = ">=0.36,<0.40"
+
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
 playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
-youtube_transcript_api = {version = "^0.6.1", optional = true}
-python-xlib = {version = "^0.33", optional = true}  # for X11 interaction
+youtube_transcript_api = {version = "^0.6.1", optional=true}
+python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 
 # RAG
-gptme-rag = {version = "^0.3.1", optional = true}
-#gptme-rag = {path = "../gptme-rag", optional = true, develop = true}
-
-# providers
-openai = "^1.0"
-anthropic = ">=0.36,<0.40"
+gptme-rag = {version = "^0.3.1", optional=true}
+#gptme-rag = {path = "../gptme-rag", optional=true, develop=true}
 
 # evals
 multiprocessing-logging = "^0.3.4"
@@ -95,6 +120,7 @@ browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
 rag = ["gptme-rag"]  # RAG functionality
+youtube = ["youtube_transcript_api"]
 all = [
     # server
     "flask", "flask-cors",
@@ -106,6 +132,8 @@ all = [
     "python-xlib",
     # rag
     "gptme-rag",
+    # youtube transcript tool
+    "youtube_transcript_api",
 ]
 
 [tool.ruff]

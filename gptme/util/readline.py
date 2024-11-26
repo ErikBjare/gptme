@@ -3,16 +3,16 @@ import logging
 from functools import lru_cache
 from pathlib import Path
 
-from .commands import COMMANDS
-from .dirs import get_readline_history_file
+from ..commands import COMMANDS
+from ..dirs import get_readline_history_file
 
 # noreorder
 try:
     import readline  # fmt: skip
-except ImportError:  # pragma: no cover
+except ImportError as e:  # pragma: no cover
     raise Exception(
         "Unsupported platform: readline not available.\nIf you are on Windows, use WSL or Docker to run gptme."
-    ) from None
+    ) from e
 
 
 logger = logging.getLogger(__name__)
