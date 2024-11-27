@@ -42,8 +42,8 @@
   <a href="https://discord.gg/NMaCmmkxWv">
     <img src="https://img.shields.io/discord/1271539422017618012?logo=discord&style=social" alt="Discord" />
   </a>
-  <a href="https://twitter.com/ErikBjare">
-    <img src="https://img.shields.io/twitter/follow/ErikBjare?style=social" alt="Twitter" />
+  <a href="https://x.com/gptmeorg">
+    <img src="https://img.shields.io/twitter/follow/gptmeorg?style=social" alt="X.com" />
   </a>
 </p>
 
