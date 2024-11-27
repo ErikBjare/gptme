@@ -20,9 +20,9 @@ from .interrupt import handle_keyboard_interrupt, set_interruptible
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
-from .readline import add_history
 from .tools import all_tools, init_tools
 from .util import epoch_to_age, generate_name
+from .util.readline import add_history
 
 logger = logging.getLogger(__name__)
 

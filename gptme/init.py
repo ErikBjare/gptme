@@ -13,9 +13,9 @@ from .llm.models import (
     get_recommended_model,
     set_default_model,
 )
-from .readline import load_readline_history, register_tabcomplete
 from .tools import init_tools
 from .util import console
+from .util.readline import load_readline_history, register_tabcomplete
 
 logger = logging.getLogger(__name__)
 _init_done = False

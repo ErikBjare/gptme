@@ -17,7 +17,7 @@ from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
-from .readline import add_history
+from .util.readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
