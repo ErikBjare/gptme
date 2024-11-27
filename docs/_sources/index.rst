@@ -39,6 +39,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    finetuning
    arewetiny
    timeline
+   Changelog <https://github.com/ErikBjare/gptme/releases>
    api
 
 .. toctree::
@@ -47,6 +48,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
 
    GitHub <https://github.com/ErikBjare/gptme>
    Discord <https://discord.gg/NMaCmmkxWv>
+   X <https://x.com/gptmeorg>
 
 
 

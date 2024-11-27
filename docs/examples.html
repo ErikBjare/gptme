@@ -179,12 +179,14 @@
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/ErikBjare/gptme/releases">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">External</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference external" href="https://github.com/ErikBjare/gptme">GitHub</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://discord.gg/NMaCmmkxWv">Discord</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://x.com/gptmeorg">X</a></li>
 </ul>
 
     </div>
@@ -389,19 +391,20 @@ document.write(`
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;write a web app to particles.html which shows off an impressive and colorful particle effect using three.js&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;render mandelbrot set to mandelbrot.png&#39;</span>
 
-<span class="c1"># chaining prompts</span>
-gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
-
-<span class="c1"># stdin</span>
-git<span class="w"> </span>diff<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;complete the TODOs in this diff&#39;</span>
-make<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix the failing tests&#39;</span>
-
-<span class="c1"># from a file</span>
+<span class="c1"># files</span>
 gptme<span class="w"> </span><span class="s1">&#39;summarize this&#39;</span><span class="w"> </span>README.md
 gptme<span class="w"> </span><span class="s1">&#39;refactor this&#39;</span><span class="w"> </span>main.py
 
-<span class="c1"># it can read files using tools, if contents not provided in prompt</span>
+<span class="c1"># stdin</span>
+git<span class="w"> </span>status<span class="w"> </span>-vv<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix TODOs&#39;</span>
+git<span class="w"> </span>status<span class="w"> </span>-vv<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;commit&#39;</span>
+make<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix the failing tests&#39;</span>
+
+<span class="c1"># if path not directly provided in prompt, it can read files using tools</span>
 gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vimrc&#39;</span>
+
+<span class="c1"># chaining prompts</span>
+gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
 </pre></div>
 </div>
 <p>Do you have a cool example? Share it with us in the <a class="reference external" href="https://github.com/ErikBjare/gptme/discussions">Discussions</a>!</p>
@@ -412,23 +415,6 @@ gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vi
 </pre></div>
 </div>
 <p>The ‘-’ is special “multiprompt” syntax that tells the assistant to wait for the assistant to finish work on the next prompt (run until no more tool calls) before continuing. For more such non-interactive examples, see <a class="reference internal" href="automation.html"><span class="doc">Automation</span></a>.</p>
-<p class="rubric">Generate Commit Messages</p>
-<p>Generate meaningful commit messages based on your git diff:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">msg_file</span><span class="o">=</span><span class="k">$(</span>mktemp<span class="k">)</span>
-git<span class="w"> </span>diff<span class="w"> </span>--cached<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s2">&quot;Write a concise, meaningful commit message for this diff to `</span><span class="nv">$msg_file</span><span class="s2">`.</span>
-
-<span class="s2">Format: &lt;type&gt;: &lt;subject&gt;</span>
-<span class="s2">Where type is one of: feat, fix, docs, style, refactor, test, chore, build&quot;</span><span class="p">;</span>
-
-git<span class="w"> </span>commit<span class="w"> </span>-F<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$msg_file</span><span class="s2">&quot;</span>
-</pre></div>
-</div>
-<p class="rubric">Generate Documentation</p>
-<p>Generate docstrings for all functions in a file:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s2">&quot;Patch these files to include concise docstrings for all functions, skip functions that already have docstrings. Include: brief description, parameters.&quot;</span><span class="w"> </span><span class="nv">$@</span>
-</pre></div>
-</div>
-<p>These examples demonstrate how gptme can be used to create simple yet powerful automation tools. Each script can be easily customized and expanded to fit specific project needs.</p>
 </section>
 
 
