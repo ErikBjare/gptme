@@ -394,6 +394,7 @@ gptme<span class="w"> </span><span class="s1">&#39;render mandelbrot set to mand
 <span class="c1"># files</span>
 gptme<span class="w"> </span><span class="s1">&#39;summarize this&#39;</span><span class="w"> </span>README.md
 gptme<span class="w"> </span><span class="s1">&#39;refactor this&#39;</span><span class="w"> </span>main.py
+gptme<span class="w"> </span><span class="s1">&#39;what do you see?&#39;</span><span class="w"> </span>image.png<span class="w">  </span><span class="c1"># vision</span>
 
 <span class="c1"># stdin</span>
 git<span class="w"> </span>status<span class="w"> </span>-vv<span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix TODOs&#39;</span>
@@ -402,6 +403,10 @@ make<span class="w"> </span><span class="nb">test</span><span class="w"> </span>
 
 <span class="c1"># if path not directly provided in prompt, it can read files using tools</span>
 gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vimrc&#39;</span>
+gptme<span class="w"> </span><span class="s1">&#39;take a screenshot and tell me what you see&#39;</span>
+
+<span class="c1"># can read URLs (if browser tool is available)</span>
+gptme<span class="w"> </span><span class="s1">&#39;implement this&#39;</span><span class="w"> </span>https://github.com/ErikBjare/gptme/issues/286
 
 <span class="c1"># chaining prompts</span>
 gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
