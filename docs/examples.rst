@@ -13,6 +13,7 @@ To see example output without running the commands yourself, check out the :doc:
     # files
     gptme 'summarize this' README.md
     gptme 'refactor this' main.py
+    gptme 'what do you see?' image.png  # vision
 
     # stdin
     git status -vv | gptme 'fix TODOs'
@@ -21,6 +22,10 @@ To see example output without running the commands yourself, check out the :doc:
 
     # if path not directly provided in prompt, it can read files using tools
     gptme 'suggest improvements to my vimrc'
+    gptme 'take a screenshot and tell me what you see'
+
+    # can read URLs (if browser tool is available)
+    gptme 'implement this' https://github.com/ErikBjare/gptme/issues/286
 
     # chaining prompts
     gptme 'show me something cool in the python repl' - 'something cooler' - 'something even cooler'
