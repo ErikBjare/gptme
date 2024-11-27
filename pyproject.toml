@@ -63,27 +63,60 @@ anthropic = ">=0.36,<0.40"
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
-playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
-youtube_transcript_api = {version = "^0.6.1", optional=true}
-python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 
-# RAG
+[tool.poetry.group.computer]
+optional = true
+[tool.poetry.group.computer.dependencies]
+python-xlib = "^0.33"
+pillow = "*"
+
+[tool.poetry.group.browser]
+optional = true
+[tool.poetry.group.browser.dependencies]
+playwright = "1.47.*"  # version constrained due to annoying to have to run `playwright install` on every update
+
+[tool.poetry.group.youtube]
+optional = true
+[tool.poetry.group.youtube.dependencies]
+youtube_transcript_api = "^0.6.1"
+
+[tool.poetry.group.rag]
+optional = true
+[tool.poetry.group.rag.dependencies]
 gptme-rag = {version = "^0.3.1", optional=true}
 #gptme-rag = {path = "../gptme-rag", optional=true, develop=true}
 
-# evals
+[tool.poetry.group.eval]
+optional = true
+[tool.poetry.group.eval.dependencies]
 multiprocessing-logging = "^0.3.4"
 
-# datascience essentials
-matplotlib = {version = "*", optional=true}
-pandas = {version = "*", optional=true}
-numpy = {version = "*", optional=true}
-pillow = {version = "*", optional=true}
+[tool.poetry.group.datascience]
+optional = true
+[tool.poetry.group.datascience.dependencies]
+matplotlib = "*"
+pandas = "*"
+numpy = "*"
+pillow = "*"
 
-# server
-flask = {version = "^3.0", optional=true}
-flask-cors = {version = "^4.0", optional=true}
+[tool.poetry.group.server]
+optional = true
+[tool.poetry.group.server.dependencies]
+flask = "^3.0"
+flask-cors = "^4.0"
 
+[tool.poetry.group.docs]
+optional = true
+[tool.poetry.group.docs.dependencies]
+sphinx = "^8.0"
+sphinx-click = "^6.0"
+sphinx-book-theme = "^1.0.1"
+sphinxcontrib-programoutput = "^0.17"
+sphinxcontrib-asciinema = "^0.4.2"
+myst-parser = "*"
+
+[tool.poetry.group.dev]
+optional = true
 [tool.poetry.group.dev.dependencies]
 # lint
 mypy = "*"
@@ -102,25 +135,11 @@ pytest-retry = "^1.6.3"
 pytest-mock = "*"
 greenlet = "*"  # dependency of playwright, but needed for coverage
 
-# docs
-sphinx = "^8.0"
-sphinx-click = "^6.0"
-sphinx-book-theme = "^1.0.1"
-sphinxcontrib-programoutput = "^0.17"
-sphinxcontrib-asciinema = "^0.4.2"
-myst-parser = "*"
-
 # types
 types-tabulate = "*"
 types-lxml = "*"
 
 [tool.poetry.extras]
-server = ["flask", "flask-cors"]
-browser = ["playwright"]
-datascience = ["matplotlib", "pandas", "numpy", "pillow"]
-computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
-rag = ["gptme-rag"]  # RAG functionality
-youtube = ["youtube_transcript_api"]
 all = [
     # server
     "flask", "flask-cors",
