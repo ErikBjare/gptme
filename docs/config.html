@@ -163,6 +163,7 @@
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="projects.html">Projects</a></li>
 </ul>
 </details></li>
@@ -170,7 +171,6 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
-<li class="toctree-l1"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
@@ -385,8 +385,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-configuration-file">Global configuration file</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-configuration-file">Project configuration file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
 </ul>
             </nav>
         </div>
@@ -407,8 +407,8 @@ document.write(`
 </ul>
 <p>It also supports environment variables for configuration, which take precedence over the configuration files.</p>
 <p>The CLI also supports a variety of options that can be used to override both configuration values and environment variables.</p>
-<section id="global-configuration-file">
-<h2>Global configuration file<a class="headerlink" href="#global-configuration-file" title="Link to this heading">#</a></h2>
+<section id="global-config">
+<h2>Global config<a class="headerlink" href="#global-config" title="Link to this heading">#</a></h2>
 <p>The file is located at <code class="docutils literal notranslate"><span class="pre">~/.config/gptme/config.toml</span></code>.</p>
 <p>Here is an example:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[prompt]</span>
@@ -434,9 +434,9 @@ document.write(`
 <p>The <code class="docutils literal notranslate"><span class="pre">prompt</span></code> section contains options for the prompt.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">env</span></code> section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting defaults for API keys and models.</p>
 </section>
-<section id="project-configuration-file">
-<h2>Project configuration file<a class="headerlink" href="#project-configuration-file" title="Link to this heading">#</a></h2>
-<p>The project configuration file is intended to let the user configure how gptme works within a particular project.</p>
+<section id="project-config">
+<h2>Project config<a class="headerlink" href="#project-config" title="Link to this heading">#</a></h2>
+<p>The project configuration file is intended to let the user configure how gptme works within a particular project/workspace.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The project configuration file is a very early feature and is likely to change/break in the future.</p>
@@ -494,8 +494,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-configuration-file">Global configuration file</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-configuration-file">Project configuration file</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
 </ul>
   </nav></div>
 

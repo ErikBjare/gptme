@@ -163,6 +163,7 @@
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="projects.html">Projects</a></li>
 </ul>
 </details></li>
@@ -170,7 +171,6 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
-<li class="toctree-l1"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
@@ -430,15 +430,15 @@ This is a major goal of the project, and it is important to keep in mind that th
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     270132 |       gptme.commands
-     278374 |     gptme.chat
-     295255 |   gptme.cli
-     343300 | gptme
-     346117 | openai
+     272050 |       gptme.commands
+     280321 |     gptme.chat
+     297219 |   gptme.cli
+     345181 | gptme
+     353523 | openai
 
-real	0m1.437s
-user	0m1.284s
-sys	0m0.160s
+real	0m1.459s
+user	0m1.288s
+sys	0m0.182s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -455,7 +455,7 @@ classified 30 files
       30 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.04 s (759.1 files/s, 133244.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.04 s (793.8 files/s, 139337.4 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -506,7 +506,7 @@ classified 5 files
        5 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (430.4 files/s, 87542.7 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (421.8 files/s, 85785.7 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -532,7 +532,7 @@ classified 20 files
       20 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (788.7 files/s, 126907.7 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (785.9 files/s, 126444.1 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (714.9 files/s, 105530.0 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (727.8 files/s, 107441.3 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -602,7 +602,7 @@ classified 22 files
       22 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1253.6 files/s, 99207.7 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1254.5 files/s, 99275.2 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -645,7 +645,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (638.2 files/s, 78015.0 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (630.5 files/s, 77081.2 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -674,7 +674,7 @@ classified 92 files
       92 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.08 s (1126.2 files/s, 147990.0 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.08 s (1122.4 files/s, 147488.1 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------

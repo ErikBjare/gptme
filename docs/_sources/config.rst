@@ -11,8 +11,8 @@ It also supports environment variables for configuration, which take precedence 
 The CLI also supports a variety of options that can be used to override both configuration values and environment variables.
 
 
-Global configuration file
--------------------------
+Global config
+-------------
 
 The file is located at ``~/.config/gptme/config.toml``.
 
@@ -44,10 +44,10 @@ The ``prompt`` section contains options for the prompt.
 The ``env`` section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting defaults for API keys and models.
 
 
-Project configuration file
---------------------------
+Project config
+--------------
 
-The project configuration file is intended to let the user configure how gptme works within a particular project.
+The project configuration file is intended to let the user configure how gptme works within a particular project/workspace.
 
 .. note::
 

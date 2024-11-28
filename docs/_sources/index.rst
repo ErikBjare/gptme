@@ -24,7 +24,6 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    config
    providers
    server
-   automation
    cli
 
 .. toctree::
