@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Timeline &#8212; gptme</title>
+    <title>Projects &#8212; gptme</title>
   
   
   
@@ -43,12 +43,12 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'timeline';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'projects';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="api.html" />
-    <link rel="prev" title="Are we tiny?" href="arewetiny.html" />
+    <link rel="next" title="Tools" href="tools.html" />
+    <link rel="prev" title="Demos" href="demos.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -159,11 +159,11 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
-<li class="toctree-l2"><a class="reference internal" href="projects.html">Projects</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Projects</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
@@ -174,14 +174,14 @@
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prompts.html">Prompts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Timeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/ErikBjare/gptme/releases">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
@@ -261,7 +261,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/timeline.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/projects.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -291,7 +291,7 @@
       
       
       
-      <li><a href="_sources/timeline.rst" target="_blank"
+      <li><a href="_sources/projects.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -375,7 +375,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Timeline</h1>
+    <h1>Projects</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -385,8 +385,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2024</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2023</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#official-projects">Official Projects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#community-projects">Community Projects</a></li>
 </ul>
             </nav>
         </div>
@@ -398,36 +398,73 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="timeline">
-<h1>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h1>
-<p>A brief timeline of the project.</p>
-<p>The idea is to later make this into a timeline similar to the one for <a class="reference external" href="https://activitywatch.net/timeline/">ActivityWatch</a>, including releases, features, etc.</p>
-<section id="id1">
-<h2>2024<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
-<p>October</p>
+  <section id="projects">
+<h1>Projects<a class="headerlink" href="#projects" title="Link to this heading">#</a></h1>
+<p>This page lists projects that are powered by or built using gptme.</p>
+<section id="official-projects">
+<h2>Official Projects<a class="headerlink" href="#official-projects" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference external" href="https://x.com/rohanpaul_ai/status/1841999030999470326">First viral tweet</a></p></li>
-</ul>
-<p>August</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://news.ycombinator.com/item?id=41204256">Show HN</a></p></li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/ErikBjare/gptme">gptme</a></dt><dd><p>gptme itself, of course!</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/ErikBjare/gptme-agent-template">gptme-agent-template</a></dt><dd><p>Template for creating new agents powered by gptme.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/TimeToBuildBob">Bob</a></dt><dd><p>The first agent built using the gptme agent architecture.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/ErikBjare/gptme-rag">gptme-rag</a></dt><dd><p>RAG (Retrieval-Augmented Generation) implementation for gptme context management.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/ErikBjare/gptme-webui">gptme-webui</a></dt><dd><p>Fancy web-based user interface for gptme, built with the help of <a class="reference external" href="https://lovable.dev/">Lovable</a>.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
-<section id="id2">
-<h2>2023<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
-<p>September</p>
+<section id="community-projects">
+<h2>Community Projects<a class="headerlink" href="#community-projects" title="Link to this heading">#</a></h2>
+<p><em>Your project could be here! Add it by creating a PR.</em></p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/">Reddit announcement</a></p></li>
-<li><p><a class="reference external" href="https://x.com/ErikBjare/status/1699097896451289115">Twitter announcement</a></p></li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/ErikBjare/nbody-sim">ErikBjare/nbody-sim</a></dt><dd><p>Simple but performant n-body simulation in Rust built with gptme using only a few prompts.</p>
+</dd>
+</dl>
+</li>
 </ul>
-<p>August</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://news.ycombinator.com/item?id=37394845">Show HN</a></p></li>
-</ul>
-<p>March</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme/commit/d00e9aae68cbd6b89bbc474ed7721d08798f96dc">Initial commit</a></p></li>
-</ul>
+<p class="rubric">Adding Your Project</p>
+<p>If you’ve built something using gptme, we’d love to feature it here!</p>
+<ol class="arabic">
+<li><p>Add the “Built with gptme” badge to your README:</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>[<span class="nt">![built using gptme</span>](<span class="na">https://img.shields.io/badge/built%20using-gptme%20%F0%9F%A4%96-5151f5?style=flat</span>)](https://github.com/ErikBjare/gptme)
+</pre></div>
+</div>
+</li>
+<li><p>Create a PR adding your project to this list:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="m">*</span> <span class="s">`Project Name </span><span class="si">&lt;https://github.com/username/project&gt;</span><span class="s">`_</span>
+    Brief description of your project.
+</pre></div>
+</div>
+</li>
+</ol>
+<p class="rubric">Built with gptme Badge</p>
+<p>The “Built with gptme” badge helps showcase your project’s use of gptme and connects it to the broader ecosystem.</p>
+<p>Standard Badge (for projects built using gptme):</p>
+<a class="reference external image-reference" href="https://github.com/ErikBjare/gptme"><img alt="Built using gptme" src="https://img.shields.io/badge/built%20using-gptme%20%F0%9F%A4%96-5151f5?style=flat" />
+</a>
+<p>“Powered by” Variant (for tools/services running on gptme):</p>
+<a class="reference external image-reference" href="https://github.com/ErikBjare/gptme"><img alt="Powered by gptme" src="https://img.shields.io/badge/powered%20by-gptme%20%F0%9F%A4%96-5151f5?style=flat" />
+</a>
+<p>Use the standard badge for projects created with gptme’s assistance, and the “powered by” variant for tools or services that run on gptme.</p>
 </section>
 </section>
 
@@ -443,20 +480,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="arewetiny.html"
+       href="demos.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Are we tiny?</p>
+        <p class="prev-next-title">Demos</p>
       </div>
     </a>
     <a class="right-next"
-       href="api.html"
+       href="tools.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Tools</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -476,8 +513,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2024</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2023</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#official-projects">Official Projects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#community-projects">Community Projects</a></li>
 </ul>
   </nav></div>
 

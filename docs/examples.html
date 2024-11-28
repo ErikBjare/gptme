@@ -161,8 +161,11 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="projects.html">Projects</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
@@ -402,17 +405,36 @@ git<span class="w"> </span>status<span class="w"> </span>-vv<span class="w"> </s
 make<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;fix the failing tests&#39;</span>
 
 <span class="c1"># if path not directly provided in prompt, it can read files using tools</span>
-gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vimrc&#39;</span>
+gptme<span class="w"> </span><span class="s1">&#39;explore&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;take a screenshot and tell me what you see&#39;</span>
+gptme<span class="w"> </span><span class="s1">&#39;suggest improvements to my vimrc&#39;</span>
 
 <span class="c1"># can read URLs (if browser tool is available)</span>
 gptme<span class="w"> </span><span class="s1">&#39;implement this&#39;</span><span class="w"> </span>https://github.com/ErikBjare/gptme/issues/286
 
+<span class="c1"># can use `gh` shell tool to read issues, PRs, etc.</span>
+gptme<span class="w"> </span><span class="s1">&#39;implement ErikBjare/gptme/issues/286&#39;</span>
+
+<span class="c1"># create new projects</span>
+gptme<span class="w"> </span><span class="s1">&#39;create a performant n-body simulation in rust&#39;</span>
+
 <span class="c1"># chaining prompts</span>
+gptme<span class="w"> </span><span class="s1">&#39;make a change&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;test it&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;commit it&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
 </pre></div>
 </div>
 <p>Do you have a cool example? Share it with us in the <a class="reference external" href="https://github.com/ErikBjare/gptme/discussions">Discussions</a>!</p>
+<div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">More Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demos.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="projects.html">Projects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="projects.html#official-projects">Official Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="projects.html#community-projects">Community Projects</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <p class="rubric">Skip confirmation and run in non-interactive mode</p>
 <p>You can skip confirmation prompts and run in non-interactive mode to terminate when all prompts have been completed.</p>
 <p>This should make it first write snake.py, then make the change in a following prompt:</p>
