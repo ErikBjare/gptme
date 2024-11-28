@@ -20,7 +20,6 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
 
    getting-started
    examples
-   demos
    tools
    config
    providers

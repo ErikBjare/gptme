@@ -21,16 +21,31 @@ To see example output without running the commands yourself, check out the :doc:
     make test | gptme 'fix the failing tests'
 
     # if path not directly provided in prompt, it can read files using tools
-    gptme 'suggest improvements to my vimrc'
+    gptme 'explore'
     gptme 'take a screenshot and tell me what you see'
+    gptme 'suggest improvements to my vimrc'
 
     # can read URLs (if browser tool is available)
     gptme 'implement this' https://github.com/ErikBjare/gptme/issues/286
 
+    # can use `gh` shell tool to read issues, PRs, etc.
+    gptme 'implement ErikBjare/gptme/issues/286'
+
+    # create new projects
+    gptme 'create a performant n-body simulation in rust'
+
     # chaining prompts
+    gptme 'make a change' - 'test it' - 'commit it'
     gptme 'show me something cool in the python repl' - 'something cooler' - 'something even cooler'
 
 Do you have a cool example? Share it with us in the `Discussions <https://github.com/ErikBjare/gptme/discussions>`_!
+
+.. toctree::
+   :maxdepth: 2
+   :caption: More Examples
+
+   demos
+   projects
 
 
 .. rubric:: Skip confirmation and run in non-interactive mode
