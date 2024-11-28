@@ -45,6 +45,7 @@ Do you have a cool example? Share it with us in the `Discussions <https://github
    :caption: More Examples
 
    demos
+   automation
    projects
 
 
