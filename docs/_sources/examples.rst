@@ -1,7 +1,7 @@
 Examples
 ========
 
-A list of things you can do with gptme.
+Here are some examples of how to use gptme and what its capabilities are.
 
 To see example output without running the commands yourself, check out the :doc:`demos`.
 
@@ -38,6 +38,9 @@ To see example output without running the commands yourself, check out the :doc:
     gptme 'make a change' - 'test it' - 'commit it'
     gptme 'show me something cool in the python repl' - 'something cooler' - 'something even cooler'
 
+    # resume the last conversation
+    gptme -r
+
 Do you have a cool example? Share it with us in the `Discussions <https://github.com/ErikBjare/gptme/discussions>`_!
 
 .. toctree::
@@ -49,14 +52,30 @@ Do you have a cool example? Share it with us in the `Discussions <https://github
    projects
 
 
-.. rubric:: Skip confirmation and run in non-interactive mode
+.. rubric:: Skip confirmation prompts
 
-You can skip confirmation prompts and run in non-interactive mode to terminate when all prompts have been completed.
-
-This should make it first write snake.py, then make the change in a following prompt:
+You can skip confirmation prompts using the ``--no-confirm`` flag. This is useful when you are confident the LLM will do what you want, so you don't want to have to confirm actions:
 
 .. code-block:: bash
 
-    gptme --non-interactive --no-confirm 'create a snake game using curses in snake.py, dont run it' '-' 'make the snake green and the apple red'
+    gptme --no-confirm 'create a snake game using curses in snake.py, dont run it'
 
-The '-' is special "multiprompt" syntax that tells the assistant to wait for the assistant to finish work on the next prompt (run until no more tool calls) before continuing. For more such non-interactive examples, see :doc:`automation`.
+.. rubric:: Multiprompt syntax
+
+The ``-`` separator allows you to chain multiple prompts together, letting the assistant finish running tools for one prompt before moving to the next:
+
+.. code-block:: bash
+
+    gptme 'create a project' '-' 'add tests' '-' 'commit changes'
+
+This is particularly useful for breaking down complex tasks into steps and creating :doc:`automation` workflows.
+
+.. rubric:: Non-interactive mode
+
+The ``--non-interactive`` flag runs gptme in a mode that terminates after completing all prompts. This is useful for scripting and automation:
+
+.. code-block:: bash
+
+    gptme --non-interactive 'create a snake game using curses in snake.py, dont run it' '-' 'make the snake green and the apple red'
+
+Note: ``--non-interactive`` implies ``--no-confirm``, so you don't need to specify both.

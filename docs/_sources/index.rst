@@ -19,6 +19,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    :caption: User Guide
 
    getting-started
+   usage
    examples
    tools
    config

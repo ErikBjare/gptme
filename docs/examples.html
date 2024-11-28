@@ -48,7 +48,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Demos" href="demos.html" />
-    <link rel="prev" title="Getting Started" href="getting-started.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -161,6 +161,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
@@ -389,7 +390,7 @@ document.write(`
                   
   <section id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h1>
-<p>A list of things you can do with gptme.</p>
+<p>Here are some examples of how to use gptme and what its capabilities are.</p>
 <p>To see example output without running the commands yourself, check out the <a class="reference internal" href="demos.html"><span class="doc">Demos</span></a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;write a web app to particles.html which shows off an impressive and colorful particle effect using three.js&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;render mandelbrot set to mandelbrot.png&#39;</span>
@@ -421,6 +422,9 @@ gptme<span class="w"> </span><span class="s1">&#39;create a performant n-body si
 <span class="c1"># chaining prompts</span>
 gptme<span class="w"> </span><span class="s1">&#39;make a change&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;test it&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;commit it&#39;</span>
 gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the python repl&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something cooler&#39;</span><span class="w"> </span>-<span class="w"> </span><span class="s1">&#39;something even cooler&#39;</span>
+
+<span class="c1"># resume the last conversation</span>
+gptme<span class="w"> </span>-r
 </pre></div>
 </div>
 <p>Do you have a cool example? Share it with us in the <a class="reference external" href="https://github.com/ErikBjare/gptme/discussions">Discussions</a>!</p>
@@ -436,13 +440,23 @@ gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the
 </li>
 </ul>
 </div>
-<p class="rubric">Skip confirmation and run in non-interactive mode</p>
-<p>You can skip confirmation prompts and run in non-interactive mode to terminate when all prompts have been completed.</p>
-<p>This should make it first write snake.py, then make the change in a following prompt:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span>--no-confirm<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make the snake green and the apple red&#39;</span>
+<p class="rubric">Skip confirmation prompts</p>
+<p>You can skip confirmation prompts using the <code class="docutils literal notranslate"><span class="pre">--no-confirm</span></code> flag. This is useful when you are confident the LLM will do what you want, so you don’t want to have to confirm actions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--no-confirm<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span>
 </pre></div>
 </div>
-<p>The ‘-’ is special “multiprompt” syntax that tells the assistant to wait for the assistant to finish work on the next prompt (run until no more tool calls) before continuing. For more such non-interactive examples, see <a class="reference internal" href="automation.html"><span class="doc">Automation</span></a>.</p>
+<p class="rubric">Multiprompt syntax</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-</span></code> separator allows you to chain multiple prompts together, letting the assistant finish running tools for one prompt before moving to the next:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;create a project&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;add tests&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;commit changes&#39;</span>
+</pre></div>
+</div>
+<p>This is particularly useful for breaking down complex tasks into steps and creating <a class="reference internal" href="automation.html"><span class="doc">Automation</span></a> workflows.</p>
+<p class="rubric">Non-interactive mode</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--non-interactive</span></code> flag runs gptme in a mode that terminates after completing all prompts. This is useful for scripting and automation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make the snake green and the apple red&#39;</span>
+</pre></div>
+</div>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">--non-interactive</span></code> implies <code class="docutils literal notranslate"><span class="pre">--no-confirm</span></code>, so you don’t need to specify both.</p>
 </section>
 
 
@@ -457,12 +471,12 @@ gptme<span class="w"> </span><span class="s1">&#39;show me something cool in the
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="getting-started.html"
+       href="usage.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Getting Started</p>
+        <p class="prev-next-title">Usage</p>
       </div>
     </a>
     <a class="right-next"

@@ -47,7 +47,7 @@
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="next" title="Usage" href="usage.html" />
     <link rel="prev" title="gptme documentation" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -161,6 +161,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
@@ -386,11 +387,8 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-tools">More tools</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#support">Support</a></li>
 </ul>
             </nav>
@@ -405,10 +403,10 @@ document.write(`
                   
   <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
-<p>This guide will assist you in beginning your journey with gptme.</p>
+<p>This guide will help you get started with gptme.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<p>To install gptme, we recommend using pipx:</p>
+<p>To install gptme, we recommend using <code class="docutils literal notranslate"><span class="pre">pipx</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>gptme
 </pre></div>
 </div>
@@ -423,86 +421,22 @@ document.write(`
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
-<p>To initiate a new chat or select an existing one, execute:</p>
+<p>To start your first chat, simply run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme
 </pre></div>
 </div>
-<p>This will show you a list of past chats, allowing you to select one or start a new one.</p>
-<p class="rubric">Writing a file</p>
-<p>You can then interact with the assistant. Lets start by asking it to write code.</p>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">create a new file named life.py implementing the game of life</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll create a new file named `life.py` implementing Conway's Game of Life. This implementation will use NumPy for efficient array operations and Matplotlib for visualization. Here's the code:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to life.py</pre>
-  </td>
-</tr>
-</table><p>The assistant will prompt for your confirmation and save the file, as requested.</p>
-<p class="rubric">Making changes</p>
-<p>We can also start chats and request changes directly from the command line. The contents of any mentioned text files will be included as context, and the assistant will generate patches to apply the requested changes:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;make improvements to life.py so that dead cells fade out over time&#39;</span>
-</pre></div>
-</div>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">make improvements to life.py so that dead cells fade out over time<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To make alive cells green and dead cells black in the Game of Life simulation, we need to modify the colormap and how we represent the cell states. Here's the updated `life.py` script with these changes:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Patch applied</pre>
-  </td>
-</tr>
-</table><div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>With the <a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a> extras installed, the assistant can also process URLs included in the prompt.</p>
-</div>
-<section id="more-tools">
-<h3>More tools<a class="headerlink" href="#more-tools" title="Link to this heading">#</a></h3>
-<p>You can read about all the other tools on the <a class="reference internal" href="tools.html"><span class="doc">Tools</span></a> page.</p>
-<p>Including <a class="reference internal" href="tools.html#shell"><span class="std std-ref">Shell</span></a>, <a class="reference internal" href="tools.html#python"><span class="std std-ref">Python</span></a>, how to set up <a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a>, and use <a class="reference internal" href="tools.html#vision"><span class="std std-ref">Vision</span></a>.</p>
+<p>It will then start an interactive chat session where you can talk with the AI assistant.</p>
+<p>If you haven’t set a <a class="reference internal" href="providers.html"><span class="doc">LLM provider</span></a> API key in the environment or <a class="reference internal" href="config.html"><span class="doc">configuration</span></a>, you will be prompted for one which will be saved in the configuration file.</p>
+<p>For detailed usage instructions and examples, see <a class="reference internal" href="usage.html"><span class="doc">Usage</span></a>.</p>
 </section>
-<section id="interfaces">
-<h3>Interfaces<a class="headerlink" href="#interfaces" title="Link to this heading">#</a></h3>
-<p>There are several ways to interact with gptme:</p>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="cli.html"><span class="doc">CLI</span></a></p></li>
-<li><p><a class="reference internal" href="server.html#web-ui"><span class="std std-ref">Web UI</span></a></p></li>
-<li><p><a class="reference internal" href="bot.html"><span class="doc">GitHub Bot</span></a></p></li>
+<li><p>Read the <a class="reference internal" href="usage.html"><span class="doc">Usage</span></a> guide for detailed usage instructions and examples</p></li>
+<li><p>Learn about available <a class="reference internal" href="tools.html"><span class="doc">Tools</span></a></p></li>
+<li><p>Explore different <a class="reference internal" href="providers.html"><span class="doc">Providers</span></a></p></li>
+<li><p>Set up the <a class="reference internal" href="server.html"><span class="doc">Server</span></a> for web access</p></li>
 </ul>
-</section>
 </section>
 <section id="support">
 <h2>Support<a class="headerlink" href="#support" title="Link to this heading">#</a></h2>
@@ -531,11 +465,11 @@ from matplotlib.animation import FuncAnimation
       </div>
     </a>
     <a class="right-next"
-       href="examples.html"
+       href="usage.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">Usage</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -556,11 +490,8 @@ from matplotlib.animation import FuncAnimation
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-tools">More tools</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#support">Support</a></li>
 </ul>
   </nav></div>

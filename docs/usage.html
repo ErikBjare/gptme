@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Demos &#8212; gptme</title>
+    <title>Usage &#8212; gptme</title>
   
   
   
@@ -43,12 +43,12 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'demos';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'usage';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Automation" href="automation.html" />
-    <link rel="prev" title="Examples" href="examples.html" />
+    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="prev" title="Getting Started" href="getting-started.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -161,9 +161,9 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Demos</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="projects.html">Projects</a></li>
 </ul>
@@ -262,7 +262,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/demos.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/usage.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -292,7 +292,7 @@
       
       
       
-      <li><a href="_sources/demos.rst" target="_blank"
+      <li><a href="_sources/usage.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -363,7 +363,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -374,11 +376,21 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Demos</h1>
+    <h1>Usage</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commands">Commands</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -388,52 +400,115 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="demos">
-<h1>Demos<a class="headerlink" href="#demos" title="Link to this heading">#</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This page is a work in progress, and will be updated with more demos soon.</p>
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h1>
+<p>This guide covers common usage patterns and examples for gptme.</p>
+<p>To start a new chat or select an existing one, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme
+</pre></div>
 </div>
-<p class="rubric">Snake with curses</p>
-<p>Generate a snake game that runs in the terminal using curses, and then modify it to add color.</p>
-<script async id="asciicast-621992" data-autoplay="true" data-idle-time-limit="1" 
-                src="https://asciinema.org/a/621992.js"></script><p>Steps</p>
-<ol class="arabic simple">
-<li><p>Create a snake game with curses to snake.py</p></li>
-<li><p>Running fails, ask gptme to fix a bug</p></li>
-<li><p>Game runs</p></li>
-<li><p>Ask gptme to add color</p></li>
-<li><p>Minor struggles</p></li>
-<li><p>Finished game with green snake and red apple pie!</p></li>
-</ol>
-<p class="rubric">Mandelbrot with curses</p>
-<p>Generate a program that renders mandelbrot with curses, and then modify it to add color.</p>
-<script async id="asciicast-621991" data-autoplay="true" data-idle-time-limit="1" 
-                src="https://asciinema.org/a/621991.js"></script><p>Steps</p>
-<ol class="arabic simple">
-<li><p>Render mandelbrot with curses to mandelbrot_curses.py</p></li>
-<li><p>Program runs</p></li>
-<li><p>Add color</p></li>
-</ol>
-<p class="rubric">Fibonacci</p>
-<p>An old demo showing off basic code execution and shell interaction.</p>
-<script async id="asciicast-606375" data-autoplay="true" data-idle-time-limit="1" 
-                src="https://asciinema.org/a/606375.js"></script><p>Steps</p>
-<ol class="arabic simple">
-<li><p>Create a new dir ‘gptme-test-fib’ and git init</p></li>
-<li><p>Write a fib function to fib.py, commit</p></li>
-<li><p>Create a public repo and push to GitHub</p></li>
-</ol>
-<p class="rubric">Answer question from URL</p>
-<p>Showing off basic URL loading from the prompt, and answering questions based on the content.</p>
-<script async id="asciicast-621997" data-autoplay="true" data-idle-time-limit="1" 
-                src="https://asciinema.org/a/621997.js"></script><p>Steps</p>
-<ol class="arabic simple">
-<li><p>Ask who the CEO of Superuser Labs is, passing website URL</p></li>
-<li><p>gptme browses the website, and answers correctly</p></li>
-</ol>
-<p class="rubric">Edit history with /edit</p>
-<p>TODO</p>
+<p>This will show you a list of past chats, allowing you to select one or start a new one.</p>
+<p>To get inspiration for your first prompt, see the <a class="reference internal" href="examples.html"><span class="doc">Examples</span></a>.</p>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h2>
+<p class="rubric">Tools</p>
+<p>gptme comes with a variety of tools for different tasks:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="tools.html#shell"><span class="std std-ref">Shell</span></a> - Execute shell commands</p></li>
+<li><p><a class="reference internal" href="tools.html#python"><span class="std std-ref">Python</span></a> - Run Python code</p></li>
+<li><p><a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a> - Browse and interact with web content</p></li>
+<li><p><a class="reference internal" href="tools.html#vision"><span class="std std-ref">Vision</span></a> - Process and analyze images</p></li>
+</ul>
+<p>See the <a class="reference internal" href="tools.html"><span class="doc">Tools</span></a> page for a complete list of available tools.</p>
+<p class="rubric">Writing Files</p>
+<p>You can ask the assistant to create new files or modify existing ones:</p>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">create a new file named life.py implementing the game of life</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll create a new file named `life.py` implementing Conway's Game of Life. This implementation will use NumPy for efficient array operations and Matplotlib for visualization. Here's the code:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+...
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to life.py</pre>
+  </td>
+</tr>
+</table><p class="rubric">Making Changes</p>
+<p>You can start chats and request changes directly from the command line. The contents of any mentioned text files will be included as context, and the assistant will generate patches to apply the requested changes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;make improvements to life.py so that dead cells fade out over time&#39;</span>
+</pre></div>
+</div>
+<table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">make improvements to life.py so that dead cells fade out over time<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To make alive cells green and dead cells black in the Game of Life simulation, we need to modify the colormap and how we represent the cell states. Here's the updated `life.py` script with these changes:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch life.py</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Patch applied</pre>
+  </td>
+</tr>
+</table><p class="rubric">Browser Integration</p>
+<p>With the <a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a> extras installed, the assistant can process URLs included in the prompt and interact with web content.</p>
+</section>
+<section id="commands">
+<h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">#</a></h2>
+<p>During a chat session, you can use these slash-commands for various actions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/undo</span></code> - Undo the last action</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/log</span></code> - Show the conversation log</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/tools</span></code> - Show available tools</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/edit</span></code> - Edit the conversation in your editor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/rename</span></code> - Rename the conversation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/fork</span></code> - Create a copy of the conversation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/summarize</span></code> - Summarize the conversation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/replay</span></code> - Re-execute codeblocks in the conversation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/help</span></code> - Show help message</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/exit</span></code> - Exit the program</p></li>
+</ul>
+</section>
+<section id="interfaces">
+<h2>Interfaces<a class="headerlink" href="#interfaces" title="Link to this heading">#</a></h2>
+<p>Besides the CLI, gptme can be used through:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="server.html#web-ui"><span class="std std-ref">Web UI</span></a> - A web-based interface</p></li>
+<li><p><a class="reference internal" href="bot.html"><span class="doc">GitHub Bot</span></a> - GitHub bot integration</p></li>
+</ul>
+<p>For more detailed information about specific features, check out:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="tools.html"><span class="doc">Tools</span></a> - Available tools and their usage</p></li>
+<li><p><a class="reference internal" href="providers.html"><span class="doc">Providers</span></a> - Supported LLM providers</p></li>
+<li><p><a class="reference internal" href="server.html"><span class="doc">Server</span></a> - Web UI and API server setup</p></li>
+</ul>
+</section>
 </section>
 
 
@@ -448,20 +523,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="examples.html"
+       href="getting-started.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">Getting Started</p>
       </div>
     </a>
     <a class="right-next"
-       href="automation.html"
+       href="examples.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Automation</p>
+        <p class="prev-next-title">Examples</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -471,6 +546,23 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commands">Commands</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
