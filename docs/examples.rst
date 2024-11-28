@@ -38,6 +38,9 @@ To see example output without running the commands yourself, check out the :doc:
     gptme 'make a change' - 'test it' - 'commit it'
     gptme 'show me something cool in the python repl' - 'something cooler' - 'something even cooler'
 
+    # resume the last conversation
+    gptme -r
+
 Do you have a cool example? Share it with us in the `Discussions <https://github.com/ErikBjare/gptme/discussions>`_!
 
 .. toctree::
