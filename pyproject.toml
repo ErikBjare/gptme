@@ -58,7 +58,7 @@ lxml = "*"
 
 # providers
 openai = "^1.0"
-anthropic = ">=0.36,<0.40"
+anthropic = "*"
 
 # tools
 ipython = "^8.17.2"
