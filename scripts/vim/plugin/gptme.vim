@@ -49,6 +49,12 @@ function! s:gptme() range
     " Open terminal in a new window
     vertical new
     file gptme
+    " Configure window appearance
+    setlocal nonumber
+    setlocal norelativenumber
+    setlocal signcolumn=no
+    setlocal winfixwidth
+    setlocal nofoldenable
 
     " Use appropriate terminal function based on Vim/Neovim
     if has('nvim')
