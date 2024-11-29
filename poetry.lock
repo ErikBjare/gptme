@@ -898,13 +898,13 @@ dotenv = ["python-dotenv"]
 
 [[package]]
 name = "flask-cors"
-version = "4.0.2"
+version = "5.0.0"
 description = "A Flask extension adding a decorator for CORS support"
 optional = true
 python-versions = "*"
 files = [
-    {file = "Flask_Cors-4.0.2-py2.py3-none-any.whl", hash = "sha256:38364faf1a7a5d0a55bd1d2e2f83ee9e359039182f5e6a029557e1f56d92c09a"},
-    {file = "flask_cors-4.0.2.tar.gz", hash = "sha256:493b98e2d1e2f1a4720a7af25693ef2fe32fbafec09a2f72c59f3e475eda61d2"},
+    {file = "Flask_Cors-5.0.0-py2.py3-none-any.whl", hash = "sha256:b9e307d082a9261c100d8fb0ba909eec6a228ed1b60a8315fd85f783d61910bc"},
+    {file = "flask_cors-5.0.0.tar.gz", hash = "sha256:5aadb4b950c4e93745034594d9f3ea6591f734bb3662e16e255ffbf5e89c88ef"},
 ]
 
 [package.dependencies]
@@ -5129,4 +5129,4 @@ youtube = ["youtube_transcript_api"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f603cece4e1cef55a364232aeb89b4550ead4a6a0a4917e0ee9c0ada7bdbf044"
+content-hash = "ec4294bafefdd89b908c6bdaf68962f24b17e9d0671559cfb1f8ed1411df5d37"
