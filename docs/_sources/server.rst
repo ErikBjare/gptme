@@ -7,7 +7,13 @@ gptme has a minimal REST API with very minimalistic web UI.
    The server and web UI is still in development and does not have all the features of the CLI.
    In particular, it doesn't ever ask for confirmation before executing (yet).
 
-It can be started by running the following command:
+To use it, you need to install gptme with ``server`` extras:
+
+.. code-block:: bash
+
+    pipx install gptme[server]
+
+It can then be started by running the following command:
 
 .. code-block:: bash
 
