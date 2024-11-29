@@ -21,6 +21,9 @@ Official Projects
 * `gptme-webui <https://github.com/ErikBjare/gptme-webui>`_
     Fancy web-based user interface for gptme, built with the help of `Lovable <https://lovable.dev/>`_.
 
+* `gptme.vim <https://github.com/ErikBjare/gptme.vim>`_
+    Vim plugin for gptme integration.
+
 Community Projects
 ------------------
 
