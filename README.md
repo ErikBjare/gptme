@@ -314,7 +314,7 @@ Options:
 [website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
-[gptme.vim]: https://github.com/ErikBjare/gptme/tree/master/scripts/vim
+[gptme.vim]: https://github.com/ErikBjare/gptme.vim
 [agent-template]: https://github.com/ErikBjare/gptme-agent-template
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html
