@@ -189,6 +189,15 @@ timestamp = "{self.timestamp.isoformat()}"
 
         return Codeblock.iter_from_markdown(content_str)
 
+    def cost(self, model: str | None = None, output=False) -> float:
+        """Get the input cost of the message in USD."""
+        from .llm.models import get_model  # noreorder
+
+        m = get_model(model)
+        tok = len_tokens(self, f"{m.provider}/{m.model}")
+        price = (m.price_output if output else m.price_input) / 1_000_000
+        return tok * price
+
 
 def format_msgs(
     msgs: list[Message],

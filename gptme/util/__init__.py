@@ -30,16 +30,19 @@ logger = logging.getLogger(__name__)
 
 console = Console(log_path=False)
 
+_warned_models = set()
+
 
 def get_tokenizer(model: str):
-    if "gpt-4" in model or "gpt-3.5" in model:
+    global _warned_models
+    try:
         return tiktoken.encoding_for_model(model)
-    else:  # pragma: no cover
-        logger.warning(
-            f"No encoder implemented for model {model}."
-            "Defaulting to tiktoken cl100k_base encoder."
-            "Use results only as estimates."
-        )
+    except KeyError:
+        if model not in _warned_models:
+            logger.warning(
+                f"No tokenizer for '{model}'. Using tiktoken cl100k_base. Use results only as estimates."
+            )
+            _warned_models |= {model}
         return tiktoken.get_encoding("cl100k_base")
 
 
