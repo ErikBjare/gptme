@@ -177,7 +177,8 @@ def main(
         tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
 
     config = get_config()
-    tool_format = tool_format or config.get_env("TOOL_TYPE") or "markdown"
+
+    tool_format = tool_format or config.get_env("TOOL_FORMAT") or "markdown"
 
     set_tool_format(tool_format)
 

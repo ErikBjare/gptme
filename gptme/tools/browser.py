@@ -46,10 +46,6 @@ logger = logging.getLogger(__name__)
 
 EngineType = Literal["google", "duckduckgo"]
 
-instructions = """
-To browse the web, you can use the `read_url`, `search`, and `screenshot_url` functions in Python with the `ipython` tool.
-""".strip()
-
 
 def examples(tool_format):
     return f"""
@@ -128,8 +124,7 @@ def screenshot_url(url: str, path: Path | str | None = None) -> Path:
 
 tool = ToolSpec(
     name="browser",
-    desc="Browse the web",
-    instructions=instructions,
+    desc="Browse, search or screenshot the web",
     examples=examples,
     functions=[read_url, search, screenshot_url],
     available=has_browser_tool(),

@@ -140,15 +140,6 @@ def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> Non
         print(f"Conversation '{conversation}' not found.")
 
 
-instructions = """
-you can list, search and summarize past conversation logs by using the following Python functions
-with the `ipython` tool:
-- list_chats
-- search_chats
-- read_chat
-""".strip()
-
-
 def examples(tool_format):
     return f"""
 ### Search for a specific topic in past conversations
@@ -161,7 +152,6 @@ Assistant: Certainly! I'll search our past conversations for mentions of "python
 tool = ToolSpec(
     name="chats",
     desc="List, search, and summarize past conversation logs",
-    instructions=instructions,
     examples=examples,
     functions=[list_chats, search_chats, read_chat],
 )

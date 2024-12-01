@@ -56,10 +56,7 @@ from .base import ToolSpec, ToolUse
 logger = logging.getLogger(__name__)
 
 instructions = """
-Use RAG to index and search project documentation. Use `ipython` tool with the following Python functions:
-- rag_index
-- rag_search
-- rag_status
+Use RAG to index and search project documentation.
 """
 
 

@@ -28,17 +28,9 @@ def summarize_transcript(transcript: str) -> str:
     return llm_summarize(transcript).content
 
 
-instructions = """
-You can use the following Python functions with `ipython` tool:
-- `get_transcript(youtube_video_id)`
-- `summarize_transcript(youtube_video_id)`
-""".strip()
-
-
 tool: ToolSpec = ToolSpec(
     name="youtube",
     desc="Fetch and summarize YouTube video transcripts",
-    instructions=instructions,
     functions=[get_transcript, summarize_transcript],
     block_types=["youtube"],
     available=bool(YouTubeTranscriptApi),

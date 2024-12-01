@@ -156,10 +156,7 @@ System: {{"status": "success", "result": "The 13th Fibonacci number is 233"}}.
 
 
 instructions = """
-You can use the following Python function with `ipython` tool to manage subagents:
-- subagent(sub_agent_name, prompt)
-- subagent_status(sub_agent_name)
-- subagent_wait(sub_agent_name)
+You can create, check status and wait for subagents.
 """.strip()
 
 tool = ToolSpec(
