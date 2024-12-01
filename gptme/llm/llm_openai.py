@@ -219,6 +219,8 @@ def _process_file(msg: dict) -> dict:
         else [{"type": "text", "text": message_content}]
     )
 
+    has_images = False
+
     for f in msg.get("files", []):
         f = Path(f)
         ext = f.suffix[1:]
@@ -263,8 +265,14 @@ def _process_file(msg: dict) -> dict:
                 "image_url": {"url": f"data:{media_type};base64,{data}"},
             }
         )
+        has_images = True
 
     msg["content"] = content
+
+    if msg["role"] == "system" and has_images:
+        # Images must come from user with openai
+        msg["role"] = "user"
+
     return msg
 
 

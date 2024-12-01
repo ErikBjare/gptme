@@ -2,10 +2,11 @@ import json_repair
 import json
 import logging
 import re
+import types
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from textwrap import indent
-from typing import Any, Literal, Protocol, TypeAlias, cast
+from typing import Any, Literal, Protocol, TypeAlias, cast, get_origin
 
 from lxml import etree
 
@@ -69,6 +70,30 @@ class Parameter:
     description: str | None = None
     enum: list[Any] | None = None
     required: bool = False
+
+
+# TODO: there must be a better way?
+def derive_type(t) -> str:
+    if get_origin(t) == Literal:
+        v = ", ".join(f'"{a}"' for a in t.__args__)
+        return f"Literal[{v}]"
+    elif get_origin(t) == types.UnionType:
+        v = ", ".join(derive_type(a) for a in t.__args__)
+        return f"Union[{v}]"
+    else:
+        return t.__name__
+
+
+def callable_signature(func: Callable) -> str:
+    # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
+    args = ", ".join(
+        f"{k}: {derive_type(v)}"
+        for k, v in func.__annotations__.items()
+        if k != "return"
+    )
+    ret_type = func.__annotations__.get("return")
+    ret = f" -> {derive_type(ret_type)}" if ret_type else ""
+    return f"{func.__name__}({args}){ret}"
 
 
 @dataclass(frozen=True, eq=False)
@@ -139,6 +164,9 @@ class ToolSpec:
         if tool_format in self.instructions_format:
             instructions.append(self.instructions_format[tool_format])
 
+        if self.functions:
+            instructions.append(self.get_functions_description())
+
         return "\n\n".join(instructions)
 
     def get_tool_prompt(self, examples: bool, tool_format: ToolFormat):
@@ -156,6 +184,19 @@ class ToolSpec:
         if callable(self.examples):
             return self.examples(tool_format)
         return self.examples
+
+    def get_functions_description(self) -> str:
+        # return a prompt with a brief description of the available functions
+        if self.functions:
+            description = (
+                "The following Python functions can be called with `ipython` tool:\n\n"
+            )
+            return description + "\n".join(
+                f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
+                for func in self.functions
+            )
+        else:
+            return "None"
 
 
 @dataclass(frozen=True)

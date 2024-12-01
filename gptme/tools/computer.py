@@ -246,7 +246,7 @@ def computer(
 
 
 instructions = """
-Use the following Python function with the `ipython` tool to interact with the computer through X11.
+You can interact with the computer through X11 with the `computer` Python function.
 Available actions:
 - key: Send key sequence (e.g., "Return", "Control_L+c")
 - type: Type text with realistic delays

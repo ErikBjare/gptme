@@ -20,7 +20,7 @@ def view_image(image_path: Path | str) -> Message:
 
 
 instructions = """
-You can use the `view_image(path)` Python function with `ipython` tool to open an image file.
+Use the `view_image` Python function with `ipython` tool to view an image file.
 """.strip()
 
 tool = ToolSpec(

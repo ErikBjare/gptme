@@ -1,6 +1,7 @@
 from typing import Literal, TypeAlias
 
-from gptme.tools.python import callable_signature, execute_python
+from gptme.tools.python import execute_python
+from gptme.tools.base import callable_signature
 
 
 def run(code):

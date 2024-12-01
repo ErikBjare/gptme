@@ -42,6 +42,5 @@ def screenshot(path: Path | None = None) -> Path:
 tool = ToolSpec(
     name="screenshot",
     desc="Take a screenshot",
-    instructions="Use the `screenshot` Python function in `ipython` tool to capture a screenshot. You can optionally specify a filename.",
     functions=[screenshot],
 )
