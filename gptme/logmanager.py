@@ -16,7 +16,7 @@ from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
 from .reduce import limit_log, reduce_log
-from .util import console
+from .util.cost import costs
 
 PathLike: TypeAlias = str | Path
 
@@ -329,56 +329,6 @@ def prepare_messages(msgs: list[Message]) -> list[Message]:
         )
 
     return msgs_limited
-
-
-def _tokens_inout(msgs: list[Message]) -> tuple[int, int]:
-    tokens_in, tokens_out = len_tokens(msgs[:-1]), 0
-    if msgs[-1].role == "assistant":
-        tokens_out = len_tokens(msgs[-1])
-    else:
-        tokens_in += len_tokens(msgs[-1])
-    return tokens_in, tokens_out
-
-
-def _cost(msgs: list[Message]) -> float:
-    return sum(msg.cost() for msg in msgs[:-1]) + msgs[-1].cost(
-        output=msgs[-1].role == "assistant"
-    )
-
-
-def costs(msgs: list[Message]) -> None:
-    # infer session costs from history
-    # split msgs when assistant role occurs (request)
-    requests: list[list[Message]] = []
-    for i, msg in enumerate(msgs):
-        if msg.role == "assistant":
-            requests.append(msgs[: i + 1])
-    if not requests or requests[-1] != msgs:
-        requests.append(msgs)
-
-    # calculate tokens and cost of each request
-    costs = []
-    tokens = []
-    for req in requests:
-        costs.append(_cost(req))
-        tokens.append(_tokens_inout(req))
-
-    turns = len(requests)
-    tok_in, tok_out = tokens[-1]
-    tokens_msg = f"Tokens: {tok_in}/{tok_out} in/out"
-    if turns > 1:
-        tok_in_total = sum(t[0] for t in tokens)
-        tok_in_total = sum(t[1] for t in tokens)
-        tokens_msg += f" (session: {tok_in_total}/{tok_in_total}, turns: {turns})"
-    console.log(tokens_msg)
-
-    # costs will be 0 for models lacking price metadata
-    if sum(costs) > 0:
-        cost_msg = f"Cost: ${costs[-1]:.2f}"
-        if turns > 1:
-            cost_msg += f" (session: ${sum(costs):.2f})"
-
-        console.log(cost_msg)
 
 
 def _conversation_files() -> list[Path]:
