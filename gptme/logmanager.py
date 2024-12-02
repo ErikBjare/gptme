@@ -353,7 +353,7 @@ def costs(msgs: list[Message]) -> None:
     for i, msg in enumerate(msgs):
         if msg.role == "assistant":
             requests.append(msgs[: i + 1])
-    if requests and requests[-1] != msgs:
+    if not requests or requests[-1] != msgs:
         requests.append(msgs)
 
     # calculate tokens and cost of each request
@@ -364,8 +364,8 @@ def costs(msgs: list[Message]) -> None:
         tokens.append(_tokens_inout(req))
 
     turns = len(requests)
-    tokens_in, tokens_out = tokens[-1]
-    tokens_msg = f"Tokens: {tokens_in}/{tokens_out} in/out"
+    tok_in, tok_out = tokens[-1]
+    tokens_msg = f"Tokens: {tok_in}/{tok_out} in/out"
     if turns > 1:
         tok_in_total = sum(t[0] for t in tokens)
         tok_in_total = sum(t[1] for t in tokens)
