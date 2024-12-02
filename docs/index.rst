@@ -24,6 +24,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    tools
    config
    providers
+   agents
    server
    cli
 

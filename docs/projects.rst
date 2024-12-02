@@ -10,7 +10,7 @@ Official Projects
     gptme itself, of course!
 
 * `gptme-agent-template <https://github.com/ErikBjare/gptme-agent-template>`_
-    Template for creating new agents powered by gptme.
+    Template for creating new :doc:`agents` powered by gptme.
 
 * `Bob <https://github.com/TimeToBuildBob>`_
     The first agent built using the gptme agent architecture.
