@@ -16,7 +16,6 @@ from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
 from .reduce import limit_log, reduce_log
-from .util.cost import costs
 
 PathLike: TypeAlias = str | Path
 
@@ -122,8 +121,6 @@ class LogManager:
         self.write()
         if not msg.quiet:
             print_msg(msg, oneline=False)
-        if msg.role == "assistant":
-            costs(self.log.messages)
 
     def write(self, branches=True) -> None:
         """

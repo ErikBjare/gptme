@@ -17,8 +17,11 @@ def _cost(msgs: list[Message]) -> float:
     )
 
 
-def costs(msgs: list[Message]) -> None:
-    # infer session costs from history
+def log_costs(msgs: list[Message]) -> None:
+    """
+    Infer session costs from conversation.
+    NOTE: doesn't account for context enhancement, assumes conversation is append-only.
+    """
     # split msgs when assistant role occurs (request/turn)
     requests: list[list[Message]] = []
     for i, msg in enumerate(msgs):

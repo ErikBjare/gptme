@@ -154,6 +154,7 @@ def _transform_system_messages(
     # for first system message, transform it into a system kwarg
     assert messages[0].role == "system"
     system_prompt = messages[0].content
+    messages = messages.copy()
     messages.pop(0)
 
     # for any subsequent system messages, transform them into a <system> message
