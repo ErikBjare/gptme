@@ -3653,22 +3653,19 @@ dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
 name = "pytest-profiling"
-version = "1.7.0"
+version = "1.8.1"
 description = "Profiling plugin for py.test"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "pytest-profiling-1.7.0.tar.gz", hash = "sha256:93938f147662225d2b8bd5af89587b979652426a8a6ffd7e73ec4a23e24b7f29"},
-    {file = "pytest_profiling-1.7.0-py2.py3-none-any.whl", hash = "sha256:999cc9ac94f2e528e3f5d43465da277429984a1c237ae9818f8cfd0b06acb019"},
+    {file = "pytest-profiling-1.8.1.tar.gz", hash = "sha256:3f171fa69d5c82fa9aab76d66abd5f59da69135c37d6ae5bf7557f1b154cb08d"},
+    {file = "pytest_profiling-1.8.1-py3-none-any.whl", hash = "sha256:3dd8713a96298b42d83de8f5951df3ada3e61b3e5d2a06956684175529e17aea"},
 ]
 
 [package.dependencies]
 gprof2dot = "*"
 pytest = "*"
 six = "*"
-
-[package.extras]
-tests = ["pytest-virtualenv"]
 
 [[package]]
 name = "pytest-retry"
