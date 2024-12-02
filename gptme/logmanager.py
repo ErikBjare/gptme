@@ -324,6 +324,7 @@ def prepare_messages(msgs: list[Message]) -> list[Message]:
         logger.info(
             f"Limited log from {len(msgs_reduced)} to {len(msgs_limited)} messages"
         )
+
     return msgs_limited
 
 

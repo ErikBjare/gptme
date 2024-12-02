@@ -17,7 +17,6 @@ from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
-from .util.readline import add_history
 from .tools import ToolUse, execute_msg, has_tool
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
@@ -28,6 +27,8 @@ from .util import (
     print_bell,
     rich_to_str,
 )
+from .util.cost import log_costs
+from .util.readline import add_history
 
 logger = logging.getLogger(__name__)
 
@@ -203,12 +204,12 @@ def step(
 
         # performs reduction/context trimming, if necessary
         msgs = prepare_messages(log.messages)
-
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
         # generate response
         msg_response = reply(msgs, get_model().model, stream)
+        log_costs(msgs + [msg_response])
 
         # log response and run tools
         if msg_response:
