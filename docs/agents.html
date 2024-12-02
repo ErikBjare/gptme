@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Configuration &#8212; gptme</title>
+    <title>Agents &#8212; gptme</title>
   
   
   
@@ -46,12 +46,12 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'config';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'agents';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Providers" href="providers.html" />
-    <link rel="prev" title="Tools" href="tools.html" />
+    <link rel="next" title="Server" href="server.html" />
+    <link rel="prev" title="Providers" href="providers.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -158,9 +158,9 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Tools</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providers.html">Providers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="server.html">Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
@@ -252,7 +252,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/config.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/agents.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -282,7 +282,7 @@
       
       
       
-      <li><a href="_sources/config.rst" target="_blank"
+      <li><a href="_sources/agents.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -358,7 +358,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Configuration</h1>
+    <h1>Agents</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -368,8 +368,10 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bob">Bob</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-personify-agents">Why personify agents?</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -381,54 +383,37 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">#</a></h1>
-<p>gptme has two configuration files:</p>
+  <section id="agents">
+<h1>Agents<a class="headerlink" href="#agents" title="Link to this heading">#</a></h1>
+<p>gptme supports “agents”, which we think of as having:</p>
 <ul class="simple">
-<li><p>global configuration</p></li>
-<li><p>project configuration</p></li>
+<li><p>Identity</p></li>
+<li><p>Personality &amp; preferences</p></li>
+<li><p>Memory</p>
+<ul>
+<li><p>Journal</p></li>
+<li><p>Tasks</p></li>
+<li><p>Knowledgebase</p></li>
 </ul>
-<p>It also supports environment variables for configuration, which take precedence over the configuration files.</p>
-<p>The CLI also supports a variety of options that can be used to override both configuration values and environment variables.</p>
-<section id="global-config">
-<h2>Global config<a class="headerlink" href="#global-config" title="Link to this heading">#</a></h2>
-<p>The file is located at <code class="docutils literal notranslate"><span class="pre">~/.config/gptme/config.toml</span></code>.</p>
-<p>Here is an example:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[prompt]</span>
-<span class="n">about_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;I am a curious human programmer.&quot;</span>
-<span class="n">response_preference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Don&#39;t explain basic concepts&quot;</span>
-
-<span class="k">[env]</span>
-<span class="c1"># Uncomment to use Claude 3.5 Sonnet by default</span>
-<span class="c1">#MODEL = &quot;anthropic/claude-3-5-sonnet-20240620&quot;</span>
-
-<span class="c1"># One of these need to be set</span>
-<span class="c1"># If none of them are, they will be prompted for on first start</span>
-<span class="n">OPENAI_API_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="n">ANTHROPIC_API_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="n">OPENROUTER_API_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<span class="n">AZURE_OPENAI_API_KEY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-
-<span class="c1"># Uncomment to use with Ollama</span>
-<span class="c1">#MODEL = &quot;local/&lt;model-name&gt;&quot;</span>
-<span class="c1">#OPENAI_BASE_URL = &quot;http://localhost:11434/v1&quot;</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">prompt</span></code> section contains options for the prompt.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">env</span></code> section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting defaults for API keys and models.</p>
+</li>
+<li><p>Extra tools</p>
+<ul>
+<li><p>Email</p></li>
+<li><p>Chat</p></li>
+<li><p>Social Media</p></li>
+</ul>
+</li>
+</ul>
+<p>gptme agents are git-based and all their data is stored in a git repository. This makes it easy to share and collaborate on agents, and to keep a history of all interactions with the agent.</p>
+<p>They leverage the <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code> <a class="reference internal" href="config.html"><span class="doc">project configuration file</span></a> using a particular set of prompts and directory structure which makes it capable to keep a journal, track tasks, remember things, and more.</p>
+<p>You can create your own agent with the <a class="reference external" href="https://github.com/ErikBjare/gptme-agent-template/">gptme-agent-template</a>.</p>
+<section id="bob">
+<h2>Bob<a class="headerlink" href="#bob" title="Link to this heading">#</a></h2>
+<p>Bob, aka <a class="reference external" href="https://github.com/TimeToBuildBob">&#64;TimeToBuildBob</a>, is the first experimental agent built on top of gptme. He is a friendly and helpful bot that helps with working on gptme and related projects.</p>
+<section id="why-personify-agents">
+<h3>Why personify agents?<a class="headerlink" href="#why-personify-agents" title="Link to this heading">#</a></h3>
+<p>While personifying agents might seem like a silly idea for professional use, it can actually be quite helpful when working with them. It can help get into the right mindset for interacting with the agent, help you remember what the agent is for, what you’ve told them, and make the agent more memorable and relatable.</p>
 </section>
-<section id="project-config">
-<h2>Project config<a class="headerlink" href="#project-config" title="Link to this heading">#</a></h2>
-<p>The project configuration file is intended to let the user configure how gptme works within a particular project/workspace.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The project configuration file is a very early feature and is likely to change/break in the future.</p>
-</div>
-<p>gptme will look for a <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code> file in the workspace root (this is the working directory if not overridden by the <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> option). This file contains project-specific configuration options.</p>
-<p>This file currently supports a single option, <code class="docutils literal notranslate"><span class="pre">files</span></code>, which is a list of paths that gptme will always include in the context:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;README.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Makefile&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
 </section>
 </section>
 
@@ -444,20 +429,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="tools.html"
+       href="providers.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Tools</p>
+        <p class="prev-next-title">Providers</p>
       </div>
     </a>
     <a class="right-next"
-       href="providers.html"
+       href="server.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Providers</p>
+        <p class="prev-next-title">Server</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -478,8 +463,10 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bob">Bob</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-personify-agents">Why personify agents?</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
