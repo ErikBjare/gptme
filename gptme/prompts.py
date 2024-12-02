@@ -148,21 +148,18 @@ def prompt_user() -> Generator[Message, None, None]:
     about_user = config_prompt.get(
         "about_user", "You are interacting with a human programmer."
     )
-    response_preferences = config_prompt.get("response_preferences", {}).get(
-        "preferences", []
-    )
-
     response_prefs = (
-        "\n".join(f"- {pref}" for pref in response_preferences)
-        if response_preferences
-        else "No specific preferences set."
-    )
+        config_prompt.get("response_preference")
+        or config_prompt.get("preferences")
+        or "No specific preferences set."
+    ).strip()
 
     prompt_content = f"""# About User
 
 {about_user}
 
 ## User's Response Preferences
+
 {response_prefs}
 """
     yield Message("system", prompt_content)
@@ -176,11 +173,13 @@ def prompt_project() -> Generator[Message, None, None]:
     if not projectdir:
         return
 
+    project_config = get_project_config(projectdir)
     config_prompt = get_config().prompt
     project = projectdir.name
-    project_info = config_prompt.get("project", {}).get(
-        project, "No specific project context provided."
-    )
+    project_info = project_config and project_config.prompt
+    if not project_info:
+        # TODO: remove project preferences in global config? use only project config
+        project_info = config_prompt.get("project", {}).get(project)
 
     yield Message(
         "system",
