@@ -107,7 +107,8 @@ def stream(
     ) as stream:
         for chunk in stream:
             if hasattr(chunk, "usage"):
-                print(chunk.usage)
+                # print(chunk.usage)
+                pass
             if chunk.type == "content_block_start":
                 block = chunk.content_block
                 if isinstance(block, anthropic.types.ToolUseBlock):

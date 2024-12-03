@@ -1,4 +1,3 @@
-import json_repair
 import json
 import logging
 import re
@@ -6,8 +5,16 @@ import types
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from textwrap import indent
-from typing import Any, Literal, Protocol, TypeAlias, cast, get_origin
+from typing import (
+    Any,
+    Literal,
+    Protocol,
+    TypeAlias,
+    cast,
+    get_origin,
+)
 
+import json_repair
 from lxml import etree
 
 from ..codeblock import Codeblock
@@ -24,7 +31,7 @@ ToolFormat: TypeAlias = Literal["markdown", "xml", "tool"]
 tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
-toolcall_re = re.compile(r"@(\w+): (\{.*?\})")
+toolcall_re = re.compile(r"@(\w+):\s*(\{.*?\})")
 
 ConfirmFunc = Callable[[str], bool]
 

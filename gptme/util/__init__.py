@@ -17,7 +17,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-import tiktoken
 from rich import print
 from rich.console import Console
 from rich.syntax import Syntax
@@ -34,6 +33,8 @@ _warned_models = set()
 
 
 def get_tokenizer(model: str):
+    import tiktoken  # fmt: skip
+
     global _warned_models
     try:
         return tiktoken.encoding_for_model(model)
