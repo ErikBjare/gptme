@@ -36,7 +36,11 @@ def add_history(line: str) -> None:  # pragma: no cover
         load_readline_history()
 
     readline.add_history(line)
-    readline.write_history_file(get_readline_history_file())
+    hist_file = get_readline_history_file()
+    try:
+        readline.write_history_file(hist_file)
+    except Exception as e:
+        logger.warning(f"Failed to write history file {hist_file}: {e}")
 
 
 def load_readline_history() -> None:  # pragma: no cover
