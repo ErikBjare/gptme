@@ -320,8 +320,12 @@ def test_subagent(args: list[str], runner: CliRunner):
     # f14: 377
     # f15: 610
     # f16: 987
-    args.append(
-        "Test the subagent tool by asking it to compute `fib(15)`, where `fib(1) = 1` and `fib(2) = 1`. Answer with the value."
+    args.extend(
+        [
+            "We are in a test. Use the subagent tool to compute `fib(15)`, where `fib(1) = 1` and `fib(2) = 1`.",
+            "-",
+            "Answer with the value.",
+        ]
     )
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
