@@ -11,7 +11,7 @@ To use it, you need to install gptme with ``server`` extras:
 
 .. code-block:: bash
 
-    pipx install gptme[server]
+    pipx install 'gptme[server]'
 
 It can then be started by running the following command:
 

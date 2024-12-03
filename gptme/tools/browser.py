@@ -13,7 +13,7 @@ To use the browser tool, you need to have the `playwright` Python package instal
 
 .. code-block:: bash
 
-    pipx install gptme[browser]
+    pipx install 'gptme[browser]'
     gptme '/shell playwright install chromium'
 """
 
