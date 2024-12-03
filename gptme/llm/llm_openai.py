@@ -13,13 +13,7 @@ from .models import Provider, get_model
 if TYPE_CHECKING:
     # noreorder
     from openai import OpenAI  # fmt: skip
-    from openai.types.chat import (  # fmt: skip
-        ChatCompletionToolParam,
-    )
-    from openai.types.chat.chat_completion_chunk import (  # fmt: skip
-        ChoiceDeltaToolCall,
-        ChoiceDeltaToolCallFunction,
-    )
+    from openai.types.chat import ChatCompletionToolParam  # fmt: skip
 
 openai: "OpenAI | None" = None
 logger = logging.getLogger(__name__)
@@ -175,9 +169,13 @@ def stream(
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
     ):
-        # Cast the chunk to the correct type
         from openai.types.chat import ChatCompletionChunk  # fmt: skip
+        from openai.types.chat.chat_completion_chunk import (  # fmt: skip
+            ChoiceDeltaToolCall,
+            ChoiceDeltaToolCallFunction,
+        )
 
+        # Cast the chunk to the correct type
         chunk = cast(ChatCompletionChunk, chunk_raw)
 
         if not chunk.choices:
