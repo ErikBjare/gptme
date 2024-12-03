@@ -3,7 +3,6 @@ import os
 import random
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
 
 import gptme.cli
 import gptme.constants
@@ -357,41 +356,34 @@ def test_vision(args: list[str], runner: CliRunner):
     assert "yes" in result.output
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
-    "tool_format, expected, not_expected, use_tools",
+    "tool_format, expected, not_expected",
     [
-        ("markdown", ["```shell\nls"], ["<tool-use>\n<shell>\nls"], False),
-        ("xml", ["<tool-use>\n<shell>\nls"], ["```shell\nls"], False),
+        ("markdown", ["```shell\nls"], ["<tool-use>\n<shell>\nls"]),
+        ("xml", ["<tool-use>\n<shell>\nls"], ["```shell\nls"]),
         (
             "tool",
             ['{"name": "shell"'],
             ["```shell\nls", "<tool-use>\n<shell>\nls"],
-            True,
         ),
     ],
 )
 def test_tool_format_option(
-    args: list[str], runner: CliRunner, tool_format, expected, not_expected, use_tools
+    args: list[str], runner: CliRunner, tool_format, expected, not_expected
 ):
     args.append("--show-hidden")
     args.append("--tool-format")
     args.append(tool_format)
-    args.append("test")
+    args.append("ls the current dir")
 
-    with patch("gptme.llm.reply", return_value=[]) as mock_reply:
-        result = runner.invoke(gptme.cli.main, args)
-        assert result.exit_code == 0
+    result = runner.invoke(gptme.cli.main, args)
+    if result.exception:
+        raise result.exception
+    assert result.exit_code == 0
 
-        mock_reply.assert_called_once()
+    for expect in expected:
+        assert expect in result.output
 
-        # Check that tools are used only with `tool` format
-        if use_tools:
-            assert mock_reply.call_args[0][3] is not None
-        else:
-            assert mock_reply.call_args[0][3] is None
-
-        for expect in expected:
-            assert expect in result.output
-
-        for not_expect in not_expected:
-            assert not_expect not in result.output
+    for not_expect in not_expected:
+        assert not_expect not in result.output

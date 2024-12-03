@@ -51,7 +51,7 @@ def chat(
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
     tool_format: ToolFormat = "markdown",
-):
+) -> None:
     """
     Run the chat loop.
 
