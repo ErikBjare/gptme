@@ -396,13 +396,13 @@ It is used to instruct the LLM about its role, how to use tools, and provide con
 <p>When prompting, it is important to provide clear instructions and avoid any ambiguity.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.prompts.get_prompt">
-<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">get_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'full'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'short'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.prompts.get_prompt" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">get_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'full'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'short'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'markdown'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'xml'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tool'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'markdown'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></span><a class="headerlink" href="#gptme.prompts.get_prompt" title="Link to this definition">#</a></dt>
 <dd><p>Get the initial system prompt.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.prompts.prompt_full">
-<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_full" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'markdown'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'xml'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tool'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_full" title="Link to this definition">#</a></dt>
 <dd><p>Full prompt to start the conversation.</p>
 </dd></dl>
 
@@ -477,7 +477,7 @@ This is gptme
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.prompts.prompt_short">
-<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_short</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_short" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_short</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'markdown'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'xml'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tool'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_short" title="Link to this definition">#</a></dt>
 <dd><p>Short prompt to start the conversation.</p>
 </dd></dl>
 
@@ -502,16 +502,16 @@ This is gptme
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.prompts.prompt_tools">
-<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_tools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_tools" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gptme.prompts.</span></span><span class="sig-name descname"><span class="pre">prompt_tools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'markdown'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'xml'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tool'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'markdown'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.prompts.prompt_tools" title="Link to this definition">#</a></dt>
 <dd><p>Generate the tools overview prompt.</p>
 <p>Example output:</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gh"># Tools Overview</span>
 
 <span class="gu">## read</span>
 
-<span class="gs">**Description:**</span> Read the contents of a file
+<span class="gs">**Description:**</span> Read the content of a file
 
-<span class="gs">**Instructions:**</span> Read files using <span class="sb">`cat`</span>
+<span class="gs">**Instructions:**</span> Read the content of the given file. Use the <span class="sb">`cat`</span> command with the <span class="sb">`shell`</span> tool.
 
 <span class="gu">### Examples</span>
 
@@ -527,10 +527,12 @@ cat<span class="w"> </span>file.txt
 
 <span class="gs">**Description:**</span> Write text to file
 
-<span class="gs">**Instructions:**</span> To write to a file, use a code block with the language tag: <span class="sb">`save &lt;path&gt;`</span>
+<span class="gs">**Instructions:**</span> Create or overwrite a file with the given content.
 
 The path can be relative to the current directory, or absolute.
 If the current directory changes, the path will be relative to the new directory.
+
+To write to a file, use a code block with the language tag: <span class="sb">`save &lt;path&gt;`</span>
 
 <span class="gu">### Examples</span>
 
@@ -550,7 +552,10 @@ If the current directory changes, the path will be relative to the new directory
 
 <span class="gs">**Description:**</span> Append text to file
 
-<span class="gs">**Instructions:**</span> To append to a file, use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
+<span class="gs">**Instructions:**</span> Append the given content to a file.`.
+
+Use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
+to append the code block content to the file at the given path.
 
 <span class="gu">### Examples</span>
 
@@ -565,31 +570,16 @@ If the current directory changes, the path will be relative to the new directory
 
 <span class="gs">**Description:**</span> Apply a patch to a file
 
-<span class="gs">**Instructions:**</span>
-To patch/modify files, we use an adapted version of git conflict markers.
+<span class="gs">**Instructions:**</span> To patch/modify files, we use an adapted version of git conflict markers.
 
 This can be used to edit files, without having to rewrite the whole file.
-Only one patch block can be written per codeblock. Extra ORIGINAL/UPDATED blocks will be ignored.
+Only one patch block can be written per tool use. Extra ORIGINAL/UPDATED blocks will be ignored.
 Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
 
 To keep the patch small, try to scope the patch to imports/function/class.
 If the patch is large, consider using the save tool to rewrite the whole file.
 
-The $PATH parameter MUST be on the same line as the code block start, not on the line after.
-
-The patch block should be written in the following format:
-
-<span class="sb">```patch</span><span class="w"> </span>$PATH
-<span class="s">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
-<span class="s">$ORIGINAL_CONTENT</span>
-<span class="s">=======</span>
-<span class="s">$UPDATED_CONTENT</span>
-<span class="s">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
-<span class="sb">```</span>
-
-
 <span class="gu">### Examples</span>
-
 
 <span class="k">&gt; </span><span class="ge">User: patch `src/hello.py` to ask for the name of the user</span>
 ```src/hello.py
@@ -610,23 +600,22 @@ if <span class="gs">__name__</span> == &quot;<span class="gs">__main__</span>&qu
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Patch applied</span>
 
-
 <span class="gu">## shell</span>
 
 <span class="gs">**Description:**</span> Executes shell commands.
 
-<span class="gs">**Instructions:**</span> When you send a message containing bash code, it will be executed in a stateful bash shell.
-The shell will respond with the output of the execution.
+<span class="gs">**Instructions:**</span> The given command will be executed in a stateful bash shell.
+The shell tool will respond with the output of the execution.
+
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>docker
+<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
-
 
 User: list the current directory
 Assistant: To list the files in the current directory, use <span class="sb">`ls`</span>:
@@ -685,13 +674,17 @@ System:
 <span class="s">Scaffolding project in ./fancy-project...</span>
 <span class="sb">```</span>
 
-
 <span class="gu">## subagent</span>
 
-<span class="gs">**Description:**</span> A tool to create subagents
+<span class="gs">**Description:**</span> Create and manage subagents
+
+<span class="gs">**Instructions:**</span> The following Python functions can be called with <span class="sb">`ipython`</span> tool:
+
+subagent(agent_id: str, prompt: str): Runs a subagent and returns the resulting JSON output.
+subagent_status(agent_id: str) -&gt; dict: Returns the status of a subagent.
+subagent_wait(agent_id: str) -&gt; dict: Waits for a subagent to finish. Timeout is 1 minute.
 
 <span class="gu">### Examples</span>
-
 
 User: compute fib 13 using a subagent
 Assistant: Starting a subagent to compute the 13th Fibonacci number.
@@ -704,7 +697,6 @@ Assistant: Now we need to wait for the subagent to finish the task.
 <span class="n">subagent_wait</span><span class="p">(</span><span class="s2">&quot;fib-13&quot;</span><span class="p">)</span>
 <span class="sb">```</span>
 System: {&quot;status&quot;: &quot;success&quot;, &quot;result&quot;: &quot;The 13th Fibonacci number is 233&quot;}.
-
 
 <span class="gu">## tmux</span>
 
@@ -768,9 +760,13 @@ Assistant: The load is...
 
 <span class="gu">## browser</span>
 
-<span class="gs">**Description:**</span> Browse the web
+<span class="gs">**Description:**</span> Browse, search or screenshot the web
 
-<span class="gs">**Instructions:**</span> To browse the web, you can use the <span class="sb">`read_url`</span>, <span class="sb">`search`</span>, and <span class="sb">`screenshot_url`</span> functions in Python.
+<span class="gs">**Instructions:**</span> The following Python functions can be called with <span class="sb">`ipython`</span> tool:
+
+read_url(url: str) -&gt; str: Read a webpage in a text format.
+search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
+screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.
 
 <span class="gu">### Examples</span>
 
@@ -829,7 +825,7 @@ System:
 
 <span class="gs">**Description:**</span> Interact with GitHub
 
-<span class="gs">**Instructions:**</span> Interact with GitHub via the GitHub CLI (gh).
+<span class="gs">**Instructions:**</span> Interact with GitHub via the GitHub CLI (gh). Use the <span class="sb">`shell`</span> tool with the <span class="sb">`gh`</span> command.
 
 <span class="gu">### Examples</span>
 
@@ -878,8 +874,32 @@ gh<span class="w"> </span>run<span class="w"> </span>watch<span class="w"> </spa
 
 <span class="gs">**Description:**</span> List, search, and summarize past conversation logs
 
-<span class="gs">**Instructions:**</span>
-The chats tool allows you to list, search, and summarize past conversation logs.
+<span class="gs">**Instructions:**</span> The following Python functions can be called with <span class="sb">`ipython`</span> tool:
+
+list_chats(max_results: int, include_summary: bool):
+    List recent chat conversations and optionally summarize them using an LLM.
+
+    Args:
+        max_results (int): Maximum number of conversations to display.
+        include_summary (bool): Whether to include a summary of each conversation.
+            If True, uses an LLM to generate a comprehensive summary.
+            If False, uses a simple strategy showing snippets of the first and last messages.
+
+search_chats(query: str, max_results: int):
+    Search past conversation logs for the given query and print a summary of the results.
+
+    Args:
+        query (str): The search query.
+        max_results (int): Maximum number of conversations to display.
+        system (bool): Whether to include system messages in the search.
+
+read_chat(conversation: str, max_results: int):
+    Read a specific conversation log.
+
+    Args:
+        conversation (str): The name of the conversation to read.
+        max_results (int): Maximum number of messages to display.
+        incl_system (bool): Whether to include system messages.
 
 
 <span class="gu">### Examples</span>
@@ -897,60 +917,43 @@ Assistant: Certainly! I&#39;ll search our past conversations for mentions of &qu
 
 <span class="gs">**Description:**</span> Take a screenshot
 
-<span class="gs">**Instructions:**</span> Use this tool to capture a screenshot. You can optionally specify a filename.
+<span class="gs">**Instructions:**</span> The following Python functions can be called with <span class="sb">`ipython`</span> tool:
+
+screenshot(path: Union[Path, NoneType]) -&gt; Path:
+    Take a screenshot and save it to a file.
+
 
 <span class="gu">## vision</span>
 
-<span class="gs">**Description:**</span> Tools for viewing images
+<span class="gs">**Description:**</span> Viewing images
+
+<span class="gs">**Instructions:**</span> The following Python functions can be called with <span class="sb">`ipython`</span> tool:
+
+view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
 
 <span class="gu">## python</span>
 
 <span class="gs">**Description:**</span> Execute Python code
 
-<span class="gs">**Instructions:**</span> To execute Python code in an interactive IPython session, send a codeblock using the <span class="sb">`ipython`</span> language tag.
+<span class="gs">**Instructions:**</span> This tool execute Python code in an interactive IPython session.
 It will respond with the output and result of the execution.
-If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
 
 
 The following libraries are available:
 
 
-The following functions are available in the REPL:
-<span class="k">-</span><span class="w"> </span>subagent(agent_id: str, prompt: str): Runs a subagent and returns the resulting JSON output.
-<span class="k">-</span><span class="w"> </span>subagent_status(agent_id: str) -&gt; dict: Returns the status of a subagent.
-<span class="k">-</span><span class="w"> </span>subagent_wait(agent_id: str) -&gt; dict: Waits for a subagent to finish. Timeout is 1 minute.
-<span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str: Read a webpage in a text format.
-<span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
-<span class="k">-</span><span class="w"> </span>screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.
-<span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool):
-    List recent chat conversations and optionally summarize them using an LLM.
-
-    Args:
-        max_results (int): Maximum number of conversations to display.
-        include_summary (bool): Whether to include a summary of each conversation.
-            If True, uses an LLM to generate a comprehensive summary.
-            If False, uses a simple strategy showing snippets of the first and last messages.
-
-<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int):
-    Search past conversation logs for the given query and print a summary of the results.
-
-    Args:
-        query (str): The search query.
-        max_results (int): Maximum number of conversations to display.
-        system (bool): Whether to include system messages in the search.
-
-<span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int):
-    Read a specific conversation log.
-
-    Args:
-        conversation (str): The name of the conversation to read.
-        max_results (int): Maximum number of messages to display.
-        incl_system (bool): Whether to include system messages.
-
-<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path:
-    Take a screenshot and save it to a file.
-
-<span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
+The following functions are available:
+<span class="k">-</span><span class="w"> </span>subagent
+<span class="k">-</span><span class="w"> </span>subagent_status
+<span class="k">-</span><span class="w"> </span>subagent_wait
+<span class="k">-</span><span class="w"> </span>read_url
+<span class="k">-</span><span class="w"> </span>search
+<span class="k">-</span><span class="w"> </span>screenshot_url
+<span class="k">-</span><span class="w"> </span>list_chats
+<span class="k">-</span><span class="w"> </span>search_chats
+<span class="k">-</span><span class="w"> </span>read_chat
+<span class="k">-</span><span class="w"> </span>screenshot
+<span class="k">-</span><span class="w"> </span>view_image
 
 <span class="gu">### Examples</span>
 
@@ -983,7 +986,7 @@ The following functions are available in the REPL:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3132</p>
+<p>Tokens: 3135</p>
 </dd></dl>
 
 <dl class="py function">
