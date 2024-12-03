@@ -9,6 +9,9 @@ from rich import print
 
 from ..config import get_config
 from ..constants import PROMPT_ASSISTANT
+from ..message import Message, format_msgs, len_tokens
+from ..tools import ToolSpec, ToolUse
+from ..util import console
 from .llm_anthropic import chat as chat_anthropic
 from .llm_anthropic import get_client as get_anthropic_client
 from .llm_anthropic import init as init_anthropic
@@ -17,15 +20,12 @@ from .llm_openai import chat as chat_openai
 from .llm_openai import get_client as get_openai_client
 from .llm_openai import init as init_openai
 from .llm_openai import stream as stream_openai
-from ..message import Message, format_msgs, len_tokens
 from .models import (
     MODELS,
     PROVIDERS_OPENAI,
     Provider,
     get_summary_model,
 )
-from ..tools import ToolSpec, ToolUse
-from ..util import console
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +114,12 @@ def _reply_stream(
             if char == "\n":
                 # TODO: make this more robust/general, maybe with a callback that runs on each char/chunk
                 # pause inference on finished code-block, letting user run the command before continuing
-                tooluses = list(ToolUse.iter_from_content(output))
-                if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
+                tooluses = [
+                    tooluse
+                    for tooluse in ToolUse.iter_from_content(output)
+                    if tooluse.is_runnable
+                ]
+                if tooluses:
                     logger.debug("Found tool use, breaking")
                     break
     except KeyboardInterrupt:

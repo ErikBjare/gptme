@@ -31,7 +31,45 @@ ToolFormat: TypeAlias = Literal["markdown", "xml", "tool"]
 tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
-toolcall_re = re.compile(r"@(\w+):\s*(\{.*?\})")
+# Match tool name and start of JSON
+toolcall_re = re.compile(r"^@(\w+):\s*({.*)", re.M | re.S)
+
+
+def find_json_end(s: str, start: int) -> int | None:
+    """Find the end of a JSON object by counting braces"""
+    stack = []
+    in_string = False
+    escape = False
+
+    for i, c in enumerate(s[start:], start):
+        if escape:
+            escape = False
+            continue
+
+        if c == "\\":
+            escape = True
+        elif c == '"' and not escape:
+            in_string = not in_string
+        elif not in_string:
+            if c == "{":
+                stack.append(c)
+            elif c == "}":
+                if not stack:
+                    return None
+                stack.pop()
+                if not stack:
+                    return i + 1
+    return None
+
+
+def extract_json(content: str, match: re.Match) -> str | None:
+    """Extract complete JSON object starting from a regex match"""
+    json_start = match.start(2)  # start of the JSON content
+    json_end = find_json_end(content, json_start)
+    if json_end is None:
+        return None
+    return content[json_start:json_end]
+
 
 ConfirmFunc = Callable[[str], bool]
 
@@ -295,11 +333,20 @@ class ToolUse:
         for tool_use in tool_uses:
             yield tool_use
 
-        # check if its a toolcall
+        # check if its a toolcall and extract valid JSON
         if match := toolcall_re.search(content):
             tool_name = match.group(1)
-            kwargs = cast(dict[str, str], json_repair.loads(match.group(2)))
-            yield ToolUse(tool_name, None, None, kwargs=kwargs)
+            if (json_str := extract_json(content, match)) is not None:
+                try:
+                    kwargs = json_repair.loads(json_str)
+                    if not isinstance(kwargs, dict):
+                        logger.debug(f"JSON repair result is not a dict: {kwargs}")
+                        return
+                    yield ToolUse(
+                        tool_name, None, None, kwargs=cast(dict[str, str], kwargs)
+                    )
+                except json.JSONDecodeError:
+                    logger.debug(f"Failed to parse JSON: {json_str}")
 
     @classmethod
     def _iter_from_markdown(cls, content: str) -> Generator["ToolUse", None, None]:
@@ -360,7 +407,7 @@ class ToolUse:
         elif tool_format == "xml":
             return self._to_xml()
         elif tool_format == "tool":
-            return self._to_json()
+            return self._to_toolcall()
 
     def _to_markdown(self) -> str:
         assert self.args is not None
@@ -373,20 +420,17 @@ class ToolUse:
         args_str = "" if not args else f" args='{args}'"
         return f"<tool-use>\n<{self.tool}{args_str}>\n{self.content}\n</{self.tool}>\n</tool-use>"
 
-    def _to_json(self) -> str:
+    def _to_params(self) -> dict:
         # noreorder
         from . import get_tool  # fmt: skip
 
-        base = {"name": self.tool, "parameters": {}}
         if self.kwargs is not None:
-            base["parameters"] = self.kwargs
+            return self.kwargs
         elif self.args is not None and self.content is not None:
             # match positional args with kwargs
-            tool = get_tool(self.tool)
-
-            if tool:
+            if tool := get_tool(self.tool):
                 if self.args:
-                    args = [self.content, *self.args]
+                    args = [*self.args, self.content]
                 else:
                     args = [self.content]
 
@@ -394,6 +438,12 @@ class ToolUse:
                 for index, param in enumerate(tool.parameters):
                     json_parameters[param.name] = args[index]
 
-                base["parameters"] = json_parameters
+                return json_parameters
+        return {}
 
-        return json.dumps(base)
+    def _to_json(self) -> str:
+        return json.dumps({"name": self.tool, "parameters": self._to_params()})
+
+    def _to_toolcall(self) -> str:
+        self._to_json()
+        return f"@{self.tool}: {json.dumps(self._to_params(), indent=2)}"

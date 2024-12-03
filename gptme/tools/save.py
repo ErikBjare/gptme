@@ -92,7 +92,12 @@ def execute_save(
         current = path.read_text()
         p = Patch(current, content)
         # TODO: if inefficient save, replace request with patch (and vice versa), or even append
-        print_preview(p.diff_minimal(), "diff")
+        diff_str = p.diff_minimal()
+        if diff_str.strip():
+            print_preview(p.diff_minimal(), "diff")
+        else:
+            yield Message("system", "File already exists with identical content.")
+            return
 
     if not confirm(f"Save to {fn}?"):
         # early return
@@ -170,15 +175,15 @@ tool_save = ToolSpec(
     block_types=["save"],
     parameters=[
         Parameter(
-            name="content",
-            type="string",
-            description="The content to save",
-            required=True,
-        ),
-        Parameter(
             name="path",
             type="string",
             description="The path of the file",
+            required=True,
+        ),
+        Parameter(
+            name="content",
+            type="string",
+            description="The content to save",
             required=True,
         ),
     ],
@@ -195,15 +200,15 @@ tool_append = ToolSpec(
     block_types=["append"],
     parameters=[
         Parameter(
-            name="content",
-            type="string",
-            description="The content to append",
-            required=True,
-        ),
-        Parameter(
             name="path",
             type="string",
             description="The path of the file",
+            required=True,
+        ),
+        Parameter(
+            name="content",
+            type="string",
+            description="The content to append",
             required=True,
         ),
     ],

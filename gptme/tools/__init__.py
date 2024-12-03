@@ -5,9 +5,9 @@ from functools import lru_cache
 from ..message import Message
 from .base import (
     ConfirmFunc,
+    ToolFormat,
     ToolSpec,
     ToolUse,
-    ToolFormat,
     get_tool_format,
     set_tool_format,
 )
@@ -18,6 +18,7 @@ from .gh import tool as gh_tool
 from .patch import tool as patch_tool
 from .python import register_function
 from .python import tool as python_tool
+from .rag import tool as rag_tool
 from .read import tool as tool_read
 from .save import tool_append, tool_save
 from .screenshot import tool as screenshot_tool
@@ -26,7 +27,6 @@ from .subagent import tool as subagent_tool
 from .tmux import tool as tmux_tool
 from .vision import tool as vision_tool
 from .youtube import tool as youtube_tool
-from .rag import tool as rag_tool
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,8 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
     assert msg.role == "assistant", "Only assistant messages can be executed"
 
     for tooluse in ToolUse.iter_from_content(msg.content):
-        yield from tooluse.execute(confirm)
+        if tooluse.is_runnable:
+            yield from tooluse.execute(confirm)
 
 
 # Called often when checking streaming output for executable blocks,
