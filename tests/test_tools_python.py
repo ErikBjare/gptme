@@ -1,10 +1,15 @@
 from typing import Literal, TypeAlias
 
-from gptme.tools.python import callable_signature, execute_python
+from gptme.tools.python import execute_python
+from gptme.tools.base import callable_signature
 
 
 def run(code):
-    return next(execute_python(code, [])).content
+    return next(execute_python(code, [], None)).content
+
+
+def run_with_kwargs(code):
+    return next(execute_python(None, None, {"code": code})).content
 
 
 def test_execute_python():
@@ -15,6 +20,10 @@ def test_execute_python():
     # test that vars are preserved between executions
     assert run("a = 2")
     assert "2\n" in run("print(a)")
+
+
+def test_execute_python_with_kwargs():
+    assert "2\n" in run_with_kwargs("print(1 + 1)")
 
 
 TestType: TypeAlias = Literal["a", "b"]

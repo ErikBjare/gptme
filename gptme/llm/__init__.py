@@ -24,7 +24,7 @@ from .models import (
     Provider,
     get_summary_model,
 )
-from ..tools import ToolUse
+from ..tools import ToolSpec, ToolUse
 from ..util import console
 
 logger = logging.getLogger(__name__)
@@ -46,38 +46,49 @@ def init_llm(llm: str):
         sys.exit(1)
 
 
-def reply(messages: list[Message], model: str, stream: bool = False) -> Message:
+def reply(
+    messages: list[Message],
+    model: str,
+    stream: bool = False,
+    tools: list[ToolSpec] | None = None,
+) -> Message:
     if stream:
-        return _reply_stream(messages, model)
+        return _reply_stream(messages, model, tools)
     else:
         print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
-        response = _chat_complete(messages, model)
+        response = _chat_complete(messages, model, tools)
         print(" " * shutil.get_terminal_size().columns, end="\r")
         print(f"{PROMPT_ASSISTANT}: {response}")
         return Message("assistant", response)
 
 
-def _chat_complete(messages: list[Message], model: str) -> str:
+def _chat_complete(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> str:
     provider = _client_to_provider()
     if provider in PROVIDERS_OPENAI:
-        return chat_openai(messages, model)
+        return chat_openai(messages, model, tools)
     elif provider == "anthropic":
-        return chat_anthropic(messages, model)
+        return chat_anthropic(messages, model, tools)
     else:
         raise ValueError("LLM not initialized")
 
 
-def _stream(messages: list[Message], model: str) -> Iterator[str]:
+def _stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Iterator[str]:
     provider = _client_to_provider()
     if provider in PROVIDERS_OPENAI:
-        return stream_openai(messages, model)
+        return stream_openai(messages, model, tools)
     elif provider == "anthropic":
-        return stream_anthropic(messages, model)
+        return stream_anthropic(messages, model, tools)
     else:
         raise ValueError("LLM not initialized")
 
 
-def _reply_stream(messages: list[Message], model: str) -> Message:
+def _reply_stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
 
     def print_clear():
@@ -85,7 +96,9 @@ def _reply_stream(messages: list[Message], model: str) -> Message:
 
     output = ""
     try:
-        for char in (char for chunk in _stream(messages, model) for char in chunk):
+        for char in (
+            char for chunk in _stream(messages, model, tools) for char in chunk
+        ):
             if not output:  # first character
                 print_clear()
                 print(f"{PROMPT_ASSISTANT}: ", end="")
@@ -154,7 +167,7 @@ def _summarize_str(content: str) -> str:
             f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages)}"
         )
 
-    summary = _chat_complete(messages, model)
+    summary = _chat_complete(messages, model, None)
     assert summary
     logger.debug(
         f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
@@ -200,7 +213,8 @@ IMPORTANT: output only the name, no preamble or postamble.
             )
         ]
     )
-    name = _chat_complete(msgs, model=get_summary_model(_client_to_provider())).strip()
+    model = get_summary_model(_client_to_provider())
+    name = _chat_complete(msgs, model, None).strip()
     return name
 
 

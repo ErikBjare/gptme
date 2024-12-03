@@ -1,4 +1,4 @@
-from gptme.tools.patch import Patch, apply
+from gptme.tools.patch import Patch, apply, execute_patch
 
 example_patch = """
 <<<<<<< ORIGINAL
@@ -7,6 +7,16 @@ original lines
 modified lines
 >>>>>>> UPDATED
 """
+
+
+def test_execute_patch(temp_file):
+    with temp_file("""original lines""") as f:
+        result = next(execute_patch(example_patch, [f], None)).content
+
+        assert "successfully" in result
+
+        with open(f, encoding="utf-8") as f:
+            assert f.read() == """modified lines"""
 
 
 def test_apply_simple():

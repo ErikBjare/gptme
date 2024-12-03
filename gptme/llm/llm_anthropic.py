@@ -7,37 +7,48 @@ from typing import (
     Any,
     Literal,
     TypedDict,
+    cast,
 )
 
 from typing_extensions import Required
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
+from ..tools.base import Parameter, ToolSpec
 
 logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
+    # noreorder
+    import anthropic  # fmt: skip
+    import anthropic.types.beta.prompt_caching  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
 
-anthropic: "Anthropic | None" = None
+_anthropic: "Anthropic | None" = None
 
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(config):
-    global anthropic
+    global _anthropic
     api_key = config.get_env_required("ANTHROPIC_API_KEY")
     from anthropic import Anthropic  # fmt: skip
 
-    anthropic = Anthropic(
+    _anthropic = Anthropic(
         api_key=api_key,
         max_retries=5,
     )
 
 
 def get_client() -> "Anthropic | None":
-    return anthropic
+    return _anthropic
+
+
+class ToolAnthropic(TypedDict):
+    name: str
+    description: str
+    input_schema: dict
 
 
 class MessagePart(TypedDict, total=False):
@@ -47,19 +58,24 @@ class MessagePart(TypedDict, total=False):
     cache_control: dict[str, str]
 
 
-def chat(messages: list[Message], model: str) -> str:
-    assert anthropic, "LLM not initialized"
+def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
+    from anthropic import NOT_GIVEN  # fmt: skip
+
+    assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
 
-    response = anthropic.beta.prompt_caching.messages.create(
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    response = _anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
     )
     content = response.content
     assert content
@@ -67,21 +83,58 @@ def chat(messages: list[Message], model: str) -> str:
     return content[0].text  # type: ignore
 
 
-def stream(messages: list[Message], model: str) -> Generator[str, None, None]:
-    assert anthropic, "LLM not initialized"
+def stream(
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
+) -> Generator[str, None, None]:
+    import anthropic.types  # fmt: skip
+    from anthropic import NOT_GIVEN  # fmt: skip
+
+    assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
 
-    with anthropic.beta.prompt_caching.messages.stream(
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    with _anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
         temperature=TEMPERATURE,
         top_p=TOP_P,
         max_tokens=4096,
+        tools=tools_dict if tools_dict else NOT_GIVEN,
     ) as stream:
-        yield from stream.text_stream
+        for chunk in stream:
+            if hasattr(chunk, "usage"):
+                print(chunk.usage)
+            if chunk.type == "content_block_start":
+                block = chunk.content_block
+                if isinstance(block, anthropic.types.ToolUseBlock):
+                    tool_use = block
+                    yield f"@{tool_use.name}: "
+            elif chunk.type == "content_block_delta":
+                chunk = cast(anthropic.types.RawContentBlockDeltaEvent, chunk)
+                delta = chunk.delta
+                if isinstance(delta, anthropic.types.TextDelta):
+                    yield delta.text
+                elif isinstance(delta, anthropic.types.InputJSONDelta):
+                    yield delta.partial_json
+                else:
+                    logger.warning("Unknown delta type: %s", delta)
+            elif chunk.type == "content_block_stop":
+                pass
+            elif chunk.type == "text":
+                # full text message
+                pass
+            elif chunk.type == "message_delta":
+                pass
+            elif chunk.type == "message_stop":
+                pass
+            else:
+                # print(f"Unknown chunk type: {chunk.type}")
+                # print(chunk)
+                pass
 
 
 def _handle_files(message_dicts: list[dict]) -> list[dict]:
@@ -193,3 +246,35 @@ def _transform_system_messages(
         system_messages[-1]["cache_control"] = {"type": "ephemeral"}
 
     return messages, system_messages
+
+
+def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+    required = []
+    properties = {}
+
+    for param in parameters:
+        if param.required:
+            required.append(param.name)
+        properties[param.name] = {"type": param.type, "description": param.description}
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+    }
+
+
+def _spec2tool(
+    spec: ToolSpec,
+) -> "anthropic.types.beta.prompt_caching.PromptCachingBetaToolParam":
+    name = spec.name
+    if spec.block_types:
+        name = spec.block_types[0]
+
+    # TODO: are input_schema and parameters the same? (both JSON Schema?)
+    return {
+        "name": name,
+        "description": spec.get_instructions("tool"),
+        "input_schema": parameters2dict(spec.parameters),
+    }

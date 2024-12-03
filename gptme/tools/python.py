@@ -8,19 +8,18 @@ import dataclasses
 import functools
 import importlib.util
 import re
-import types
 from collections.abc import Callable, Generator
 from logging import getLogger
-from typing import (
-    TYPE_CHECKING,
-    Literal,
-    TypeVar,
-    get_origin,
-)
+from typing import TYPE_CHECKING, TypeVar
 
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
@@ -49,38 +48,6 @@ def register_function(func: T) -> T:
     return func
 
 
-# TODO: there must be a better way?
-def derive_type(t) -> str:
-    if get_origin(t) == Literal:
-        v = ", ".join(f'"{a}"' for a in t.__args__)
-        return f"Literal[{v}]"
-    elif get_origin(t) == types.UnionType:
-        v = ", ".join(derive_type(a) for a in t.__args__)
-        return f"Union[{v}]"
-    else:
-        return t.__name__
-
-
-def callable_signature(func: Callable) -> str:
-    # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
-    args = ", ".join(
-        f"{k}: {derive_type(v)}"
-        for k, v in func.__annotations__.items()
-        if k != "return"
-    )
-    ret_type = func.__annotations__.get("return")
-    ret = f" -> {derive_type(ret_type)}" if ret_type else ""
-    return f"{func.__name__}({args}){ret}"
-
-
-def get_functions_prompt() -> str:
-    # return a prompt with a brief description of the available functions
-    return "\n".join(
-        f"- {callable_signature(func)}: {func.__doc__ or 'No description'}"
-        for func in registered_functions.values()
-    )
-
-
 def _get_ipython():
     global _ipython
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
@@ -93,10 +60,20 @@ def _get_ipython():
 
 
 def execute_python(
-    code: str, args: list[str], confirm: ConfirmFunc = lambda _: True
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc = lambda _: True,
 ) -> Generator[Message, None, None]:
     """Executes a python codeblock and returns the output."""
-    code = code.strip()
+
+    if code is not None and args is not None:
+        code = code.strip()
+    elif kwargs is not None:
+        code = kwargs.get("code", "").strip()
+
+    assert code is not None
+
     print_preview(code, "python")
     if not confirm("Execute this code?"):
         # early return
@@ -162,18 +139,29 @@ def get_installed_python_libraries() -> set[str]:
     return installed
 
 
+def get_functions():
+    return "\n".join([f"- {func.__name__}" for func in registered_functions.values()])
+
+
 instructions = """
-To execute Python code in an interactive IPython session, send a codeblock using the `ipython` language tag.
+This tool execute Python code in an interactive IPython session.
 It will respond with the output and result of the execution.
-If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
 """
 
+instructions_format = {
+    "markdown": """
+To use it, send a codeblock using the `ipython` language tag.
+If you first write the code in a normal python codeblock, remember to also execute it with the ipython codeblock.
+"""
+}
 
-examples = f"""
+
+def examples(tool_format):
+    return f"""
 #### Results of the last expression will be displayed, IPython-style:
 > User: What is 2 + 2?
 > Assistant:
-{ToolUse("ipython", [], "2 + 2").to_output()}
+{ToolUse("ipython", [], "2 + 2").to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "4").to_output()}
 
@@ -186,7 +174,7 @@ def fib(n):
         return n
     return fib(n - 1) + fib(n - 2)
 fib(10)
-'''.strip()).to_output()}
+'''.strip()).to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "55").to_output()}
 """.strip()
@@ -201,9 +189,9 @@ def init() -> ToolSpec:
 The following libraries are available:
 {python_libraries_str}
 
-The following functions are available in the REPL:
-{get_functions_prompt()}
-    """.strip()
+The following functions are available:
+{get_functions()}
+""".strip()
 
     # create a copy with the updated instructions
     return dataclasses.replace(tool, instructions=_instructions)
@@ -220,6 +208,14 @@ tool = ToolSpec(
         # "python",
         "ipython",
         "py",
+    ],
+    parameters=[
+        Parameter(
+            name="code",
+            type="string",
+            description="The code to execute in the IPython shell.",
+            required=True,
+        ),
     ],
 )
 __doc__ = tool.get_doc(__doc__)

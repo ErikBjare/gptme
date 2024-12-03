@@ -31,9 +31,6 @@ def summarize_transcript(transcript: str) -> str:
 tool: ToolSpec = ToolSpec(
     name="youtube",
     desc="Fetch and summarize YouTube video transcripts",
-    instructions="""
-    To use this tool, provide a YouTube video ID and specify whether you want the transcript or a summary.
-    """,
     functions=[get_transcript, summarize_transcript],
     block_types=["youtube"],
     available=bool(YouTubeTranscriptApi),

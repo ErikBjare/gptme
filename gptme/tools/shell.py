@@ -13,6 +13,8 @@ from collections.abc import Generator
 
 import bashlex
 
+from .base import Parameter
+
 from ..message import Message
 from ..util import get_installed_programs, get_tokenizer, print_preview
 from .base import ConfirmFunc, ToolSpec, ToolUse
@@ -39,19 +41,25 @@ shell_programs_str = "\n".join(
 )
 is_macos = sys.platform == "darwin"
 
+
 instructions = f"""
-When you send a message containing bash code, it will be executed in a stateful bash shell.
-The shell will respond with the output of the execution.
+The given command will be executed in a stateful bash shell.
+The shell tool will respond with the output of the execution.
+
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
 {shell_programs_str}
 """.strip()
 
-examples = f"""
+instructions_format: dict[str, str] = {}
+
+
+def examples(tool_format):
+    return f"""
 User: list the current directory
 Assistant: To list the files in the current directory, use `ls`:
-{ToolUse("shell", [], "ls").to_output()}
+{ToolUse("shell", [], "ls").to_output(tool_format)}
 System: Ran command: `ls`
 {ToolUse("shell", [], '''
 file1.txt
@@ -61,18 +69,18 @@ file2.txt
 #### The assistant can learn context by exploring the filesystem
 User: learn about the project
 Assistant: Lets start by checking the files
-{ToolUse("shell", [], "git ls-files").to_output()}
+{ToolUse("shell", [], "git ls-files").to_output(tool_format)}
 System:
 {ToolUse("stdout", [], '''
 README.md
 main.py
 '''.strip()).to_output()}
 Assistant: Now lets check the README
-{ToolUse("shell", [], "cat README.md").to_output()}
+{ToolUse("shell", [], "cat README.md").to_output(tool_format)}
 System:
 {ToolUse("stdout", [], "(contents of README.md)").to_output()}
 Assistant: Now we check main.py
-{ToolUse("shell", [], "cat main.py").to_output()}
+{ToolUse("shell", [], "cat main.py").to_output(tool_format)}
 System:
 {ToolUse("stdout", [], "(contents of main.py)").to_output()}
 Assistant: The project is...
@@ -81,7 +89,10 @@ Assistant: The project is...
 #### Create vue project
 User: Create a new vue project with typescript and pinia named fancy-project
 Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
-{ToolUse("shell", [], "npm init vue@latest fancy-project --yes -- --typescript --pinia").to_output()}
+{ToolUse("shell",
+    [],
+    "npm init vue@latest fancy-project --yes -- --typescript --pinia"
+).to_output()}
 System:
 {ToolUse("stdout", [], '''
 > npx
@@ -91,7 +102,7 @@ Vue.js - The Progressive JavaScript Framework
 
 Scaffolding project in ./fancy-project...
 '''.strip()).to_output()}
-"""
+""".strip()
 
 
 class ShellSession:
@@ -236,17 +247,25 @@ cmd_regex = re.compile(r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)")
 
 
 def execute_shell(
-    code: str, args: list[str], confirm: ConfirmFunc
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Executes a shell command and returns the output."""
+
+    if code is not None and args is not None:
+        assert not args
+        cmd = code.strip()
+
+        if cmd.startswith("$ "):
+            cmd = cmd[len("$ ") :]
+    elif kwargs is not None:
+        cmd = kwargs.get("command", "")
+
     shell = get_shell()
-    assert not args
     allowlist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
     allowlisted = True
-
-    cmd = code.strip()
-    if cmd.startswith("$ "):
-        cmd = cmd[len("$ ") :]
 
     for match in cmd_regex.finditer(cmd):
         for group in match.groups():
@@ -390,8 +409,17 @@ tool = ToolSpec(
     name="shell",
     desc="Executes shell commands.",
     instructions=instructions,
+    instructions_format=instructions_format,
     examples=examples,
     execute=execute_shell,
     block_types=["shell"],
+    parameters=[
+        Parameter(
+            name="command",
+            type="string",
+            description="The shell command with arguments to execute.",
+            required=True,
+        ),
+    ],
 )
 __doc__ = tool.get_doc(__doc__)

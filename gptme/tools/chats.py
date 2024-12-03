@@ -140,21 +140,18 @@ def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> Non
         print(f"Conversation '{conversation}' not found.")
 
 
-instructions = """
-The chats tool allows you to list, search, and summarize past conversation logs.
-"""
-
-examples = f"""
+def examples(tool_format):
+    return f"""
 ### Search for a specific topic in past conversations
 User: Can you find any mentions of "python" in our past conversations?
 Assistant: Certainly! I'll search our past conversations for mentions of "python" using the search_chats function.
-{ToolUse("ipython", [], "search_chats('python')").to_output()}
+{ToolUse("ipython", [], "search_chats('python')").to_output(tool_format)}
 """
+
 
 tool = ToolSpec(
     name="chats",
     desc="List, search, and summarize past conversation logs",
-    instructions=instructions,
     examples=examples,
     functions=[list_chats, search_chats, read_chat],
 )

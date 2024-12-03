@@ -1,8 +1,12 @@
+import json_repair
+import json
 import logging
+import re
+import types
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 from textwrap import indent
-from typing import Literal, Protocol, TypeAlias
+from typing import Any, Literal, Protocol, TypeAlias, cast, get_origin
 
 from lxml import etree
 
@@ -14,26 +18,82 @@ logger = logging.getLogger(__name__)
 
 InitFunc: TypeAlias = Callable[[], "ToolSpec"]
 
-# tooluse format mode
-# TODO: make configurable
-mode: Literal["markdown", "xml"] = "markdown"
+ToolFormat: TypeAlias = Literal["markdown", "xml", "tool"]
+
+# tooluse format
+tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
+toolcall_re = re.compile(r"@(\w+): (\{.*?\})")
 
 ConfirmFunc = Callable[[str], bool]
 
 
+def set_tool_format(new_format: ToolFormat):
+    global tool_format
+    tool_format = new_format
+
+
+def get_tool_format():
+    return tool_format
+
+
 class ExecuteFuncGen(Protocol):
     def __call__(
-        self, code: str, args: list[str], confirm: ConfirmFunc
+        self,
+        code: str | None,
+        args: list[str] | None,
+        kwargs: dict[str, str] | None,
+        confirm: ConfirmFunc,
     ) -> Generator[Message, None, None]: ...
 
 
 class ExecuteFuncMsg(Protocol):
-    def __call__(self, code: str, args: list[str], confirm: ConfirmFunc) -> Message: ...
+    def __call__(
+        self,
+        code: str | None,
+        args: list[str] | None,
+        kwargs: dict[str, str] | None,
+        confirm: ConfirmFunc,
+    ) -> Message: ...
 
 
 ExecuteFunc: TypeAlias = ExecuteFuncGen | ExecuteFuncMsg
+
+
+@dataclass(frozen=True)
+class Parameter:
+    """A wrapper for function parameters to convert them to JSON schema."""
+
+    name: str
+    type: str
+    description: str | None = None
+    enum: list[Any] | None = None
+    required: bool = False
+
+
+# TODO: there must be a better way?
+def derive_type(t) -> str:
+    if get_origin(t) == Literal:
+        v = ", ".join(f'"{a}"' for a in t.__args__)
+        return f"Literal[{v}]"
+    elif get_origin(t) == types.UnionType:
+        v = ", ".join(derive_type(a) for a in t.__args__)
+        return f"Union[{v}]"
+    else:
+        return t.__name__
+
+
+def callable_signature(func: Callable) -> str:
+    # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
+    args = ", ".join(
+        f"{k}: {derive_type(v)}"
+        for k, v in func.__annotations__.items()
+        if k != "return"
+    )
+    ret_type = func.__annotations__.get("return")
+    ret = f" -> {derive_type(ret_type)}" if ret_type else ""
+    return f"{func.__name__}({args}){ret}"
 
 
 @dataclass(frozen=True, eq=False)
@@ -56,12 +116,14 @@ class ToolSpec:
     name: str
     desc: str
     instructions: str = ""
-    examples: str = ""
+    instructions_format: dict[str, str] = field(default_factory=dict)
+    examples: str | Callable[[str], str] = ""
     functions: list[Callable] | None = None
     init: InitFunc | None = None
     execute: ExecuteFunc | None = None
     block_types: list[str] = field(default_factory=list)
     available: bool = True
+    parameters: list[Parameter] = field(default_factory=list)
 
     def get_doc(self, doc: str | None = None) -> str:
         """Returns an updated docstring with examples."""
@@ -76,11 +138,11 @@ class ToolSpec:
 .. code-block:: markdown
 
 {indent(self.instructions, "    ")}\n\n"""
-        if self.examples:
+        if self.get_examples():
             doc += f"""
 .. rubric:: Examples
 
-{transform_examples_to_chat_directives(self.examples)}\n\n
+{transform_examples_to_chat_directives(self.get_examples())}\n\n
 """
         # doc += """.. rubric:: Members"""
         return doc.strip()
@@ -90,12 +152,59 @@ class ToolSpec:
             return False
         return self.name == other.name
 
+    def is_runnable(self):
+        return bool(self.execute)
+
+    def get_instructions(self, tool_format: ToolFormat):
+        instructions = []
+
+        if self.instructions:
+            instructions.append(self.instructions)
+
+        if tool_format in self.instructions_format:
+            instructions.append(self.instructions_format[tool_format])
+
+        if self.functions:
+            instructions.append(self.get_functions_description())
+
+        return "\n\n".join(instructions)
+
+    def get_tool_prompt(self, examples: bool, tool_format: ToolFormat):
+        prompt = ""
+        prompt += f"\n\n## {self.name}"
+        prompt += f"\n\n**Description:** {self.desc}" if self.desc else ""
+        instructions = self.get_instructions(tool_format)
+        if instructions:
+            prompt += f"\n\n**Instructions:** {instructions}"
+        if examples and (examples_content := self.get_examples(tool_format)):
+            prompt += f"\n\n### Examples\n\n{examples_content}"
+        return prompt
+
+    def get_examples(self, tool_format: ToolFormat = "markdown"):
+        if callable(self.examples):
+            return self.examples(tool_format)
+        return self.examples
+
+    def get_functions_description(self) -> str:
+        # return a prompt with a brief description of the available functions
+        if self.functions:
+            description = (
+                "The following Python functions can be called with `ipython` tool:\n\n"
+            )
+            return description + "\n".join(
+                f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
+                for func in self.functions
+            )
+        else:
+            return "None"
+
 
 @dataclass(frozen=True)
 class ToolUse:
     tool: str
-    args: list[str]
-    content: str
+    args: list[str] | None
+    content: str | None
+    kwargs: dict[str, str] | None = None
     start: int | None = None
 
     def execute(self, confirm: ConfirmFunc) -> Generator[Message, None, None]:
@@ -106,13 +215,19 @@ class ToolUse:
         tool = get_tool(self.tool)
         if tool and tool.execute:
             try:
-                ex = tool.execute(self.content, self.args, confirm)
+                ex = tool.execute(
+                    self.content,
+                    self.args,
+                    self.kwargs,
+                    confirm,
+                )
                 if isinstance(ex, Generator):
                     yield from ex
                 else:
                     yield ex
             except Exception as e:
                 # if we are testing, raise the exception
+                logger.exception(e)
                 if "pytest" in globals():
                     raise e
                 yield Message("system", f"Error executing tool '{self.tool}': {e}")
@@ -160,10 +275,10 @@ class ToolUse:
         """Returns all ToolUse in a message, markdown or XML, in order."""
         # collect all tool uses
         tool_uses = []
-        if mode == "xml" or not exclusive_mode:
+        if tool_format == "xml" or not exclusive_mode:
             for tool_use in cls._iter_from_xml(content):
                 tool_uses.append(tool_use)
-        if mode == "markdown" or not exclusive_mode:
+        if tool_format == "markdown" or not exclusive_mode:
             for tool_use in cls._iter_from_markdown(content):
                 tool_uses.append(tool_use)
 
@@ -172,6 +287,12 @@ class ToolUse:
         tool_uses.sort(key=lambda x: x.start or 0)
         for tool_use in tool_uses:
             yield tool_use
+
+        # check if its a toolcall
+        if match := toolcall_re.search(content):
+            tool_name = match.group(1)
+            kwargs = cast(dict[str, str], json_repair.loads(match.group(2)))
+            yield ToolUse(tool_name, None, None, kwargs=kwargs)
 
     @classmethod
     def _iter_from_markdown(cls, content: str) -> Generator["ToolUse", None, None]:
@@ -226,17 +347,46 @@ class ToolUse:
             logger.warning(f"Failed to parse XML content: {e}")
             return
 
-    def to_output(self) -> str:
-        if mode == "markdown":
+    def to_output(self, tool_format: ToolFormat = "markdown") -> str:
+        if tool_format == "markdown":
             return self._to_markdown()
-        elif mode == "xml":
+        elif tool_format == "xml":
             return self._to_xml()
+        elif tool_format == "tool":
+            return self._to_json()
 
     def _to_markdown(self) -> str:
+        assert self.args is not None
         args = " ".join(self.args)
-        return f"```{self.tool} {args}\n{self.content}\n```"
+        return f"```{self.tool}{' ' if args else ''}{args}\n{self.content}\n```"
 
     def _to_xml(self) -> str:
+        assert self.args is not None
         args = " ".join(self.args)
         args_str = "" if not args else f" args='{args}'"
         return f"<tool-use>\n<{self.tool}{args_str}>\n{self.content}\n</{self.tool}>\n</tool-use>"
+
+    def _to_json(self) -> str:
+        # noreorder
+        from . import get_tool  # fmt: skip
+
+        base = {"name": self.tool, "parameters": {}}
+        if self.kwargs is not None:
+            base["parameters"] = self.kwargs
+        elif self.args is not None and self.content is not None:
+            # match positional args with kwargs
+            tool = get_tool(self.tool)
+
+            if tool:
+                if self.args:
+                    args = [self.content, *self.args]
+                else:
+                    args = [self.content]
+
+                json_parameters: dict[str, str] = {}
+                for index, param in enumerate(tool.parameters):
+                    json_parameters[param.name] = args[index]
+
+                base["parameters"] = json_parameters
+
+        return json.dumps(base)

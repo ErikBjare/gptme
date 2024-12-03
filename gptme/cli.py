@@ -11,6 +11,8 @@ from typing import Literal
 import click
 from pick import pick
 
+from gptme.config import get_config
+
 from .chat import chat
 from .commands import _gen_help
 from .constants import MULTIPROMPT_SEPARATOR
@@ -20,7 +22,7 @@ from .interrupt import handle_keyboard_interrupt, set_interruptible
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
-from .tools import all_tools, init_tools
+from .tools import all_tools, init_tools, ToolFormat, set_tool_format
 from .util import epoch_to_age, generate_name
 from .util.readline import add_history
 
@@ -104,6 +106,12 @@ The interface provides user commands that can be used to interact with the syste
     help=f"Comma-separated list of tools to allow. Available: {available_tool_names}.",
 )
 @click.option(
+    "--tool-format",
+    "tool_format",
+    default="markdown",
+    help="Tool parsing method. Can be 'markdown', 'xml', 'tool'. (experimental)",
+)
+@click.option(
     "--no-stream",
     "stream",
     default=True,
@@ -132,6 +140,7 @@ def main(
     name: str,
     model: str | None,
     tool_allowlist: list[str] | None,
+    tool_format: ToolFormat,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
@@ -167,11 +176,23 @@ def main(
         # split comma-separated values
         tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
 
+    config = get_config()
+
+    tool_format = tool_format or config.get_env("TOOL_FORMAT") or "markdown"
+
+    set_tool_format(tool_format)
+
     # early init tools to generate system prompt
     init_tools(tool_allowlist)
 
     # get initial system prompt
-    initial_msgs = [get_prompt(prompt_system, interactive=interactive)]
+    initial_msgs = [
+        get_prompt(
+            prompt_system,
+            interactive=interactive,
+            tool_format=tool_format,
+        )
+    ]
 
     # if stdin is not a tty, we might be getting piped input, which we should include in the prompt
     was_piped = False
@@ -242,6 +263,7 @@ def main(
         show_hidden,
         workspace_path,
         tool_allowlist,
+        tool_format,
     )
 
 
