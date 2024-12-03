@@ -116,41 +116,40 @@ def chat(
                 if execute_cmd(msg, manager, confirm_func):
                     continue
 
-                # Check if the message is a command first
-                if msg.content.startswith("/"):
-                    if execute_cmd(msg, manager, confirm_func):
-                        continue
-
                 # Generate and execute response for this prompt
-                try:
-                    set_interruptible()
-                    response_msgs = list(step(manager.log, stream, confirm_func))
-                except KeyboardInterrupt:
-                    console.log("Interrupted. Stopping current execution.")
-                    manager.append(Message("system", "Interrupted"))
-                    continue
-                finally:
-                    clear_interruptible()
+                while True:
+                    try:
+                        set_interruptible()
+                        response_msgs = list(step(manager.log, stream, confirm_func))
+                    except KeyboardInterrupt:
+                        console.log("Interrupted. Stopping current execution.")
+                        manager.append(Message("system", "Interrupted"))
+                        break
+                    finally:
+                        clear_interruptible()
 
-                for response_msg in response_msgs:
-                    manager.append(response_msg)
-                    # If this is a command from user input during tool execution, handle it
-                    if response_msg.role == "user" and response_msg.content.startswith(
-                        "/"
-                    ):
-                        if execute_cmd(response_msg, manager, confirm_func):
+                    for response_msg in response_msgs:
+                        manager.append(response_msg)
+                        # run any user-commands, if msg is from user
+                        if response_msg.role == "user" and execute_cmd(
+                            response_msg, manager, confirm_func
+                        ):
                             break
 
-                # Check if there are any runnable tools left
-                last_content = next(
-                    (m.content for m in reversed(manager.log) if m.role == "assistant"),
-                    "",
-                )
-                if any(
-                    tooluse.is_runnable
-                    for tooluse in ToolUse.iter_from_content(last_content)
-                ):
-                    continue  # Continue processing tools if any are runnable
+                    # Check if there are any runnable tools left
+                    last_content = next(
+                        (
+                            m.content
+                            for m in reversed(manager.log)
+                            if m.role == "assistant"
+                        ),
+                        "",
+                    )
+                    if not any(
+                        tooluse.is_runnable
+                        for tooluse in ToolUse.iter_from_content(last_content)
+                    ):
+                        break
 
             # All prompts processed, continue to next iteration
             continue
