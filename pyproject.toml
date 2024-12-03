@@ -64,7 +64,7 @@ anthropic = "*"
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
-playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
+playwright = {version = ">=1.47,<1.50", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
 youtube_transcript_api = {version = "^0.6.1", optional=true}
 python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 
