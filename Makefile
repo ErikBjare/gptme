@@ -160,4 +160,6 @@ cloc-total:
 	cloc ${SRCFILES} --by-file
 
 bench-importtime:
-	time poetry run python -X importtime -m gptme --model openrouter --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n
+	time poetry run python -X importtime -m gptme --model openai --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n
+	@#time poetry run python -X importtime -m gptme --model openrouter --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n
+	@#time poetry run python -X importtime -m gptme --model anthropic --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n

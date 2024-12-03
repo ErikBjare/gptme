@@ -10,9 +10,6 @@ from typing import (
     cast,
 )
 
-import anthropic.types
-from anthropic import NOT_GIVEN
-from anthropic.types.beta.prompt_caching import PromptCachingBetaToolParam
 from typing_extensions import Required
 
 from ..constants import TEMPERATURE, TOP_P
@@ -23,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
+    # noreorder
+    import anthropic  # fmt: skip
+    import anthropic.types.beta.prompt_caching  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
 
 _anthropic: "Anthropic | None" = None
@@ -59,6 +59,8 @@ class MessagePart(TypedDict, total=False):
 
 
 def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
+    from anthropic import NOT_GIVEN  # fmt: skip
+
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
@@ -84,6 +86,9 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
 def stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Generator[str, None, None]:
+    import anthropic.types  # fmt: skip
+    from anthropic import NOT_GIVEN  # fmt: skip
+
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
@@ -260,7 +265,9 @@ def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     }
 
 
-def _spec2tool(spec: ToolSpec) -> "PromptCachingBetaToolParam":
+def _spec2tool(
+    spec: ToolSpec,
+) -> "anthropic.types.beta.prompt_caching.PromptCachingBetaToolParam":
     name = spec.name
     if spec.block_types:
         name = spec.block_types[0]

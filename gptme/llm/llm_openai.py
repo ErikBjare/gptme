@@ -3,21 +3,23 @@ import logging
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
-from openai.types.chat import ChatCompletionChunk, ChatCompletionToolParam
-from openai.types.chat.chat_completion_chunk import (
-    ChoiceDeltaToolCall,
-    ChoiceDeltaToolCallFunction,
-)
-
-from ..tools.base import ToolSpec, Parameter
 
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
+from ..tools.base import Parameter, ToolSpec
 from .models import Provider, get_model
 
 if TYPE_CHECKING:
-    from openai import OpenAI
+    # noreorder
+    from openai import OpenAI  # fmt: skip
+    from openai.types.chat import (  # fmt: skip
+        ChatCompletionToolParam,
+    )
+    from openai.types.chat.chat_completion_chunk import (  # fmt: skip
+        ChoiceDeltaToolCall,
+        ChoiceDeltaToolCallFunction,
+    )
 
 openai: "OpenAI | None" = None
 logger = logging.getLogger(__name__)
@@ -174,6 +176,8 @@ def stream(
         ),
     ):
         # Cast the chunk to the correct type
+        from openai.types.chat import ChatCompletionChunk  # fmt: skip
+
         chunk = cast(ChatCompletionChunk, chunk_raw)
 
         if not chunk.choices:
@@ -293,7 +297,7 @@ def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     }
 
 
-def _spec2tool(spec: ToolSpec) -> ChatCompletionToolParam:
+def _spec2tool(spec: ToolSpec) -> "ChatCompletionToolParam":
     name = spec.name
     if spec.block_types:
         name = spec.block_types[0]
