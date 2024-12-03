@@ -10,14 +10,16 @@ import importlib.util
 import re
 from collections.abc import Callable, Generator
 from logging import getLogger
-from typing import (
-    TYPE_CHECKING,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, TypeVar
 
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 
 if TYPE_CHECKING:
     from IPython.terminal.embed import InteractiveShellEmbed  # fmt: skip
@@ -166,13 +168,13 @@ def examples(tool_format):
 #### It can write an example and then execute it:
 > User: compute fib 10
 > Assistant: To compute the 10th Fibonacci number, we can execute this code:
-{ToolUse("ipython", [], """
+{ToolUse("ipython", [], '''
 def fib(n):
     if n <= 1:
         return n
     return fib(n - 1) + fib(n - 2)
 fib(10)
-""".strip()).to_output(tool_format)}
+'''.strip()).to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "55").to_output()}
 """.strip()

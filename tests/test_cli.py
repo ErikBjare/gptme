@@ -378,8 +378,9 @@ def test_tool_format_option(
     args.append(tool_format)
     args.append("test")
 
-    with patch("gptme.chat.reply", return_value=[]) as mock_reply:
+    with patch("gptme.llm.reply", return_value=[]) as mock_reply:
         result = runner.invoke(gptme.cli.main, args)
+        assert result.exit_code == 0
 
         mock_reply.assert_called_once()
 

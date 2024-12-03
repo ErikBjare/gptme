@@ -43,7 +43,7 @@ is_macos = sys.platform == "darwin"
 
 
 instructions = f"""
-The given command will be executed in a stateful bash shell. 
+The given command will be executed in a stateful bash shell.
 The shell tool will respond with the output of the execution.
 
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.

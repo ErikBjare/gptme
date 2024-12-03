@@ -29,7 +29,7 @@ Append the given content to a file.`.
 
 instructions_format_append = {
     "markdown": """
-Use a code block with the language tag: `append <path>` 
+Use a code block with the language tag: `append <path>`
 to append the code block content to the file at the given path.""".strip(),
 }
 

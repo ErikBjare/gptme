@@ -21,9 +21,9 @@ from flask_cors import CORS
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
 from ..llm import _stream
+from ..llm.models import get_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..llm.models import get_model
 from ..tools import execute_msg
 from ..tools.base import ToolUse
 
@@ -116,7 +116,7 @@ def api_conversation_generate(logfile: str):
         # Non-streaming response
         try:
             # Get complete response
-            output = "".join(_stream(msgs, model))
+            output = "".join(_stream(msgs, model, tools=None))
 
             # Store the message
             msg = Message("assistant", output)
@@ -170,7 +170,9 @@ def api_conversation_generate(logfile: str):
 
             # Stream tokens from the model
             logger.debug(f"Starting token stream with model {model}")
-            for char in (char for chunk in _stream(msgs, model) for char in chunk):
+            for char in (
+                char for chunk in _stream(msgs, model, tools=None) for char in chunk
+            ):
                 output += char
                 # Send each token as a JSON event
                 yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"

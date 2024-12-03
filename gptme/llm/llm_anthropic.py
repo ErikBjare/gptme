@@ -7,41 +7,42 @@ from typing import (
     Any,
     Literal,
     TypedDict,
+    cast,
 )
 
+import anthropic.types
 from anthropic import NOT_GIVEN
+from anthropic.types.beta.prompt_caching import PromptCachingBetaToolParam
 from typing_extensions import Required
-
-from ..tools.base import ToolSpec, Parameter
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
+from ..tools.base import Parameter, ToolSpec
 
 logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
     from anthropic import Anthropic  # fmt: skip
-    from anthropic.types.beta.prompt_caching import PromptCachingBetaToolParam
 
-anthropic: "Anthropic | None" = None
+_anthropic: "Anthropic | None" = None
 
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(config):
-    global anthropic
+    global _anthropic
     api_key = config.get_env_required("ANTHROPIC_API_KEY")
     from anthropic import Anthropic  # fmt: skip
 
-    anthropic = Anthropic(
+    _anthropic = Anthropic(
         api_key=api_key,
         max_retries=5,
     )
 
 
 def get_client() -> "Anthropic | None":
-    return anthropic
+    return _anthropic
 
 
 class ToolAnthropic(TypedDict):
@@ -58,14 +59,14 @@ class MessagePart(TypedDict, total=False):
 
 
 def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
-    assert anthropic, "LLM not initialized"
+    assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
-    response = anthropic.beta.prompt_caching.messages.create(
+    response = _anthropic.beta.prompt_caching.messages.create(
         model=model,
         messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
@@ -83,14 +84,14 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
 def stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Generator[str, None, None]:
-    assert anthropic, "LLM not initialized"
+    assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
-    with anthropic.beta.prompt_caching.messages.stream(
+    with _anthropic.beta.prompt_caching.messages.stream(
         model=model,
         messages=messages_dicts,  # type: ignore
         system=system_messages,  # type: ignore
@@ -99,7 +100,36 @@ def stream(
         max_tokens=4096,
         tools=tools_dict if tools_dict else NOT_GIVEN,
     ) as stream:
-        yield from stream.text_stream
+        for chunk in stream:
+            if hasattr(chunk, "usage"):
+                print(chunk.usage)
+            if chunk.type == "content_block_start":
+                block = chunk.content_block
+                if isinstance(block, anthropic.types.ToolUseBlock):
+                    tool_use = block
+                    yield f"@{tool_use.name}: "
+            elif chunk.type == "content_block_delta":
+                chunk = cast(anthropic.types.RawContentBlockDeltaEvent, chunk)
+                delta = chunk.delta
+                if isinstance(delta, anthropic.types.TextDelta):
+                    yield delta.text
+                elif isinstance(delta, anthropic.types.InputJSONDelta):
+                    yield delta.partial_json
+                else:
+                    logger.warning("Unknown delta type: %s", delta)
+            elif chunk.type == "content_block_stop":
+                pass
+            elif chunk.type == "text":
+                # full text message
+                pass
+            elif chunk.type == "message_delta":
+                pass
+            elif chunk.type == "message_stop":
+                pass
+            else:
+                # print(f"Unknown chunk type: {chunk.type}")
+                # print(chunk)
+                pass
 
 
 def _handle_files(message_dicts: list[dict]) -> list[dict]:
