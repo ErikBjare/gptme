@@ -266,11 +266,14 @@ def test_stdin(args: list[str], runner: CliRunner):
 def test_chain(args: list[str], runner: CliRunner):
     """tests that the "-" argument works to chain commands, executing after the agent has exhausted the previous command"""
     # first command needs to be something requiring two tools, so we can check both are ran before the next chained command
-    args.append("we are testing. write a test.txt file with the save tool")
+    args.append(
+        "we are testing, follow instructions carefully without extra steps. write a test.txt file with the save tool"
+    )
     args.append("-")
     args.append("patch it to contain emojis")
     args.append("-")
     args.append("read the contents")
+    args.extend(["--tool-format", "markdown"])
     args.extend(["--tools", "save,patch,shell,read"])
     result = runner.invoke(gptme.cli.main, args)
     print(result.output)
@@ -363,7 +366,7 @@ def test_vision(args: list[str], runner: CliRunner):
         ("xml", ["<tool-use>\n<shell>\nls"], ["```shell\nls"]),
         (
             "tool",
-            ['{"name": "shell"'],
+            ["@shell:"],
             ["```shell\nls", "<tool-use>\n<shell>\nls"],
         ),
     ],

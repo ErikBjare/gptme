@@ -196,7 +196,6 @@ def stream(
                     func = tool_call.function
                     if isinstance(func, ChoiceDeltaToolCallFunction):
                         if func.name:
-                            print("tool call in openai")
                             yield f"\n@{func.name}: "
                         if func.arguments:
                             yield func.arguments
