@@ -127,7 +127,14 @@ def chat(
                 while True:
                     try:
                         set_interruptible()
-                        response_msgs = list(step(manager.log, stream, confirm_func, tool_format=tool_format))
+                        response_msgs = list(
+                            step(
+                                manager.log,
+                                stream,
+                                confirm_func,
+                                tool_format=tool_format,
+                            )
+                        )
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
                         manager.append(Message("system", "Interrupted"))

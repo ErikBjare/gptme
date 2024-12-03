@@ -16,8 +16,8 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config, get_project_config
 from .message import Message
-from .util import document_prompt_function, get_project_dir
 from .tools import ToolFormat
+from .util import document_prompt_function, get_project_dir
 
 PromptType = Literal["full", "short"]
 

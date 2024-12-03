@@ -5,11 +5,14 @@ Gives the assistant the ability to save whole files, or append to them.
 from collections.abc import Generator
 from pathlib import Path
 
-from .base import Parameter
-
 from ..message import Message
 from ..util import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 from .patch import Patch
 
 instructions = """
@@ -63,9 +66,10 @@ def execute_save(
 ) -> Generator[Message, None, None]:
     """Save code to a file."""
 
+    fn = ""
+    content = ""
     if code is not None and args is not None:
-        fn: str = " ".join(args)
-        assert fn, "No filename provided"
+        fn = " ".join(args)
         if fn.startswith("save "):
             fn = fn[5:]
 
@@ -76,8 +80,10 @@ def execute_save(
             content += "\n"
     elif kwargs is not None:
         fn = kwargs.get("path", "")
-        assert fn, "No filename provided"
         content = kwargs.get("content", "")
+
+    assert fn, "No filename provided"
+    assert content, "No content provided"
 
     # TODO: add check that it doesn't try to write a file with placeholders!
     path = Path(fn).expanduser()
@@ -122,9 +128,10 @@ def execute_append(
 ) -> Generator[Message, None, None]:
     """Append code to a file."""
 
+    fn = ""
+    content = ""
     if code is not None and args is not None:
         fn = " ".join(args)
-        assert fn, "No filename provided"
         # strip leading newlines
         content = code.lstrip("\n")
         # ensure it ends with a newline
@@ -133,6 +140,9 @@ def execute_append(
     elif kwargs is not None:
         content = kwargs["content"]
         fn = kwargs["path"]
+
+    assert fn, "No filename provided"
+    assert content, "No content provided"
 
     if not confirm(f"Append to {fn}?"):
         # early return
@@ -162,13 +172,13 @@ tool_save = ToolSpec(
         Parameter(
             name="content",
             type="string",
-            description="The content of the file to save.",
+            description="The content to save",
             required=True,
         ),
         Parameter(
             name="path",
             type="string",
-            description="The path of the file to save.",
+            description="The path of the file",
             required=True,
         ),
     ],
@@ -187,13 +197,13 @@ tool_append = ToolSpec(
         Parameter(
             name="content",
             type="string",
-            description="The content to append to the file.",
+            description="The content to append",
             required=True,
         ),
         Parameter(
             name="path",
             type="string",
-            description="The path of the file to append to.",
+            description="The path of the file",
             required=True,
         ),
     ],
