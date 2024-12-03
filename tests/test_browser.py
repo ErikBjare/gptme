@@ -30,3 +30,17 @@ def test_read_url_with_links():
 
     # check that link to activitywatch is present
     assert "https://activitywatch.net/" in s
+
+
+@pytest.mark.slow
+def test_read_url_arxiv_html():
+    # TODO: test that we can read it in a reasonable amount of tokens
+    # url = "https://arxiv.org/html/2410.12361v2"
+    pass
+
+
+@pytest.mark.slow
+def test_read_url_arxiv_pdf():
+    # TODO: test that we can read it
+    # url = "https://arxiv.org/pdf/2410.12361v2"
+    pass
