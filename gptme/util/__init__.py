@@ -35,10 +35,13 @@ _warned_models = set()
 def get_tokenizer(model: str):
     import tiktoken  # fmt: skip
 
-    global _warned_models
+    if "gpt-4o" in model:
+        return tiktoken.get_encoding("o200k_base")
+
     try:
         return tiktoken.encoding_for_model(model)
     except KeyError:
+        global _warned_models
         if model not in _warned_models:
             logger.warning(
                 f"No tokenizer for '{model}'. Using tiktoken cl100k_base. Use results only as estimates."

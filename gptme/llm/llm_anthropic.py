@@ -16,14 +16,13 @@ from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
 from ..tools.base import Parameter, ToolSpec
 
-logger = logging.getLogger(__name__)
-
-
 if TYPE_CHECKING:
     # noreorder
     import anthropic  # fmt: skip
     import anthropic.types.beta.prompt_caching  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
+
+logger = logging.getLogger(__name__)
 
 _anthropic: "Anthropic | None" = None
 
@@ -109,33 +108,41 @@ def stream(
             if hasattr(chunk, "usage"):
                 # print(chunk.usage)
                 pass
-            if chunk.type == "content_block_start":
-                block = chunk.content_block
-                if isinstance(block, anthropic.types.ToolUseBlock):
-                    tool_use = block
-                    yield f"@{tool_use.name}: "
-            elif chunk.type == "content_block_delta":
-                chunk = cast(anthropic.types.RawContentBlockDeltaEvent, chunk)
-                delta = chunk.delta
-                if isinstance(delta, anthropic.types.TextDelta):
-                    yield delta.text
-                elif isinstance(delta, anthropic.types.InputJSONDelta):
-                    yield delta.partial_json
-                else:
-                    logger.warning("Unknown delta type: %s", delta)
-            elif chunk.type == "content_block_stop":
-                pass
-            elif chunk.type == "text":
-                # full text message
-                pass
-            elif chunk.type == "message_delta":
-                pass
-            elif chunk.type == "message_stop":
-                pass
-            else:
-                # print(f"Unknown chunk type: {chunk.type}")
-                # print(chunk)
-                pass
+            match chunk.type:
+                case "content_block_start":
+                    chunk = cast(anthropic.types.RawContentBlockStartEvent, chunk)
+                    block = chunk.content_block
+                    if isinstance(block, anthropic.types.ToolUseBlock):
+                        tool_use = block
+                        yield f"\n@{tool_use.name}: "
+                    elif isinstance(block, anthropic.types.TextBlock):
+                        if block.text:
+                            logger.warning("unexpected text block: %s", block.text)
+                    else:
+                        print(f"Unknown block type: {block}")
+                case "content_block_delta":
+                    chunk = cast(anthropic.types.RawContentBlockDeltaEvent, chunk)
+                    delta = chunk.delta
+                    if isinstance(delta, anthropic.types.TextDelta):
+                        yield delta.text
+                    elif isinstance(delta, anthropic.types.InputJSONDelta):
+                        yield delta.partial_json
+                    else:
+                        logger.warning("Unknown delta type: %s", delta)
+                case "content_block_stop":
+                    pass
+                case "text":
+                    # full text message
+                    pass
+                case "message_start":
+                    pass
+                case "message_delta":
+                    pass
+                case "message_stop":
+                    pass
+                case _:
+                    # print(f"Unknown chunk type: {chunk.type}")
+                    pass
 
 
 def _handle_files(message_dicts: list[dict]) -> list[dict]:

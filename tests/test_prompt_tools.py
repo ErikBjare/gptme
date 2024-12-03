@@ -44,7 +44,7 @@ from gptme.tools import init_tools
             [
                 "the `shell` tool",
                 "aliases",
-                '{"name": "shell", "parameters": {"command": "cat file.txt"}}',
+                '@shell: {"command": "cat file.txt"}',
                 "### Examples",
             ],
             [],
@@ -57,7 +57,7 @@ from gptme.tools import init_tools
                 "aliases",
             ],
             [
-                '{"name": "shell", "parameters": {"command": "cat file.txt"}}',
+                '@shell: {"command": "cat file.txt"}',
                 "### Examples",
             ],
         ),

@@ -256,15 +256,15 @@ tool = ToolSpec(
     block_types=["patch"],
     parameters=[
         Parameter(
-            name="patch",
-            type="string",
-            description="The patch to apply.",
-            required=True,
-        ),
-        Parameter(
             name="path",
             type="string",
             description="The path of the file to patch.",
+            required=True,
+        ),
+        Parameter(
+            name="patch",
+            type="string",
+            description="The patch to apply.",
             required=True,
         ),
     ],
