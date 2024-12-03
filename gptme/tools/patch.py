@@ -36,11 +36,7 @@ The $PATH parameter MUST be on the same line as the code block start, not on the
 The patch block should be written in the following format:
 
 {ToolUse("patch", ["$PATH"], '''
-<<<<<<< ORIGINAL
 $ORIGINAL_CONTENT
-=======
-$UPDATED_CONTENT
->>>>>>> UPDATED
 '''.strip()).to_output("markdown")}
 """
 }
@@ -50,12 +46,7 @@ DIVIDER = "\n=======\n"
 UPDATED = "\n>>>>>>> UPDATED"
 
 patch_content = """
-<<<<<<< ORIGINAL
     print("Hello world")
-=======
-    name = input("What is your name? ")
-    print(f"Hello {name}")
->>>>>>> UPDATED
 """.strip()
 
 

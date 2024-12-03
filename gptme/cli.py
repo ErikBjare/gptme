@@ -117,7 +117,7 @@ The interface provides user commands that can be used to interact with the syste
 @click.option(
     "--tool-format",
     "tool_format",
-    default="markdown",
+    default=None,
     help="Tool parsing method. Can be 'markdown', 'xml', 'tool'. (experimental)",
 )
 @click.option(
@@ -149,7 +149,7 @@ def main(
     name: str,
     model: str | None,
     tool_allowlist: list[str] | None,
-    tool_format: ToolFormat,
+    tool_format: ToolFormat | None,
     stream: bool,
     verbose: bool,
     no_confirm: bool,
@@ -187,9 +187,11 @@ def main(
 
     config = get_config()
 
-    tool_format = tool_format or config.get_env("TOOL_FORMAT") or "markdown"
+    selected_tool_format: ToolFormat = (
+        tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
+    )
 
-    set_tool_format(tool_format)
+    set_tool_format(selected_tool_format)
 
     # early init tools to generate system prompt
     init_tools(tool_allowlist)
@@ -199,7 +201,7 @@ def main(
         get_prompt(
             prompt_system,
             interactive=interactive,
-            tool_format=tool_format,
+            tool_format=selected_tool_format,
         )
     ]
 
@@ -272,7 +274,7 @@ def main(
         show_hidden,
         workspace_path,
         tool_allowlist,
-        tool_format,
+        selected_tool_format,
     )
 
 
