@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Iterable,
     Literal,
     TypedDict,
     cast,
@@ -63,9 +64,12 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     response = _anthropic.beta.prompt_caching.messages.create(
         model=model,
@@ -91,9 +95,12 @@ def stream(
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     with _anthropic.beta.prompt_caching.messages.stream(
         model=model,
@@ -143,6 +150,22 @@ def stream(
                 case _:
                     # print(f"Unknown chunk type: {chunk.type}")
                     pass
+
+
+def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
+    for message in message_dicts:
+        if message["role"] == "tool_result":
+            message_clone = dict(message)
+            message_clone["role"] = "user"
+            message_clone["content"] = [
+                {
+                    "type": "tool_result",
+                    "content": message_clone["content"],
+                }
+            ]
+            yield message_clone
+        else:
+            yield message
 
 
 def _handle_files(message_dicts: list[dict]) -> list[dict]:

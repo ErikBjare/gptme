@@ -41,7 +41,7 @@ class Message:
         files: Files attached to the message, could e.g. be images for vision.
     """
 
-    role: Literal["system", "user", "assistant"]
+    role: Literal["system", "user", "assistant", "tool_result"]
     content: str
     pinned: bool = False
     hide: bool = False
