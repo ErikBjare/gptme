@@ -121,7 +121,7 @@ def stream(
                     block = chunk.content_block
                     if isinstance(block, anthropic.types.ToolUseBlock):
                         tool_use = block
-                        yield f"\n@{tool_use.name}: "
+                        yield f"\n@{tool_use.name}({tool_use.id}): "
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -155,15 +155,16 @@ def stream(
 def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
     for message in message_dicts:
         if message["role"] == "tool_result":
-            message_clone = dict(message)
-            message_clone["role"] = "user"
-            message_clone["content"] = [
+            modified_message = dict(message)
+            modified_message["role"] = "user"
+            modified_message["content"] = [
                 {
                     "type": "tool_result",
-                    "content": message_clone["content"],
+                    "content": modified_message["content"],
+                    "tool_use_id": modified_message.pop("call_id"),
                 }
             ]
-            yield message_clone
+            yield modified_message
         else:
             yield message
 
