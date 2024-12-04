@@ -1,5 +1,6 @@
 import base64
 import logging
+from typing import Iterable
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
@@ -116,11 +117,14 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     if is_o1:
         messages = list(_prep_o1(messages))
 
-    messages_dicts = handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     from openai import NOT_GIVEN  # fmt: skip
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     response = openai.chat.completions.create(
         model=model,
@@ -147,11 +151,14 @@ def stream(
     if is_o1:
         messages = list(_prep_o1(messages))
 
-    messages_dicts = handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     from openai import NOT_GIVEN  # fmt: skip
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     for chunk_raw in openai.chat.completions.create(
         model=model,
@@ -193,6 +200,7 @@ def stream(
         if delta.tool_calls:
             for tool_call in delta.tool_calls:
                 if isinstance(tool_call, ChoiceDeltaToolCall) and tool_call.function:
+                    breakpoint()
                     func = tool_call.function
                     if isinstance(func, ChoiceDeltaToolCallFunction):
                         if func.name:
@@ -203,8 +211,18 @@ def stream(
     logger.debug(f"Stop reason: {stop_reason}")
 
 
-def handle_files(msgs: list[dict]) -> list[dict]:
+def _handle_files(msgs: list[dict]) -> list[dict]:
     return [_process_file(msg) for msg in msgs]
+
+
+def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
+    for message in message_dicts:
+        if message["role"] == "tool_result":
+            message_clone = dict(message)
+            message_clone["role"] = "tool"
+            yield message_clone
+        else:
+            yield message
 
 
 def _process_file(msg: dict) -> dict:

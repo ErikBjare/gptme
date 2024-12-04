@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Iterable,
     Literal,
     TypedDict,
     cast,
@@ -63,9 +64,12 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     response = _anthropic.beta.prompt_caching.messages.create(
         model=model,
@@ -91,9 +95,12 @@ def stream(
     assert _anthropic, "LLM not initialized"
     messages, system_messages = _transform_system_messages(messages)
 
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
 
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     with _anthropic.beta.prompt_caching.messages.stream(
         model=model,
@@ -114,7 +121,7 @@ def stream(
                     block = chunk.content_block
                     if isinstance(block, anthropic.types.ToolUseBlock):
                         tool_use = block
-                        yield f"\n@{tool_use.name}: "
+                        yield f"\n@{tool_use.name}({tool_use.id}): "
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -143,6 +150,23 @@ def stream(
                 case _:
                     # print(f"Unknown chunk type: {chunk.type}")
                     pass
+
+
+def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
+    for message in message_dicts:
+        if message["role"] == "tool_result":
+            modified_message = dict(message)
+            modified_message["role"] = "user"
+            modified_message["content"] = [
+                {
+                    "type": "tool_result",
+                    "content": modified_message["content"],
+                    "tool_use_id": modified_message.pop("call_id"),
+                }
+            ]
+            yield modified_message
+        else:
+            yield message
 
 
 def _handle_files(message_dicts: list[dict]) -> list[dict]:

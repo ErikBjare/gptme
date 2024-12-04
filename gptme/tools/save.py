@@ -96,33 +96,33 @@ def execute_save(
         if diff_str.strip():
             print_preview(p.diff_minimal(), "diff")
         else:
-            yield Message("system", "File already exists with identical content.")
+            yield Message("tool_result", "File already exists with identical content.")
             return
 
     if not confirm(f"Save to {fn}?"):
         # early return
-        yield Message("system", "Save cancelled.")
+        yield Message("tool_result", "Save cancelled.")
         return
 
     # if the file exists, ask to overwrite
     if path.exists():
         if not confirm("File exists, overwrite?"):
             # early return
-            yield Message("system", "Save cancelled.")
+            yield Message("tool_result", "Save cancelled.")
             return
 
     # if the folder doesn't exist, ask to create it
     if not path.parent.exists():
         if not confirm("Folder doesn't exist, create it?"):
             # early return
-            yield Message("system", "Save cancelled.")
+            yield Message("tool_result", "Save cancelled.")
             return
         path.parent.mkdir(parents=True)
 
     print("Saving to " + fn)
     with open(path, "w") as f:
         f.write(content)
-    yield Message("system", f"Saved to {fn}")
+    yield Message("tool_result", f"Saved to {fn}")
 
 
 def execute_append(
@@ -151,18 +151,18 @@ def execute_append(
 
     if not confirm(f"Append to {fn}?"):
         # early return
-        yield Message("system", "Append cancelled.")
+        yield Message("tool_result", "Append cancelled.")
         return
 
     path = Path(fn).expanduser()
 
     if not path.exists():
-        yield Message("system", f"File {fn} doesn't exist, can't append to it.")
+        yield Message("tool_result", f"File {fn} doesn't exist, can't append to it.")
         return
 
     with open(path, "a") as f:
         f.write(content)
-    yield Message("system", f"Appended to {fn}")
+    yield Message("tool_result", f"Appended to {fn}")
 
 
 tool_save = ToolSpec(
