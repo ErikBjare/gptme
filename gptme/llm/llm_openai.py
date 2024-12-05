@@ -1,6 +1,7 @@
 import base64
+import json
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
@@ -8,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
-from ..tools.base import Parameter, ToolSpec
+from ..tools.base import Parameter, ToolSpec, ToolUse
 from .models import Provider, get_model
 
 if TYPE_CHECKING:
@@ -200,7 +201,6 @@ def stream(
         if delta.tool_calls:
             for tool_call in delta.tool_calls:
                 if isinstance(tool_call, ChoiceDeltaToolCall) and tool_call.function:
-                    breakpoint()
                     func = tool_call.function
                     if isinstance(func, ChoiceDeltaToolCallFunction):
                         if func.name:
@@ -217,10 +217,41 @@ def _handle_files(msgs: list[dict]) -> list[dict]:
 
 def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
     for message in message_dicts:
+        # Format tool_result ass expected by the model
         if message["role"] == "tool_result":
-            message_clone = dict(message)
-            message_clone["role"] = "tool"
-            yield message_clone
+            modified_message = dict(message)
+            modified_message["role"] = "tool"
+            modified_message["tool_call_id"] = modified_message.pop("call_id")
+            yield modified_message
+        # Find tool_use occurrence and format them as expected
+        elif message["role"] == "assistant":
+            modified_message = dict(message)
+
+            tooluses = [
+                tooluse
+                for tooluse in ToolUse.iter_from_content(modified_message["content"])
+                if tooluse.is_runnable
+            ]
+            if not tooluses:
+                yield message
+
+            # At that point we should always have exactly one tooluse
+            # Because we remove the previous ones as soon as we encounter
+            # them so we can't have more.
+            assert len(tooluses) == 1
+            tooluse = tooluses[0]
+
+            del modified_message["content"]
+            modified_message["tool_calls"] = {
+                "id": tooluse.call_id or "",
+                "type": "function",
+                "function": {
+                    "name": tooluse.tool,
+                    "arguments": json.dumps(tooluse.kwargs or {}),
+                },
+            }
+
+            yield modified_message
         else:
             yield message
 

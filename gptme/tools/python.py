@@ -77,7 +77,7 @@ def execute_python(
     print_preview(code, "python")
     if not confirm("Execute this code?"):
         # early return
-        yield Message("system", "Aborted, user chose not to run command.")
+        yield Message("tool_result", "Aborted, user chose not to run command.")
         return
 
     # Create an IPython instance if it doesn't exist yet
@@ -115,7 +115,7 @@ def execute_python(
     # strip ANSI escape sequences
     # TODO: better to signal to the terminal that we don't want colors?
     output = re.sub(r"\x1b[^m]*m", "", output)
-    yield Message("system", "Executed code block.\n\n" + output)
+    yield Message("tool_result", "Executed code block.\n\n" + output)
 
 
 @functools.lru_cache

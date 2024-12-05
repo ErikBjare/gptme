@@ -15,8 +15,8 @@ def view_image(image_path: Path | str) -> Message:
     if isinstance(image_path, str):
         image_path = Path(image_path)
     if not image_path.exists():
-        return Message("system", f"Image not found at {image_path}")
-    return Message("system", f"Viewing image at {image_path}", files=[image_path])
+        return Message("tool_result", f"Image not found at {image_path}")
+    return Message("tool_result", f"Viewing image at {image_path}", files=[image_path])
 
 
 instructions = """

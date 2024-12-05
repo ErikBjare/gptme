@@ -276,13 +276,13 @@ def execute_shell(
     if not allowlisted:
         print_preview(cmd, "bash", True)
         if not confirm("Run command?"):
-            yield Message("system", "User chose not to run command.")
+            yield Message("tool_result", "User chose not to run command.")
             return
 
     try:
         returncode, stdout, stderr = shell.run(cmd)
     except Exception as e:
-        yield Message("system", f"Error: {e}")
+        yield Message("tool_result", f"Error: {e}")
         return
     stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
     stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
@@ -302,7 +302,7 @@ def execute_shell(
     if returncode:
         msg += f"Return code: {returncode}"
 
-    yield Message("system", msg)
+    yield Message("tool_result", msg)
 
 
 def _format_block_smart(header: str, cmd: str, lang="") -> str:

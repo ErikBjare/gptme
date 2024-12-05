@@ -191,26 +191,26 @@ def execute_patch(
     if code is not None and args is not None:
         fn = " ".join(args)
         if not fn:
-            yield Message("system", "No path provided")
+            yield Message("tool_result", "No path provided")
             return
     elif kwargs is not None:
         code = kwargs.get("patch", "")
         fn = kwargs.get("path", "")
 
     if code is None:
-        yield Message("system", "No patch provided")
+        yield Message("tool_result", "No patch provided")
         return
 
     path = Path(fn).expanduser()
     if not path.exists():
-        yield Message("system", f"File not found: {fn}")
+        yield Message("tool_result", f"File not found: {fn}")
         return
 
     try:
         patches = Patch.from_codeblock(code)
         patches_str = "\n\n".join(p.diff_minimal() for p in patches)
     except ValueError as e:
-        yield Message("system", f"Patch failed: {e.args[0]}")
+        yield Message("tool_result", f"Patch failed: {e.args[0]}")
         return
 
     # TODO: display minimal patches
@@ -242,9 +242,11 @@ def execute_patch(
             )
         warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
 
-        yield Message("system", f"{warnings_str}Patch successfully applied to {fn}")
+        yield Message(
+            "tool_result", f"{warnings_str}Patch successfully applied to {fn}"
+        )
     except (ValueError, FileNotFoundError) as e:
-        yield Message("system", f"Patch failed: {e.args[0]}")
+        yield Message("tool_result", f"Patch failed: {e.args[0]}")
 
 
 tool = ToolSpec(

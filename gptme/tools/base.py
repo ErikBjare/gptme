@@ -271,14 +271,13 @@ class ToolUse:
                     for msg in ex:
                         yield msg.replace(call_id=self.call_id)
                 else:
-                    ex.replace(call_id=self.call_id)
-                    yield ex
+                    yield ex.replace(call_id=self.call_id)
             except Exception as e:
                 # if we are testing, raise the exception
                 logger.exception(e)
                 if "pytest" in globals():
                     raise e
-                yield Message("system", f"Error executing tool '{self.tool}': {e}")
+                yield Message("tool_result", f"Error executing tool '{self.tool}': {e}")
         else:
             logger.warning(f"Tool '{self.tool}' is not available for execution.")
 
@@ -346,12 +345,14 @@ class ToolUse:
                     if not isinstance(kwargs, dict):
                         logger.debug(f"JSON repair result is not a dict: {kwargs}")
                         return
+                    start_pos = content.find(f"@{tool_name}(")
                     yield ToolUse(
                         tool_name,
                         None,
                         None,
                         kwargs=cast(dict[str, str], kwargs),
                         call_id=call_id,
+                        start=start_pos,
                     )
                 except json.JSONDecodeError:
                     logger.debug(f"Failed to parse JSON: {json_str}")

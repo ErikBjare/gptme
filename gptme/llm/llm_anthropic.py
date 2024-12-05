@@ -5,17 +5,17 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
     Literal,
     TypedDict,
     cast,
 )
+from collections.abc import Iterable
 
 from typing_extensions import Required
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, len_tokens, msgs2dicts
-from ..tools.base import Parameter, ToolSpec
+from ..tools.base import Parameter, ToolSpec, ToolUse
 
 if TYPE_CHECKING:
     # noreorder
@@ -93,6 +93,7 @@ def stream(
     from anthropic import NOT_GIVEN  # fmt: skip
 
     assert _anthropic, "LLM not initialized"
+
     messages, system_messages = _transform_system_messages(messages)
 
     messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
@@ -154,6 +155,7 @@ def stream(
 
 def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
     for message in message_dicts:
+        # Format tool_result ass expected by the model
         if message["role"] == "tool_result":
             modified_message = dict(message)
             modified_message["role"] = "user"
@@ -164,6 +166,62 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
                     "tool_use_id": modified_message.pop("call_id"),
                 }
             ]
+            yield modified_message
+        # Find tool_use occurrence and format them as expected
+        elif message["role"] == "assistant":
+            modified_message = dict(message)
+            text = ""
+            content = []
+
+            # Some content are text, some are list
+            if isinstance(message["content"], list):
+                message_parts = message["content"]
+            else:
+                message_parts = [{"type": "text", "text": message["content"]}]
+
+            for message_part in message_parts:
+                if message_part["type"] != "text":
+                    content.append(message_part)
+                    continue
+
+                # For a message part of type `text`` we try to extract the tool_uses
+                # We search line by line to stop as soon as we have a tool call
+                # It makes it easier to split in multiple parts.
+                for line in message_part["text"].split("\n"):
+                    text += line + "\n"
+
+                    tooluses = [
+                        tooluse
+                        for tooluse in ToolUse.iter_from_content(text)
+                        if tooluse.is_runnable
+                    ]
+                    if not tooluses:
+                        continue
+
+                    # At that point we should always have exactly one tooluse
+                    # Because we remove the previous ones as soon as we encounter
+                    # them so we can't have more.
+                    assert len(tooluses) == 1
+                    tooluse = tooluses[0]
+                    before_tool = text[: tooluse.start]
+
+                    if before_tool:
+                        content.append({"type": "text", "text": before_tool})
+
+                    content.append(
+                        {
+                            "type": "tool_use",
+                            "id": tooluse.call_id or "",
+                            "name": tooluse.tool,
+                            "input": tooluse.kwargs or {},
+                        }
+                    )
+                    # The text is emptied to start over with the next lines if any.
+                    text = ""
+
+            if content:
+                modified_message["content"] = content
+
             yield modified_message
         else:
             yield message
