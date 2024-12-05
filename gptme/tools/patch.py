@@ -9,8 +9,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..message import Message
-from ..util import print_preview
-from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
+from ..util.ask_execute import get_editable_text, set_editable_text, print_preview
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 
 instructions = """
 To patch/modify files, we use an adapted version of git conflict markers.
@@ -188,6 +193,7 @@ def execute_patch(
     Applies the patch.
     """
 
+    fn = None
     if code is not None and args is not None:
         fn = " ".join(args)
         if not fn:
@@ -196,6 +202,9 @@ def execute_patch(
     elif kwargs is not None:
         code = kwargs.get("patch", "")
         fn = kwargs.get("path", "")
+
+    assert code is not None, "No patch provided"
+    assert fn is not None, "No path provided"
 
     if code is None:
         yield Message("system", "No patch provided")
@@ -217,9 +226,15 @@ def execute_patch(
     # TODO: include patch headers to delimit multiple patches
     print_preview(patches_str, lang="diff")
 
+    # Make patch content editable before confirmation
+    set_editable_text(code, "patch")
+
     if not confirm(f"Apply patch to {fn}?"):
         print("Patch not applied")
         return
+
+    # Get potentially edited content
+    code = get_editable_text()
 
     try:
         with open(path) as f:

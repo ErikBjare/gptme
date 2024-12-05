@@ -13,8 +13,13 @@ from collections.abc import Generator
 from time import sleep
 
 from ..message import Message
-from ..util import print_preview
-from .base import ConfirmFunc, Parameter, ToolSpec, ToolUse
+from ..util.ask_execute import print_preview
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 
 logger = logging.getLogger(__name__)
 

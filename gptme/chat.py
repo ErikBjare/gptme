@@ -27,12 +27,12 @@ from .tools import (
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
 from .util import (
-    ask_execute,
     console,
     path_with_tilde,
     print_bell,
     rich_to_str,
 )
+from .util.ask_execute import ask_execute
 from .util.cost import log_costs
 from .util.readline import add_history
 
