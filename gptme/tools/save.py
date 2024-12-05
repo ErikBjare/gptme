@@ -115,7 +115,9 @@ def execute_save(
             return
 
         # Get potentially edited content
-        content = get_editable_text()
+        edited_content = get_editable_text()
+        was_edited = edited_content != content
+        content = edited_content
     finally:
         clear_editable_text()
 
@@ -137,7 +139,8 @@ def execute_save(
     print("Saving to " + fn)
     with open(path, "w") as f:
         f.write(content)
-    yield Message("system", f"Saved to {fn}")
+    edit_msg = " (edited by user)" if was_edited else ""
+    yield Message("system", f"Saved to {fn}{edit_msg}")
 
 
 def execute_append(
