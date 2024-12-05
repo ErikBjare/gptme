@@ -13,7 +13,7 @@ from logging import getLogger
 from typing import TYPE_CHECKING, TypeVar
 
 from ..message import Message
-from ..util import print_preview
+from ..util.ask_execute import print_preview
 from .base import (
     ConfirmFunc,
     Parameter,

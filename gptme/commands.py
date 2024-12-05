@@ -19,7 +19,7 @@ from .message import (
 from .llm.models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
 from .tools.base import ConfirmFunc, get_tool_format
-from .useredit import edit_text_with_editor
+from .util.useredit import edit_text_with_editor
 
 logger = logging.getLogger(__name__)
 

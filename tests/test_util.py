@@ -3,10 +3,9 @@ from datetime import datetime
 from gptme.util import (
     epoch_to_age,
     example_to_xml,
-    generate_name,
-    is_generated_name,
     transform_examples_to_chat_directives,
 )
+from gptme.util.generate_name import generate_name, is_generated_name
 
 
 def test_generate_name():

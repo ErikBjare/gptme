@@ -22,8 +22,14 @@ from .interrupt import handle_keyboard_interrupt, set_interruptible
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
-from .tools import all_tools, init_tools, ToolFormat, set_tool_format
-from .util import epoch_to_age, generate_name
+from .tools import (
+    ToolFormat,
+    all_tools,
+    init_tools,
+    set_tool_format,
+)
+from .util import epoch_to_age
+from .util.generate_name import generate_name
 from .util.readline import add_history
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,12 @@ from collections.abc import Generator
 from pathlib import Path
 
 from ..message import Message
-from ..util import print_preview
+from ..util.ask_execute import (
+    clear_editable_text,
+    get_editable_text,
+    set_editable_text,
+    print_preview,
+)
 from .base import (
     ConfirmFunc,
     Parameter,
@@ -99,10 +104,20 @@ def execute_save(
             yield Message("system", "File already exists with identical content.")
             return
 
-    if not confirm(f"Save to {fn}?"):
-        # early return
-        yield Message("system", "Save cancelled.")
-        return
+    # Make content editable before confirmation
+    ext = Path(fn).suffix.lstrip(".")
+    set_editable_text(content, ext)
+
+    try:
+        if not confirm(f"Save to {fn}?"):
+            # early return
+            yield Message("system", "Save cancelled.")
+            return
+
+        # Get potentially edited content
+        content = get_editable_text()
+    finally:
+        clear_editable_text()
 
     # if the file exists, ask to overwrite
     if path.exists():

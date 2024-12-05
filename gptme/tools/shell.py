@@ -16,7 +16,8 @@ import bashlex
 from .base import Parameter
 
 from ..message import Message
-from ..util import get_installed_programs, get_tokenizer, print_preview
+from ..util import get_installed_programs, get_tokenizer
+from ..util.ask_execute import print_preview
 from .base import ConfirmFunc, ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
