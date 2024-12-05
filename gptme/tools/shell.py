@@ -10,18 +10,24 @@ import select
 import subprocess
 import sys
 from collections.abc import Generator
+from pathlib import Path
 
 import bashlex
 
-from .base import Parameter
-
 from ..message import Message
 from ..util import get_installed_programs, get_tokenizer
-from ..util.ask_execute import print_preview
-from .base import ConfirmFunc, ToolSpec, ToolUse
+from ..util.ask_execute import execute_with_confirmation
+from .base import (
+    ConfirmFunc,
+    Parameter,
+    ToolSpec,
+    ToolUse,
+)
 
 logger = logging.getLogger(__name__)
 
+
+allowlist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
 
 candidates = (
     # platform-specific
@@ -182,12 +188,10 @@ class ShellSession:
                 # 2**12 = 4096
                 # 2**16 = 65536
                 data = os.read(fd, 2**16).decode("utf-8")
+                re_returncode = re.compile(r"ReturnCode:(\d+)")
                 for line in re.split(r"(\n)", data):
-                    if "ReturnCode:" in line:
-                        return_code_str = (
-                            line.split("ReturnCode:")[1].split(" ")[0].strip()
-                        )
-                        return_code = int(return_code_str)
+                    if match := re_returncode.match(line):
+                        return_code = int(match.group(1))
                     if self.delimiter in line:
                         read_delimiter = True
                         continue
@@ -247,44 +251,47 @@ def set_shell(shell: ShellSession) -> None:
 cmd_regex = re.compile(r"(?:^|[|&;]|\|\||&&|\n)\s*([^\s|&;]+)")
 
 
-def execute_shell(
-    code: str | None,
-    args: list[str] | None,
-    kwargs: dict[str, str] | None,
-    confirm: ConfirmFunc,
-) -> Generator[Message, None, None]:
-    """Executes a shell command and returns the output."""
-
+def get_shell_command(
+    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
+) -> str:
+    """Get the shell command from code/args/kwargs."""
     if code is not None and args is not None:
         assert not args
         cmd = code.strip()
-
         if cmd.startswith("$ "):
             cmd = cmd[len("$ ") :]
     elif kwargs is not None:
         cmd = kwargs.get("command", "")
+    else:
+        raise ValueError("No command provided")
+    return cmd
 
-    shell = get_shell()
-    allowlist_commands = ["ls", "stat", "cd", "cat", "pwd", "echo", "head"]
-    allowlisted = True
 
+def preview_shell(cmd: str, _: Path | None) -> str:
+    """Prepare preview for shell command."""
+    return cmd
+
+
+def is_allowlisted(cmd: str) -> bool:
     for match in cmd_regex.finditer(cmd):
         for group in match.groups():
             if group and group not in allowlist_commands:
-                allowlisted = False
-                break
+                return False
+    return True
 
-    if not allowlisted:
-        print_preview(cmd, "bash", True)
-        if not confirm("Run command?"):
-            yield Message("system", "User chose not to run command.")
-            return
+
+def execute_shell_impl(
+    cmd: str, _: Path | None, confirm: ConfirmFunc
+) -> Generator[Message, None, None]:
+    """Execute shell command and format output."""
+    shell = get_shell()
+    allowlisted = is_allowlisted(cmd)
 
     try:
         returncode, stdout, stderr = shell.run(cmd)
     except Exception as e:
-        yield Message("system", f"Error: {e}")
-        return
+        raise ValueError(f"Shell error: {e}") from None
+
     stdout = _shorten_stdout(stdout.strip(), pre_tokens=2000, post_tokens=8000)
     stderr = _shorten_stdout(stderr.strip(), pre_tokens=2000, post_tokens=2000)
 
@@ -304,6 +311,37 @@ def execute_shell(
         msg += f"Return code: {returncode}"
 
     yield Message("system", msg)
+
+
+def get_path_fn(*args, **kwargs) -> Path | None:
+    return None
+
+
+def execute_shell(
+    code: str | None,
+    args: list[str] | None,
+    kwargs: dict[str, str] | None,
+    confirm: ConfirmFunc,
+) -> Generator[Message, None, None]:
+    """Executes a shell command and returns the output."""
+    cmd = get_shell_command(code, args, kwargs)
+
+    # Skip confirmation for allowlisted commands
+    if is_allowlisted(cmd):
+        yield from execute_shell_impl(cmd, None, lambda _: True)
+    else:
+        yield from execute_with_confirmation(
+            cmd,
+            args,
+            kwargs,
+            confirm,
+            execute_fn=execute_shell_impl,
+            get_path_fn=get_path_fn,
+            preview_fn=preview_shell,
+            preview_lang="bash",
+            confirm_msg="Run command?",
+            allow_edit=True,
+        )
 
 
 def _format_block_smart(header: str, cmd: str, lang="") -> str:

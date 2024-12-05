@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..message import Message
-from ..util.ask_execute import get_editable_text, set_editable_text, print_preview
+from ..util.ask_execute import execute_with_confirmation
 from .base import (
     ConfirmFunc,
     Parameter,
@@ -183,87 +183,90 @@ def apply(codeblock: str, content: str) -> str:
     return new_content
 
 
+def get_patch_path(
+    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
+) -> Path:
+    """Get the path from args/kwargs."""
+    if code is not None and args is not None:
+        fn = " ".join(args)
+        if not fn:
+            raise ValueError("No path provided")
+    elif kwargs is not None:
+        fn = kwargs.get("path", "")
+    else:
+        raise ValueError("No path provided")
+
+    return Path(fn).expanduser()
+
+
+def preview_patch(content: str, path: Path | None) -> str | None:
+    """Prepare preview content for patch operation."""
+    try:
+        patches = Patch.from_codeblock(content)
+        return "\n\n".join(p.diff_minimal() for p in patches)
+    except ValueError as e:
+        raise ValueError(f"Invalid patch: {e.args[0]}") from None
+
+
+def execute_patch_impl(
+    content: str, path: Path | None, confirm: ConfirmFunc
+) -> Generator[Message, None, None]:
+    """Actual patch implementation."""
+    assert path is not None
+    try:
+        with open(path) as f:
+            original_content = f.read()
+
+        # Apply the patch
+        patched_content = apply(content, original_content)
+
+        # Compare token counts and generate warnings
+        patch_len = len(content)
+        full_file_len = len(patched_content)
+        warnings = []
+        if 1000 < full_file_len < patch_len:
+            warnings.append(
+                "Note: The patch was big and larger than the file. In the future, try writing smaller patches or use the save tool instead."
+            )
+
+        # Write the patched content
+        with open(path, "w") as f:
+            f.write(patched_content)
+
+        # Return success message with any warnings
+        warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
+        yield Message("system", f"{warnings_str}Patch successfully applied to {path}")
+
+    except (ValueError, FileNotFoundError) as e:
+        raise ValueError(f"Patch failed: {e.args[0]}") from None
+
+
 def execute_patch(
     code: str | None,
     args: list[str] | None,
     kwargs: dict[str, str] | None,
     confirm: ConfirmFunc = lambda _: True,
 ) -> Generator[Message, None, None]:
-    """
-    Applies the patch.
-    """
+    """Applies the patch."""
+    if code is not None and kwargs is not None:
+        code = kwargs.get("patch", code)
 
-    fn = None
-    if code is not None and args is not None:
-        fn = " ".join(args)
-        if not fn:
-            yield Message("system", "No path provided")
-            return
-    elif kwargs is not None:
-        code = kwargs.get("patch", "")
-        fn = kwargs.get("path", "")
-
-    assert code is not None, "No patch provided"
-    assert fn is not None, "No path provided"
-
-    if code is None:
+    if not code:
         yield Message("system", "No patch provided")
         return
 
-    path = Path(fn).expanduser()
-    if not path.exists():
-        yield Message("system", f"File not found: {fn}")
-        return
-
-    try:
-        patches = Patch.from_codeblock(code)
-        patches_str = "\n\n".join(p.diff_minimal() for p in patches)
-    except ValueError as e:
-        yield Message("system", f"Patch failed: {e.args[0]}")
-        return
-
-    # TODO: display minimal patches
-    # TODO: include patch headers to delimit multiple patches
-    print_preview(patches_str, lang="diff")
-
-    # Make patch content editable before confirmation
-    set_editable_text(code, "patch")
-
-    if not confirm(f"Apply patch to {fn}?"):
-        print("Patch not applied")
-        return
-
-    # Get potentially edited content
-    edited_code = get_editable_text()
-    was_edited = edited_code != code
-    code = edited_code
-
-    try:
-        with open(path) as f:
-            original_content = f.read()
-
-        # Apply the patch
-        patched_content = apply(code, original_content)
-        # TODO: if the patch is inefficient, replace request to use minimal unique patch
-        with open(path, "w") as f:
-            f.write(patched_content)
-
-        # Compare token counts
-        patch_len = len(code)
-        full_file_len = len(patched_content)
-
-        warnings = []
-        if 1000 < full_file_len < patch_len:
-            warnings.append(
-                "Note: The patch was big and larger than the file. In the future, try writing smaller patches or use the save tool instead."
-            )
-        warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
-        edit_msg = " (edited by user)" if was_edited else ""
-        yield Message(
-            "system", f"{warnings_str}Patch successfully applied to {fn}{edit_msg}"
-        )
-    except (ValueError, FileNotFoundError) as e:
-        yield Message("system", f"Patch failed: {e.args[0]}")
+    yield from execute_with_confirmation(
+        code,
+        args,
+        kwargs,
+        confirm,
+        execute_fn=execute_patch_impl,
+        get_path_fn=get_patch_path,
+        preview_fn=preview_patch,
+        preview_lang="diff",
+        confirm_msg=None,  # use default
+        allow_edit=True,
+    )
 
 
 tool = ToolSpec(

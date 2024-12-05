@@ -1,6 +1,7 @@
 import platform
 import subprocess
 
+from . import get_installed_programs
 
 text = ""
 
@@ -12,7 +13,6 @@ def set_copytext(new_text: str):
 
 def copy() -> bool:
     """return True if successful"""
-    from .util import get_installed_programs
 
     global text
     if platform.system() == "Linux":
