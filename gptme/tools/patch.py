@@ -234,7 +234,9 @@ def execute_patch(
         return
 
     # Get potentially edited content
-    code = get_editable_text()
+    edited_code = get_editable_text()
+    was_edited = edited_code != code
+    code = edited_code
 
     try:
         with open(path) as f:
@@ -256,8 +258,10 @@ def execute_patch(
                 "Note: The patch was big and larger than the file. In the future, try writing smaller patches or use the save tool instead."
             )
         warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
-
-        yield Message("system", f"{warnings_str}Patch successfully applied to {fn}")
+        edit_msg = " (edited by user)" if was_edited else ""
+        yield Message(
+            "system", f"{warnings_str}Patch successfully applied to {fn}{edit_msg}"
+        )
     except (ValueError, FileNotFoundError) as e:
         yield Message("system", f"Patch failed: {e.args[0]}")
 
