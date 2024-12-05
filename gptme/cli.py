@@ -19,6 +19,7 @@ from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
 from .init import init_logging
 from .interrupt import handle_keyboard_interrupt, set_interruptible
+from .llm.models import get_recommended_model
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
@@ -63,7 +64,7 @@ The interface provides user commands that can be used to interact with the syste
     "-m",
     "--model",
     default=None,
-    help="Model to use, e.g. openai/gpt-4o, anthropic/claude-3-5-sonnet-20240620. If only provider given, a default is used.",
+    help=f"Model to use, e.g. openai/{get_recommended_model('openai')}, anthropic/{get_recommended_model('anthropic')}. If only provider given then a default is used.",
 )
 @click.option(
     "-w",
