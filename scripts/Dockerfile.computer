@@ -73,10 +73,11 @@ RUN python3.10 -m pip install --upgrade pip && \
 WORKDIR /app
 COPY --chown=$USERNAME:$USERNAME pyproject.toml poetry.lock /app/
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi -E server --no-root
+RUN poetry install --no-interaction --no-ansi -E server --no-root --without=dev
 
 COPY --chown=$USERNAME:$USERNAME . /app
-RUN poetry install --no-interaction --no-ansi -E server
+RUN pip install build  # this is needed because otherwise poetry removes it
+RUN poetry install --no-interaction --no-ansi -E server --without=dev
 
 # Copy desktop environment configs (at the end for faster rebuilds)
 RUN mkdir -p $HOME && chmod 777 $HOME
