@@ -6,12 +6,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 from ..message import Message
-from ..util.ask_execute import (
-    clear_editable_text,
-    get_editable_text,
-    set_editable_text,
-    print_preview,
-)
+from ..util.ask_execute import execute_with_confirmation
 from .base import (
     ConfirmFunc,
     Parameter,
@@ -63,6 +58,62 @@ def examples_append(tool_format):
 """.strip()
 
 
+def get_save_path(
+    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
+) -> Path:
+    """Get the path from args/kwargs."""
+    if code is not None and args is not None:
+        fn = " ".join(args)
+        if fn.startswith("save "):
+            fn = fn[5:]
+    elif kwargs is not None:
+        fn = kwargs.get("path", "")
+    else:
+        raise ValueError("No filename provided")
+
+    return Path(fn).expanduser()
+
+
+def preview_save(content: str, path: Path | None) -> str | None:
+    """Prepare preview content for save operation."""
+    assert path
+    if path.exists():
+        current = path.read_text()
+        p = Patch(current, content)
+        diff_str = p.diff_minimal()
+        return diff_str if diff_str.strip() else None
+    return content
+
+
+def execute_save_impl(
+    content: str, path: Path | None, confirm: ConfirmFunc
+) -> Generator[Message, None, None]:
+    """Actual save implementation."""
+    assert path
+
+    # Ensure content ends with newline
+    if not content.endswith("\n"):
+        content += "\n"
+
+    # Check if file exists
+    if path.exists():
+        if not confirm("File exists, overwrite?"):
+            yield Message("system", "Save cancelled.")
+            return
+
+    # Check if folder exists
+    if not path.parent.exists():
+        if not confirm("Folder doesn't exist, create it?"):
+            yield Message("system", "Save cancelled.")
+            return
+        path.parent.mkdir(parents=True)
+
+    # Save the file
+    with open(path, "w") as f:
+        f.write(content)
+    yield Message("system", f"Saved to {path}")
+
+
 def execute_save(
     code: str | None,
     args: list[str] | None,
@@ -70,77 +121,18 @@ def execute_save(
     confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Save code to a file."""
-
-    fn = ""
-    content = ""
-    if code is not None and args is not None:
-        fn = " ".join(args)
-        if fn.startswith("save "):
-            fn = fn[5:]
-
-        # strip leading newlines
-        content = code.lstrip("\n")
-        # ensure it ends with a newline
-        if not content.endswith("\n"):
-            content += "\n"
-    elif kwargs is not None:
-        fn = kwargs.get("path", "")
-        content = kwargs.get("content", "")
-
-    assert fn, "No filename provided"
-    assert content, "No content provided"
-
-    # TODO: add check that it doesn't try to write a file with placeholders!
-    path = Path(fn).expanduser()
-
-    if path.exists():
-        current = path.read_text()
-        p = Patch(current, content)
-        # TODO: if inefficient save, replace request with patch (and vice versa), or even append
-        diff_str = p.diff_minimal()
-        if diff_str.strip():
-            print_preview(p.diff_minimal(), "diff")
-        else:
-            yield Message("system", "File already exists with identical content.")
-            return
-
-    # Make content editable before confirmation
-    ext = Path(fn).suffix.lstrip(".")
-    set_editable_text(content, ext)
-
-    try:
-        if not confirm(f"Save to {fn}?"):
-            # early return
-            yield Message("system", "Save cancelled.")
-            return
-
-        # Get potentially edited content
-        edited_content = get_editable_text()
-        was_edited = edited_content != content
-        content = edited_content
-    finally:
-        clear_editable_text()
-
-    # if the file exists, ask to overwrite
-    if path.exists():
-        if not confirm("File exists, overwrite?"):
-            # early return
-            yield Message("system", "Save cancelled.")
-            return
-
-    # if the folder doesn't exist, ask to create it
-    if not path.parent.exists():
-        if not confirm("Folder doesn't exist, create it?"):
-            # early return
-            yield Message("system", "Save cancelled.")
-            return
-        path.parent.mkdir(parents=True)
-
-    print("Saving to " + fn)
-    with open(path, "w") as f:
-        f.write(content)
-    edit_msg = " (edited by user)" if was_edited else ""
-    yield Message("system", f"Saved to {fn}{edit_msg}")
+    yield from execute_with_confirmation(
+        code,
+        args,
+        kwargs,
+        confirm,
+        execute_fn=execute_save_impl,
+        get_path_fn=get_save_path,
+        preview_fn=preview_save,
+        preview_lang="diff",
+        confirm_msg=None,  # use default
+        allow_edit=True,
+    )
 
 
 def execute_append(
