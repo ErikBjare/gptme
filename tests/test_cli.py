@@ -245,6 +245,9 @@ def test_block(args: list[str], lang: str, runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.skipif(
+    os.environ.get("MODEL") == "openai/gpt-4o-mini", reason="unreliable for gpt-4o-mini"
+)
 def test_generate_primes(args: list[str], runner: CliRunner):
     args.append("compute the first 10 prime numbers using ipython")
     result = runner.invoke(gptme.cli.main, args)
