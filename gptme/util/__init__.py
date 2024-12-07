@@ -63,11 +63,11 @@ def epoch_to_age(epoch, incl_date=False):
         )
 
 
-def clean_example(s: str, strict=False) -> str:
+def clean_example(s: str, strict=False, quote=False) -> str:
     orig = s
     s = re.sub(
         r"(^|\n)([>] )?([A-Za-z]+):",
-        r"\1\3:",
+        rf"\1{'> ' if quote else ''}\3:",
         s,
     )
     if strict:

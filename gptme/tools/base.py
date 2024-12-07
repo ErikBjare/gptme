@@ -19,7 +19,7 @@ from lxml import etree
 
 from ..codeblock import Codeblock
 from ..message import Message
-from ..util import transform_examples_to_chat_directives
+from ..util import clean_example, transform_examples_to_chat_directives
 
 logger = logging.getLogger(__name__)
 
@@ -221,21 +221,25 @@ class ToolSpec:
         instructions = self.get_instructions(tool_format)
         if instructions:
             prompt += f"\n\n**Instructions:** {instructions}"
-        if examples and (examples_content := self.get_examples(tool_format)):
+        if examples and (
+            examples_content := self.get_examples(tool_format, quote=True).strip()
+        ):
             prompt += f"\n\n### Examples\n\n{examples_content}"
         return prompt
 
-    def get_examples(self, tool_format: ToolFormat = "markdown"):
+    def get_examples(self, tool_format: ToolFormat = "markdown", quote=False):
         if callable(self.examples):
-            return self.examples(tool_format)
-        return self.examples
+            examples = self.examples(tool_format)
+        else:
+            examples = self.examples
+        # make sure headers have exactly two newlines after them
+        examples = re.sub(r"\n*(\n#+.*?)\n+", r"\n\1\n\n", examples)
+        return clean_example(examples, quote=quote)
 
     def get_functions_description(self) -> str:
         # return a prompt with a brief description of the available functions
         if self.functions:
-            description = (
-                "The following Python functions can be called with `ipython` tool:\n\n"
-            )
+            description = "This tool makes the following Python functions available in `ipython`:\n\n"
             return description + "\n".join(
                 f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
                 for func in self.functions

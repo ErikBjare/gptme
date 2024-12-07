@@ -17,7 +17,7 @@ def examples(tool_format):
 {ToolUse("shell", [], '''
 REPO=$(basename $(pwd))
 gh repo create $REPO --public --source . --push
-''').to_output(tool_format)}
+'''.strip()).to_output(tool_format)}
 
 > User: show issues
 > Assistant:
