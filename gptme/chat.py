@@ -282,9 +282,18 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
 def _include_paths(msg: Message) -> Message:
     """
     Searches the message for any valid paths and:
-     - appends the contents of such files as codeblocks.
-     - include images as files.
+     - In legacy mode (default):
+       - appends the contents of such files as codeblocks
+       - includes images as files
+     - In fresh context mode (GPTME_FRESH_CONTEXT=1):
+       - only tracks paths in msg.files
+       - contents are included fresh before each user message
     """
+    use_fresh_context = os.getenv("GPTME_FRESH_CONTEXT", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
     # TODO: add support for directories?
     assert msg.role == "user"
 
@@ -297,6 +306,10 @@ def _include_paths(msg: Message) -> Message:
     # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
     content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
     append_msg = ""
+    logger.info(
+        f"File handling mode: {'fresh context' if use_fresh_context else 'legacy'}"
+    )
+
     for word in re.split(r"[\s`]", content_no_codeblocks):
         # remove wrapping backticks
         word = word.strip("`")
@@ -314,11 +327,7 @@ def _include_paths(msg: Message) -> Message:
             or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
             logger.debug(f"potential path/url: {word=}")
-            contents = _parse_prompt(word)
-            if contents:
-                # if we found a valid path, replace it with the contents of the file
-                append_msg += "\n\n" + contents
-
+            # Track files in msg.files
             file = _parse_prompt_files(word)
             if file:
                 msg.files.append(file)
@@ -400,9 +409,9 @@ def _parse_prompt(prompt: str) -> str | None:
 
 def _parse_prompt_files(prompt: str) -> Path | None:
     """
-    Takes a string that might be a image path or PDF, to be attached to the message, and returns the path.
+    Takes a string that might be a supported file path (image, text, PDF) and returns the path.
+    Files added here will either be included inline (legacy mode) or in fresh context (fresh context mode).
     """
-    allowed_exts = ["png", "jpg", "jpeg", "gif", "pdf"]
 
     # if prompt is a command, exit early (as commands might take paths as arguments)
     if any(
@@ -412,12 +421,18 @@ def _parse_prompt_files(prompt: str) -> Path | None:
         return None
 
     try:
-        # check if prompt is a path, if so, replace it with the contents of that file
         p = Path(prompt)
-        if p.exists() and p.is_file() and p.suffix[1:] in allowed_exts:
-            logger.info(f"Attaching file {p} to message")
+        if not (p.exists() and p.is_file()):
+            return None
+
+        # Try to read as text
+        try:
+            p.read_text()
             return p
-        else:
+        except UnicodeDecodeError:
+            # If not text, check if supported binary format
+            if p.suffix[1:].lower() in ["png", "jpg", "jpeg", "gif", "pdf"]:
+                return p
             return None
     except OSError as oserr:  # pragma: no cover
         # some prompts are too long to be a path, so we can't read them

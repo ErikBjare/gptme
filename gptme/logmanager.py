@@ -1,6 +1,8 @@
 import json
 import logging
+import os
 import shutil
+import subprocess
 import textwrap
 from collections import Counter
 from collections.abc import Generator
@@ -305,30 +307,106 @@ class LogManager:
         return d
 
 
+def gather_fresh_context(msgs: list[Message]) -> Message:
+    """Gather fresh context from files and git status."""
+    # Get files mentioned in conversation
+    files = Counter([f for msg in msgs for f in msg.files])
+    logger.debug(f"Files mentioned in conversation: {dict(files)}")
+
+    # Sort by mentions and recency
+    def file_score(f: Path) -> tuple[int, float]:
+        try:
+            mtime = Path(f).stat().st_mtime
+            return (files[f], mtime)
+        except FileNotFoundError:
+            return (files[f], 0)
+
+    mentioned_files = sorted(files.keys(), key=file_score, reverse=True)
+
+    # Read contents of most relevant files
+    context = ""
+    for f in mentioned_files[:10]:  # Limit to top 10 files
+        if Path(f).exists():
+            logger.debug(f"Including fresh content from: {f}")
+            context += f"```{f}\n"
+            try:
+                with open(f) as file:
+                    context += file.read()
+            except UnicodeDecodeError:
+                logger.debug(f"Skipping binary file: {f}")
+                context += "<binary file>"
+            context += "\n```\n"
+        else:
+            logger.debug(f"File not found: {f}")
+
+    # Add git status if in repo
+    try:
+        git_status = subprocess.run(
+            ["git", "status", "-vv"], capture_output=True, text=True, check=True
+        )
+        if git_status.returncode == 0:
+            logger.debug("Including git status in context")
+            context += "\nGit status:\n```\n" + git_status.stdout + "```\n"
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        logger.debug("Not in a git repository or git not available")
+
+    return Message("system", "Fresh context:\n\n" + context)
+
+
+def include_file_content(path: Path) -> str | None:
+    """Include file content as a codeblock."""
+    try:
+        if path.exists() and path.is_file():
+            try:
+                return f"```{path}\n{path.read_text()}\n```"
+            except UnicodeDecodeError:
+                return None
+    except OSError:
+        return None
+    return None
+
+
 def prepare_messages(msgs: list[Message]) -> list[Message]:
     """Prepares the messages before sending to the LLM."""
     from .tools._rag_context import _HAS_RAG, enhance_messages  # fmt: skip
 
-    # strip old context
     # First enhance messages with context
     if _HAS_RAG:
         msgs = enhance_messages(msgs)
 
-    # if latest message is a user message, prefix context
-    # if latest message is a system message (like patch applied), then...?
-    in_git_repo = True
-    if in_git_repo:
-        # TODO: if in a git repo, then we want to include `git status -vv` context
-        pass
-        # logger.info("included git status context")
+    # Feature flag for fresh context mode
+    use_fresh_context = os.getenv("GPTME_FRESH_CONTEXT", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
 
-    # TODO: get mentioned files, make sure their latest versions are in context
-    #       sort files by last modified time, and include the top N files by mentions and recency
-    # search for files mentioned in the conversation
-    files = Counter([f for msg in msgs for f in msg.files])
-    print(files)
-
-    # TODO: strip old patches and saves
+    if use_fresh_context:
+        logger.debug("Using fresh context mode")
+        # Add fresh context
+        # TODO: remove gathered context from `files` before sending to LLM
+        if msgs and msgs[-1].role == "user":
+            msgs.insert(-1, gather_fresh_context(msgs))
+    else:
+        # Legacy mode: Include file contents where they were mentioned
+        text_files = {
+            f: content
+            for msg in msgs
+            for f in msg.files
+            if (content := include_file_content(f))
+        }
+        msgs = [
+            (
+                replace(
+                    msg,
+                    content=msg.content + "\n\n".join(text_files.values()),
+                    files=[f for f in msg.files if f not in text_files],
+                )
+                if msg.role == "user" and msg.files
+                else msg
+            )
+            for msg in msgs
+        ]
 
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))
