@@ -39,6 +39,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    finetuning
    arewetiny
    timeline
+   alternatives
    Changelog <https://github.com/ErikBjare/gptme/releases>
    api
 

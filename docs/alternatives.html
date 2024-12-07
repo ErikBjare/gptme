@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Usage &#8212; gptme</title>
+    <title>Alternatives &#8212; gptme</title>
   
   
   
@@ -46,12 +46,12 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/asciinema-player_3.6.3.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'usage';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'alternatives';</script>
     <link rel="icon" href="_static/logo.png"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples" href="examples.html" />
-    <link rel="prev" title="Getting Started" href="getting-started.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Timeline" href="timeline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -148,9 +148,9 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Guide</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="demos.html">Demos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="automation.html">Automation</a></li>
@@ -165,7 +165,7 @@
 <li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prompts.html">Prompts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
@@ -173,7 +173,7 @@
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
-<li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Alternatives</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/ErikBjare/gptme/releases">Changelog</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
 </ul>
@@ -253,7 +253,7 @@
       
       
       
-      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/usage.rst" target="_blank"
+      <li><a href="https://github.com/ErikBjare/gptme/edit/main/docs/alternatives.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -283,7 +283,7 @@
       
       
       
-      <li><a href="_sources/usage.rst" target="_blank"
+      <li><a href="_sources/alternatives.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -359,7 +359,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Usage</h1>
+    <h1>Alternatives</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -369,9 +369,18 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commands">Commands</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison">Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projects">Projects</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aider">Aider</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-desktop">Claude Desktop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-projects">Claude Projects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt-code-interpreter">ChatGPT Code Interpreter</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -383,114 +392,183 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h1>
-<p>This guide covers common usage patterns and examples for gptme.</p>
-<p>To start a new chat or select an existing one, run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme
-</pre></div>
+  <section id="alternatives">
+<h1>Alternatives<a class="headerlink" href="#alternatives" title="Link to this heading">#</a></h1>
+<p>The AI-assisted development space is rapidly evolving, with many projects emerging and rapidly improving. Here, we’ll provide an overview of gptme and some similar projects that might be good alternatives (or vice versa) for your use case, highlighting their key features to help you understand the landscape.</p>
+<p>When selecting an AI-assisted development tool, consider the following factors:</p>
+<ol class="arabic simple">
+<li><p>Your preferred working environment (terminal, IDE, etc.)</p></li>
+<li><p>The specific tasks you need assistance with</p></li>
+<li><p>Integration with your existing workflow</p></li>
+<li><p>The level of control and customization you require</p></li>
+</ol>
+<p>Each of these projects has its own strengths and may be better suited for different use cases. We encourage you to explore them and find the one that best fits your needs.</p>
+<p>If your answers to these questions are “terminal”, “general-purpose/coding”, “extensible”, and “highly customizable”, gptme might be the right choice for you.</p>
+<p>Remember that the AI-assisted development space is rapidly evolving, and these tools are continuously improving and adding new features. Always check the latest documentation and releases for the most up-to-date information.</p>
+<p>Let’s start with the comparison, we will first show an overview comparison and then dig deeper into each alternative.</p>
+<section id="comparison">
+<h2>Comparison<a class="headerlink" href="#comparison" title="Link to this heading">#</a></h2>
+<p>While we obviously like gptme, there are other great projects in the AI-assisted development space that provide similar but different capabilities, which be more what you are looking for.</p>
+<p>Here we will briefly introduce some we like, along with their key features.</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id3">
+<caption><span class="caption-text">Comparison</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 31.2%" />
+<col style="width: 12.5%" />
+<col style="width: 31.2%" />
+<col style="width: 12.5%" />
+<col style="width: 12.5%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Focus</p></th>
+<th class="head"><p>Price</p></th>
+<th class="head"><p>Open Source</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>gptme</p></td>
+<td><p>CLI</p></td>
+<td><p>General purpose</p></td>
+<td><p>Free</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>Open Interpreter</p></td>
+<td><p>CLI</p></td>
+<td><p>General purpose</p></td>
+<td><p>Free</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>Aider</p></td>
+<td><p>CLI</p></td>
+<td><p>Coding</p></td>
+<td><p>Free</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>Moatless Tools</p></td>
+<td><p>CLI</p></td>
+<td><p>Coding</p></td>
+<td><p>Free</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>Lovable.dev</p></td>
+<td><p>Web app</p></td>
+<td><p>Frontend</p></td>
+<td><p>Credits</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cursor</p></td>
+<td><p>IDE fork</p></td>
+<td><p>Coding</p></td>
+<td><p>$20/mo</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p>Claude Desktop</p></td>
+<td><p>Desktop app</p></td>
+<td><p>General purpose</p></td>
+<td><p>$20/mo</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Claude Projects</p></td>
+<td><p>Web app</p></td>
+<td><p>Chat with files</p></td>
+<td><p>$20/mo</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-<p>This will show you a list of past chats, allowing you to select one or start a new one.</p>
-<p>To get inspiration for your first prompt, see the <a class="reference internal" href="examples.html"><span class="doc">Examples</span></a>.</p>
-<section id="features">
-<h2>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h2>
-<p class="rubric">Tools</p>
-<p>gptme comes with a variety of tools for different tasks:</p>
-<ul class="simple">
-<li><p><a class="reference internal" href="tools.html#shell"><span class="std std-ref">Shell</span></a> - Execute shell commands</p></li>
-<li><p><a class="reference internal" href="tools.html#python"><span class="std std-ref">Python</span></a> - Run Python code</p></li>
-<li><p><a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a> - Browse and interact with web content</p></li>
-<li><p><a class="reference internal" href="tools.html#vision"><span class="std std-ref">Vision</span></a> - Process and analyze images</p></li>
-</ul>
-<p>See the <a class="reference internal" href="tools.html"><span class="doc">Tools</span></a> page for a complete list of available tools.</p>
-<p class="rubric">Writing Files</p>
-<p>You can ask the assistant to create new files or modify existing ones:</p>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">create a new file named life.py implementing the game of life</pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Certainly! I'll create a new file named `life.py` implementing Conway's Game of Life. This implementation will use NumPy for efficient array operations and Matplotlib for visualization. Here's the code:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Saved to life.py</pre>
-  </td>
-</tr>
-</table><p class="rubric">Making Changes</p>
-<p>You can start chats and request changes directly from the command line. The contents of any mentioned text files will be included as context, and the assistant will generate patches to apply the requested changes:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;make improvements to life.py so that dead cells fade out over time&#39;</span>
-</pre></div>
-</div>
-<table style="width: 100%; margin-bottom: 1em">
-  
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">make improvements to life.py so that dead cells fade out over time<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To make alive cells green and dead cells black in the Game of Life simulation, we need to modify the colormap and how we represent the cell states. Here's the updated `life.py` script with these changes:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">patch life.py</div>
-<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">...
-</pre></div></pre>
-  </td>
-</tr>
-<tr>
-  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
-  <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Patch applied</pre>
-  </td>
-</tr>
-</table><p class="rubric">Browser Integration</p>
-<p>With the <a class="reference internal" href="tools.html#browser"><span class="std std-ref">Browser</span></a> extras installed, the assistant can process URLs included in the prompt and interact with web content.</p>
 </section>
-<section id="commands">
-<h2>Commands<a class="headerlink" href="#commands" title="Link to this heading">#</a></h2>
-<p>During a chat session, you can use these slash-commands for various actions:</p>
+<section id="projects">
+<h2>Projects<a class="headerlink" href="#projects" title="Link to this heading">#</a></h2>
+<p>To begin, lets first introduce gptme and then we will compare it to some of the other projects in the space.</p>
+<section id="gptme">
+<h3>gptme<a class="headerlink" href="#gptme" title="Link to this heading">#</a></h3>
+<p>gptme is a personal AI assistant that runs in your terminal, designed to assist with various programming tasks and knowledge work.</p>
+<p>Key features:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">/undo</span></code> - Undo the last action</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/log</span></code> - Show the conversation log</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/tools</span></code> - Show available tools</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/edit</span></code> - Edit the conversation in your editor</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/rename</span></code> - Rename the conversation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/fork</span></code> - Create a copy of the conversation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/summarize</span></code> - Summarize the conversation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/replay</span></code> - Re-execute codeblocks in the conversation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/help</span></code> - Show help message</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/exit</span></code> - Exit the program</p></li>
+<li><p>Runs in the terminal</p></li>
+<li><p>Can execute shell commands and Python code</p></li>
+<li><p>Ability to read, write, and patch files</p></li>
+<li><p>Web browsing capabilities</p></li>
+<li><p>Vision support for images and screenshots</p></li>
+<li><p>Self-correcting behavior</p></li>
+<li><p>Support for multiple LLM providers</p></li>
+<li><p>Extensible tool system</p></li>
+<li><p>Highly customizable, aims to be simple to modify</p></li>
 </ul>
 </section>
-<section id="interfaces">
-<h2>Interfaces<a class="headerlink" href="#interfaces" title="Link to this heading">#</a></h2>
-<p>Besides the CLI, gptme can be used through:</p>
+<section id="aider">
+<h3>Aider<a class="headerlink" href="#aider" title="Link to this heading">#</a></h3>
+<p>Aider is AI pair programming in your terminal.</p>
+<p>Key features:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="server.html#web-ui"><span class="std std-ref">Web UI</span></a> - A web-based interface</p></li>
-<li><p><a class="reference internal" href="bot.html"><span class="doc">GitHub Bot</span></a> - GitHub bot integration</p></li>
+<li><p>Git integration</p></li>
+<li><p>Code editing capabilities</p></li>
+<li><p>Conversation history</p></li>
+<li><p>Customizable prompts</p></li>
+<li><p>Scores highly on SWE-Bench</p></li>
 </ul>
-<p>For more detailed information about specific features, check out:</p>
+<p>Differences to gptme:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="tools.html"><span class="doc">Tools</span></a> - Available tools and their usage</p></li>
-<li><p><a class="reference internal" href="providers.html"><span class="doc">Providers</span></a> - Supported LLM providers</p></li>
-<li><p><a class="reference internal" href="server.html"><span class="doc">Server</span></a> - Web UI and API server setup</p></li>
+<li><p>gptme is less git-commit focused</p></li>
+<li><p>gptme is more general-purpose?</p></li>
+<li><p>gptme has wider array of tools?</p></li>
 </ul>
+</section>
+<section id="moatless-tools">
+<h3>Moatless Tools<a class="headerlink" href="#moatless-tools" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="https://github.com/aorwall/moatless-tools">Moatless Tools</a> is an impressive AI coding agent that has performed really well on <a class="reference external" href="https://www.swebench.com/">SWE-Bench</a>.</p>
+<p>Key features:</p>
+<ul class="simple">
+<li><p>Various specialized tools for different tasks</p></li>
+<li><p>Integration with popular development environments</p></li>
+<li><p>Focus on specific development workflows</p></li>
+<li><p>Scores highly on SWE-Bench</p></li>
+</ul>
+</section>
+<section id="lovable-dev">
+<h3>Lovable.dev<a class="headerlink" href="#lovable-dev" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="https://lovable.dev">lovable.dev</a> (previously <cite>GPT Engineer</cite>) lets you build webapps fast by just prompting.</p>
+<p>Key features:</p>
+<ul class="simple">
+<li><p>Builds frontends with ease, just by prompting</p></li>
+<li><p>LLM-powered no-code editor for frontends</p></li>
+<li><p>Git/GitHub integration, ability to import projects</p></li>
+</ul>
+<p>Differences to gptme:</p>
+<ul class="simple">
+<li><p>gptme is terminal-only (for now)</p></li>
+<li><p>gptme is much more general-purpose</p></li>
+<li><p>gptme is far from low/no-code</p></li>
+<li><p>gptme is far from as good at building frontends</p></li>
+<li><p>gptme is not no-code, you still need to select your context yourself</p></li>
+</ul>
+<p>Disclaimer: gptme author has worked on this project too.</p>
+</section>
+<section id="cursor">
+<h3>Cursor<a class="headerlink" href="#cursor" title="Link to this heading">#</a></h3>
+<p>If you are a VSCode user who doesn’t mind using a fork, this seems to be it.</p>
+<p>Differences to gptme:</p>
+<ul class="simple">
+<li><p>gptme is in-terminal instead of in-vscode-fork</p></li>
+<li><p>gptme is extensible with tools, more general-purpose</p></li>
+</ul>
+</section>
+<section id="claude-desktop">
+<h3>Claude Desktop<a class="headerlink" href="#claude-desktop" title="Link to this heading">#</a></h3>
+<p>Claude Desktop is…</p>
+</section>
+<section id="claude-projects">
+<h3>Claude Projects<a class="headerlink" href="#claude-projects" title="Link to this heading">#</a></h3>
+<p>Claude projects let users upload their files and chat with them. It requires a Claude subscription.</p>
+</section>
+<section id="chatgpt-code-interpreter">
+<h3>ChatGPT Code Interpreter<a class="headerlink" href="#chatgpt-code-interpreter" title="Link to this heading">#</a></h3>
+<p>This was one of the early inspirations for gptme, a local-first alternative to ChatGPT’s Code Interpreter, giving the LLM access to your terminal and local files.</p>
+<p>There’s not much to compare here anymore, as gptme has evolved a lot since then (while Code Interpreter hasn’t), but it’s worth mentioning as it was one of the first projects in this space.</p>
+</section>
 </section>
 </section>
 
@@ -506,20 +584,20 @@ from matplotlib.animation import FuncAnimation
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="getting-started.html"
+       href="timeline.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Getting Started</p>
+        <p class="prev-next-title">Timeline</p>
       </div>
     </a>
     <a class="right-next"
-       href="examples.html"
+       href="api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Examples</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -540,9 +618,18 @@ from matplotlib.animation import FuncAnimation
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features">Features</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commands">Commands</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interfaces">Interfaces</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparison">Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projects">Projects</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aider">Aider</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-desktop">Claude Desktop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-projects">Claude Projects</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt-code-interpreter">ChatGPT Code Interpreter</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
