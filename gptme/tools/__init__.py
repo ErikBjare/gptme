@@ -66,6 +66,7 @@ loaded_tools: list[ToolSpec] = []
 # TODO: find a better way to handle this
 tools_default_disabled = [
     "computer",
+    "subagent",
 ]
 
 
