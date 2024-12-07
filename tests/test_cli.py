@@ -246,7 +246,7 @@ def test_block(args: list[str], lang: str, runner: CliRunner):
 
 @pytest.mark.slow
 def test_generate_primes(args: list[str], runner: CliRunner):
-    args.append("compute the first 10 prime numbers")
+    args.append("compute the first 10 prime numbers using ipython")
     result = runner.invoke(gptme.cli.main, args)
     # check that the 9th and 10th prime is present
     assert "23" in result.output
@@ -320,6 +320,7 @@ def test_subagent(args: list[str], runner: CliRunner):
     # f14: 377
     # f15: 610
     # f16: 987
+    args.extend(["--tools", "python,subagent"])
     args.extend(
         [
             "We are in a test. Use the subagent tool to compute `fib(15)`, where `fib(1) = 1` and `fib(2) = 1`.",
