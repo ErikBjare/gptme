@@ -213,43 +213,47 @@ Available commands:
 def examples(tool_format):
     all_examples = f"""
 #### Managing a dev server
-User: Start the dev server
-Assistant: Certainly! To start the dev server we should use tmux:
-{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
-System: Running `npm run dev` in session 0
 
-User: Can you show me the current content of the pane?
-Assistant: Of course! Let's inspect the pane content:
+> User: Start the dev server
+> Assistant: Certainly! To start the dev server we should use tmux:
+{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
+> System: Running `npm run dev` in session 0
+
+> User: Can you show me the current content of the pane?
+> Assistant: Of course! Let's inspect the pane content:
 {ToolUse("tmux", [], "inspect_pane 0").to_output(tool_format)}
-System:
+> System:
 {ToolUse("output", [], "Server is running on localhost:5600").to_output()}
 
-User: Stop the dev server
-Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
+> User: Stop the dev server
+> Assistant: I'll send 'Ctrl+C' to the pane to stop the server:
 {ToolUse("tmux", [], "send_keys 0 C-c").to_output(tool_format)}
-System: Sent 'C-c' to pane 0
+> System: Sent 'C-c' to pane 0
 
 #### Get info from ncurses applications
-User: start top and give me a summary
-Assistant: Sure! Let's start the top command in a tmux session:
+
+> User: start top and give me a summary
+> Assistant: Sure! Let's start the top command in a tmux session:
 {ToolUse("tmux", [], "new_session 'top'").to_output(tool_format)}
-System: Running `top` in session 1.
+> System: Running `top` in session 1.
 {ToolUse("output", [], "(output from top shown here)").to_output()}
-Assistant: The load is...
+> Assistant: The load is...
 
 #### Background process
-User: Start the dev server
-Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
+
+> User: Start the dev server
+> Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
 {ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
 
 #### Ending a session
-User: I changed my mind
-Assistant: No problem! Let's kill the session and start over:
+
+> User: I changed my mind
+> Assistant: No problem! Let's kill the session and start over:
 {ToolUse("tmux", [], "list_session 0").to_output(tool_format)}
-System: Active tmux sessions [0]
-Assistant:
+> System: Active tmux sessions [0]
+> Assistant:
 {ToolUse("tmux", [], "kill_session 0").to_output(tool_format)}
-System: Killed tmux session with ID 0
+> System: Killed tmux session with ID 0
 """
     # we want to skip the last two examples in prompting
     return "####".join(all_examples.split("####")[:-2])

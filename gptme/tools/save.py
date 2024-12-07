@@ -40,10 +40,11 @@ to append the code block content to the file at the given path.""".strip(),
 def examples(tool_format):
     return f"""
 > User: write a hello world script to hello.py
+> Assistant:
 {ToolUse("save", ["hello.py"], 'print("Hello world")').to_output(tool_format)}
 > System: Saved to `hello.py`
-
 > User: make it all-caps
+> Assistant:
 {ToolUse("save", ["hello.py"], 'print("HELLO WORLD")').to_output(tool_format)}
 > System: Saved to `hello.py`
 """.strip()

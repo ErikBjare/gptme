@@ -11,10 +11,10 @@ instructions = (
 
 def examples(tool_format):
     return f"""
-User: read file.txt
-Assistant:
+> User: read file.txt
+> Assistant:
 {ToolUse("shell", [], "cat file.txt").to_output(tool_format)}
-"""
+""".strip()
 
 
 # Note: this isn't actually a tool, it only serves prompting purposes

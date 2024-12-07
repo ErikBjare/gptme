@@ -19,6 +19,7 @@ from .base import (
     Parameter,
     ToolSpec,
     ToolUse,
+    callable_signature,
 )
 
 if TYPE_CHECKING:
@@ -140,13 +141,15 @@ def get_installed_python_libraries() -> set[str]:
 
 
 def get_functions():
-    return "\n".join([f"- {func.__name__}" for func in registered_functions.values()])
+    return "\n".join(
+        [f"- {callable_signature(func)}" for func in registered_functions.values()]
+    )
 
 
 instructions = """
-This tool execute Python code in an interactive IPython session.
+Use this tool to execute Python code in an interactive IPython session.
 It will respond with the output and result of the execution.
-"""
+""".strip()
 
 instructions_format = {
     "markdown": """
@@ -158,16 +161,18 @@ If you first write the code in a normal python codeblock, remember to also execu
 
 def examples(tool_format):
     return f"""
-#### Results of the last expression will be displayed, IPython-style:
+#### Result of the last expression will be returned
+
 > User: What is 2 + 2?
 > Assistant:
 {ToolUse("ipython", [], "2 + 2").to_output(tool_format)}
 > System: Executed code block.
 {ToolUse("result", [], "4").to_output()}
 
-#### It can write an example and then execute it:
+#### Write a function and call it
+
 > User: compute fib 10
-> Assistant: To compute the 10th Fibonacci number, we can execute this code:
+> Assistant: To compute the 10th Fibonacci number, we can run the following code:
 {ToolUse("ipython", [], '''
 def fib(n):
     if n <= 1:
@@ -182,14 +187,17 @@ fib(10)
 
 def init() -> ToolSpec:
     python_libraries = get_installed_python_libraries()
-    python_libraries_str = "\n".join(f"- {lib}" for lib in python_libraries)
+    python_libraries_str = (
+        "\n".join(f"- {lib}" for lib in python_libraries)
+        or "- no common libraries found"
+    )
 
     _instructions = f"""{instructions}
 
-The following libraries are available:
+Available libraries:
 {python_libraries_str}
 
-The following functions are available:
+Available functions:
 {get_functions()}
 """.strip()
 

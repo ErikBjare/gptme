@@ -64,43 +64,45 @@ instructions_format: dict[str, str] = {}
 
 def examples(tool_format):
     return f"""
-User: list the current directory
-Assistant: To list the files in the current directory, use `ls`:
+> User: list the current directory
+> Assistant: To list the files in the current directory, use `ls`:
 {ToolUse("shell", [], "ls").to_output(tool_format)}
-System: Ran command: `ls`
+> System: Ran command: `ls`
 {ToolUse("shell", [], '''
 file1.txt
 file2.txt
 '''.strip()).to_output()}
 
 #### The assistant can learn context by exploring the filesystem
-User: learn about the project
-Assistant: Lets start by checking the files
+
+> User: learn about the project
+> Assistant: Lets start by checking the files
 {ToolUse("shell", [], "git ls-files").to_output(tool_format)}
-System:
+> System:
 {ToolUse("stdout", [], '''
 README.md
 main.py
 '''.strip()).to_output()}
-Assistant: Now lets check the README
+> Assistant: Now lets check the README
 {ToolUse("shell", [], "cat README.md").to_output(tool_format)}
-System:
+> System:
 {ToolUse("stdout", [], "(contents of README.md)").to_output()}
-Assistant: Now we check main.py
+> Assistant: Now we check main.py
 {ToolUse("shell", [], "cat main.py").to_output(tool_format)}
-System:
+> System:
 {ToolUse("stdout", [], "(contents of main.py)").to_output()}
-Assistant: The project is...
+> Assistant: The project is...
 
 
 #### Create vue project
-User: Create a new vue project with typescript and pinia named fancy-project
-Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
+
+> User: Create a new vue project with typescript and pinia named fancy-project
+> Assistant: Sure! Let's create a new vue project with TypeScript and Pinia named fancy-project:
 {ToolUse("shell",
     [],
     "npm init vue@latest fancy-project --yes -- --typescript --pinia"
 ).to_output()}
-System:
+> System:
 {ToolUse("stdout", [], '''
 > npx
 > create-vue
