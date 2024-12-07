@@ -446,10 +446,10 @@ The shell tool will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>apt-get
-<span class="k">-</span><span class="w"> </span>pandoc
 <span class="k">-</span><span class="w"> </span>git
+<span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>docker
 </pre></div>
 </div>
 <p class="rubric">Examples</p>
@@ -602,12 +602,12 @@ Scaffolding project in ./fancy-project...
 <p>The assistant can execute Python code blocks.</p>
 <p>It uses IPython to do so, and persists the IPython instance between calls to give a REPL-like experience.</p>
 <p class="rubric">Instructions</p>
-<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>This tool execute Python code in an interactive IPython session.
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Use this tool to execute Python code in an interactive IPython session.
 It will respond with the output and result of the execution.
 </pre></div>
 </div>
 <p class="rubric">Examples</p>
-<p>Results of the last expression will be displayed, IPython-style:</p>
+<p>Result of the last expression will be returned</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -632,7 +632,7 @@ It will respond with the output and result of the execution.
 </pre></div></pre>
   </td>
 </tr>
-</table><p>It can write an example and then execute it:</p>
+</table><p>Write a function and call it</p>
 <table style="width: 100%; margin-bottom: 1em">
   
 <tr>
@@ -644,7 +644,7 @@ It will respond with the output and result of the execution.
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To compute the 10th Fibonacci number, we can execute this code:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">To compute the 10th Fibonacci number, we can run the following code:<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">def fib(n):
     if n <= 1:
         return n
@@ -931,7 +931,13 @@ If the current directory changes, the path will be relative to the new directory
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">write a hello world script to hello.py<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">write a hello world script to hello.py</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("Hello world")
 </pre></div></pre>
   </td>
@@ -947,7 +953,13 @@ If the current directory changes, the path will be relative to the new directory
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">make it all-caps<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">make it all-caps</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;"><div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">save hello.py</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">print("HELLO WORLD")
 </pre></div></pre>
   </td>
