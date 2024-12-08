@@ -423,23 +423,6 @@ gptme<span class="w"> </span>-r
 </li>
 </ul>
 </div>
-<p class="rubric">Skip confirmation prompts</p>
-<p>You can skip confirmation prompts using the <code class="docutils literal notranslate"><span class="pre">--no-confirm</span></code> flag. This is useful when you are confident the LLM will do what you want, so you don’t want to have to confirm actions:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--no-confirm<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span>
-</pre></div>
-</div>
-<p class="rubric">Multiprompt syntax</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">-</span></code> separator allows you to chain multiple prompts together, letting the assistant finish running tools for one prompt before moving to the next:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span><span class="s1">&#39;create a project&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;add tests&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;commit changes&#39;</span>
-</pre></div>
-</div>
-<p>This is particularly useful for breaking down complex tasks into steps and creating <a class="reference internal" href="automation.html"><span class="doc">Automation</span></a> workflows.</p>
-<p class="rubric">Non-interactive mode</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">--non-interactive</span></code> flag runs gptme in a mode that terminates after completing all prompts. This is useful for scripting and automation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--non-interactive<span class="w"> </span><span class="s1">&#39;create a snake game using curses in snake.py, dont run it&#39;</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="s1">&#39;make the snake green and the apple red&#39;</span>
-</pre></div>
-</div>
-<p>Note: <code class="docutils literal notranslate"><span class="pre">--non-interactive</span></code> implies <code class="docutils literal notranslate"><span class="pre">--no-confirm</span></code>, so you don’t need to specify both.</p>
 </section>
 
 
