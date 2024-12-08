@@ -187,7 +187,9 @@ def get_mentioned_files(msgs: list[Message], workspace: Path | None) -> list[Pat
     return sorted(files.keys(), key=file_score, reverse=True)
 
 
-def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message:
+def gather_fresh_context(
+    msgs: list[Message], workspace: Path | None, git=True
+) -> Message:
     """Gather fresh context from files and git status."""
 
     files = get_mentioned_files(msgs, workspace)
@@ -197,8 +199,8 @@ def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message
     if precommit_output := run_precommit_checks():
         sections.append(precommit_output)
 
-    # if git_status_output := git_status():
-    #     sections.append(git_status_output)
+    if git and (git_status_output := git_status()):
+        sections.append(git_status_output)
 
     # if pr_status_output := gh_pr_status():
     #     sections.append(pr_status_output)

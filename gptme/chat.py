@@ -337,7 +337,6 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
                     file = file.expanduser()
                     if workspace and not file.is_absolute():
                         file = file.absolute().relative_to(workspace)
-                    print(file)
                     files.append(file)
 
     if files:
