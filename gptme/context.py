@@ -12,6 +12,13 @@ from .message import Message
 
 logger = logging.getLogger(__name__)
 
+# Feature flag for fresh context mode
+use_fresh_context = os.getenv("FRESH_CONTEXT", "").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+
 
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
     """
@@ -265,12 +272,6 @@ def enrich_messages_with_context(
     - git status
     - contents of files modified after their message timestamp
     """
-    # Feature flag for fresh context mode
-    use_fresh_context = os.getenv("FRESH_CONTEXT", "").lower() in (
-        "1",
-        "true",
-        "yes",
-    )
 
     files_before = {f for msg in msgs for f in msg.files}
     msgs = [

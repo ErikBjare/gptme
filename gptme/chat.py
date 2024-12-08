@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
 from .constants import PROMPT_USER
+from .context import use_fresh_context
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
 from .llm import reply
@@ -295,11 +296,6 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
         msg: Message to process
         workspace: If provided, paths will be stored relative to this directory
     """
-    use_fresh_context = os.getenv("GPTME_FRESH_CONTEXT", "").lower() in (
-        "1",
-        "true",
-        "yes",
-    )
     # TODO: add support for directories?
     assert msg.role == "user"
 
@@ -312,9 +308,6 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
     content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
     append_msg = ""
-    logger.info(
-        f"File handling mode: {'fresh context' if use_fresh_context else 'legacy'}"
-    )
 
     for word in re.split(r"[\s`]", content_no_codeblocks):
         # remove wrapping backticks
@@ -333,14 +326,29 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
             or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
             logger.debug(f"potential path/url: {word=}")
-            # Track files in msg.files
-            file = _parse_prompt_files(word)
-            if file:
-                # Store path relative to workspace if provided
-                if workspace and not file.is_absolute():
-                    msg.files.append(file.absolute().relative_to(workspace))
-                else:
-                    msg.files.append(file)
+            if use_fresh_context:
+                logger.info("Using fresh context mode")
+                # Track files in msg.files
+                file = _parse_prompt_files(word)
+                if file:
+                    # Store path relative to workspace if provided
+                    msg = msg.replace(
+                        files=msg.files
+                        + [
+                            (
+                                file.absolute().relative_to(workspace)
+                                if workspace and not file.is_absolute()
+                                else file
+                            )
+                        ]
+                    )
+            else:
+                # If not using fresh context, include the file contents in the message
+                # Include the file contents fresh before each user message
+                contents = _parse_prompt(word)
+                if contents:
+                    # if we found a valid path, replace it with the contents of the file
+                    append_msg += "\n\n" + contents
 
     # append the message with the file contents
     if append_msg:
@@ -351,7 +359,7 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
 
 def _parse_prompt(prompt: str) -> str | None:
     """
-    Takes a string that might be a path,
+    Takes a string that might be a path or URL,
     and if so, returns the contents of that file wrapped in a codeblock.
     """
     # if prompt is a command, exit early (as commands might take paths as arguments)
