@@ -71,6 +71,35 @@ You can start chats and request changes directly from the command line. The cont
 
 With the :ref:`tools:browser` extras installed, the assistant can process URLs included in the prompt and interact with web content.
 
+.. rubric:: Multiprompt syntax
+
+The ``-`` separator allows you to chain multiple prompts together, letting the assistant finish running tools for one prompt before moving to the next:
+
+.. code-block:: bash
+
+    gptme 'create a project' '-' 'add tests' '-' 'commit changes'
+
+This is particularly useful for breaking down complex tasks into steps and creating :doc:`automation` workflows.
+
+.. rubric:: Skip confirmation prompts
+
+You can skip confirmation prompts using the ``--no-confirm`` flag. This is useful when you are confident the LLM will do what you want, so you don't want to have to confirm actions:
+
+.. code-block:: bash
+
+    gptme --no-confirm 'create a snake game using curses in snake.py, dont run it'
+
+.. rubric:: Non-interactive mode
+
+The ``--non-interactive`` flag runs gptme in a mode that terminates after completing all prompts. This is useful for scripting and automation:
+
+.. code-block:: bash
+
+    gptme --non-interactive 'create a snake game using curses in snake.py, dont run it' '-' 'make the snake green and the apple red'
+
+Note: ``--non-interactive`` implies ``--no-confirm``, so you don't need to specify both.
+
+
 Commands
 --------
 
@@ -102,3 +131,7 @@ For more detailed information about specific features, check out:
 - :doc:`tools` - Available tools and their usage
 - :doc:`providers` - Supported LLM providers
 - :doc:`server` - Web UI and API server setup
+
+-----
+
+For further usage examples, see the :doc:`examples` page.
