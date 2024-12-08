@@ -118,10 +118,6 @@ def chat(
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
                 if not msg.content.startswith("/"):
-                    # TODO: include paths as files instead of codeblocks, parse codeblocks in prepare_messages instead?
-                    #       this way we can defer reading multiple stale versions of files in requests
-                    #       we should probably ensure that the old file contents get included in exports and such
-                    #       maybe we need seperate modes for this, but I think the refactor makes sense anyway
                     msg = _include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
@@ -286,11 +282,12 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     """
     Searches the message for any valid paths and:
      - In legacy mode (default):
-       - appends the contents of such files as codeblocks
-       - includes images as files
+       - includes the contents of text files as codeblocks
+       - includes images as msg.files
      - In fresh context mode (GPTME_FRESH_CONTEXT=1):
-       - only tracks paths in msg.files (relative to workspace if provided)
-       - contents are included fresh before each user message
+       - breaks the append-only nature of the log, but ensures we include fresh file contents
+       - includes all files in msg.files
+       - contents are applied right before sending to LLM (only paths stored in the log)
 
     Args:
         msg: Message to process
