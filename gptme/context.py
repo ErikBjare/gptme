@@ -61,23 +61,22 @@ def textfile_as_codeblock(path: Path) -> str | None:
 def append_file_content(
     msg: Message, workspace: Path | None = None, check_modified=False
 ) -> Message:
-    """Append file content to a message."""
+    """Append attached text files to a message."""
     files = [file_to_display_path(f, workspace) for f in msg.files]
-    files_fresh = [
-        f
-        for f in files
-        if not check_modified or f.stat().st_mtime <= datetime.timestamp(msg.timestamp)
-    ]
     files_text = {}
     for f in files:
-        if f in files_fresh and (content := textfile_as_codeblock(f)):
+        if not check_modified or f.stat().st_mtime <= datetime.timestamp(msg.timestamp):
+            content = textfile_as_codeblock(f)
+            if not content:
+                # Non-text file, skip
+                continue
             files_text[f] = content
         else:
             files_text[f] = f"```{f}\n<file was modified after message>\n```"
     return replace(
         msg,
         content=msg.content + "\n\n".join(files_text.values()),
-        files=[f for f in files if f not in files_fresh],
+        files=[f for f in files if f not in files_text],
     )
 
 
