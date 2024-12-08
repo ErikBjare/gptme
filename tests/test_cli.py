@@ -364,8 +364,9 @@ def test_url(args: list[str], runner: CliRunner):
 def test_vision(args: list[str], runner: CliRunner):
     args.append(f"can you see the image at {logo}? answer with yes or no")
     result = runner.invoke(gptme.cli.main, args)
+    if result.exception:
+        raise result.exception
     assert result.exit_code == 0
-    assert "yes" in result.output
     assert "yes" in result.output
 
 

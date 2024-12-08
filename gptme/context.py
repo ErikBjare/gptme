@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 from collections import Counter
+from copy import copy
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -45,12 +46,17 @@ def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
     return f
 
 
+def md_codeblock(lang: str | Path, content: str) -> str:
+    """Wrap content in a markdown codeblock."""
+    return f"```{lang}\n{content}\n```"
+
+
 def textfile_as_codeblock(path: Path) -> str | None:
     """Include file content as a codeblock."""
     try:
         if path.exists() and path.is_file():
             try:
-                return f"```{path}\n{path.read_text()}\n```"
+                return md_codeblock(path, path.read_text())
             except UnicodeDecodeError:
                 return None
     except OSError:
@@ -62,7 +68,7 @@ def append_file_content(
     msg: Message, workspace: Path | None = None, check_modified=False
 ) -> Message:
     """Append attached text files to a message."""
-    files = [file_to_display_path(f, workspace) for f in msg.files]
+    files = [file_to_display_path(f, workspace).expanduser() for f in msg.files]
     files_text = {}
     for f in files:
         if not check_modified or f.stat().st_mtime <= datetime.timestamp(msg.timestamp):
@@ -72,7 +78,7 @@ def append_file_content(
                 continue
             files_text[f] = content
         else:
-            files_text[f] = f"```{f}\n<file was modified after message>\n```"
+            files_text[f] = md_codeblock(f, "<file was modified after message>")
     return replace(
         msg,
         content=msg.content + "\n\n".join(files_text.values()),
@@ -148,7 +154,7 @@ def git_status() -> str | None:
         )
         if git_status.returncode == 0:
             logger.debug("Including git status in context")
-            return f"```git status -vv\n{git_status.stdout}```"
+            return md_codeblock("git status -vv", git_status.stdout)
     except (subprocess.CalledProcessError, FileNotFoundError):
         logger.debug("Not in a git repository or git not available")
     return None
@@ -208,7 +214,7 @@ def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message
                 content = "<binary file>"
             display_path = file_to_display_path(f, workspace)
             logger.info(f"Read file: {display_path}")
-            sections.append(f"```{display_path}\n{content}\n```")
+            sections.append(md_codeblock(display_path, content))
         else:
             logger.info(f"File not found: {f}")
 
@@ -251,13 +257,16 @@ def run_precommit_checks() -> str | None:
         subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
         return None  # No issues found
     except subprocess.CalledProcessError as e:
-        return f"""```pre-commit
+        return md_codeblock(
+            cmd,
+            f"""
 stdout:
 {e.stdout}
 
 stderr:
 {e.stderr}
-```"""
+""".strip(),
+        )
 
 
 def enrich_messages_with_context(
@@ -271,6 +280,15 @@ def enrich_messages_with_context(
     - git status
     - contents of files modified after their message timestamp
     """
+    from .tools._rag_context import _HAS_RAG, rag_enhance_messages  # fmt: skip
+
+    # Make a copy of messages to avoid modifying the original
+    msgs = copy(msgs)
+
+    # First enhance messages with context
+    if _HAS_RAG:
+        msgs = rag_enhance_messages(msgs)
+
     msgs = [
         append_file_content(msg, workspace, check_modified=use_fresh_context)
         for msg in msgs

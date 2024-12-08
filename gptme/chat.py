@@ -325,26 +325,20 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
             or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
             logger.debug(f"potential path/url: {word=}")
-            if use_fresh_context:
-                # Track files in msg.files
-                # File contents should be inserted before sending to LLM
-                file = _parse_prompt_files(word)
+            # If not using fresh context, include text file contents in the message
+            if not use_fresh_context and (contents := _parse_prompt(word)):
+                # if we found a valid path, replace it with the contents of the file
+                append_msg += "\n\n" + contents
             else:
-                # If not using fresh context, include text file contents in the message
-                if contents := _parse_prompt(word):
-                    # if we found a valid path, replace it with the contents of the file
-                    append_msg += "\n\n" + contents
-
                 # if we found an non-text file, include it in msg.files
                 file = _parse_prompt_files(word)
-
-            if file:
-                # Store path relative to workspace if provided
-                files.append(
-                    file.absolute().relative_to(workspace)
-                    if workspace and not file.is_absolute()
-                    else file
-                )
+                if file:
+                    # Store path relative to workspace if provided
+                    file = file.expanduser()
+                    if workspace and not file.is_absolute():
+                        file = file.absolute().relative_to(workspace)
+                    print(file)
+                    files.append(file)
 
     if files:
         msg = msg.replace(files=msg.files + files)

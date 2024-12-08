@@ -6,7 +6,7 @@ import gptme.tools._rag_context
 import gptme.tools.rag
 import pytest
 from gptme.message import Message
-from gptme.tools._rag_context import enhance_messages
+from gptme.tools._rag_context import rag_enhance_messages
 from gptme.tools.rag import _HAS_RAG
 from gptme.tools.rag import init as init_rag
 from gptme.tools.rag import rag_index, rag_search
@@ -86,7 +86,7 @@ def test_enhance_messages_no_rag():
         Message("assistant", "Python is a programming language"),
     ]
 
-    enhanced = enhance_messages(messages)
+    enhanced = rag_enhance_messages(messages)
 
     # Should be unchanged when RAG is not available
     assert len(enhanced) == len(messages)

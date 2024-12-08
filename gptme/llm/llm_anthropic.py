@@ -160,7 +160,7 @@ def _process_file(message_dict: dict) -> dict:
     )
 
     for f in message_dict.pop("files", []):
-        f = Path(f)
+        f = Path(f).expanduser()
         ext = f.suffix[1:]
         if ext not in ALLOWED_FILE_EXTS:
             logger.warning("Unsupported file type: %s", ext)
