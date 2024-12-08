@@ -414,15 +414,15 @@ This is a major goal of the project, and it is important to keep in mind that th
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     223045 |       gptme.commands
-     231060 |     gptme.chat
-     286375 |   gptme.cli
-     324292 | openai
-     333806 | gptme
+     224388 |       gptme.commands
+     232616 |     gptme.chat
+     289311 |   gptme.cli
+     337528 | gptme
+     338517 | openai
 
-real	0m1.394s
-user	0m1.192s
-sys	0m0.214s
+real	0m1.453s
+user	0m1.316s
+sys	0m0.149s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -439,13 +439,13 @@ classified 34 files
       34 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.04 s (761.1 files/s, 143883.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.05 s (743.5 files/s, 141182.0 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
 gptme/tools/base.py                              82             70            322
+gptme/logmanager.py                              73             63            317
 gptme/chat.py                                    54             88            309
-gptme/logmanager.py                              70             61            294
 gptme/cli.py                                     54             41            285
 gptme/llm/llm_openai.py                          59             26            239
 gptme/ncurses.py                                 39              5            238
@@ -478,7 +478,7 @@ gptme/__init__.py                                 1              0              
 gptme/__version__.py                              2              0              7
 gptme/__main__.py                                 1              0              3
 ---------------------------------------------------------------------------------
-SUM:                                           1027            888           4513
+SUM:                                           1030            890           4536
 ---------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -494,7 +494,7 @@ classified 5 files
        5 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (404.2 files/s, 99927.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (384.4 files/s, 95026.3 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -520,7 +520,7 @@ classified 20 files
       20 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (724.5 files/s, 134105.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (710.8 files/s, 131575.1 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -561,7 +561,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (761.8 files/s, 112656.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (713.7 files/s, 105540.1 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -590,7 +590,7 @@ classified 25 files
       25 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1240.2 files/s, 107748.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1213.8 files/s, 105452.3 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -636,7 +636,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (649.2 files/s, 79364.4 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (633.9 files/s, 77488.9 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -665,15 +665,15 @@ classified 99 files
       99 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.09 s (1073.5 files/s, 150306.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.09 s (1058.4 files/s, 148497.6 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
 gptme/tools/base.py                                  82             70            322
 gptme/tools/shell.py                                 77             69            320
+gptme/logmanager.py                                  73             63            317
 gptme/chat.py                                        54             88            309
 gptme/eval/main.py                                   52             18            307
-gptme/logmanager.py                                  70             61            294
 gptme/cli.py                                         54             41            285
 tests/test_cli.py                                    77             41            285
 gptme/eval/run.py                                    47             27            274
@@ -769,7 +769,7 @@ gptme/eval/__main__.py                                1              0          
 gptme/server/__init__.py                              2              3              3
 gptme/server/__main__.py                              1              0              3
 -------------------------------------------------------------------------------------
-SUM:                                               2455           2197           9210
+SUM:                                               2458           2199           9233
 -------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
