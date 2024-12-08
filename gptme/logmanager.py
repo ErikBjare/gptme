@@ -1,3 +1,4 @@
+import fcntl
 import json
 import logging
 import shutil
@@ -71,6 +72,7 @@ class LogManager:
         log: list[Message] | None = None,
         logdir: PathLike | None = None,
         branch: str | None = None,
+        lock: bool = True,
     ):
         self.current_branch = branch or "main"
         if logdir:
@@ -81,6 +83,24 @@ class LogManager:
             logger.warning(f"No logfile specified, using tmpfile at {fpath}")
             self.logdir = Path(fpath)
         self.name = self.logdir.name
+
+        # Create and optionally lock the directory
+        self.logdir.mkdir(parents=True, exist_ok=True)
+        if lock:
+            self._lockfile = self.logdir / ".lock"
+            self._lockfile.touch(exist_ok=True)
+            self._lock_fd = self._lockfile.open("w")
+
+            # Try to acquire an exclusive lock
+
+            try:
+                fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                logger.debug(f"Acquired lock on {self.logdir}")
+            except BlockingIOError:
+                self._lock_fd.close()
+                raise RuntimeError(
+                    f"Another gptme instance is using {self.logdir}"
+                ) from None
 
         # load branches from adjacent files
         self._branches = {self.current_branch: Log(log or [])}
@@ -97,7 +117,15 @@ class LogManager:
             if _branch not in self._branches:
                 self._branches[_branch] = Log.read_jsonl(file)
 
-        # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
+    def __del__(self):
+        """Release the lock and close the file descriptor"""
+        if hasattr(self, "_lock_fd"):
+            try:
+                fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
+                self._lock_fd.close()
+                logger.debug(f"Released lock on {self.logdir}")
+            except Exception as e:
+                logger.warning(f"Error releasing lock: {e}")
 
     @property
     def workspace(self) -> Path:
