@@ -1,5 +1,6 @@
 import atexit
 import logging
+import os
 from typing import cast
 
 from dotenv import load_dotenv
@@ -31,6 +32,10 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     # init
     logger.debug("Started")
     load_dotenv()
+
+    # fixes issues with transformers parallelism
+    # which also leads to "Context leak detected, msgtracer returned -1"
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     config = get_config()
 
