@@ -15,6 +15,7 @@ from .base import (
     Parameter,
     ToolSpec,
     ToolUse,
+    get_path,
 )
 
 instructions = """
@@ -183,27 +184,11 @@ def apply(codeblock: str, content: str) -> str:
     return new_content
 
 
-def get_patch_path(
-    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
-) -> Path:
-    """Get the path from args/kwargs."""
-    if code is not None and args is not None:
-        fn = " ".join(args)
-        if not fn:
-            raise ValueError("No path provided")
-    elif kwargs is not None:
-        fn = kwargs.get("path", "")
-    else:
-        raise ValueError("No path provided")
-
-    return Path(fn).expanduser()
-
-
 def preview_patch(content: str, path: Path | None) -> str | None:
     """Prepare preview content for patch operation."""
     try:
         patches = Patch.from_codeblock(content)
-        return "\n\n".join(p.diff_minimal() for p in patches)
+        return "\n@@@\n".join(p.diff_minimal() for p in patches)
     except ValueError as e:
         raise ValueError(f"Invalid patch: {e.args[0]}") from None
 
@@ -261,10 +246,10 @@ def execute_patch(
         kwargs,
         confirm,
         execute_fn=execute_patch_impl,
-        get_path_fn=get_patch_path,
+        get_path_fn=get_path,
         preview_fn=preview_patch,
         preview_lang="diff",
-        confirm_msg=None,  # use default
+        confirm_msg=f"Apply patch to {get_path(code, args, kwargs)}?",
         allow_edit=True,
     )
 
