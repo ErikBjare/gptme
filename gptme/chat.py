@@ -121,7 +121,7 @@ def chat(
                     #       this way we can defer reading multiple stale versions of files in requests
                     #       we should probably ensure that the old file contents get included in exports and such
                     #       maybe we need seperate modes for this, but I think the refactor makes sense anyway
-                    msg = _include_paths(msg)
+                    msg = _include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
                 if execute_cmd(msg, manager, confirm_func):
@@ -136,7 +136,8 @@ def chat(
                                 manager.log,
                                 stream,
                                 confirm_func,
-                                tool_format=tool_format,
+                                tool_format,
+                                workspace,
                             )
                         )
                     except KeyboardInterrupt:
@@ -184,7 +185,7 @@ def chat(
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
         for msg in step(
-            manager.log, stream, confirm_func, tool_format=tool_format
+            manager.log, stream, confirm_func, tool_format, workspace
         ):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
@@ -197,6 +198,7 @@ def step(
     stream: bool,
     confirm: ConfirmFunc,
     tool_format: ToolFormat = "markdown",
+    workspace: Path | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
@@ -215,7 +217,7 @@ def step(
     ):  # pragma: no cover
         inquiry = prompt_user()
         msg = Message("user", inquiry, quiet=True)
-        msg = _include_paths(msg)
+        msg = _include_paths(msg, workspace)
         yield msg
         log = log.append(msg)
 
@@ -224,7 +226,7 @@ def step(
         set_interruptible()
 
         # performs reduction/context trimming, if necessary
-        msgs = prepare_messages(log.messages)
+        msgs = prepare_messages(log.messages, workspace)
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
@@ -279,15 +281,19 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     return value
 
 
-def _include_paths(msg: Message) -> Message:
+def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     """
     Searches the message for any valid paths and:
      - In legacy mode (default):
        - appends the contents of such files as codeblocks
        - includes images as files
      - In fresh context mode (GPTME_FRESH_CONTEXT=1):
-       - only tracks paths in msg.files
+       - only tracks paths in msg.files (relative to workspace if provided)
        - contents are included fresh before each user message
+
+    Args:
+        msg: Message to process
+        workspace: If provided, paths will be stored relative to this directory
     """
     use_fresh_context = os.getenv("GPTME_FRESH_CONTEXT", "").lower() in (
         "1",
@@ -330,7 +336,11 @@ def _include_paths(msg: Message) -> Message:
             # Track files in msg.files
             file = _parse_prompt_files(word)
             if file:
-                msg.files.append(file)
+                # Store path relative to workspace if provided
+                if workspace and not file.is_absolute():
+                    msg.files.append(file.absolute().relative_to(workspace))
+                else:
+                    msg.files.append(file)
 
     # append the message with the file contents
     if append_msg:
@@ -355,7 +365,7 @@ def _parse_prompt(prompt: str) -> str | None:
         # check if prompt is a path, if so, replace it with the contents of that file
         f = Path(prompt).expanduser()
         if f.exists() and f.is_file():
-            return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
+            return f"```{prompt}\n{f.read_text()}\n```"
     except OSError as oserr:
         # some prompts are too long to be a path, so we can't read them
         if oserr.errno != errno.ENAMETOOLONG:
@@ -421,7 +431,7 @@ def _parse_prompt_files(prompt: str) -> Path | None:
         return None
 
     try:
-        p = Path(prompt)
+        p = Path(prompt).expanduser()
         if not (p.exists() and p.is_file()):
             return None
 
