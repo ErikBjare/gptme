@@ -12,6 +12,7 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
+from .context import enrich_messages_with_context
 from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
@@ -72,7 +73,6 @@ class LogManager:
         branch: str | None = None,
     ):
         self.current_branch = branch or "main"
-
         if logdir:
             self.logdir = Path(logdir)
         else:
@@ -98,6 +98,11 @@ class LogManager:
                 self._branches[_branch] = Log.read_jsonl(file)
 
         # TODO: Check if logfile has contents, then maybe load, or should it overwrite?
+
+    @property
+    def workspace(self) -> Path:
+        """Path to workspace directory (resolves symlink if exists)."""
+        return (self.logdir / "workspace").resolve()
 
     @property
     def log(self) -> Log:
@@ -304,13 +309,17 @@ class LogManager:
         return d
 
 
-def prepare_messages(msgs: list[Message]) -> list[Message]:
-    """Prepares the messages before sending to the LLM."""
-    from .tools._rag_context import _HAS_RAG, enhance_messages  # fmt: skip
-
-    # First enhance messages with context
-    if _HAS_RAG:
-        msgs = enhance_messages(msgs)
+def prepare_messages(
+    msgs: list[Message], workspace: Path | None = None
+) -> list[Message]:
+    """
+    Prepares the messages before sending to the LLM.
+    - Takes the stored gptme conversation log
+    - Enhances it with context such as file contents
+    - Transforms it to the format expected by LLM providers
+    """
+    # Enrich with enabled context enhancements (RAG, fresh context)
+    msgs = enrich_messages_with_context(msgs, workspace)
 
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
 from .constants import PROMPT_USER
+from .context import use_fresh_context
 from .init import init
 from .interrupt import clear_interruptible, set_interruptible
 from .llm import reply
@@ -117,7 +118,7 @@ def chat(
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
                 if not msg.content.startswith("/"):
-                    msg = _include_paths(msg)
+                    msg = _include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
                 if execute_cmd(msg, manager, confirm_func):
@@ -132,7 +133,8 @@ def chat(
                                 manager.log,
                                 stream,
                                 confirm_func,
-                                tool_format=tool_format,
+                                tool_format,
+                                workspace,
                             )
                         )
                     except KeyboardInterrupt:
@@ -180,7 +182,7 @@ def chat(
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
         for msg in step(
-            manager.log, stream, confirm_func, tool_format=tool_format
+            manager.log, stream, confirm_func, tool_format, workspace
         ):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
@@ -193,6 +195,7 @@ def step(
     stream: bool,
     confirm: ConfirmFunc,
     tool_format: ToolFormat = "markdown",
+    workspace: Path | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
@@ -211,7 +214,7 @@ def step(
     ):  # pragma: no cover
         inquiry = prompt_user()
         msg = Message("user", inquiry, quiet=True)
-        msg = _include_paths(msg)
+        msg = _include_paths(msg, workspace)
         yield msg
         log = log.append(msg)
 
@@ -220,7 +223,7 @@ def step(
         set_interruptible()
 
         # performs reduction/context trimming, if necessary
-        msgs = prepare_messages(log.messages)
+        msgs = prepare_messages(log.messages, workspace)
         for m in msgs:
             logger.debug(f"Prepared message: {m}")
 
@@ -275,11 +278,20 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     return value
 
 
-def _include_paths(msg: Message) -> Message:
+def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     """
     Searches the message for any valid paths and:
-     - appends the contents of such files as codeblocks.
-     - include images as files.
+     - In legacy mode (default):
+       - includes the contents of text files as codeblocks
+       - includes images as msg.files
+     - In fresh context mode (GPTME_FRESH_CONTEXT=1):
+       - breaks the append-only nature of the log, but ensures we include fresh file contents
+       - includes all files in msg.files
+       - contents are applied right before sending to LLM (only paths stored in the log)
+
+    Args:
+        msg: Message to process
+        workspace: If provided, paths will be stored relative to this directory
     """
     # TODO: add support for directories?
     assert msg.role == "user"
@@ -292,7 +304,10 @@ def _include_paths(msg: Message) -> Message:
     # don't look in codeblocks, and don't match paths that are already in codeblocks
     # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
     content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
+
     append_msg = ""
+    files = []
+
     for word in re.split(r"[\s`]", content_no_codeblocks):
         # remove wrapping backticks
         word = word.strip("`")
@@ -310,14 +325,22 @@ def _include_paths(msg: Message) -> Message:
             or any(word.split("/", 1)[0] == file for file in cwd_files)
         ):
             logger.debug(f"potential path/url: {word=}")
-            contents = _parse_prompt(word)
-            if contents:
+            # If not using fresh context, include text file contents in the message
+            if not use_fresh_context and (contents := _parse_prompt(word)):
                 # if we found a valid path, replace it with the contents of the file
                 append_msg += "\n\n" + contents
+            else:
+                # if we found an non-text file, include it in msg.files
+                file = _parse_prompt_files(word)
+                if file:
+                    # Store path relative to workspace if provided
+                    file = file.expanduser()
+                    if workspace and not file.is_absolute():
+                        file = file.absolute().relative_to(workspace)
+                    files.append(file)
 
-            file = _parse_prompt_files(word)
-            if file:
-                msg.files.append(file)
+    if files:
+        msg = msg.replace(files=msg.files + files)
 
     # append the message with the file contents
     if append_msg:
@@ -328,7 +351,7 @@ def _include_paths(msg: Message) -> Message:
 
 def _parse_prompt(prompt: str) -> str | None:
     """
-    Takes a string that might be a path,
+    Takes a string that might be a path or URL,
     and if so, returns the contents of that file wrapped in a codeblock.
     """
     # if prompt is a command, exit early (as commands might take paths as arguments)
@@ -342,7 +365,7 @@ def _parse_prompt(prompt: str) -> str | None:
         # check if prompt is a path, if so, replace it with the contents of that file
         f = Path(prompt).expanduser()
         if f.exists() and f.is_file():
-            return f"```{prompt}\n{Path(prompt).expanduser().read_text()}\n```"
+            return f"```{prompt}\n{f.read_text()}\n```"
     except OSError as oserr:
         # some prompts are too long to be a path, so we can't read them
         if oserr.errno != errno.ENAMETOOLONG:
@@ -396,9 +419,9 @@ def _parse_prompt(prompt: str) -> str | None:
 
 def _parse_prompt_files(prompt: str) -> Path | None:
     """
-    Takes a string that might be a image path or PDF, to be attached to the message, and returns the path.
+    Takes a string that might be a supported file path (image, text, PDF) and returns the path.
+    Files added here will either be included inline (legacy mode) or in fresh context (fresh context mode).
     """
-    allowed_exts = ["png", "jpg", "jpeg", "gif", "pdf"]
 
     # if prompt is a command, exit early (as commands might take paths as arguments)
     if any(
@@ -408,12 +431,18 @@ def _parse_prompt_files(prompt: str) -> Path | None:
         return None
 
     try:
-        # check if prompt is a path, if so, replace it with the contents of that file
-        p = Path(prompt)
-        if p.exists() and p.is_file() and p.suffix[1:] in allowed_exts:
-            logger.info(f"Attaching file {p} to message")
+        p = Path(prompt).expanduser()
+        if not (p.exists() and p.is_file()):
+            return None
+
+        # Try to read as text
+        try:
+            p.read_text()
             return p
-        else:
+        except UnicodeDecodeError:
+            # If not text, check if supported binary format
+            if p.suffix[1:].lower() in ["png", "jpg", "jpeg", "gif", "pdf"]:
+                return p
             return None
     except OSError as oserr:  # pragma: no cover
         # some prompts are too long to be a path, so we can't read them

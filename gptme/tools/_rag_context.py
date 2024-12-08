@@ -159,7 +159,7 @@ class RAGManager:
         return self.indexer.collection.count()
 
 
-def enhance_messages(messages: list[Message]) -> list[Message]:
+def rag_enhance_messages(messages: list[Message]) -> list[Message]:
     """Enhance messages with context from available providers."""
     if not _HAS_RAG:
         return messages
