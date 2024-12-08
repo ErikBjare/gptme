@@ -9,7 +9,7 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from .message import Message
+from ..message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +282,7 @@ def enrich_messages_with_context(
     - git status
     - contents of files modified after their message timestamp
     """
-    from .tools._rag_context import _HAS_RAG, rag_enhance_messages  # fmt: skip
+    from ..tools._rag_context import _HAS_RAG, rag_enhance_messages  # fmt: skip
 
     # Make a copy of messages to avoid modifying the original
     msgs = copy(msgs)

@@ -10,9 +10,7 @@ from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
 from .constants import PROMPT_USER
-from .context import use_fresh_context
 from .init import init
-from .interrupt import clear_interruptible, set_interruptible
 from .llm import reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
@@ -34,7 +32,9 @@ from .util import (
     rich_to_str,
 )
 from .util.ask_execute import ask_execute
+from .util.context import use_fresh_context
 from .util.cost import log_costs
+from .util.interrupt import clear_interruptible, set_interruptible
 from .util.readline import add_history
 
 logger = logging.getLogger(__name__)

@@ -13,11 +13,11 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
-from .context import enrich_messages_with_context
 from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
-from .reduce import limit_log, reduce_log
+from .util.context import enrich_messages_with_context
+from .util.reduce import limit_log, reduce_log
 
 PathLike: TypeAlias = str | Path
 

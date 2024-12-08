@@ -2,13 +2,13 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from gptme.context import (
+from gptme.message import Message
+from gptme.util.context import (
     append_file_content,
     file_to_display_path,
     gather_fresh_context,
     get_mentioned_files,
 )
-from gptme.message import Message
 
 
 def test_file_to_display_path(tmp_path):
