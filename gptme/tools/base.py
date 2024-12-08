@@ -4,6 +4,7 @@ import re
 import types
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
+from pathlib import Path
 from textwrap import indent
 from typing import (
     Any,
@@ -451,3 +452,23 @@ class ToolUse:
     def _to_toolcall(self) -> str:
         self._to_json()
         return f"@{self.tool}: {json.dumps(self._to_params(), indent=2)}"
+
+
+def get_path(
+    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
+) -> Path:
+    """Get the path from args/kwargs for save, append, and patch."""
+    if code is not None and args is not None:
+        fn = " ".join(args)
+        if (
+            fn.startswith("save ")
+            or fn.startswith("append ")
+            or fn.startswith("patch ")
+        ):
+            fn = fn.split(" ", 1)[1]
+    elif kwargs is not None:
+        fn = kwargs.get("path", "")
+    else:
+        raise ValueError("No filename provided")
+
+    return Path(fn).expanduser()

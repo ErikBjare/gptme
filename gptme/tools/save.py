@@ -12,6 +12,7 @@ from .base import (
     Parameter,
     ToolSpec,
     ToolUse,
+    get_path,
 )
 from .patch import Patch
 
@@ -59,22 +60,6 @@ def examples_append(tool_format):
 """.strip()
 
 
-def get_save_path(
-    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
-) -> Path:
-    """Get the path from args/kwargs."""
-    if code is not None and args is not None:
-        fn = " ".join(args)
-        if fn.startswith("save "):
-            fn = fn[5:]
-    elif kwargs is not None:
-        fn = kwargs.get("path", "")
-    else:
-        raise ValueError("No filename provided")
-
-    return Path(fn).expanduser()
-
-
 def preview_save(content: str, path: Path | None) -> str | None:
     """Prepare preview content for save operation."""
     assert path
@@ -84,6 +69,19 @@ def preview_save(content: str, path: Path | None) -> str | None:
         diff_str = p.diff_minimal()
         return diff_str if diff_str.strip() else None
     return content
+
+
+def preview_append(content: str, path: Path | None) -> str | None:
+    """Prepare preview content for append operation."""
+    assert path
+    if path.exists():
+        current = path.read_text()
+        if not current.endswith("\n"):
+            current += "\n"
+    else:
+        current = ""
+    new = current + content
+    return preview_save(new, path)
 
 
 def execute_save_impl(
@@ -115,6 +113,32 @@ def execute_save_impl(
     yield Message("system", f"Saved to {path}")
 
 
+def execute_append_impl(
+    content: str, path: Path | None, confirm: ConfirmFunc
+) -> Generator[Message, None, None]:
+    """Actual append implementation."""
+    assert path
+    path_display = path
+    path = path.expanduser()
+    if not path.exists():
+        if not confirm(f"File {path_display} doesn't exist, create it?"):
+            yield Message("system", "Append cancelled.")
+            return
+
+    # strip leading newlines
+    # content = content.lstrip("\n")
+    # ensure it ends with a newline
+    if not content.endswith("\n"):
+        content += "\n"
+
+    before = path.read_text()
+    if not before.endswith("\n"):
+        content = "\n" + content
+    with open(path, "a") as f:
+        f.write(content)
+    yield Message("system", f"Appended to {path_display}")
+
+
 def execute_save(
     code: str | None,
     args: list[str] | None,
@@ -128,10 +152,10 @@ def execute_save(
         kwargs,
         confirm,
         execute_fn=execute_save_impl,
-        get_path_fn=get_save_path,
+        get_path_fn=get_path,
         preview_fn=preview_save,
         preview_lang="diff",
-        confirm_msg=None,  # use default
+        confirm_msg=f"Save to {get_path(code, args, kwargs)}?",
         allow_edit=True,
     )
 
@@ -143,37 +167,18 @@ def execute_append(
     confirm: ConfirmFunc,
 ) -> Generator[Message, None, None]:
     """Append code to a file."""
-
-    fn = ""
-    content = ""
-    if code is not None and args is not None:
-        fn = " ".join(args)
-        # strip leading newlines
-        content = code.lstrip("\n")
-        # ensure it ends with a newline
-        if not content.endswith("\n"):
-            content += "\n"
-    elif kwargs is not None:
-        content = kwargs["content"]
-        fn = kwargs["path"]
-
-    assert fn, "No filename provided"
-    assert content, "No content provided"
-
-    if not confirm(f"Append to {fn}?"):
-        # early return
-        yield Message("system", "Append cancelled.")
-        return
-
-    path = Path(fn).expanduser()
-
-    if not path.exists():
-        yield Message("system", f"File {fn} doesn't exist, can't append to it.")
-        return
-
-    with open(path, "a") as f:
-        f.write(content)
-    yield Message("system", f"Appended to {fn}")
+    yield from execute_with_confirmation(
+        code,
+        args,
+        kwargs,
+        confirm,
+        execute_fn=execute_append_impl,
+        get_path_fn=get_path,
+        preview_fn=preview_append,
+        preview_lang="diff",
+        confirm_msg=f"Append to {get_path(code, args, kwargs)}?",
+        allow_edit=True,
+    )
 
 
 tool_save = ToolSpec(
