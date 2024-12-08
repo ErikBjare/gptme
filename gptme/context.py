@@ -167,9 +167,9 @@ def get_mentioned_files(msgs: list[Message], workspace: Path | None) -> list[Pat
             else:
                 f = f.resolve()
             files[f] += 1
-    logger.info(
-        f"Files mentioned in conversation (workspace: {workspace_abs}): {dict(files)}"
-    )
+
+    if files:
+        logger.info(f"Files mentioned: {dict(files)}")
 
     def file_score(f: Path) -> tuple[int, float]:
         # Sort by mentions and recency
@@ -272,8 +272,6 @@ def enrich_messages_with_context(
     - git status
     - contents of files modified after their message timestamp
     """
-
-    files_before = {f for msg in msgs for f in msg.files}
     msgs = [
         append_file_content(msg, workspace, check_modified=use_fresh_context)
         for msg in msgs
@@ -287,13 +285,7 @@ def enrich_messages_with_context(
         )
         msgs.insert(-last_user_idx if last_user_idx else -1, fresh_content_msg)
     else:
-        # Legacy mode: Include file contents where they were mentioned
-        # FIXME: this doesn't include the versions of files as they were at the time of the message
+        # Legacy mode: file contents already included at the time of message creation
         pass
-
-    files_after = {f for msg in msgs for f in msg.files}
-    # logger.info(f"Files before: {files_before}")
-    # logger.info(f"Files after: {files_after}")
-    logger.info(f"Files embedded in conversation: {files_before - files_after}")
 
     return msgs

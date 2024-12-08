@@ -304,7 +304,9 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     # don't look in codeblocks, and don't match paths that are already in codeblocks
     # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
     content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
+
     append_msg = ""
+    files = []
 
     for word in re.split(r"[\s`]", content_no_codeblocks):
         # remove wrapping backticks
@@ -324,28 +326,28 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
         ):
             logger.debug(f"potential path/url: {word=}")
             if use_fresh_context:
-                logger.info("Using fresh context mode")
                 # Track files in msg.files
+                # File contents should be inserted before sending to LLM
                 file = _parse_prompt_files(word)
-                if file:
-                    # Store path relative to workspace if provided
-                    msg = msg.replace(
-                        files=msg.files
-                        + [
-                            (
-                                file.absolute().relative_to(workspace)
-                                if workspace and not file.is_absolute()
-                                else file
-                            )
-                        ]
-                    )
             else:
-                # If not using fresh context, include the file contents in the message
-                # Include the file contents fresh before each user message
-                contents = _parse_prompt(word)
-                if contents:
+                # If not using fresh context, include text file contents in the message
+                if contents := _parse_prompt(word):
                     # if we found a valid path, replace it with the contents of the file
                     append_msg += "\n\n" + contents
+
+                # if we found an non-text file, include it in msg.files
+                file = _parse_prompt_files(word)
+
+            if file:
+                # Store path relative to workspace if provided
+                files.append(
+                    file.absolute().relative_to(workspace)
+                    if workspace and not file.is_absolute()
+                    else file
+                )
+
+    if files:
+        msg = msg.replace(files=msg.files + files)
 
     # append the message with the file contents
     if append_msg:
