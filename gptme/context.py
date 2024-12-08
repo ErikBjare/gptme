@@ -5,6 +5,7 @@ import shutil
 import subprocess
 from collections import Counter
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 
 from .message import Message
@@ -50,14 +51,26 @@ def textfile_as_codeblock(path: Path) -> str | None:
     return None
 
 
-def append_file_content(msg: Message, workspace: Path | None = None) -> Message:
+def append_file_content(
+    msg: Message, workspace: Path | None = None, check_modified=False
+) -> Message:
     """Append file content to a message."""
     files = [file_to_display_path(f, workspace) for f in msg.files]
-    text_files = {f: content for f in files if (content := textfile_as_codeblock(f))}
+    files_fresh = [
+        f
+        for f in files
+        if not check_modified or f.stat().st_mtime <= datetime.timestamp(msg.timestamp)
+    ]
+    files_text = {}
+    for f in files:
+        if f in files_fresh and (content := textfile_as_codeblock(f)):
+            files_text[f] = content
+        else:
+            files_text[f] = f"```{f}\n<file was modified after message>\n```"
     return replace(
         msg,
-        content=msg.content + "\n\n".join(text_files.values()),
-        files=[f for f in files if f not in text_files],
+        content=msg.content + "\n\n".join(files_text.values()),
+        files=[f for f in files if f not in files_fresh],
     )
 
 
@@ -83,6 +96,7 @@ def gh_pr_status() -> str | None:
     """Get GitHub PR status if available."""
     branch = git_branch()
     if shutil.which("gh") and branch and branch not in ["main", "master"]:
+        logger.info(f"Getting PR status for branch: {branch}")
         try:
             p = subprocess.run(
                 ["gh", "pr", "view", "--json", "number,title,url,body,comments"],
@@ -104,15 +118,17 @@ def gh_pr_status() -> str | None:
         return f"""Pull Request #{pr["number"]}: {pr["title"]} ({branch})
 {pr["url"]}
 
+<body>
 {pr["body"]}
-
-<diff>
-{p_diff.stdout}
-</diff>
+</body>
 
 <comments>
 {pr["comments"]}
 </comments>
+
+<diff>
+{p_diff.stdout}
+</diff>
 """
 
     return None
@@ -132,16 +148,14 @@ def git_status() -> str | None:
     return None
 
 
-def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message:
-    """Gather fresh context from files and git status."""
-
-    # Get files mentioned in conversation
+def get_mentioned_files(msgs: list[Message], workspace: Path | None) -> list[Path]:
+    """Count files mentioned in messages."""
     workspace_abs = workspace.resolve() if workspace else None
     files: Counter[Path] = Counter()
     for msg in msgs:
         for f in msg.files:
             # If path is relative and we have a workspace, make it absolute relative to workspace
-            if not f.is_absolute() and workspace_abs:
+            if workspace_abs and not f.is_absolute():
                 f = (workspace_abs / f).resolve()
             else:
                 f = f.resolve()
@@ -150,27 +164,36 @@ def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message
         f"Files mentioned in conversation (workspace: {workspace_abs}): {dict(files)}"
     )
 
-    # Sort by mentions and recency
     def file_score(f: Path) -> tuple[int, float]:
+        # Sort by mentions and recency
         try:
             mtime = f.stat().st_mtime
             return (files[f], mtime)
         except FileNotFoundError:
             return (files[f], 0)
 
-    mentioned_files = sorted(files.keys(), key=file_score, reverse=True)
+    return sorted(files.keys(), key=file_score, reverse=True)
+
+
+def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message:
+    """Gather fresh context from files and git status."""
+
+    files = get_mentioned_files(msgs, workspace)
     sections = []
 
-    if git_status_output := git_status():
-        sections.append(git_status_output)
+    # Add pre-commit check results if there are issues
+    if precommit_output := run_precommit_checks():
+        sections.append(precommit_output)
 
-    if pr_status_output := gh_pr_status():
-        sections.append(pr_status_output)
+    # if git_status_output := git_status():
+    #     sections.append(git_status_output)
+
+    # if pr_status_output := gh_pr_status():
+    #     sections.append(pr_status_output)
 
     # Read contents of most relevant files
-    for f in mentioned_files[:10]:  # Limit to top 10 files
+    for f in files[:10]:  # Limit to top 10 files
         if f.exists():
-            logger.info(f"Including fresh content from: {f}")
             try:
                 with open(f) as file:
                     content = file.read()
@@ -178,7 +201,7 @@ def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message
                 logger.debug(f"Skipping binary file: {f}")
                 content = "<binary file>"
             display_path = file_to_display_path(f, workspace)
-            logger.info(f"Reading file: {display_path}")
+            logger.info(f"Read file: {display_path}")
             sections.append(f"```{display_path}\n{content}\n```")
         else:
             logger.info(f"File not found: {f}")
@@ -189,12 +212,87 @@ def gather_fresh_context(msgs: list[Message], workspace: Path | None) -> Message
         f"""# Context
 Working directory: {cwd}
 
-This context message is inserted right before your last message.
+This context message is always inserted before the last user message.
 It contains the current state of relevant files and git status at the time of processing.
 The file contents shown in this context message are the source of truth.
 Any file contents shown elsewhere in the conversation history may be outdated.
-This context message will be removed and replaced with fresh context in the next message.
+This context message will be removed and replaced with fresh context on every new message.
 
 """
         + "\n\n".join(sections),
     )
+
+
+def get_changed_files() -> list[Path]:
+    """Returns a list of changed files based on git diff."""
+    try:
+        p = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return [Path(f) for f in p.stdout.splitlines()]
+    except subprocess.CalledProcessError as e:
+        logger.debug(f"Error getting git diff files: {e}")
+        return []
+
+
+def run_precommit_checks() -> str | None:
+    """Run pre-commit checks on modified files and return output if there are issues."""
+    cmd = "pre-commit run --files $(git ls-files -m)"
+    try:
+        subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
+        return None  # No issues found
+    except subprocess.CalledProcessError as e:
+        return f"""```pre-commit
+stdout:
+{e.stdout}
+
+stderr:
+{e.stderr}
+```"""
+
+
+def enrich_messages_with_context(
+    msgs: list[Message], workspace: Path | None = None
+) -> list[Message]:
+    """
+    Enrich messages with context.
+    Embeds file contents where they occur in the conversation.
+
+    If FRESH_CONTEXT enabled, a context message will be added that includes:
+    - git status
+    - contents of files modified after their message timestamp
+    """
+    # Feature flag for fresh context mode
+    use_fresh_context = os.getenv("FRESH_CONTEXT", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+    files_before = {f for msg in msgs for f in msg.files}
+    msgs = [
+        append_file_content(msg, workspace, check_modified=use_fresh_context)
+        for msg in msgs
+    ]
+    if use_fresh_context:
+        # insert right before the last user message
+        fresh_content_msg = gather_fresh_context(msgs, workspace)
+        logger.info(fresh_content_msg.content)
+        last_user_idx = next(
+            (i for i, msg in enumerate(msgs[::-1]) if msg.role == "user"), None
+        )
+        msgs.insert(-last_user_idx if last_user_idx else -1, fresh_content_msg)
+    else:
+        # Legacy mode: Include file contents where they were mentioned
+        # FIXME: this doesn't include the versions of files as they were at the time of the message
+        pass
+
+    files_after = {f for msg in msgs for f in msg.files}
+    # logger.info(f"Files before: {files_before}")
+    # logger.info(f"Files after: {files_after}")
+    logger.info(f"Files embedded in conversation: {files_before - files_after}")
+
+    return msgs

@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import shutil
 import textwrap
 from collections.abc import Generator
@@ -14,7 +13,7 @@ from typing import Any, Literal, TypeAlias
 
 from rich import print
 
-from .context import append_file_content, gather_fresh_context
+from .context import enrich_messages_with_context
 from .dirs import get_logs_dir
 from .message import Message, len_tokens, print_msg
 from .prompts import get_prompt
@@ -329,27 +328,8 @@ def prepare_messages(
     if _HAS_RAG:
         msgs = enhance_messages(msgs)
 
-    # Feature flag for fresh context mode
-    use_fresh_context = os.getenv("GPTME_FRESH_CONTEXT", "").lower() in (
-        "1",
-        "true",
-        "yes",
-    )
-
-    if use_fresh_context:
-        logger.debug("Using fresh context mode")
-        # Add fresh context
-        # TODO: remove gathered context from `files` before sending to LLM
-        last_user_idx = next(
-            (i for i, msg in enumerate(msgs[::-1]) if msg.role == "user"), None
-        )
-        # insert message right before the last user message
-        fresh_content_msg = gather_fresh_context(msgs, workspace)
-        msgs.insert(-last_user_idx if last_user_idx else -1, fresh_content_msg)
-    else:
-        # Legacy mode: Include file contents where they were mentioned
-        # FIXME: this doesn't include the versions of files as they were at the time of the message
-        msgs = [(append_file_content(msg, workspace)) for msg in msgs]
+    # Enrich with fresh context, if enabled
+    msgs = enrich_messages_with_context(msgs, workspace)
 
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))

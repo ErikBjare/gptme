@@ -12,11 +12,12 @@ TODO:
 """
 
 import logging
-import subprocess
 import sys
+from pathlib import Path
 from typing import Literal
 
 from gptme.chat import step as _step
+from gptme.context import gather_fresh_context, get_changed_files, run_precommit_checks
 from gptme.init import init
 from gptme.logmanager import Log
 from gptme.message import Message
@@ -32,39 +33,13 @@ logging.basicConfig(
 EvalAction = Literal["continue", "undo", "done"]
 
 
-def project_files() -> list[str]:
-    # Returns a list of files in the project
-    p = subprocess.run(["git", "ls-files"], capture_output=True, text=True)
-    return p.stdout.splitlines()
+def gather_changed_context() -> Message:
+    """Gather fresh context focused on changed files."""
+    # Create a dummy message with changed files
+    dummy_msg = Message("system", "", files=get_changed_files())
 
-
-def git_diff_files(diff_type: str = "HEAD") -> list[str]:
-    # Returns a list of files based on the git diff type
-    try:
-        p = subprocess.run(
-            ["git", "diff", "--name-only", diff_type],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting git diff files: {e}")
-        return []
-    return p.stdout.splitlines()
-
-
-def context_from_files(files: list[str]) -> str:
-    # Returns the context from the files
-    context = ""
-    for f in files:
-        context += f"```{f}\n"
-        with open(f) as file:
-            try:
-                context += file.read()
-            except UnicodeDecodeError:
-                context += "<binary file>"
-        context += "\n```\n"
-    return context
+    # Use gather_fresh_context with only the changed files
+    return gather_fresh_context([dummy_msg], Path.cwd())
 
 
 def llm_confirm(msg: str) -> bool:
@@ -110,50 +85,12 @@ For example:
     return tree.xpath("//action")[0].text
 
 
-def lint_format(log: Log) -> Log:
-    # Lint, format, and fix the conversation by calling "make format"
-    cmd = "pre-commit run --files $(git ls-files -m)"
-    p = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    if p.returncode == 0:
-        return log
-
-    changed_files = [f for f in git_diff_files() if f in p.stdout or f in p.stderr]
-    files_str = f"""Files:
-{context_from_files(changed_files)}
-"""
-
-    system_msg = Message(
-        "system",
-        f"""
-Running checks with `{cmd}`
-
-stdout:
-{p.stdout}
-
-stderr:
-{p.stderr}
-
-{files_str}
-""".strip(),
-    )
-    system_msg.print()
-    log = log.append(system_msg)
-    return log
-
-
-context_header = "Context:\n\n"
-
-
-def gather_context() -> Message:
-    # Dynamically gather context from changed files
-    files = git_diff_files()
-    return Message("system", context_header + context_from_files(files))
-
-
 def update_context(log: Log) -> Log:
-    # remove the last context message
-    msgs = [msg for msg in log if not msg.content.startswith(context_header)]
-    return Log(msgs + [gather_context()])
+    """Update context in the conversation log."""
+    # Remove any previous context messages
+    msgs = [msg for msg in log if not msg.content.startswith("# Context")]
+    # Add fresh context
+    return Log(msgs + [gather_changed_context()])
 
 
 def main():
@@ -176,6 +113,17 @@ def main():
     progress = 0
     while iteration < max_iterations:
         iteration += 1
+
+        # Check for pre-commit issues
+        if precommit_output := run_precommit_checks():
+            print("Pre-commit checks found issues:")
+            print(precommit_output)
+            system_msg = Message(
+                "system",
+                f"Pre-commit checks found issues:\n\n{precommit_output}",
+            )
+            log = log.append(system_msg)
+
         # Gather and update context
         log = update_context(log)
         print(f"Context updated. Iteration: {iteration}/{max_iterations}")
@@ -183,16 +131,6 @@ def main():
         # Step the conversation forward
         log = step(log)
         print("Conversation stepped forward.")
-
-        # Check for changes in the project files
-        if (
-            subprocess.run(
-                ["git", "diff", "--exit-code"], capture_output=True
-            ).returncode
-            != 0
-        ):
-            print("Changes detected, performing lint and typecheck.")
-            log = lint_format(log)
 
         # Get recommendation for next action
         action = recommendation(log)
