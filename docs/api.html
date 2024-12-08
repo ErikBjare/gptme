@@ -420,6 +420,7 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.rename"><code class="docutils literal notranslate"><span class="pre">LogManager.rename()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.to_dict"><code class="docutils literal notranslate"><span class="pre">LogManager.to_dict()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.undo"><code class="docutils literal notranslate"><span class="pre">LogManager.undo()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.workspace"><code class="docutils literal notranslate"><span class="pre">LogManager.workspace</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.write"><code class="docutils literal notranslate"><span class="pre">LogManager.write()</span></code></a></li>
 </ul>
 </li>
@@ -721,6 +722,12 @@ If you want to keep the old log, use fork()</p>
 <dd><p>Removes the last message from the log.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="gptme.logmanager.LogManager.workspace">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">workspace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#gptme.logmanager.LogManager.workspace" title="Link to this definition">#</a></dt>
+<dd><p>Path to workspace directory (resolves symlink if exists).</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="gptme.logmanager.LogManager.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.logmanager.LogManager.write" title="Link to this definition">#</a></dt>
@@ -757,8 +764,11 @@ If you want to keep the old log, use fork()</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gptme.logmanager.prepare_messages">
-<span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">prepare_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.logmanager.prepare_messages" title="Link to this definition">#</a></dt>
-<dd><p>Prepares the messages before sending to the LLM.</p>
+<span class="sig-prename descclassname"><span class="pre">gptme.logmanager.</span></span><span class="sig-name descname"><span class="pre">prepare_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.logmanager.prepare_messages" title="Link to this definition">#</a></dt>
+<dd><p>Prepares the messages before sending to the LLM.
+- Takes the stored gptme conversation log
+- Enhances it with context such as file contents
+- Transforms it to the format expected by LLM providers</p>
 </dd></dl>
 
 </section>
@@ -939,6 +949,7 @@ If you want to keep the old log, use fork()</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.rename"><code class="docutils literal notranslate"><span class="pre">LogManager.rename()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.to_dict"><code class="docutils literal notranslate"><span class="pre">LogManager.to_dict()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.undo"><code class="docutils literal notranslate"><span class="pre">LogManager.undo()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.workspace"><code class="docutils literal notranslate"><span class="pre">LogManager.workspace</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.logmanager.LogManager.write"><code class="docutils literal notranslate"><span class="pre">LogManager.write()</span></code></a></li>
 </ul>
 </li>
