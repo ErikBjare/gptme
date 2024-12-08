@@ -5,7 +5,7 @@ Sets up a KeyboardInterrupt handler to handle Ctrl-C during the chat loop.
 import os
 import time
 
-from .util import console
+from . import console
 
 interruptible = False
 last_interrupt_time = 0.0

@@ -18,7 +18,6 @@ from .commands import _gen_help
 from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
 from .init import init_logging
-from .interrupt import handle_keyboard_interrupt, set_interruptible
 from .llm.models import get_recommended_model
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
@@ -31,6 +30,7 @@ from .tools import (
 )
 from .util import epoch_to_age
 from .util.generate_name import generate_name
+from .util.interrupt import handle_keyboard_interrupt, set_interruptible
 from .util.readline import add_history
 
 logger = logging.getLogger(__name__)

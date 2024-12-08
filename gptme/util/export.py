@@ -2,7 +2,7 @@ import html
 import json
 from pathlib import Path
 
-from .logmanager import Log
+from ..logmanager import Log
 
 
 def replace_or_fail(html: str, old: str, new: str, desc: str = "") -> str:

@@ -7,9 +7,9 @@ Typically used when the log exceeds a token limit and needs to be shortened.
 import logging
 from collections.abc import Generator
 
-from .codeblock import Codeblock
-from .message import Message, len_tokens
-from .llm.models import get_model
+from ..codeblock import Codeblock
+from ..message import Message, len_tokens
+from ..llm.models import get_model
 
 logger = logging.getLogger(__name__)
 
