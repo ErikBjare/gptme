@@ -19,7 +19,7 @@ from .patch import tool as patch_tool
 from .python import register_function
 from .python import tool as python_tool
 from .rag import tool as rag_tool
-from .read import tool as tool_read
+from .read import tool as read_tool
 from .save import tool_append, tool_save
 from .screenshot import tool as screenshot_tool
 from .shell import tool as shell_tool
@@ -32,34 +32,36 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
+    # types
     "ToolSpec",
     "ToolUse",
     "ToolFormat",
-    "all_tools",
+    # functions
     "execute_msg",
     "get_tool_format",
     "set_tool_format",
+    # files
+    "read_tool",
+    "tool_append",
+    "tool_save",
+    "patch_tool",
+    # code
+    "shell_tool",
+    "python_tool",
+    "gh_tool",
+    # vision and computer use
+    "vision_tool",
+    "screenshot_tool",
+    "computer_tool",
+    # misc
+    "chats_tool",
+    "rag_tool",
+    "subagent_tool",
+    "tmux_tool",
+    "browser_tool",
+    "youtube_tool",
 ]
 
-all_tools: list[ToolSpec] = [
-    tool_read,
-    tool_save,
-    tool_append,
-    patch_tool,
-    shell_tool,
-    subagent_tool,
-    tmux_tool,
-    browser_tool,
-    gh_tool,
-    chats_tool,
-    youtube_tool,
-    screenshot_tool,
-    vision_tool,
-    computer_tool,
-    rag_tool,
-    # python tool is loaded last to ensure all functions are registered
-    python_tool,
-]
 loaded_tools: list[ToolSpec] = []
 
 # Tools that are disabled by default, unless explicitly enabled
@@ -72,7 +74,14 @@ tools_default_disabled = [
 
 def init_tools(allowlist=None) -> None:
     """Runs initialization logic for tools."""
-    for tool in all_tools:
+    # init python tool last
+    tools = list(
+        sorted(ToolSpec.get_tools().values(), key=lambda tool: tool.name != "python")
+    )
+    loaded_tool_names = [tool.name for tool in loaded_tools]
+    for tool in tools:
+        if tool.name in loaded_tool_names:
+            continue
         if allowlist and tool.name not in allowlist:
             continue
         if tool.init:
@@ -135,7 +144,7 @@ def is_supported_langtag(lang: str) -> bool:
 
 
 def get_tool(tool_name: str) -> ToolSpec | None:
-    """Returns a tool by name."""
+    """Returns a loaded tool by name or block type."""
     # check tool names
     for tool in loaded_tools:
         if tool.name == tool_name:
@@ -148,6 +157,7 @@ def get_tool(tool_name: str) -> ToolSpec | None:
 
 
 def has_tool(tool_name: str) -> bool:
+    """Returns True if a tool is loaded."""
     for tool in loaded_tools:
         if tool.name == tool_name:
             return True

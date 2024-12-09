@@ -1,6 +1,8 @@
+import importlib
 import json
 import logging
 import re
+import sys
 import types
 from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
@@ -142,6 +144,9 @@ def callable_signature(func: Callable) -> str:
     return f"{func.__name__}({args}){ret}"
 
 
+_tools: dict[str, "ToolSpec"] = {}
+
+
 @dataclass(frozen=True, eq=False)
 class ToolSpec:
     """
@@ -170,6 +175,18 @@ class ToolSpec:
     block_types: list[str] = field(default_factory=list)
     available: bool = True
     parameters: list[Parameter] = field(default_factory=list)
+
+    def __post_init__(self):
+        global _tools
+        _tools[self.name] = self
+
+    @classmethod
+    def get_tool(cls, name: str) -> "ToolSpec | None":
+        return _tools.get(name)
+
+    @classmethod
+    def get_tools(cls) -> dict[str, "ToolSpec"]:
+        return _tools
 
     def get_doc(self, doc: str | None = None) -> str:
         """Returns an updated docstring with examples."""
@@ -472,3 +489,20 @@ def get_path(
         raise ValueError("No filename provided")
 
     return Path(fn).expanduser()
+
+
+# TODO: allow using via specifying .py paths with --tools flag
+def load_from_file(path: Path) -> list[ToolSpec]:
+    """Import a tool from a Python file and register the ToolSpec."""
+    tools_before = set(ToolSpec.get_tools().keys())
+
+    # import the python file
+    script_dir = path.resolve().parent
+    if script_dir not in sys.path:
+        sys.path.append(str(script_dir))
+    importlib.import_module(path.stem)
+
+    tools_after = set(ToolSpec.get_tools().keys())
+    tools_new = tools_after - tools_before
+    print(f"Loaded tools {tools_new} from {path}")
+    return [tool for tool_name in tools_new if (tool := ToolSpec.get_tool(tool_name))]

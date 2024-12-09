@@ -49,7 +49,7 @@ def list_chats(
         print(f"{i:2}. {textwrap.indent(conv.format(metadata=True), '    ')[4:]}")
 
         log_path = Path(conv.path)
-        log_manager = LogManager.load(log_path)
+        log_manager = LogManager.load(log_path, lock=False)
 
         # Use the LLM to generate a summary if requested
         if include_summary:
