@@ -508,6 +508,252 @@ This is gptme
 <p>Example output (tool_format=’markdown’):</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gh"># Tools Overview</span>
 
+<span class="gu">## python</span>
+
+<span class="gs">**Description:**</span> Execute Python code
+
+<span class="gs">**Instructions:**</span> Use this tool to execute Python code in an interactive IPython session.
+It will respond with the output and result of the execution.
+
+Available libraries:
+<span class="k">-</span><span class="w"> </span>no common libraries found
+
+Available functions:
+
+<span class="gu">### Examples</span>
+
+<span class="gu">#### Result of the last expression will be returned</span>
+
+<span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```ipython</span>
+<span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
+<span class="s">4</span>
+<span class="sb">```</span>
+
+<span class="gu">#### Write a function and call it</span>
+
+<span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
+<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we can run the following code:</span>
+<span class="sb">```ipython</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
+<span class="s">55</span>
+<span class="sb">```</span>
+
+<span class="gu">## browser</span>
+
+<span class="gs">**Description:**</span> Browse, search or screenshot the web
+
+<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+
+read_url(url: str) -&gt; str: Read a webpage in a text format.
+search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
+screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.
+
+<span class="gu">### Examples</span>
+
+<span class="gu">### Answer question from URL with browsing</span>
+<span class="k">&gt; </span><span class="ge">User: find out which is the latest ActivityWatch version from superuserlabs.org</span>
+<span class="k">&gt; </span><span class="ge">Assistant: Let&#39;s browse the site.</span>
+<span class="sb">```ipython</span>
+<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://superuserlabs.org/&#39;</span><span class="p">)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System:</span>
+```https://superuserlabs.org/
+... [<span class="nt">ActivityWatch</span>](<span class="na">https://activitywatch.net/</span>) ...
+<span class="sb">```</span>
+<span class="sb">&gt; Assistant: Couldn&#39;t find the answer on the page. Following link to the ActivityWatch website.</span>
+<span class="sb">```ipython</span>
+<span class="sb">read_url(&#39;https://activitywatch.net/&#39;)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System:</span>
+```https://activitywatch.net/
+... Download latest version v0.12.2 ...
+<span class="sb">```</span>
+<span class="sb">&gt; Assistant: The latest version of ActivityWatch is v0.12.2</span>
+
+<span class="sb">### Searching</span>
+
+<span class="sb">&gt; User: who is the founder of ActivityWatch?</span>
+<span class="sb">&gt; Assistant: Let&#39;s search for that.</span>
+<span class="sb">```ipython</span>
+<span class="sb">search(&#39;ActivityWatch founder&#39;)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System:</span>
+<span class="sb">```results</span>
+<span class="s">1. [ActivityWatch](https://activitywatch.net/) ...</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">Assistant: Following link to the ActivityWatch website.</span>
+<span class="sb">```ipython</span>
+<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://activitywatch.net/&#39;</span><span class="p">)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System:</span>
+```https://activitywatch.net/
+... The ActivityWatch project was founded by Erik Bjäreholt in 2016. ...
+<span class="sb">```</span>
+<span class="sb">&gt; Assistant: The founder of ActivityWatch is Erik Bjäreholt.</span>
+
+<span class="sb">### Take screenshot of page</span>
+
+<span class="sb">&gt; User: take a screenshot of the ActivityWatch website</span>
+<span class="sb">&gt; Assistant: Certainly! I&#39;ll use the browser tool to screenshot the ActivityWatch website.</span>
+<span class="sb">```ipython</span>
+<span class="sb">screenshot_url(&#39;https://activitywatch.net&#39;)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System:</span>
+<span class="sb">```result</span>
+<span class="s">Screenshot saved to screenshot.png</span>
+<span class="sb">```</span>
+
+<span class="gu">## chats</span>
+
+<span class="gs">**Description:**</span> List, search, and summarize past conversation logs
+
+<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+
+list_chats(max_results: int, include_summary: bool):
+    List recent chat conversations and optionally summarize them using an LLM.
+
+    Args:
+        max_results (int): Maximum number of conversations to display.
+        include_summary (bool): Whether to include a summary of each conversation.
+            If True, uses an LLM to generate a comprehensive summary.
+            If False, uses a simple strategy showing snippets of the first and last messages.
+
+search_chats(query: str, max_results: int):
+    Search past conversation logs for the given query and print a summary of the results.
+
+    Args:
+        query (str): The search query.
+        max_results (int): Maximum number of conversations to display.
+        system (bool): Whether to include system messages in the search.
+
+read_chat(conversation: str, max_results: int):
+    Read a specific conversation log.
+
+    Args:
+        conversation (str): The name of the conversation to read.
+        max_results (int): Maximum number of messages to display.
+        incl_system (bool): Whether to include system messages.
+
+
+<span class="gu">### Examples</span>
+
+<span class="gu">### Search for a specific topic in past conversations</span>
+
+<span class="k">&gt; </span><span class="ge">User: Can you find any mentions of &quot;python&quot; in our past conversations?</span>
+<span class="k">&gt; </span><span class="ge">Assistant: Certainly! I&#39;ll search our past conversations for mentions of &quot;python&quot; using the search_chats function.</span>
+<span class="sb">```ipython</span>
+<span class="n">search_chats</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+<span class="sb">```</span>
+
+<span class="gu">## screenshot</span>
+
+<span class="gs">**Description:**</span> Take a screenshot
+
+<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+
+screenshot(path: Union[Path, NoneType]) -&gt; Path:
+    Take a screenshot and save it to a file.
+
+
+<span class="gu">## vision</span>
+
+<span class="gs">**Description:**</span> Viewing images
+
+<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+
+view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
+
+<span class="gu">## gh</span>
+
+<span class="gs">**Description:**</span> Interact with GitHub
+
+<span class="gs">**Instructions:**</span> Interact with GitHub via the GitHub CLI (gh). Use the <span class="sb">`shell`</span> tool with the <span class="sb">`gh`</span> command.
+
+<span class="gu">### Examples</span>
+
+<span class="k">&gt; </span><span class="ge">User: create a public repo from the current directory, and push. Note that --confirm and -y are deprecated, and no longer needed.</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+<span class="nv">REPO</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">))</span>
+gh<span class="w"> </span>repo<span class="w"> </span>create<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--public<span class="w"> </span>--source<span class="w"> </span>.<span class="w"> </span>--push
+<span class="sb">```</span>
+
+<span class="k">&gt; </span><span class="ge">User: show issues</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>issue<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
+<span class="sb">```</span>
+
+<span class="k">&gt; </span><span class="ge">User: read issue with comments</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="nv">$ISSUE</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--comments
+<span class="sb">```</span>
+
+<span class="k">&gt; </span><span class="ge">User: show recent workflows</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
+<span class="sb">```</span>
+
+<span class="k">&gt; </span><span class="ge">User: show workflow</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--log
+<span class="sb">```</span>
+
+<span class="k">&gt; </span><span class="ge">User: wait for workflow to finish</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```shell</span>
+gh<span class="w"> </span>run<span class="w"> </span>watch<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
+<span class="sb">```</span>
+
+<span class="gu">## patch</span>
+
+<span class="gs">**Description:**</span> Apply a patch to a file
+
+<span class="gs">**Instructions:**</span> To patch/modify files, we use an adapted version of git conflict markers.
+
+This can be used to edit files, without having to rewrite the whole file.
+Only one patch block can be written per tool use. Extra ORIGINAL/UPDATED blocks will be ignored.
+Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
+
+To keep the patch small, try to scope the patch to imports/function/class.
+If the patch is large, consider using the save tool to rewrite the whole file.
+
+<span class="gu">### Examples</span>
+
+<span class="k">&gt; </span><span class="ge">User: patch `src/hello.py` to ask for the name of the user</span>
+```src/hello.py
+def hello():
+    print(&quot;Hello world&quot;)
+
+if <span class="gs">__name__</span> == &quot;<span class="gs">__main__</span>&quot;:
+    hello()
+<span class="sb">```</span>
+<span class="sb">&gt; Assistant:</span>
+<span class="sb">```patch src/hello.py</span>
+<span class="sb">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
+<span class="sb">    print(&quot;Hello world&quot;)</span>
+<span class="sb">=======</span>
+<span class="sb">    name = input(&quot;What is your name? &quot;)</span>
+<span class="sb">    print(f&quot;Hello {name}&quot;)</span>
+<span class="sb">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Patch applied</span>
+
 <span class="gu">## read</span>
 
 <span class="gs">**Description:**</span> Read the content of a file
@@ -566,40 +812,6 @@ to append the code block content to the file at the given path.
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Appended to `hello.py`</span>
 
-<span class="gu">## patch</span>
-
-<span class="gs">**Description:**</span> Apply a patch to a file
-
-<span class="gs">**Instructions:**</span> To patch/modify files, we use an adapted version of git conflict markers.
-
-This can be used to edit files, without having to rewrite the whole file.
-Only one patch block can be written per tool use. Extra ORIGINAL/UPDATED blocks will be ignored.
-Try to keep the patch as small as possible. Avoid placeholders, as they may make the patch fail.
-
-To keep the patch small, try to scope the patch to imports/function/class.
-If the patch is large, consider using the save tool to rewrite the whole file.
-
-<span class="gu">### Examples</span>
-
-<span class="k">&gt; </span><span class="ge">User: patch `src/hello.py` to ask for the name of the user</span>
-```src/hello.py
-def hello():
-    print(&quot;Hello world&quot;)
-
-if <span class="gs">__name__</span> == &quot;<span class="gs">__main__</span>&quot;:
-    hello()
-<span class="sb">```</span>
-<span class="sb">&gt; Assistant:</span>
-<span class="sb">```patch src/hello.py</span>
-<span class="sb">&lt;&lt;&lt;&lt;&lt;&lt;&lt; ORIGINAL</span>
-<span class="sb">    print(&quot;Hello world&quot;)</span>
-<span class="sb">=======</span>
-<span class="sb">    name = input(&quot;What is your name? &quot;)</span>
-<span class="sb">    print(f&quot;Hello {name}&quot;)</span>
-<span class="sb">&gt;&gt;&gt;&gt;&gt;&gt;&gt; UPDATED</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Patch applied</span>
-
 <span class="gu">## shell</span>
 
 <span class="gs">**Description:**</span> Executes shell commands.
@@ -611,8 +823,8 @@ Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will 
 
 These programs are available, among others:
 <span class="k">-</span><span class="w"> </span>pandoc
-<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
+<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>docker
 
 <span class="gu">### Examples</span>
@@ -734,230 +946,10 @@ Available commands:
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">Assistant: The load is...</span>
 
-<span class="gu">## browser</span>
-
-<span class="gs">**Description:**</span> Browse, search or screenshot the web
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-read_url(url: str) -&gt; str: Read a webpage in a text format.
-search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
-screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.
-
-<span class="gu">### Examples</span>
-
-<span class="gu">### Answer question from URL with browsing</span>
-<span class="k">&gt; </span><span class="ge">User: find out which is the latest ActivityWatch version from superuserlabs.org</span>
-<span class="k">&gt; </span><span class="ge">Assistant: Let&#39;s browse the site.</span>
-<span class="sb">```ipython</span>
-<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://superuserlabs.org/&#39;</span><span class="p">)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System:</span>
-```https://superuserlabs.org/
-... [<span class="nt">ActivityWatch</span>](<span class="na">https://activitywatch.net/</span>) ...
-<span class="sb">```</span>
-<span class="sb">&gt; Assistant: Couldn&#39;t find the answer on the page. Following link to the ActivityWatch website.</span>
-<span class="sb">```ipython</span>
-<span class="sb">read_url(&#39;https://activitywatch.net/&#39;)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System:</span>
-```https://activitywatch.net/
-... Download latest version v0.12.2 ...
-<span class="sb">```</span>
-<span class="sb">&gt; Assistant: The latest version of ActivityWatch is v0.12.2</span>
-
-<span class="sb">### Searching</span>
-
-<span class="sb">&gt; User: who is the founder of ActivityWatch?</span>
-<span class="sb">&gt; Assistant: Let&#39;s search for that.</span>
-<span class="sb">```ipython</span>
-<span class="sb">search(&#39;ActivityWatch founder&#39;)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System:</span>
-<span class="sb">```results</span>
-<span class="s">1. [ActivityWatch](https://activitywatch.net/) ...</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">Assistant: Following link to the ActivityWatch website.</span>
-<span class="sb">```ipython</span>
-<span class="n">read_url</span><span class="p">(</span><span class="s1">&#39;https://activitywatch.net/&#39;</span><span class="p">)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System:</span>
-```https://activitywatch.net/
-... The ActivityWatch project was founded by Erik Bjäreholt in 2016. ...
-<span class="sb">```</span>
-<span class="sb">&gt; Assistant: The founder of ActivityWatch is Erik Bjäreholt.</span>
-
-<span class="sb">### Take screenshot of page</span>
-
-<span class="sb">&gt; User: take a screenshot of the ActivityWatch website</span>
-<span class="sb">&gt; Assistant: Certainly! I&#39;ll use the browser tool to screenshot the ActivityWatch website.</span>
-<span class="sb">```ipython</span>
-<span class="sb">screenshot_url(&#39;https://activitywatch.net&#39;)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System:</span>
-<span class="sb">```result</span>
-<span class="s">Screenshot saved to screenshot.png</span>
-<span class="sb">```</span>
-
-<span class="gu">## gh</span>
-
-<span class="gs">**Description:**</span> Interact with GitHub
-
-<span class="gs">**Instructions:**</span> Interact with GitHub via the GitHub CLI (gh). Use the <span class="sb">`shell`</span> tool with the <span class="sb">`gh`</span> command.
-
-<span class="gu">### Examples</span>
-
-<span class="k">&gt; </span><span class="ge">User: create a public repo from the current directory, and push. Note that --confirm and -y are deprecated, and no longer needed.</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-<span class="nv">REPO</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">))</span>
-gh<span class="w"> </span>repo<span class="w"> </span>create<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--public<span class="w"> </span>--source<span class="w"> </span>.<span class="w"> </span>--push
-<span class="sb">```</span>
-
-<span class="k">&gt; </span><span class="ge">User: show issues</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-gh<span class="w"> </span>issue<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
-<span class="sb">```</span>
-
-<span class="k">&gt; </span><span class="ge">User: read issue with comments</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-gh<span class="w"> </span>issue<span class="w"> </span>view<span class="w"> </span><span class="nv">$ISSUE</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--comments
-<span class="sb">```</span>
-
-<span class="k">&gt; </span><span class="ge">User: show recent workflows</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
-<span class="sb">```</span>
-
-<span class="k">&gt; </span><span class="ge">User: show workflow</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-gh<span class="w"> </span>run<span class="w"> </span>view<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span><span class="w"> </span>--log
-<span class="sb">```</span>
-
-<span class="k">&gt; </span><span class="ge">User: wait for workflow to finish</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```shell</span>
-gh<span class="w"> </span>run<span class="w"> </span>watch<span class="w"> </span><span class="nv">$RUN</span><span class="w"> </span>--repo<span class="w"> </span><span class="nv">$REPO</span>
-<span class="sb">```</span>
-
-<span class="gu">## chats</span>
-
-<span class="gs">**Description:**</span> List, search, and summarize past conversation logs
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-list_chats(max_results: int, include_summary: bool):
-    List recent chat conversations and optionally summarize them using an LLM.
-
-    Args:
-        max_results (int): Maximum number of conversations to display.
-        include_summary (bool): Whether to include a summary of each conversation.
-            If True, uses an LLM to generate a comprehensive summary.
-            If False, uses a simple strategy showing snippets of the first and last messages.
-
-search_chats(query: str, max_results: int):
-    Search past conversation logs for the given query and print a summary of the results.
-
-    Args:
-        query (str): The search query.
-        max_results (int): Maximum number of conversations to display.
-        system (bool): Whether to include system messages in the search.
-
-read_chat(conversation: str, max_results: int):
-    Read a specific conversation log.
-
-    Args:
-        conversation (str): The name of the conversation to read.
-        max_results (int): Maximum number of messages to display.
-        incl_system (bool): Whether to include system messages.
-
-
-<span class="gu">### Examples</span>
-
-<span class="gu">### Search for a specific topic in past conversations</span>
-
-<span class="k">&gt; </span><span class="ge">User: Can you find any mentions of &quot;python&quot; in our past conversations?</span>
-<span class="k">&gt; </span><span class="ge">Assistant: Certainly! I&#39;ll search our past conversations for mentions of &quot;python&quot; using the search_chats function.</span>
-<span class="sb">```ipython</span>
-<span class="n">search_chats</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
-<span class="sb">```</span>
-
-<span class="gu">## screenshot</span>
-
-<span class="gs">**Description:**</span> Take a screenshot
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-screenshot(path: Union[Path, NoneType]) -&gt; Path:
-    Take a screenshot and save it to a file.
-
-
-<span class="gu">## vision</span>
-
-<span class="gs">**Description:**</span> Viewing images
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
-
-<span class="gu">## python</span>
-
-<span class="gs">**Description:**</span> Execute Python code
-
-<span class="gs">**Instructions:**</span> Use this tool to execute Python code in an interactive IPython session.
-It will respond with the output and result of the execution.
-
-Available libraries:
-<span class="k">-</span><span class="w"> </span>no common libraries found
-
-Available functions:
-<span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str
-<span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str
-<span class="k">-</span><span class="w"> </span>screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path
-<span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool)
-<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int)
-<span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int)
-<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path
-<span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Message
-
-<span class="gu">### Examples</span>
-
-<span class="gu">#### Result of the last expression will be returned</span>
-
-<span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```ipython</span>
-<span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
-<span class="sb">```result</span>
-<span class="s">4</span>
-<span class="sb">```</span>
-
-<span class="gu">#### Write a function and call it</span>
-
-<span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
-<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we can run the following code:</span>
-<span class="sb">```ipython</span>
-<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">n</span>
-    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
-<span class="sb">```result</span>
-<span class="s">55</span>
-<span class="sb">```</span>
-
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3033</p>
+<p>Tokens: 2905</p>
 </dd></dl>
 
 <dl class="py function">
