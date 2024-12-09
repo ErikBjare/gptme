@@ -209,6 +209,7 @@ def execute_with_confirmation(
         content = (
             code if code is not None else (kwargs.get("content", "") if kwargs else "")
         )
+        file_ext = path.suffix.lstrip(".") or "txt" if path else "txt"
 
         # Show preview if preview function is provided
         if preview_fn and content:
@@ -216,7 +217,7 @@ def execute_with_confirmation(
             if preview_content:
                 print_preview(
                     preview_content,
-                    preview_lang or "text",
+                    preview_lang or file_ext,
                     copy=True,
                     header=preview_header,
                 )

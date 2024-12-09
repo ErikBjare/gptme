@@ -154,7 +154,7 @@ def execute_save(
         execute_fn=execute_save_impl,
         get_path_fn=get_path,
         preview_fn=preview_save,
-        preview_lang="diff",
+        preview_lang="diff" if get_path(code, args, kwargs).exists() else None,
         confirm_msg=f"Save to {get_path(code, args, kwargs)}?",
         allow_edit=True,
     )
