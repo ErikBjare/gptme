@@ -24,7 +24,7 @@ from .message import Message
 from .prompts import get_prompt
 from .tools import (
     ToolFormat,
-    all_tools,
+    ToolSpec,
     init_tools,
     set_tool_format,
 )
@@ -38,7 +38,9 @@ logger = logging.getLogger(__name__)
 
 script_path = Path(os.path.realpath(__file__))
 commands_help = "\n".join(_gen_help(incl_langtags=False))
-available_tool_names = ", ".join([tool.name for tool in all_tools if tool.available])
+available_tool_names = ", ".join(
+    sorted([tool.name for tool in ToolSpec.get_tools().values() if tool.available])
+)
 
 
 docstring = f"""

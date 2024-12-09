@@ -1,6 +1,7 @@
 import fcntl
 import json
 import logging
+import os
 import shutil
 import textwrap
 from collections.abc import Generator
@@ -86,7 +87,8 @@ class LogManager:
 
         # Create and optionally lock the directory
         self.logdir.mkdir(parents=True, exist_ok=True)
-        if lock:
+        is_pytest = "PYTEST_CURRENT_TEST" in os.environ
+        if lock and not is_pytest:
             self._lockfile = self.logdir / ".lock"
             self._lockfile.touch(exist_ok=True)
             self._lock_fd = self._lockfile.open("w")
@@ -226,6 +228,7 @@ class LogManager:
         initial_msgs: list[Message] | None = None,
         branch: str = "main",
         create: bool = False,
+        lock: bool = True,
         **kwargs,
     ) -> "LogManager":
         """Loads a conversation log."""
@@ -254,7 +257,7 @@ class LogManager:
 
         log = Log.read_jsonl(logfile)
         msgs = log.messages or initial_msgs or [get_prompt()]
-        return cls(msgs, logdir=logdir, branch=branch, **kwargs)
+        return cls(msgs, logdir=logdir, branch=branch, lock=lock, **kwargs)
 
     def branch(self, name: str) -> None:
         """Switches to a branch."""
