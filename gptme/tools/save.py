@@ -97,20 +97,20 @@ def execute_save_impl(
     # Check if file exists
     if path.exists():
         if not confirm("File exists, overwrite?"):
-            yield Message("system", "Save cancelled.")
+            yield Message("tool_result", "Save cancelled.")
             return
 
     # Check if folder exists
     if not path.parent.exists():
         if not confirm("Folder doesn't exist, create it?"):
-            yield Message("system", "Save cancelled.")
+            yield Message("tool_result", "Save cancelled.")
             return
         path.parent.mkdir(parents=True)
 
     # Save the file
     with open(path, "w") as f:
         f.write(content)
-    yield Message("system", f"Saved to {path}")
+    yield Message("tool_result", f"Saved to {path}")
 
 
 def execute_append_impl(
@@ -122,7 +122,7 @@ def execute_append_impl(
     path = path.expanduser()
     if not path.exists():
         if not confirm(f"File {path_display} doesn't exist, create it?"):
-            yield Message("system", "Append cancelled.")
+            yield Message("tool_result", "Append cancelled.")
             return
 
     # strip leading newlines
@@ -136,7 +136,7 @@ def execute_append_impl(
         content = "\n" + content
     with open(path, "a") as f:
         f.write(content)
-    yield Message("system", f"Appended to {path_display}")
+    yield Message("tool_result", f"Appended to {path_display}")
 
 
 def execute_save(

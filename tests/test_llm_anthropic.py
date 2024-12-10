@@ -1,11 +1,6 @@
-from collections.abc import Iterable
-from gptme.llm.llm_anthropic import (
-    _handle_files,
-    _handle_tools,
-    _transform_system_messages,
-)
-from gptme.message import Message, msgs2dicts
-from gptme.tools import init_tools
+from gptme.llm.llm_anthropic import _prepare_messages_for_api
+from gptme.message import Message
+from gptme.tools import init_tools, loaded_tools
 
 
 def test_message_conversion():
@@ -15,26 +10,27 @@ def test_message_conversion():
         Message(role="user", content="First user prompt"),
     ]
 
-    messages, system_messages = _transform_system_messages(messages)
+    messages_dicts, system_messages, tools = _prepare_messages_for_api(messages, None)
 
-    assert system_messages == [{"text": "Initial Message", "type": "text"}]
+    assert tools is None
 
-    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
+    assert system_messages == [{"type": "text", "text": "Initial Message"}]
 
-    assert messages_dicts == [
+    assert list(messages_dicts) == [
         {
+            "role": "user",
             "content": [
                 {
-                    "text": "<system>Project prompt</system>\n\nFirst user prompt",
                     "type": "text",
-                },
+                    "text": "<system>Project prompt</system>\n\nFirst user prompt",
+                    "cache_control": {"type": "ephemeral"},
+                }
             ],
-            "role": "user",
-        },
+        }
     ]
 
 
-def test_message_conversion_with_tool():
+def test_message_conversion_with_tools():
     init_tools(allowlist=["save"])
 
     messages = [
@@ -50,27 +46,42 @@ def test_message_conversion_with_tool():
         ),
     ]
 
-    messages, _ = _transform_system_messages(messages)
-    messages_dicts: Iterable[dict] = _handle_files(msgs2dicts(messages))
-    messages_dicts = list(_handle_tools(messages_dicts))
+    messages_dicts, _, tools = _prepare_messages_for_api(messages, loaded_tools)
 
-    assert messages_dicts == [
+    assert tools == [
+        {
+            "name": "save",
+            "description": "Create or overwrite a file with the given content.\n\n"
+            "The path can be relative to the current directory, or absolute.\n"
+            "If the current directory changes, the path will be relative to the "
+            "new directory.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string", "description": "The path of the file"},
+                    "content": {"type": "string", "description": "The content to save"},
+                },
+                "required": ["path", "content"],
+                "additionalProperties": False,
+            },
+        }
+    ]
+
+    assert list(messages_dicts) == [
         {
             "role": "user",
             "content": [
                 {
                     "type": "text",
                     "text": "<system>Project prompt</system>\n\nFirst user prompt",
-                },
+                    "cache_control": {"type": "ephemeral"},
+                }
             ],
         },
         {
             "role": "assistant",
             "content": [
-                {
-                    "type": "text",
-                    "text": "<thinking>\nSomething\n</thinking>\n",
-                },
+                {"type": "text", "text": "<thinking>\nSomething\n</thinking>\n"},
                 {
                     "type": "tool_use",
                     "id": "tool_call_id",
@@ -84,14 +95,10 @@ def test_message_conversion_with_tool():
             "content": [
                 {
                     "type": "tool_result",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "Saved to toto.txt",
-                        },
-                    ],
+                    "content": [{"type": "text", "text": "Saved to toto.txt"}],
                     "tool_use_id": "tool_call_id",
-                },
+                    "cache_control": {"type": "ephemeral"},
+                }
             ],
         },
     ]

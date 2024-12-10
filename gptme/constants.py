@@ -19,7 +19,7 @@ ROLE_COLOR = {
     "user": "green",
     "assistant": "green",
     "system": "grey42",
-    "tool_result": "red",
+    "tool_result": "grey42",
 }
 
 # colors wrapped in \001 and \002 to inform readline about non-printable characters

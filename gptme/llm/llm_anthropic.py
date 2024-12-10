@@ -146,7 +146,7 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
                 }
             ]
             yield modified_message
-        # Find tool_use occurrence and format them as expected
+        # Find tool_use occurrences and format them as expected
         elif message["role"] == "assistant":
             modified_message = dict(message)
             text = ""
@@ -204,10 +204,6 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
             yield modified_message
         else:
             yield message
-
-
-def _handle_files(message_dicts: list[dict]) -> list[dict]:
-    return [_process_file(message_dict) for message_dict in message_dicts]
 
 
 def _process_file(message_dict: dict) -> dict:
@@ -325,7 +321,7 @@ def _transform_system_messages(
     return messages, system_messages
 
 
-def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+def _parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     required = []
     properties = {}
 
@@ -353,7 +349,7 @@ def _spec2tool(
     return {
         "name": name,
         "description": spec.get_instructions("tool"),
-        "input_schema": parameters2dict(spec.parameters),
+        "input_schema": _parameters2dict(spec.parameters),
     }
 
 
@@ -395,7 +391,13 @@ def _prepare_messages_for_api(
     messages, system_messages = _transform_system_messages(messages)
 
     # Handle files and convert to dicts
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts = (_process_file(f) for f in msgs2dicts(messages))
+
+    # Prepare tools
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     # Apply cache control to optimize performance
     messages_dicts_new: list[PromptCachingBetaMessageParam] = []
@@ -428,8 +430,5 @@ def _prepare_messages_for_api(
     for msgp in [msg for msg in messages_dicts_new if msg["role"] == "user"][-2:]:
         assert isinstance(msgp["content"], list)
         msgp["content"][-1]["cache_control"] = {"type": "ephemeral"}
-
-    # Prepare tools
-    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     return messages_dicts_new, system_messages, tools_dict
