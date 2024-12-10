@@ -446,10 +446,10 @@ The shell tool will respond with the output of the execution.
 Do not use EOF/HereDoc syntax to send multiline commands, as the assistant will not be able to handle it.
 
 These programs are available, among others:
-<span class="k">-</span><span class="w"> </span>git
 <span class="k">-</span><span class="w"> </span>apt-get
 <span class="k">-</span><span class="w"> </span>docker
 <span class="k">-</span><span class="w"> </span>pandoc
+<span class="k">-</span><span class="w"> </span>git
 </pre></div>
 </div>
 <p class="rubric">Examples</p>
@@ -1567,8 +1567,8 @@ Available actions:
 <p>RAG (Retrieval-Augmented Generation) tool for context-aware assistance.</p>
 <p>The RAG tool provides context-aware assistance by indexing and searching project documentation.</p>
 <p class="rubric">Installation</p>
-<p>The RAG tool requires the <code class="docutils literal notranslate"><span class="pre">gptme-rag</span></code> package. Install it with:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;gptme[rag]&quot;</span>
+<p>The RAG tool requires the <code class="docutils literal notranslate"><span class="pre">gptme-rag</span></code> CLI to be installed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pipx</span> <span class="n">install</span> <span class="n">gptme</span><span class="o">-</span><span class="n">rag</span>
 </pre></div>
 </div>
 <p class="rubric">Configuration</p>
@@ -1579,35 +1579,14 @@ Available actions:
 </div>
 <p class="rubric">Features</p>
 <ol class="arabic simple">
-<li><p>Manual Search and Indexing</p>
-<ul class="simple">
-<li><p>Index project documentation with <code class="docutils literal notranslate"><span class="pre">rag_index</span></code></p></li>
-<li><p>Search indexed documents with <code class="docutils literal notranslate"><span class="pre">rag_search</span></code></p></li>
-<li><p>Check index status with <code class="docutils literal notranslate"><span class="pre">rag_status</span></code></p></li>
-</ul>
-</li>
-<li><p>Automatic Context Enhancement</p>
-<ul class="simple">
-<li><p>Automatically adds relevant context to user messages</p></li>
-<li><p>Retrieves semantically similar documents</p></li>
-<li><p>Manages token budget to avoid context overflow</p></li>
-<li><p>Preserves conversation flow with hidden context messages</p></li>
-</ul>
-</li>
-<li><p>Performance Optimization</p>
-<ul class="simple">
-<li><p>Intelligent caching system for embeddings and search results</p></li>
-<li><p>Memory-efficient storage</p></li>
-</ul>
-</li>
+<li><p>Manual Search and Indexing
+- Index project documentation with <code class="docutils literal notranslate"><span class="pre">rag_index</span></code>
+- Search indexed documents with <code class="docutils literal notranslate"><span class="pre">rag_search</span></code>
+- Check index status with <code class="docutils literal notranslate"><span class="pre">rag_status</span></code></p></li>
+<li><p>Automatic Context Enhancement
+- Retrieves semantically similar documents
+- Preserves conversation flow with hidden context messages</p></li>
 </ol>
-<p class="rubric">Benefits</p>
-<ul class="simple">
-<li><p>Better informed responses through relevant documentation</p></li>
-<li><p>Reduced need for manual context inclusion</p></li>
-<li><p>Automatic token management</p></li>
-<li><p>Seamless integration with conversation flow</p></li>
-</ul>
 <p class="rubric">Instructions</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Use RAG to index and search project documentation.
 </pre></div>
@@ -1688,13 +1667,19 @@ Functions are documented using docstrings...</pre>
 
 <dl class="py function">
 <dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_enhance_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Enhance messages with context from RAG.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
 <dd><p>Index documents in specified paths.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.rag.</span></span><span class="sig-name descname"><span class="pre">rag_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_full</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
 <dd><p>Search indexed documents.</p>
 </dd></dl>
 
