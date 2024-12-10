@@ -102,7 +102,7 @@ def test_context_generate(tmp_path, mocker):
     test_file.write_text("Hello, world!")
 
     # Mock RAG dependencies
-    mocker.patch("gptme.tools._rag_context._HAS_RAG", True)
+    mocker.patch("gptme.tools.rag._has_gptme_rag", return_value=True)
     mocker.patch("gptme.tools.rag.init")  # Mock the init function
 
     # Mock the rag_index function

@@ -5,7 +5,7 @@ import os
 import pytest
 import tempfile
 
-from gptme.tools.rag import _HAS_RAG
+from gptme.tools.rag import _has_gptme_rag
 
 
 def pytest_sessionstart(session):
@@ -14,7 +14,7 @@ def pytest_sessionstart(session):
 
 
 def download_model():
-    if not _HAS_RAG:
+    if not _has_gptme_rag():
         return
 
     # downloads the model if it doesn't exist

@@ -282,14 +282,13 @@ def enrich_messages_with_context(
     - git status
     - contents of files modified after their message timestamp
     """
-    from ..tools._rag_context import _HAS_RAG, rag_enhance_messages  # fmt: skip
+    from ..tools.rag import rag_enhance_messages  # fmt: skip
 
     # Make a copy of messages to avoid modifying the original
     msgs = copy(msgs)
 
-    # First enhance messages with context
-    if _HAS_RAG:
-        msgs = rag_enhance_messages(msgs)
+    # First enhance messages with context, if gptme-rag is available
+    msgs = rag_enhance_messages(msgs)
 
     msgs = [
         append_file_content(msg, workspace, check_modified=use_fresh_context)
