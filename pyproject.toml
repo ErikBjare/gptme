@@ -68,10 +68,6 @@ playwright = {version = "1.47.*", optional=true}  # version constrained due to a
 youtube_transcript_api = {version = "^0.6.1", optional=true}
 python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 
-# RAG
-gptme-rag = {version = "^0.3.1", optional=true}
-#gptme-rag = {path = "../gptme-rag", optional=true, develop=true}
-
 # evals
 multiprocessing-logging = "^0.3.4"
 
@@ -120,7 +116,6 @@ server = ["flask", "flask-cors"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
-rag = ["gptme-rag"]  # RAG functionality
 youtube = ["youtube_transcript_api"]
 all = [
     # server
@@ -131,8 +126,6 @@ all = [
     "matplotlib", "pandas", "numpy", "pillow",
     # computer
     "python-xlib",
-    # rag
-    "gptme-rag",
     # youtube transcript tool
     "youtube_transcript_api",
 ]
