@@ -10,7 +10,12 @@ from datetime import datetime
 from itertools import islice, zip_longest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Literal, TypeAlias
+from typing import (
+    Any,
+    Literal,
+    TextIO,
+    TypeAlias,
+)
 
 from rich import print
 
@@ -68,6 +73,8 @@ class Log:
 class LogManager:
     """Manages a conversation log."""
 
+    _lock_fd: TextIO | None = None
+
     def __init__(
         self,
         log: list[Message] | None = None,
@@ -94,12 +101,12 @@ class LogManager:
             self._lock_fd = self._lockfile.open("w")
 
             # Try to acquire an exclusive lock
-
             try:
                 fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 logger.debug(f"Acquired lock on {self.logdir}")
             except BlockingIOError:
                 self._lock_fd.close()
+                self._lock_fd = None
                 raise RuntimeError(
                     f"Another gptme instance is using {self.logdir}"
                 ) from None
@@ -121,7 +128,7 @@ class LogManager:
 
     def __del__(self):
         """Release the lock and close the file descriptor"""
-        if hasattr(self, "_lock_fd"):
+        if self._lock_fd:
             try:
                 fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
                 self._lock_fd.close()

@@ -261,19 +261,23 @@ def main(
     set_interruptible()  # prepare, user should be able to Ctrl+C until user prompt ready
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
 
-    chat(
-        prompt_msgs,
-        initial_msgs,
-        logdir,
-        model,
-        stream,
-        no_confirm,
-        interactive,
-        show_hidden,
-        workspace_path,
-        tool_allowlist,
-        tool_format,
-    )
+    try:
+        chat(
+            prompt_msgs,
+            initial_msgs,
+            logdir,
+            model,
+            stream,
+            no_confirm,
+            interactive,
+            show_hidden,
+            workspace_path,
+            tool_allowlist,
+            tool_format,
+        )
+    except RuntimeError as e:
+        logger.error(e)
+        sys.exit(1)
 
 
 def get_name(name: str) -> str:
