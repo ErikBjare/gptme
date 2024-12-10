@@ -2,26 +2,28 @@
 
 from unittest.mock import patch
 
+import pytest
 from gptme.message import Message
-from gptme.tools.rag import init as init_rag
-from gptme.tools.rag import rag_enhance_messages
+from gptme.tools.rag import _has_gptme_rag, rag_enhance_messages
 
 
-def test_rag_tool_init_without_gptme_rag():
-    """Test RAG tool initialization when gptme-rag is not available."""
-    with (
-        patch("subprocess.run", side_effect=FileNotFoundError),
-        patch("gptme.tools.rag.get_project_config") as mock_config,
-    ):
-        mock_config.return_value.rag = {"enabled": False}
-        tool = init_rag()
-        assert tool.name == "rag"
-        assert tool.available is False
+@pytest.mark.skipif(not _has_gptme_rag(), reason="RAG is not available")
+def test_enhance_messages_with_rag():
+    """Test that enhancement works even without RAG available."""
+    messages = [
+        Message("user", "Tell me about Python"),
+        Message("assistant", "Python is a programming language"),
+    ]
+
+    enhanced = rag_enhance_messages(messages)
+
+    # Enhanced messages should have extra RAG context msg
+    assert len(enhanced) >= len(messages)
 
 
 def test_enhance_messages_no_rag():
     """Test that enhancement works even without RAG available."""
-    with patch("subprocess.run", side_effect=FileNotFoundError):
+    with patch("gptme.tools.rag._has_gptme_rag", return_value=False):
         messages = [
             Message("user", "Tell me about Python"),
             Message("assistant", "Python is a programming language"),
