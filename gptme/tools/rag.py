@@ -157,7 +157,7 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
                     cmd.extend(["--min-relevance", str(min_relevance)])
                 enhanced_messages.append(
                     Message(
-                        role="system",
+                        role="tool_result",
                         content=f"Relevant context:\n\n{_run_rag_cmd(cmd).stdout}",
                         hide=True,
                     )

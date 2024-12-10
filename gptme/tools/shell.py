@@ -312,7 +312,7 @@ def execute_shell_impl(
     if returncode:
         msg += f"Return code: {returncode}"
 
-    yield Message("system", msg)
+    yield Message("tool_result", msg)
 
 
 def get_path_fn(*args, **kwargs) -> Path | None:

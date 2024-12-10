@@ -234,7 +234,7 @@ def execute_with_confirmation(
         try:
             # Get confirmation
             if not confirm_fn(confirm_msg or f"Execute on {path}?"):
-                yield Message("system", "Operation cancelled.")
+                yield Message("tool_result", "Operation cancelled.")
                 return
 
             # Get potentially edited content
@@ -254,7 +254,7 @@ def execute_with_confirmation(
 
             # Add edit notification if content was edited
             if was_edited:
-                yield Message("system", "(content was edited by user)")
+                yield Message("tool_result", "(content was edited by user)")
 
         finally:
             if allow_edit:
@@ -263,4 +263,4 @@ def execute_with_confirmation(
     except Exception as e:
         if "pytest" in globals():
             raise
-        yield Message("system", f"Error during execution: {e}")
+        yield Message("tool_result", f"Error during execution: {e}")

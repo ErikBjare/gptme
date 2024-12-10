@@ -36,11 +36,7 @@ The $PATH parameter MUST be on the same line as the code block start, not on the
 The patch block should be written in the following format:
 
 {ToolUse("patch", ["$PATH"], '''
-<<<<<<< ORIGINAL
 $ORIGINAL_CONTENT
-=======
-$UPDATED_CONTENT
->>>>>>> UPDATED
 '''.strip()).to_output("markdown")}
 """
 }
@@ -50,12 +46,7 @@ DIVIDER = "\n=======\n"
 UPDATED = "\n>>>>>>> UPDATED"
 
 patch_content = """
-<<<<<<< ORIGINAL
     print("Hello world")
-=======
-    name = input("What is your name? ")
-    print(f"Hello {name}")
->>>>>>> UPDATED
 """.strip()
 
 
@@ -220,7 +211,9 @@ def execute_patch_impl(
 
         # Return success message with any warnings
         warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
-        yield Message("system", f"{warnings_str}Patch successfully applied to {path}")
+        yield Message(
+            "tool_result", f"{warnings_str}Patch successfully applied to {path}"
+        )
 
     except (ValueError, FileNotFoundError) as e:
         raise ValueError(f"Patch failed: {e.args[0]}") from None
@@ -237,7 +230,7 @@ def execute_patch(
         code = kwargs.get("patch", code)
 
     if not code:
-        yield Message("system", "No patch provided")
+        yield Message("tool_result", "No patch provided")
         return
 
     yield from execute_with_confirmation(

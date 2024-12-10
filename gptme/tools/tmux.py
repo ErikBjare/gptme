@@ -101,7 +101,7 @@ def new_session(command: str) -> Message:
     sleep(1)
     output = _capture_pane(f"{session_id}")
     return Message(
-        "system",
+        "tool_result",
         f"Running '{command}' in session {session_id}.\n```output\n{output}\n```",
     )
 
@@ -115,19 +115,20 @@ def send_keys(pane_id: str, keys: str) -> Message:
     )
     if result.returncode != 0:
         return Message(
-            "system", f"Failed to send keys to tmux pane `{pane_id}`: {result.stderr}"
+            "tool_result",
+            f"Failed to send keys to tmux pane `{pane_id}`: {result.stderr}",
         )
     sleep(1)
     output = _capture_pane(pane_id)
     return Message(
-        "system", f"Sent '{keys}' to pane `{pane_id}`\n```output\n{output}\n```"
+        "tool_result", f"Sent '{keys}' to pane `{pane_id}`\n```output\n{output}\n```"
     )
 
 
 def inspect_pane(pane_id: str) -> Message:
     content = _capture_pane(pane_id)
     return Message(
-        "system",
+        "tool_result",
         f"""Pane content:
 {ToolUse("output", [], content).to_output()}""",
     )
@@ -142,15 +143,15 @@ def kill_session(session_id: str) -> Message:
     )
     if result.returncode != 0:
         return Message(
-            "system",
+            "tool_result",
             f"Failed to kill tmux session with ID {session_id}: {result.stderr}",
         )
-    return Message("system", f"Killed tmux session with ID {session_id}")
+    return Message("tool_result", f"Killed tmux session with ID {session_id}")
 
 
 def list_sessions() -> Message:
     sessions = get_sessions()
-    return Message("system", f"Active tmux sessions: {sessions}")
+    return Message("tool_result", f"Active tmux sessions: {sessions}")
 
 
 def execute_tmux(
@@ -170,7 +171,7 @@ def execute_tmux(
 
     print_preview(f"Command: {cmd}", "bash", copy=True)
     if not confirm(f"Execute command: {cmd}?"):
-        yield Message("system", "Command execution cancelled.")
+        yield Message("tool_result", "Command execution cancelled.")
         return
 
     parts = cmd.split(maxsplit=1)
@@ -190,7 +191,7 @@ def execute_tmux(
     elif command == "kill_session":
         yield kill_session(_args)
     else:
-        yield Message("system", f"Unknown command: {command}")
+        yield Message("tool_result", f"Unknown command: {command}")
 
 
 instructions = """
