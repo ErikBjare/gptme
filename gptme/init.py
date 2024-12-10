@@ -84,8 +84,11 @@ def init_logging(verbose):
         datefmt="[%X]",
         handlers=[handler],
     )
+    # anthropic spams debug logs for every request
+    logging.getLogger("anthropic").setLevel(logging.INFO)
     # set httpx logging to WARNING
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
 
     # Register cleanup handler
 
