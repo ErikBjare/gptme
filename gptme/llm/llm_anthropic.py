@@ -19,9 +19,7 @@ if TYPE_CHECKING:
     import anthropic.types  # fmt: skip
     import anthropic.types.beta.prompt_caching  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
-    from anthropic.types.beta.prompt_caching import (
-        PromptCachingBetaTextBlockParam,
-    )
+    from anthropic.types.beta.prompt_caching import PromptCachingBetaTextBlockParam
 
 logger = logging.getLogger(__name__)
 
@@ -326,7 +324,7 @@ def _prepare_messages_for_api(
 
     # Apply cache control to optimize performance
     messages_dicts_new: list[PromptCachingBetaMessageParam] = []
-    for i, msg in enumerate(messages_dicts):
+    for msg in messages_dicts:
         content_parts: list[
             PromptCachingBetaTextBlockParam
             | PromptCachingBetaImageBlockParam
@@ -341,20 +339,20 @@ def _prepare_messages_for_api(
 
         for part in raw_content:
             if isinstance(part, dict):
-                if part.get("type") == "text" and i == len(messages_dicts) - 1:
-                    content_parts.append(
-                        {
-                            "type": "text",
-                            "text": part["text"],
-                            "cache_control": {"type": "ephemeral"},
-                        }
-                    )
-                else:
-                    content_parts.append(part)  # type: ignore
+                content_parts.append(part)  # type: ignore
             else:
                 content_parts.append({"type": "text", "text": str(part)})
 
         messages_dicts_new.append({"role": msg["role"], "content": content_parts})
+
+    # set cache points at the two last user messages, as suggested in Anthropic docs:
+    # > The conversation history (previous messages) is included in the messages array.
+    # > The final turn is marked with cache-control, for continuing in followups.
+    # > The second-to-last user message is marked for caching with the cache_control parameter, so that this checkpoint can read from the previous cache.
+    # https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching#continuing-a-multi-turn-conversation
+    for msgp in [msg for msg in messages_dicts_new if msg["role"] == "user"][-2:]:
+        assert isinstance(msgp["content"], list)
+        msgp["content"][-1]["cache_control"] = {"type": "ephemeral"}
 
     # Prepare tools
     tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
