@@ -65,6 +65,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         tools=tools_dict if tools_dict else NOT_GIVEN,
     )
     content = response.content
+    logger.debug(response.usage)
     assert content
     assert len(content) == 1
     return content[0].text  # type: ignore
@@ -74,6 +75,7 @@ def stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Generator[str, None, None]:
     import anthropic.types  # fmt: skip
+    import anthropic.types.beta.prompt_caching  # fmt: skip
     from anthropic import NOT_GIVEN  # fmt: skip
 
     assert _anthropic, "LLM not initialized"
@@ -91,9 +93,6 @@ def stream(
         tools=tools_dict if tools_dict else NOT_GIVEN,
     ) as stream:
         for chunk in stream:
-            if hasattr(chunk, "usage"):
-                # print(chunk.usage)
-                pass
             match chunk.type:
                 case "content_block_start":
                     chunk = cast(anthropic.types.RawContentBlockStartEvent, chunk)
@@ -121,9 +120,14 @@ def stream(
                     # full text message
                     pass
                 case "message_start":
-                    pass
+                    chunk = cast(
+                        anthropic.types.beta.prompt_caching.RawPromptCachingBetaMessageStartEvent,
+                        chunk,
+                    )
+                    logger.debug(chunk.message.usage)
                 case "message_delta":
-                    pass
+                    chunk = cast(anthropic.types.MessageDeltaEvent, chunk)
+                    logger.debug(chunk.usage)
                 case "message_stop":
                     pass
                 case _:
