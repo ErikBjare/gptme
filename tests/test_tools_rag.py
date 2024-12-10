@@ -9,7 +9,7 @@ from gptme.tools.rag import _has_gptme_rag, rag_enhance_messages
 
 @pytest.mark.skipif(not _has_gptme_rag(), reason="RAG is not available")
 def test_enhance_messages_with_rag():
-    """Test that enhancement works even without RAG available."""
+    """Test that enhancement works when RAG is available."""
     messages = [
         Message("user", "Tell me about Python"),
         Message("assistant", "Python is a programming language"),
