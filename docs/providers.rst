@@ -15,70 +15,20 @@ To select a provider and model, run ``gptme`` with the ``--model`` flag set to `
 
 On first startup, if ``--model`` is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.
 
-You can persist the below environment variables in the :doc:`config` file.
+Use the ``[env]`` section in the ``gptme.toml`` :doc:`config` file to store API keys using the same format as the environment variables:
 
-OpenAI
-------
+- ``OPENAI_API_KEY="your-api-key"``
+- ``ANTHROPIC_API_KEY="your-api-key"``
+- ``OPENROUTER_API_KEY="your-api-key"``
+- ``GEMINI_API_KEY="your-api-key"``
+- ``GROQ_API_KEY="your-api-key"``
+- ``XAI_API_KEY="your-api-key"``
 
-To use OpenAI, set your API key:
+.. rubric:: Local
 
-.. code-block:: sh
+You can use local LLM models using any OpenAI API-compatible server.
 
-    export OPENAI_API_KEY="your-api-key"
-
-Anthropic
----------
-
-To use Anthropic, set your API key:
-
-.. code-block:: sh
-
-    export ANTHROPIC_API_KEY="your-api-key"
-
-OpenRouter
-----------
-
-To use OpenRouter, set your API key:
-
-.. code-block:: sh
-
-    export OPENROUTER_API_KEY="your-api-key"
-
-Gemini
-----------
-
-To use Gemini, set your API key:
-
-.. code-block:: sh
-
-    export GEMINI_API_KEY="your-api-key"
-
-Groq
-----
-
-To use Groq, set your API key:
-
-.. code-block:: sh
-
-    export GROQ_API_KEY="your-api-key"
-
-xAI
----
-
-To use xAI, set your API key:
-
-.. code-block:: sh
-
-    export XAI_API_KEY="your-api-key"
-
-Local
------
-
-There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.
-
-Here's we will cover how to achieve that with ``ollama``.
-
-You first need to install ``ollama``, then you can run it with:
+To achieve that with ``ollama``, install it then run:
 
 .. code-block:: sh
 
@@ -88,6 +38,4 @@ You first need to install ``ollama``, then you can run it with:
 
 .. note::
 
-    Small models will not reliably follow the system prompt, and will thus fail to use tools, severely limiting the usefulness of gptme.
-
-    The smallest model which performs somewhat adequately is Llama 3.1 70B. You can find an overview of how different models perform on the :doc:`evals` page.
+    Small models won't work well with tools, severely limiting the usefulness of gptme. You can find an overview of how different models perform on the :doc:`evals` page.
