@@ -1,6 +1,7 @@
 import logging
 import shutil
 import sys
+import time
 from collections.abc import Iterator
 from functools import lru_cache
 from typing import cast
@@ -95,11 +96,14 @@ def _reply_stream(
         print(" " * shutil.get_terminal_size().columns, end="\r")
 
     output = ""
+    start_time = time.time()
+    first_token_time = None
     try:
         for char in (
             char for chunk in _stream(messages, model, tools) for char in chunk
         ):
             if not output:  # first character
+                first_token_time = time.time()
                 print_clear()
                 print(f"{PROMPT_ASSISTANT}: ", end="")
             print(char, end="")
@@ -126,6 +130,15 @@ def _reply_stream(
         return Message("assistant", output + "... ^C Interrupted")
     finally:
         print_clear()
+        if first_token_time:
+            end_time = time.time()
+            logger.debug(
+                f"Generation interrupted after {end_time - start_time:.1f}s "
+                f"(ttft: {first_token_time - start_time:.2f}s, "
+                f"gen: {end_time - first_token_time:.2f}s, "
+                f"tok/s: {len_tokens(output)/(end_time - first_token_time):.1f})"
+            )
+
     return Message("assistant", output)
 
 

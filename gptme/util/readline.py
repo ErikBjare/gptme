@@ -48,7 +48,7 @@ def load_readline_history() -> None:  # pragma: no cover
     if init:
         return
 
-    logger.debug("Loading history")
+    # logger.debug("Loading history")
     # enabled by default in CPython, make it explicit
     readline.set_auto_history(True)
     # had some bugs where it grew to gigs, which should be fixed, but still good precaution
@@ -69,18 +69,17 @@ def load_readline_history() -> None:  # pragma: no cover
 def register_tabcomplete() -> None:  # pragma: no cover
     """Register tab completion for readline."""
 
-    # set up tab completion
-    logger.debug("Setting up tab completion")
+    # logger.debug("Setting up tab completion")
     readline.set_completer(_completer)
     readline.set_completer_delims(" ")
     readline.parse_and_bind("tab: complete")
 
     # https://github.com/python/cpython/issues/102130#issuecomment-1439242363
     if "libedit" in readline.__doc__:  # type: ignore
-        logger.debug("Found libedit readline")
+        # logger.debug("Found libedit readline")
         readline.parse_and_bind("bind ^I rl_complete")
     else:
-        logger.debug("Found gnu readline")
+        # logger.debug("Found gnu readline")
         readline.parse_and_bind("tab: complete")
 
 

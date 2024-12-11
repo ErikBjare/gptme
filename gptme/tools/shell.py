@@ -44,7 +44,7 @@ candidates = (
 
 
 shell_programs_str = "\n".join(
-    f"- {prog}" for prog in get_installed_programs(candidates)
+    f"- {prog}" for prog in sorted(get_installed_programs(candidates))
 )
 is_macos = sys.platform == "darwin"
 

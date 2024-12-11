@@ -30,7 +30,6 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     _init_done = True
 
     # init
-    logger.debug("Started")
     load_dotenv()
 
     # fixes issues with transformers parallelism
@@ -72,20 +71,21 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
         # for some reason it bugs out shell tests in CI
         register_tabcomplete()
 
-    init_tools(tool_allowlist)
+    init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
 
 
 def init_logging(verbose):
-    # log init
-    handler = RichHandler()
+    handler = RichHandler()  # show_time=False
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(message)s",
         datefmt="[%X]",
         handlers=[handler],
     )
+
     # anthropic spams debug logs for every request
     logging.getLogger("anthropic").setLevel(logging.INFO)
+    logging.getLogger("openai").setLevel(logging.INFO)
     # set httpx logging to WARNING
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)

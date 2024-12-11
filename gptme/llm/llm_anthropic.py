@@ -349,6 +349,9 @@ def _prepare_messages_for_api(
 
         messages_dicts_new.append({"role": msg["role"], "content": content_parts})
 
+    # set for the first system message (static between sessions)
+    system_messages[0]["cache_control"] = {"type": "ephemeral"}
+
     # set cache points at the two last user messages, as suggested in Anthropic docs:
     # > The conversation history (previous messages) is included in the messages array.
     # > The final turn is marked with cache-control, for continuing in followups.

@@ -76,7 +76,7 @@ from gptme.tools import init_tools
     ],
 )
 def test_prompt_tools(tool_format, example, expected, not_expected):
-    init_tools(allowlist=["shell", "read"])
+    init_tools(allowlist=frozenset(("shell", "read")))
 
     prompt = next(prompt_tools(example, tool_format)).content
 
