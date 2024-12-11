@@ -346,9 +346,7 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -364,20 +362,6 @@
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gemini">Gemini</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#groq">Groq</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xai">xAI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -399,54 +383,18 @@ gptme<span class="w"> </span>--model<span class="w"> </span>local/llama3.2:1b<sp
 </pre></div>
 </div>
 <p>On first startup, if <code class="docutils literal notranslate"><span class="pre">--model</span></code> is not set, and no API keys are set in the config or environment it will be prompted for. It will then auto-detect the provider, and save the key in the configuration file.</p>
-<p>You can persist the below environment variables in the <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> file.</p>
-<section id="openai">
-<h2>OpenAI<a class="headerlink" href="#openai" title="Link to this heading">#</a></h2>
-<p>To use OpenAI, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="anthropic">
-<h2>Anthropic<a class="headerlink" href="#anthropic" title="Link to this heading">#</a></h2>
-<p>To use Anthropic, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="openrouter">
-<h2>OpenRouter<a class="headerlink" href="#openrouter" title="Link to this heading">#</a></h2>
-<p>To use OpenRouter, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="gemini">
-<h2>Gemini<a class="headerlink" href="#gemini" title="Link to this heading">#</a></h2>
-<p>To use Gemini, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GEMINI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="groq">
-<h2>Groq<a class="headerlink" href="#groq" title="Link to this heading">#</a></h2>
-<p>To use Groq, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">GROQ_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="xai">
-<h2>xAI<a class="headerlink" href="#xai" title="Link to this heading">#</a></h2>
-<p>To use xAI, set your API key:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">XAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="local">
-<h2>Local<a class="headerlink" href="#local" title="Link to this heading">#</a></h2>
-<p>There are several ways to run local LLM models in a way that exposes a OpenAI API-compatible server.</p>
-<p>Here’s we will cover how to achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code>.</p>
-<p>You first need to install <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, then you can run it with:</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">[env]</span></code> section in the <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code> <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> file to store API keys using the same format as the environment variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">OPENAI_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ANTHROPIC_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">OPENROUTER_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GEMINI_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GROQ_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">XAI_API_KEY=&quot;your-api-key&quot;</span></code></p></li>
+</ul>
+<p class="rubric">Local</p>
+<p>You can use local LLM models using any OpenAI API-compatible server.</p>
+<p>To achieve that with <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, install it then run:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ollama<span class="w"> </span>pull<span class="w"> </span>llama3.2:1b
 ollama<span class="w"> </span>serve
 <span class="nv">OPENAI_BASE_URL</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:11434/v1&quot;</span><span class="w"> </span>gptme<span class="w"> </span><span class="s1">&#39;hello&#39;</span><span class="w"> </span>-m<span class="w"> </span>local/llama3.2:1b
@@ -454,10 +402,8 @@ ollama<span class="w"> </span>serve
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Small models will not reliably follow the system prompt, and will thus fail to use tools, severely limiting the usefulness of gptme.</p>
-<p>The smallest model which performs somewhat adequately is Llama 3.1 70B. You can find an overview of how different models perform on the <a class="reference internal" href="evals.html"><span class="doc">Evals</span></a> page.</p>
+<p>Small models won’t work well with tools, severely limiting the usefulness of gptme. You can find an overview of how different models perform on the <a class="reference internal" href="evals.html"><span class="doc">Evals</span></a> page.</p>
 </div>
-</section>
 </section>
 
 
@@ -495,28 +441,6 @@ ollama<span class="w"> </span>serve
             </div>
             
             
-              
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openai">OpenAI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#anthropic">Anthropic</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#openrouter">OpenRouter</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gemini">Gemini</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#groq">Groq</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xai">xAI</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local">Local</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
