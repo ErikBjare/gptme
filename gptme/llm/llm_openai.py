@@ -117,6 +117,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         messages = list(_prep_o1(messages))
 
     messages_dicts = handle_files(msgs2dicts(messages))
+    _transform_msgs_for_special_provider(messages_dicts)
 
     from openai import NOT_GIVEN  # fmt: skip
 
@@ -148,6 +149,7 @@ def stream(
         messages = list(_prep_o1(messages))
 
     messages_dicts = handle_files(msgs2dicts(messages))
+    _transform_msgs_for_special_provider(messages_dicts)
 
     from openai import NOT_GIVEN  # fmt: skip
 
@@ -276,6 +278,14 @@ def _process_file(msg: dict) -> dict:
         msg["role"] = "user"
 
     return msg
+
+
+def _transform_msgs_for_special_provider(messages_dicts: list[dict]):
+    if get_provider() == "groq":
+        # groq needs message.content to be a string
+        messages_dicts = [
+            {**msg, "content": msg["content"][0]["text"]} for msg in messages_dicts
+        ]
 
 
 def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
