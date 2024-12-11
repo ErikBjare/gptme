@@ -156,6 +156,10 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
 }
 
 
+def get_default_model() -> ModelMeta | None:
+    return DEFAULT_MODEL
+
+
 def set_default_model(model: str) -> None:
     modelmeta = get_model(model)
     assert modelmeta

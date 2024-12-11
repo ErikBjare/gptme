@@ -8,7 +8,7 @@ import logging
 from collections.abc import Generator
 
 from ..codeblock import Codeblock
-from ..llm.models import DEFAULT_MODEL, get_model
+from ..llm.models import get_default_model, get_model
 from ..message import Message, len_tokens
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ def reduce_log(
 ) -> Generator[Message, None, None]:
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
     # get the token limit
-    model = DEFAULT_MODEL or get_model("gpt-4")
+    model = get_default_model() or get_model("gpt-4")
     if limit is None:
         limit = 0.9 * model.context
 
