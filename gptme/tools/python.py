@@ -120,7 +120,7 @@ def execute_python(
 
 
 @functools.lru_cache
-def get_installed_python_libraries() -> set[str]:
+def get_installed_python_libraries() -> list[str]:
     """Check if a select list of Python libraries are installed."""
     candidates = [
         "numpy",
@@ -137,7 +137,7 @@ def get_installed_python_libraries() -> set[str]:
         if importlib.util.find_spec(candidate):
             installed.add(candidate)
 
-    return installed
+    return list(sorted(installed))
 
 
 def get_functions():

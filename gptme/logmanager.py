@@ -103,7 +103,7 @@ class LogManager:
             # Try to acquire an exclusive lock
             try:
                 fcntl.flock(self._lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                logger.debug(f"Acquired lock on {self.logdir}")
+                # logger.debug(f"Acquired lock on {self.logdir}")
             except BlockingIOError:
                 self._lock_fd.close()
                 self._lock_fd = None
@@ -132,7 +132,7 @@ class LogManager:
             try:
                 fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
                 self._lock_fd.close()
-                logger.debug(f"Released lock on {self.logdir}")
+                # logger.debug(f"Released lock on {self.logdir}")
             except Exception as e:
                 logger.warning(f"Error releasing lock: {e}")
 
@@ -256,7 +256,7 @@ class LogManager:
 
         if not Path(logfile).exists():
             if create:
-                logger.debug(f"Creating new logfile {logfile}")
+                # logger.debug(f"Creating new logfile {logfile}")
                 Path(logfile).parent.mkdir(parents=True, exist_ok=True)
                 Log([]).write_jsonl(logfile)
             else:

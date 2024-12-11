@@ -59,7 +59,7 @@ patch
     ],
 )
 def test_tool_use_output_patch(tool_format, args, content, kwargs, expected):
-    init_tools(allowlist=["patch"])
+    init_tools(allowlist=frozenset(("patch",)))
 
     result = ToolUse("patch", args, content, kwargs).to_output(tool_format)
 

@@ -72,7 +72,8 @@ tools_default_disabled = [
 ]
 
 
-def init_tools(allowlist=None) -> None:
+@lru_cache
+def init_tools(allowlist: frozenset[str] | None = None) -> None:
     """Runs initialization logic for tools."""
     # init python tool last
     tools = list(
@@ -93,22 +94,20 @@ def init_tools(allowlist=None) -> None:
         if tool.name in tools_default_disabled:
             if not allowlist or tool.name not in allowlist:
                 continue
-        load_tool(tool)
+        _load_tool(tool)
 
     for tool_name in allowlist or []:
         if not has_tool(tool_name):
             raise ValueError(f"Tool '{tool_name}' not found")
 
 
-def load_tool(tool: ToolSpec) -> None:
+def _load_tool(tool: ToolSpec) -> None:
     """Loads a tool."""
-    # FIXME: when are tools first initialized?
     if tool in loaded_tools:
         logger.warning(f"Tool '{tool.name}' already loaded")
         return
 
-    if tool.init:
-        tool.init()
+    # tool init happens in init_tools to check that spec is available
     if tool.functions:
         for func in tool.functions:
             register_function(func)

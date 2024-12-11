@@ -188,11 +188,10 @@ def main(
     config = get_config()
 
     tool_format = tool_format or config.get_env("TOOL_FORMAT") or "markdown"
-
     set_tool_format(tool_format)
 
     # early init tools to generate system prompt
-    init_tools(tool_allowlist)
+    init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
 
     # get initial system prompt
     initial_msgs = [
