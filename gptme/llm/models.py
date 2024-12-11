@@ -118,6 +118,40 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "supports_vision": True,
         },
     },
+    # https://api-docs.deepseek.com/quick_start/pricing
+    "deepseek": {
+        "deepseek-chat": {
+            "context": 64_000,
+            "max_output": 4000,
+            # 10x better price for cache hits
+            "price_input": 0.14,
+            "price_output": 0.28,
+        }
+    },
+    # https://groq.com/pricing/
+    "groq": {
+        "llama-3.3-70b-versatile": {
+            "context": 128_000,
+            "max_output": 32_768,
+            "price_input": 0.59,
+            "price_output": 0.79,
+        },
+    },
+    "xai": {
+        "grok-beta": {
+            "context": 131_072,
+            "max_output": 4096,  # guess
+            "price_input": 5,
+            "price_output": 15,
+        },
+        "grok-vision-beta": {
+            "context": 8192,
+            "max_output": 4096,  # guess
+            "price_input": 5,  # $10/1Mtok for vision
+            "price_output": 15,
+            "supports_vision": True,
+        },
+    },
     "local": {},
 }
 
