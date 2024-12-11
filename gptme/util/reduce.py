@@ -8,8 +8,8 @@ import logging
 from collections.abc import Generator
 
 from ..codeblock import Codeblock
+from ..llm.models import DEFAULT_MODEL, get_model
 from ..message import Message, len_tokens
-from ..llm.models import get_model
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,12 @@ def reduce_log(
 ) -> Generator[Message, None, None]:
     """Reduces log until it is below `limit` tokens by continually summarizing the longest messages until below the limit."""
     # get the token limit
+    model = DEFAULT_MODEL or get_model("gpt-4")
     if limit is None:
-        limit = 0.9 * get_model().context
+        limit = 0.9 * model.context
 
     # if we are below the limit, return the log as-is
-    tokens = len_tokens(log)
+    tokens = len_tokens(log, model=model.model)
     if tokens <= limit:
         yield from log
         return
@@ -34,7 +35,7 @@ def reduce_log(
     # filter out pinned messages
     i, longest_msg = max(
         [(i, m) for i, m in enumerate(log) if not m.pinned],
-        key=lambda t: len_tokens(t[1].content),
+        key=lambda t: len_tokens(t[1].content, model.model),
     )
 
     # attempt to truncate the longest message
@@ -53,7 +54,7 @@ def reduce_log(
 
     log = log[:i] + [summary_msg] + log[i + 1 :]
 
-    tokens = len_tokens(log)
+    tokens = len_tokens(log, model.model)
     if tokens <= limit:
         yield from log
     else:
@@ -105,7 +106,7 @@ def limit_log(log: list[Message]) -> list[Message]:
     then removes the last message to get below the limit.
     Will always pick the first few system messages.
     """
-    limit = get_model().context
+    model = get_model()
 
     # Always pick the first system messages
     initial_system_msgs = []
@@ -118,11 +119,11 @@ def limit_log(log: list[Message]) -> list[Message]:
     msgs = []
     for msg in reversed(log[len(initial_system_msgs) :]):
         msgs.append(msg)
-        if len_tokens(msgs) > limit:
+        if len_tokens(msgs, model.model) > model.context:
             break
 
     # Remove the message that put us over the limit
-    if len_tokens(msgs) > limit:
+    if len_tokens(msgs, model.model) > model.context:
         # skip the last message
         msgs.pop()
 

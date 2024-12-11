@@ -3,11 +3,14 @@ from . import console
 
 
 def _tokens_inout(msgs: list[Message]) -> tuple[int, int]:
-    tokens_in, tokens_out = len_tokens(msgs[:-1]), 0
+    from ..llm.models import get_model  # fmt: skip
+
+    model = get_model()
+    tokens_in, tokens_out = len_tokens(msgs[:-1], model.model), 0
     if msgs[-1].role == "assistant":
-        tokens_out = len_tokens(msgs[-1])
+        tokens_out = len_tokens(msgs[-1], model.model)
     else:
-        tokens_in += len_tokens(msgs[-1])
+        tokens_in += len_tokens(msgs[-1], model.model)
     return tokens_in, tokens_out
 
 

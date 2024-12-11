@@ -21,10 +21,10 @@ long_msg = Message(
 
 
 def test_truncate_msg():
-    len_pre = len_tokens(long_msg)
+    len_pre = len_tokens(long_msg, "gpt-4")
     truncated = truncate_msg(long_msg)
     assert truncated is not None
-    len_post = len_tokens(truncated)
+    len_post = len_tokens(truncated, "gpt-4")
     assert len_pre > len_post
     assert "[...]" in truncated.content
     assert "```cli.py" in truncated.content
@@ -38,12 +38,12 @@ def test_reduce_log():
         Message("user", content=" ".join(fn.name for fn in [readme, cli, htmlindex])),
         long_msg,
     ]
-    len_pre = len_tokens(msgs)
+    len_pre = len_tokens(msgs, "gpt-4")
     print(f"{len_pre=}")
 
     limit = 1000
     reduced = list(reduce_log(msgs, limit=limit))
-    len_post = len_tokens(reduced)
+    len_post = len_tokens(reduced, "gpt-4")
     print(f"{len_post=}")
     print(f"{reduced[-1].content=}")
 

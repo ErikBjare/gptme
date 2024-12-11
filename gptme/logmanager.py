@@ -356,16 +356,19 @@ def prepare_messages(
     - Enhances it with context such as file contents
     - Transforms it to the format expected by LLM providers
     """
+    from .llm.models import get_model  # fmt: skip
+
     # Enrich with enabled context enhancements (RAG, fresh context)
     msgs = enrich_messages_with_context(msgs, workspace)
 
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))
 
-    if len_tokens(msgs) != len_tokens(msgs_reduced):
-        logger.info(
-            f"Reduced log from {len_tokens(msgs)//1} to {len_tokens(msgs_reduced)//1} tokens"
-        )
+    model = get_model()
+    if (len_from := len_tokens(msgs, model.model)) != (
+        len_to := len_tokens(msgs_reduced, model.model)
+    ):
+        logger.info(f"Reduced log from {len_from//1} to {len_to//1} tokens")
     msgs_limited = limit_log(msgs_reduced)
     if len(msgs_reduced) != len(msgs_limited):
         logger.info(

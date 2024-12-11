@@ -26,6 +26,7 @@ console = Console(log_path=False)
 _warned_models = set()
 
 
+@lru_cache
 def get_tokenizer(model: str):
     import tiktoken  # fmt: skip
 
@@ -184,7 +185,8 @@ def document_prompt_function(*args, **kwargs):
 
         prompt = "\n\n".join([msg.content for msg in func(*args, **kwargs)])
         prompt = textwrap.indent(prompt, "   ")
-        prompt_tokens = len_tokens(prompt)
+        # Use a default model for documentation purposes
+        prompt_tokens = len_tokens(prompt, model="gpt-4")
         kwargs_str = (
             (" (" + ", ".join(f"{k}={v!r}" for k, v in kwargs.items()) + ")")
             if kwargs
