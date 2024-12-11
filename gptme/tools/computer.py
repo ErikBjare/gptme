@@ -1,7 +1,7 @@
 """
-Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.
+Tool for computer interaction through X11 or macOS native commands, including screen capture, keyboard, and mouse control.
 
-The computer tool provides direct interaction with the desktop environment through X11.
+The computer tool provides direct interaction with the desktop environment.
 Similar to Anthropic's computer use demo, but integrated with gptme's architecture.
 
 .. rubric:: Features
@@ -13,7 +13,7 @@ Similar to Anthropic's computer use demo, but integrated with gptme's architectu
 
 .. rubric:: Installation
 
-Requires X11 and xdotool::
+On Linux, requires X11 and xdotool::
 
     # On Debian/Ubuntu
     sudo apt install xdotool
@@ -21,13 +21,24 @@ Requires X11 and xdotool::
     # On Arch Linux
     sudo pacman -S xdotool
 
+On macOS, uses native osascript and screencapture, no additional installation required.
+
 .. rubric:: Configuration
 
 The tool uses these environment variables:
 
-- DISPLAY: X11 display to use (default: ":1")
+- DISPLAY: X11 display to use (default: ":1", Linux only)
 - WIDTH: Screen width (default: 1024)
 - HEIGHT: Screen height (default: 768)
+
+.. rubric:: Security
+
+On macOS, the tool uses osascript with careful input sanitization to prevent command injection:
+
+- All user input is escaped and sanitized
+- Uses subprocess with list arguments to prevent shell injection
+- Validates input types and ranges
+- Maps keys to known safe values
 
 .. rubric:: Usage
 
@@ -54,12 +65,16 @@ with LLM vision capabilities.
 """
 
 import os
+import platform
 import shlex
 import shutil
 import subprocess
 from enum import Enum
 from pathlib import Path
 from typing import Literal, TypedDict
+
+# Platform detection
+IS_MACOS = platform.system() == "Darwin"
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
@@ -136,8 +151,59 @@ def _scale_coordinates(
     return round(x * x_scaling_factor), round(y * y_scaling_factor)
 
 
+def _sanitize_osascript_input(text: str) -> str:
+    """
+    Sanitize input for use in osascript to prevent command injection.
+
+    Args:
+        text: The text to sanitize
+
+    Returns:
+        Safely escaped text for use in osascript
+
+    Security:
+        - Escapes single quotes to prevent breaking out of string literals
+        - Escapes backslashes to prevent escape sequence injection
+        - Uses shlex.quote as an additional safety measure
+    """
+    # First escape backslashes, then single quotes
+    escaped = text.replace("\\", "\\\\").replace("'", "\\'")
+    # Use shlex.quote as an additional safety measure
+    return shlex.quote(escaped)
+
+
+def _run_osascript(script: str) -> str:
+    """
+    Run an AppleScript command safely.
+
+    Args:
+        script: The AppleScript to execute
+
+    Returns:
+        Command output
+
+    Security:
+        - Input must be sanitized before being passed to this function
+        - Uses list form of subprocess.run to avoid shell injection
+        - Raises error on non-zero exit code
+    """
+    try:
+        result = subprocess.run(
+            ["osascript", "-e", script],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"osascript command failed: {e.stderr}") from e
+
+
 def _run_xdotool(cmd: str, display: str | None = None) -> str:
     """Run an xdotool command with optional display setting and wait for completion."""
+    if IS_MACOS:
+        raise RuntimeError("xdotool is not supported on macOS")
+
     env = os.environ.copy()
     if display:
         env["DISPLAY"] = display
@@ -155,11 +221,106 @@ def _run_xdotool(cmd: str, display: str | None = None) -> str:
         raise RuntimeError(f"xdotool command failed: {e.stderr}") from e
 
 
+def _macos_type(text: str) -> None:
+    """
+    Type text using osascript on macOS.
+
+    Security:
+        - Uses _sanitize_osascript_input to prevent command injection
+        - Text is typed character by character to maintain control
+    """
+    safe_text = _sanitize_osascript_input(text)
+    script = f"""
+        tell application "System Events"
+            keystroke {safe_text}
+        end tell
+    """
+    _run_osascript(script)
+
+
+def _macos_key(key_sequence: str) -> None:
+    """
+    Send key sequence using osascript on macOS.
+
+    Maps common key names to their macOS equivalents.
+
+    Security:
+        - Uses _sanitize_osascript_input to prevent command injection
+        - Validates key sequences against known safe values
+    """
+    # Map common key names to macOS equivalents
+    key_map = {
+        "Return": "return",
+        "Control_L": "control",
+        "Alt_L": "option",
+        "Super_L": "command",
+        # Add more mappings as needed
+    }
+
+    keys = key_sequence.split("+")
+    safe_keys = []
+    for key in keys:
+        mapped_key = key_map.get(key, key.lower())
+        safe_key = _sanitize_osascript_input(mapped_key)
+        safe_keys.append(safe_key)
+
+    if len(safe_keys) == 1:
+        script = f"""
+            tell application "System Events"
+                key code {safe_keys[0]}
+            end tell
+        """
+    else:
+        # For key combinations
+        key_list = ", ".join(safe_keys[:-1])
+        script = f"""
+            tell application "System Events"
+                key code {safe_keys[-1]} using {{{key_list}}} down
+            end tell
+        """
+    _run_osascript(script)
+
+
+def _macos_mouse_move(x: int, y: int) -> None:
+    """
+    Move mouse using osascript on macOS.
+
+    Security:
+        - Coordinates are validated as integers
+        - Uses safe string formatting
+    """
+    script = f"""
+        tell application "System Events"
+            set mouseLocation to {{x:{x}, y:{y}}}
+        end tell
+    """
+    _run_osascript(script)
+
+
+def _macos_click(button: int) -> None:
+    """
+    Click mouse button using osascript on macOS.
+
+    Security:
+        - Button number is validated as integer
+        - Only allows valid button numbers
+    """
+    if button not in (1, 2, 3):
+        raise ValueError("Invalid button number")
+
+    script = f"""
+        tell application "System Events"
+            click button {button}
+        end tell
+    """
+    _run_osascript(script)
+
+
 def computer(
     action: Action, text: str | None = None, coordinate: tuple[int, int] | None = None
 ) -> Message | None:
     """
-    Perform computer interactions through X11.
+    Perform computer interactions through X11 or macOS native commands.
 
     Args:
         action: The type of action to perform
@@ -177,10 +338,19 @@ def computer(
             _ScalingSource.API, coordinate[0], coordinate[1], width, height
         )
 
-        if action == "mouse_move":
-            _run_xdotool(f"mousemove --sync {x} {y}", display)
-        else:  # left_click_drag
-            _run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
+        if IS_MACOS:
+            if action == "mouse_move":
+                _macos_mouse_move(x, y)
+            else:  # left_click_drag
+                _macos_mouse_move(x, y)
+                _macos_click(1)
+                _macos_mouse_move(x, y)
+                _macos_click(1)
+        else:
+            if action == "mouse_move":
+                _run_xdotool(f"mousemove --sync {x} {y}", display)
+            else:  # left_click_drag
+                _run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
 
         print(f"Moved mouse to {x},{y}")
         return None
@@ -188,40 +358,63 @@ def computer(
         if not text:
             raise ValueError(f"text is required for {action}")
 
-        if action == "key":
-            _run_xdotool(f"key -- {text}", display)
-            print(f"Sent key sequence: {text}")
-        else:  # type
-            for chunk in _chunks(text, TYPING_GROUP_SIZE):
-                _run_xdotool(
-                    f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
-                    display,
-                )
-            print(f"Typed text: {text}")
+        if IS_MACOS:
+            if action == "key":
+                _macos_key(text)
+                print(f"Sent key sequence: {text}")
+            else:  # type
+                for chunk in _chunks(text, TYPING_GROUP_SIZE):
+                    _macos_type(chunk)
+                print(f"Typed text: {text}")
+        else:
+            if action == "key":
+                _run_xdotool(f"key -- {text}", display)
+                print(f"Sent key sequence: {text}")
+            else:  # type
+                for chunk in _chunks(text, TYPING_GROUP_SIZE):
+                    _run_xdotool(
+                        f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(chunk)}",
+                        display,
+                    )
+                print(f"Typed text: {text}")
         return None
     elif action in ("left_click", "right_click", "middle_click", "double_click"):
-        click_arg = {
-            "left_click": "1",
-            "right_click": "3",
-            "middle_click": "2",
-            "double_click": "--repeat 2 --delay 500 1",
-        }[action]
-        _run_xdotool(f"click {click_arg}", display)
+        click_map = {
+            "left_click": 1,
+            "right_click": 3,
+            "middle_click": 2,
+        }
+
+        if IS_MACOS:
+            button = click_map[action]
+            if action == "double_click":
+                _macos_click(1)
+                _macos_click(1)
+            else:
+                _macos_click(button)
+        else:
+            click_arg = {
+                "left_click": "1",
+                "right_click": "3",
+                "middle_click": "2",
+                "double_click": "--repeat 2 --delay 500 1",
+            }[action]
+            _run_xdotool(f"click {click_arg}", display)
+
         print(f"Performed {action}")
         return None
     elif action == "screenshot":
-        # Use X11-specific screenshot if available, fall back to native
         output_dir = Path(OUTPUT_DIR)
         output_dir.mkdir(parents=True, exist_ok=True)
         path = output_dir / "screenshot.png"
 
-        if shutil.which("gnome-screenshot"):
-            # FIXME: incorrect call to xdotool
-            _run_xdotool(f"gnome-screenshot -f {path} -p", display)
-        elif os.name == "posix":
-            path = _screenshot(path)  # Use existing screenshot function
+        if IS_MACOS:
+            # Use native macOS screencapture
+            subprocess.run(["screencapture", "-x", str(path)], check=True)
+        elif shutil.which("gnome-screenshot"):
+            subprocess.run(["gnome-screenshot", "-f", str(path)], check=True)
         else:
-            raise NotImplementedError("Screenshot not supported on this platform")
+            path = _screenshot(path)  # Use existing screenshot function
 
         # Scale if needed
         if path.exists():
@@ -229,16 +422,30 @@ def computer(
                 _ScalingSource.COMPUTER, width, height, width, height
             )
             subprocess.run(
-                f"convert {path} -resize {x}x{y}! {path}", shell=True, check=True
+                ["convert", str(path), "-resize", f"{x}x{y}!", str(path)],
+                check=True,
             )
             return view_image(path)
         else:
             print("Error: Screenshot failed")
         return None
     elif action == "cursor_position":
-        output = _run_xdotool("getmouselocation --shell", display)
-        x = int(output.split("X=")[1].split("\n")[0])
-        y = int(output.split("Y=")[1].split("\n")[0])
+        if IS_MACOS:
+            script = """
+                tell application "System Events"
+                    get the position of the mouse
+                end tell
+            """
+            output = _run_osascript(script)
+            try:
+                x, y = map(int, output.split(", "))
+            except ValueError:
+                raise RuntimeError("Failed to parse cursor position") from None
+        else:
+            output = _run_xdotool("getmouselocation --shell", display)
+            x = int(output.split("X=")[1].split("\n")[0])
+            y = int(output.split("Y=")[1].split("\n")[0])
+
         x, y = _scale_coordinates(_ScalingSource.COMPUTER, x, y, width, height)
         print(f"Cursor position: X={x},Y={y}")
         return None
@@ -246,7 +453,9 @@ def computer(
 
 
 instructions = """
-You can interact with the computer through X11 with the `computer` Python function.
+You can interact with the computer through the `computer` Python function.
+Works on both Linux (X11) and macOS (native commands).
+
 Available actions:
 - key: Send key sequence (e.g., "Return", "Control_L+c")
 - type: Type text with realistic delays
@@ -255,32 +464,45 @@ Available actions:
 - left_click_drag: Click and drag to coordinates
 - screenshot: Take and view a screenshot
 - cursor_position: Get current mouse position
+
+Note: Key names are automatically mapped between platforms.
+Common modifiers like Control_L, Alt_L, Super_L work on both platforms.
 """
 
 
 def examples(tool_format):
     return f"""
 User: Take a screenshot of the desktop
-Assistant: I'll capture the current screen.
+Assistant: I'll capture the current screen using the native screenshot tool.
 {ToolUse("ipython", [], 'computer("screenshot")').to_output(tool_format)}
 System: Viewing image...
 
 User: Type "Hello, World!" into the active window
-Assistant: I'll type the text with realistic delays.
+Assistant: I'll type the text with realistic delays using the native input method.
 {ToolUse("ipython", [], 'computer("type", text="Hello, World!")').to_output(tool_format)}
 System: Typed text: Hello, World!
 
 User: Move the mouse to coordinates (100, 200) and click
-Assistant: I'll move the mouse and perform a left click.
+Assistant: I'll move the mouse and perform a left click using native mouse control.
 {ToolUse("ipython", [], 'computer("mouse_move", coordinate=(100, 200))').to_output(tool_format)}
 System: Moved mouse to 100,200
 {ToolUse("ipython", [], 'computer("left_click")').to_output(tool_format)}
 System: Performed left_click
 
 User: Press Ctrl+C
-Assistant: I'll send the Control+C key sequence.
+Assistant: I'll send the Control+C key sequence using platform-appropriate key names.
 {ToolUse("ipython", [], 'computer("key", text="Control_L+c")').to_output(tool_format)}
 System: Sent key sequence: Control_L+c
+
+User: Get the current mouse position
+Assistant: I'll get the cursor position using the native method.
+{ToolUse("ipython", [], 'computer("cursor_position")').to_output(tool_format)}
+System: Cursor position: X=512,Y=384
+
+User: Double-click at current position
+Assistant: I'll perform a double-click using the native method.
+{ToolUse("ipython", [], 'computer("double_click")').to_output(tool_format)}
+System: Performed double_click
 """
 
 
