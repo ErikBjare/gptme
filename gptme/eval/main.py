@@ -50,7 +50,8 @@ def print_model_results(model_results: dict[str, list[EvalResult]]):
     for model, results in model_results.items():
         print(f"\nResults for model: {model}")
         model_total_tokens = sum(
-            len_tokens(result.gen_stdout) + len_tokens(result.run_stdout)
+            len_tokens(result.gen_stdout, "gpt-4")
+            + len_tokens(result.run_stdout, "gpt-4")
             for result in results
         )
         print(f"Completed {len(results)} tests in {model_total_tokens}tok:")
@@ -60,8 +61,8 @@ def print_model_results(model_results: dict[str, list[EvalResult]]):
             duration_result = (
                 result.timings["gen"] + result.timings["run"] + result.timings["eval"]
             )
-            gen_tokens = len_tokens(result.gen_stdout)
-            run_tokens = len_tokens(result.run_stdout)
+            gen_tokens = len_tokens(result.gen_stdout, "gpt-4")
+            run_tokens = len_tokens(result.run_stdout, "gpt-4")
             result_total_tokens = gen_tokens + run_tokens
             print(
                 f"{checkmark} {result.name}: {duration_result:.0f}s/{result_total_tokens}tok "
@@ -94,8 +95,8 @@ def print_model_results_table(model_results: dict[str, list[EvalResult]]):
                 passed = all(case.passed for case in result.results)
                 checkmark = "✅" if result.status == "success" and passed else "❌"
                 duration = sum(result.timings.values())
-                gen_tokens = len_tokens(result.gen_stdout)
-                run_tokens = len_tokens(result.run_stdout)
+                gen_tokens = len_tokens(result.gen_stdout, "gpt-4")
+                run_tokens = len_tokens(result.run_stdout, "gpt-4")
                 reason = "timeout" if result.status == "timeout" else ""
                 if reason:
                     row.append(f"{checkmark} {reason}")
@@ -125,8 +126,8 @@ def aggregate_and_display_results(result_files: list[str]):
                     }
                 all_results[model][result.name]["total"] += 1
                 all_results[model][result.name]["tokens"] += len_tokens(
-                    result.gen_stdout
-                ) + len_tokens(result.run_stdout)
+                    result.gen_stdout, "gpt-4"
+                ) + len_tokens(result.run_stdout, "gpt-4")
                 if result.status == "success" and all(
                     case.passed for case in result.results
                 ):

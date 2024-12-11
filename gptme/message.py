@@ -1,4 +1,5 @@
 import dataclasses
+import hashlib
 import logging
 import shutil
 import sys
@@ -18,11 +19,6 @@ from .constants import ROLE_COLOR
 from .util import console, get_tokenizer, rich_to_str
 
 logger = logging.getLogger(__name__)
-
-# max tokens allowed in a single system message
-# if you hit this limit, you and/or I f-ed up, and should make the message shorter
-# maybe we should make it possible to store long outputs in files, and link/summarize it/preview it in the message
-max_system_len = 20000
 
 
 @dataclass(frozen=True, eq=False)
@@ -51,9 +47,6 @@ class Message:
 
     def __post_init__(self):
         assert isinstance(self.timestamp, datetime)
-        if self.role == "system":
-            if (length := len_tokens(self)) >= max_system_len:
-                logger.warning(f"System message too long: {length} tokens")
 
     def __repr__(self):
         content = textwrap.shorten(self.content, 20, placeholder="...")
@@ -302,11 +295,41 @@ def msgs2dicts(msgs: list[Message]) -> list[dict]:
     return [msg.to_dict(keys=["role", "content", "files"]) for msg in msgs]
 
 
-# TODO: remove model assumption
-def len_tokens(content: str | Message | list[Message], model: str = "gpt-4") -> int:
-    """Get the number of tokens in a string, message, or list of messages."""
+# Global cache mapping hashes to token counts
+_token_cache: dict[tuple[str, str], int] = {}
+
+
+def _hash_content(content: str) -> str:
+    """Create a hash of the content"""
+    return hashlib.sha256(content.encode()).hexdigest()
+
+
+def len_tokens(content: str | Message | list[Message], model: str) -> int:
+    """Get the number of tokens in a string, message, or list of messages.
+
+    Uses efficient caching with content hashing to minimize memory usage while
+    maintaining fast repeated calculations, which is especially important for
+    conversations with many messages.
+    """
     if isinstance(content, list):
-        return sum(len_tokens(msg.content, model) for msg in content)
+        return sum(len_tokens(msg, model) for msg in content)
     if isinstance(content, Message):
-        return len_tokens(content.content, model)
-    return len(get_tokenizer(model).encode(content))
+        content = content.content
+
+    assert isinstance(content, str), content
+    # Check cache using hash
+    content_hash = _hash_content(content)
+    cache_key = (content_hash, model)
+    if cache_key in _token_cache:
+        return _token_cache[cache_key]
+
+    # Calculate and cache
+    count = len(get_tokenizer(model).encode(content))
+    _token_cache[cache_key] = count
+
+    # Limit cache size by removing oldest entries if needed
+    if len(_token_cache) > 1000:
+        # Remove first item (oldest in insertion order)
+        _token_cache.pop(next(iter(_token_cache)))
+
+    return count

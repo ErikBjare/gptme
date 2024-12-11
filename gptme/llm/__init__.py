@@ -136,7 +136,7 @@ def _reply_stream(
                 f"Generation interrupted after {end_time - start_time:.1f}s "
                 f"(ttft: {first_token_time - start_time:.2f}s, "
                 f"gen: {end_time - first_token_time:.2f}s, "
-                f"tok/s: {len_tokens(output)/(end_time - first_token_time):.1f})"
+                f"tok/s: {len_tokens(output, model)/(end_time - first_token_time):.1f})"
             )
 
     return Message("assistant", output)
@@ -179,15 +179,15 @@ def _summarize_str(content: str) -> str:
     provider = _client_to_provider()
     model = get_summary_model(provider)
     context_limit = MODELS[provider][model]["context"]
-    if len_tokens(messages) > context_limit:
+    if len_tokens(messages, model) > context_limit:
         raise ValueError(
-            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages)}"
+            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages, model)}"
         )
 
     summary = _chat_complete(messages, model, None)
     assert summary
     logger.debug(
-        f"Summarized long output ({len_tokens(content)} -> {len_tokens(summary)} tokens): "
+        f"Summarized long output ({len_tokens(content, model)} -> {len_tokens(summary, model)} tokens): "
         + summary
     )
     return summary
@@ -260,7 +260,8 @@ def _summarize_helper(s: str, tok_max_start=400, tok_max_end=400) -> str:
     Helper function for summarizing long outputs.
     Truncates long outputs, then summarizes.
     """
-    if len_tokens(s) > tok_max_start + tok_max_end:
+    # Use gpt-4 as default model for summarization helper
+    if len_tokens(s, "gpt-4") > tok_max_start + tok_max_end:
         beginning = " ".join(s.split()[:tok_max_start])
         end = " ".join(s.split()[-tok_max_end:])
         summary = _summarize_str(beginning + "\n...\n" + end)

@@ -12,12 +12,12 @@ def init():
 def test_get_prompt_full():
     prompt = get_prompt("full")
     # TODO: lower this significantly by selectively removing examples from the full prompt
-    assert 500 < len_tokens(prompt.content) < 5000
+    assert 500 < len_tokens(prompt.content, "gpt-4") < 5000
 
 
 def test_get_prompt_short():
     prompt = get_prompt("short")
-    assert 500 < len_tokens(prompt.content) < 2000
+    assert 500 < len_tokens(prompt.content, "gpt-4") < 2000
 
 
 def test_get_prompt_custom():

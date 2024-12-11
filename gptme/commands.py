@@ -134,7 +134,10 @@ def handle_cmd(
             yield from execute_msg(msg, confirm=lambda _: True)
         case "tokens":
             manager.undo(1, quiet=True)
-            n_tokens = len_tokens(manager.log.messages)
+            model = get_model()
+            n_tokens = len_tokens(
+                manager.log.messages, model.model if model else "gpt-4"
+            )
             print(f"Tokens used: {n_tokens}")
             model = get_model()
             if model:
@@ -149,7 +152,7 @@ def handle_cmd(
                     f"""
   # {tool.name}
     {tool.desc.rstrip(".")}
-    tokens (example): {len_tokens(tool.get_examples(get_tool_format()))}"""
+    tokens (example): {len_tokens(tool.get_examples(get_tool_format()), "gpt-4")}"""
                 )
         case "export":
             manager.undo(1, quiet=True)
