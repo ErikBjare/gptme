@@ -9,10 +9,11 @@ from typing import (
     TypedDict,
     cast,
 )
+from collections.abc import Iterable
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
-from ..tools.base import Parameter, ToolSpec
+from ..tools.base import Parameter, ToolSpec, ToolUse
 
 if TYPE_CHECKING:
     # noreorder
@@ -64,9 +65,17 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     )
     content = response.content
     logger.debug(response.usage)
-    assert content
-    assert len(content) == 1
-    return content[0].text  # type: ignore
+
+    parsed_block = []
+    for block in content:
+        if block.type == "text":
+            parsed_block.append(block.text)
+        elif block.type == "tool_use":
+            parsed_block.append(f"\n@{block.name}({block.id}): {block.input}")
+        else:
+            logger.warning("Unknown block: %s", str(block))
+
+    return "\n".join(parsed_block)
 
 
 def stream(
@@ -96,7 +105,7 @@ def stream(
                     block = chunk.content_block
                     if isinstance(block, anthropic.types.ToolUseBlock):
                         tool_use = block
-                        yield f"\n@{tool_use.name}: "
+                        yield f"\n@{tool_use.name}({tool_use.id}): "
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -132,8 +141,78 @@ def stream(
                     pass
 
 
-def _handle_files(message_dicts: list[dict]) -> list[dict]:
-    return [_process_file(message_dict) for message_dict in message_dicts]
+def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
+    for message in message_dicts:
+        # Format tool result as expected by the model
+        if message["role"] == "system" and "call_id" in message:
+            modified_message = dict(message)
+            modified_message["role"] = "user"
+            modified_message["content"] = [
+                {
+                    "type": "tool_result",
+                    "content": modified_message["content"],
+                    "tool_use_id": modified_message.pop("call_id"),
+                }
+            ]
+            yield modified_message
+        # Find tool_use occurrences and format them as expected
+        elif message["role"] == "assistant":
+            modified_message = dict(message)
+            text = ""
+            content = []
+
+            # Some content are text, some are list
+            if isinstance(message["content"], list):
+                message_parts = message["content"]
+            else:
+                message_parts = [{"type": "text", "text": message["content"]}]
+
+            for message_part in message_parts:
+                if message_part["type"] != "text":
+                    content.append(message_part)
+                    continue
+
+                # For a message part of type `text`` we try to extract the tool_uses
+                # We search line by line to stop as soon as we have a tool call
+                # It makes it easier to split in multiple parts.
+                for line in message_part["text"].split("\n"):
+                    text += line + "\n"
+
+                    tooluses = [
+                        tooluse
+                        for tooluse in ToolUse.iter_from_content(text)
+                        if tooluse.is_runnable
+                    ]
+                    if not tooluses:
+                        continue
+
+                    # At that point we should always have exactly one tooluse
+                    # Because we remove the previous ones as soon as we encounter
+                    # them so we can't have more.
+                    assert len(tooluses) == 1
+                    tooluse = tooluses[0]
+                    before_tool = text[: tooluse.start]
+
+                    if before_tool:
+                        content.append({"type": "text", "text": before_tool})
+
+                    content.append(
+                        {
+                            "type": "tool_use",
+                            "id": tooluse.call_id or "",
+                            "name": tooluse.tool,
+                            "input": tooluse.kwargs or {},
+                        }
+                    )
+                    # The text is emptied to start over with the next lines if any.
+                    text = ""
+
+            if content:
+                modified_message["content"] = content
+
+            yield modified_message
+        else:
+            yield message
 
 
 def _process_file(message_dict: dict) -> dict:
@@ -221,7 +300,7 @@ def _transform_system_messages(
 
     # for any subsequent system messages, transform them into a <system> message
     for i, message in enumerate(messages):
-        if message.role == "system":
+        if message.role == "system" and message.call_id is None:
             messages[i] = Message(
                 "user",
                 content=f"<system>{message.content}</system>",
@@ -251,7 +330,7 @@ def _transform_system_messages(
     return messages, system_messages
 
 
-def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+def _parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     required = []
     properties = {}
 
@@ -279,7 +358,7 @@ def _spec2tool(
     return {
         "name": name,
         "description": spec.get_instructions("tool"),
-        "input_schema": parameters2dict(spec.parameters),
+        "input_schema": _parameters2dict(spec.parameters),
     }
 
 
@@ -315,7 +394,13 @@ def _prepare_messages_for_api(
     messages, system_messages = _transform_system_messages(messages)
 
     # Handle files and convert to dicts
-    messages_dicts = _handle_files(msgs2dicts(messages))
+    messages_dicts = (_process_file(f) for f in msgs2dicts(messages))
+
+    # Prepare tools
+    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
 
     # Apply cache control to optimize performance
     messages_dicts_new: list[anthropic.types.MessageParam] = []
@@ -351,8 +436,5 @@ def _prepare_messages_for_api(
     for msgp in [msg for msg in messages_dicts_new if msg["role"] == "user"][-2:]:
         assert isinstance(msgp["content"], list)
         msgp["content"][-1]["cache_control"] = {"type": "ephemeral"}  # type: ignore
-
-    # Prepare tools
-    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
 
     return messages_dicts_new, system_messages, tools_dict

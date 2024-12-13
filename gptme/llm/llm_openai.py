@@ -1,5 +1,7 @@
 import base64
+import json
 import logging
+from collections.abc import Iterable
 from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
@@ -7,8 +9,8 @@ from typing import TYPE_CHECKING, Any, cast
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
-from ..tools.base import Parameter, ToolSpec
-from .models import Provider, get_model
+from ..tools.base import Parameter, ToolSpec, ToolUse
+from .models import ModelMeta, Provider, get_model
 
 if TYPE_CHECKING:
     # noreorder
@@ -112,16 +114,11 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     # top_p controls diversity, temperature controls randomness
     assert openai, "LLM not initialized"
 
-    is_o1 = model.startswith("o1")
-    if is_o1:
-        messages = list(_prep_o1(messages))
-
-    messages_dicts = handle_files(msgs2dicts(messages))
-    _transform_msgs_for_special_provider(messages_dicts)
-
     from openai import NOT_GIVEN  # fmt: skip
 
-    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+    is_o1 = model.startswith("o1")
+
+    messages_dicts, tools_dict = _prepare_messages_for_api(messages, tools)
 
     response = openai.chat.completions.create(
         model=model,
@@ -133,9 +130,18 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
             openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
         ),
     )
-    content = response.choices[0].message.content
-    assert content
-    return content
+    choice = response.choices[0]
+    result = []
+    if choice.finish_reason == "tool_calls":
+        for tool_call in choice.message.tool_calls:
+            result.append(
+                f"@{tool_call.function.name}({tool_call.id}): {tool_call.function.arguments}"
+            )
+    else:
+        result.append(choice.message.content)
+
+    assert result
+    return "\n".join(result)
 
 
 def stream(
@@ -144,16 +150,11 @@ def stream(
     assert openai, "LLM not initialized"
     stop_reason = None
 
-    is_o1 = model.startswith("o1")
-    if is_o1:
-        messages = list(_prep_o1(messages))
-
-    messages_dicts = handle_files(msgs2dicts(messages))
-    _transform_msgs_for_special_provider(messages_dicts)
-
     from openai import NOT_GIVEN  # fmt: skip
 
-    tools_dict = [_spec2tool(tool) for tool in tools] if tools else None
+    is_o1 = model.startswith("o1")
+
+    messages_dicts, tools_dict = _prepare_messages_for_api(messages, tools)
 
     for chunk_raw in openai.chat.completions.create(
         model=model,
@@ -198,20 +199,91 @@ def stream(
                     func = tool_call.function
                     if isinstance(func, ChoiceDeltaToolCallFunction):
                         if func.name:
-                            yield f"\n@{func.name}: "
+                            yield f"\n@{func.name}({tool_call.id}): "
                         if func.arguments:
                             yield func.arguments
 
     logger.debug(f"Stop reason: {stop_reason}")
 
 
-def handle_files(msgs: list[dict]) -> list[dict]:
-    return [_process_file(msg) for msg in msgs]
+def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
+    for message in message_dicts:
+        # Format tool result as expected by the model
+        if message["role"] == "system" and "call_id" in message:
+            modified_message = dict(message)
+            modified_message["role"] = "tool"
+            modified_message["tool_call_id"] = modified_message.pop("call_id")
+            yield modified_message
+        # Find tool_use occurrences and format them as expected
+        elif message["role"] == "assistant":
+            modified_message = dict(message)
+            text = ""
+            content = []
+            tool_calls = []
+
+            # Some content are text, some are list
+            if isinstance(message["content"], list):
+                message_parts = message["content"]
+            else:
+                message_parts = [{"type": "text", "text": message["content"]}]
+
+            for message_part in message_parts:
+                if message_part["type"] != "text":
+                    content.append(message_part)
+                    continue
+
+                # For a message part of type `text`` we try to extract the tool_uses
+                # We search line by line to stop as soon as we have a tool call
+                # It makes it easier to split in multiple parts.
+                for line in message_part["text"].split("\n"):
+                    text += line + "\n"
+
+                    tooluses = [
+                        tooluse
+                        for tooluse in ToolUse.iter_from_content(text)
+                        if tooluse.is_runnable
+                    ]
+                    if not tooluses:
+                        continue
+
+                    # At that point we should always have exactly one tooluse
+                    # Because we remove the previous ones as soon as we encounter
+                    # them so we can't have more.
+                    assert len(tooluses) == 1
+                    tooluse = tooluses[0]
+                    before_tool = text[: tooluse.start]
+
+                    if before_tool.replace("\n", ""):
+                        content.append({"type": "text", "text": before_tool})
+
+                    tool_calls.append(
+                        {
+                            "id": tooluse.call_id or "",
+                            "type": "function",
+                            "function": {
+                                "name": tooluse.tool,
+                                "arguments": json.dumps(tooluse.kwargs or {}),
+                            },
+                        }
+                    )
+                    # The text is emptied to start over with the next lines if any.
+                    text = ""
+
+            if content:
+                modified_message["content"] = content
+
+            if tool_calls:
+                if not content:
+                    del modified_message["content"]
+                modified_message["tool_calls"] = tool_calls
+
+            yield modified_message
+        else:
+            yield message
 
 
-def _process_file(msg: dict) -> dict:
+def _process_file(msg: dict, model: ModelMeta) -> dict:
     message_content = msg["content"]
-    model = get_model()
     if model.provider == "deepseek":
         # deepseek does not support files
         return msg
@@ -280,15 +352,16 @@ def _process_file(msg: dict) -> dict:
     return msg
 
 
-def _transform_msgs_for_special_provider(messages_dicts: list[dict]):
-    if get_provider() == "groq":
+def _transform_msgs_for_special_provider(
+    messages_dicts: Iterable[dict], model: ModelMeta
+):
+    if model.provider == "groq":
         # groq needs message.content to be a string
-        messages_dicts = [
-            {**msg, "content": msg["content"][0]["text"]} for msg in messages_dicts
-        ]
+        return [{**msg, "content": msg["content"][0]["text"]} for msg in messages_dicts]
+    return messages_dicts
 
 
-def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
+def _parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     required = []
     properties = {}
 
@@ -305,7 +378,7 @@ def parameters2dict(parameters: list[Parameter]) -> dict[str, object]:
     }
 
 
-def _spec2tool(spec: ToolSpec) -> "ChatCompletionToolParam":
+def _spec2tool(spec: ToolSpec, model: ModelMeta) -> "ChatCompletionToolParam":
     name = spec.name
     if spec.block_types:
         name = spec.block_types[0]
@@ -319,16 +392,38 @@ def _spec2tool(spec: ToolSpec) -> "ChatCompletionToolParam":
         )
         description = description[:1024]
 
-    provider = get_provider()
-    if provider in ["openai", "azure", "openrouter", "local"]:
+    if model.provider in ["openai", "azure", "openrouter", "local"]:
         return {
             "type": "function",
             "function": {
                 "name": name,
                 "description": description,
-                "parameters": parameters2dict(spec.parameters),
+                "parameters": _parameters2dict(spec.parameters),
                 # "strict": False,  # not supported by OpenRouter
             },
         }
     else:
         raise ValueError("Provider doesn't support tools API")
+
+
+def _prepare_messages_for_api(
+    messages: list[Message], tools: list[ToolSpec] | None
+) -> tuple[Iterable[dict], Iterable["ChatCompletionToolParam"] | None]:
+    model = get_model()
+
+    is_o1 = model.model.startswith("o1")
+    if is_o1:
+        messages = list(_prep_o1(messages))
+
+    messages_dicts: Iterable[dict] = (
+        _process_file(msg, model) for msg in msgs2dicts(messages)
+    )
+
+    tools_dict = [_spec2tool(tool, model) for tool in tools] if tools else None
+
+    if tools_dict is not None:
+        messages_dicts = _handle_tools(messages_dicts)
+
+    messages_dicts = _transform_msgs_for_special_provider(messages_dicts, model)
+
+    return list(messages_dicts), tools_dict
