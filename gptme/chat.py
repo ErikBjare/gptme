@@ -278,6 +278,60 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     return value
 
 
+def _find_potential_paths(content: str) -> list[str]:
+    """
+    Find potential file paths and URLs in a message content.
+    Excludes content within code blocks.
+
+    Args:
+        content: The message content to search
+
+    Returns:
+        List of potential paths/URLs found in the message
+    """
+    # Remove code blocks to avoid matching paths inside them
+    content_no_codeblocks = re.sub(r"```[\s\S]*?```", "", content)
+
+    # List current directory contents for relative path matching
+    cwd_files = [f.name for f in Path.cwd().iterdir()]
+
+    paths = []
+
+    def is_path_like(word: str) -> bool:
+        """Helper to check if a word looks like a path"""
+        return (
+            # Absolute/home/relative paths
+            any(word.startswith(s) for s in ["/", "~/", "./"])
+            # URLs
+            or word.startswith("http")
+            # Contains slash (for backtick-wrapped paths)
+            or "/" in word
+            # Files in current directory or subdirectories
+            or any(word.split("/", 1)[0] == file for file in cwd_files)
+        )
+
+    # First find backtick-wrapped content
+    for match in re.finditer(r"`([^`]+)`", content_no_codeblocks):
+        word = match.group(1).strip()
+        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
+        if is_path_like(word):
+            paths.append(word)
+
+    # Then find non-backtick-wrapped words
+    # Remove backtick-wrapped content first to avoid double-processing
+    content_no_backticks = re.sub(r"`[^`]+`", "", content_no_codeblocks)
+    for word in re.split(r"\s+", content_no_backticks):
+        word = word.strip()
+        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
+        if not word:
+            continue
+
+        if is_path_like(word):
+            paths.append(word)
+
+    return paths
+
+
 def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     """
     Searches the message for any valid paths and:
@@ -296,48 +350,24 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     # TODO: add support for directories?
     assert msg.role == "user"
 
-    # list the current directory
-    cwd_files = [f.name for f in Path.cwd().iterdir()]
-
-    # match absolute, home, relative paths, and URLs anywhere in the message
-    # could be wrapped with spaces or backticks, possibly followed by a question mark
-    # don't look in codeblocks, and don't match paths that are already in codeblocks
-    # TODO: this will misbehave if there are codeblocks (or triple backticks) in codeblocks
-    content_no_codeblocks = re.sub(r"```.*?\n```", "", msg.content, flags=re.DOTALL)
-
     append_msg = ""
     files = []
 
-    for word in re.split(r"[\s`]", content_no_codeblocks):
-        # remove wrapping backticks
-        word = word.strip("`")
-        # remove trailing question mark
-        word = word.rstrip("?")
-        if not word:
-            continue
-        if (
-            # if word starts with a path character
-            any(word.startswith(s) for s in ["/", "~/", "./"])
-            # or word is a URL
-            or word.startswith("http")
-            # or word is a file in the current dir,
-            # or a path that starts in a folder in the current dir
-            or any(word.split("/", 1)[0] == file for file in cwd_files)
-        ):
-            logger.debug(f"potential path/url: {word=}")
-            # If not using fresh context, include text file contents in the message
-            if not use_fresh_context and (contents := _parse_prompt(word)):
-                # if we found a valid path, replace it with the contents of the file
-                append_msg += "\n\n" + contents
-            else:
-                # if we found an non-text file, include it in msg.files
-                file = _parse_prompt_files(word)
-                if file:
-                    # Store path relative to workspace if provided
-                    file = file.expanduser()
-                    if workspace and not file.is_absolute():
-                        file = file.absolute().relative_to(workspace)
-                    files.append(file)
+    # Find potential paths in message
+    for word in _find_potential_paths(msg.content):
+        logger.debug(f"potential path/url: {word=}")
+        # If not using fresh context, include text file contents in the message
+        if not use_fresh_context and (contents := _parse_prompt(word)):
+            append_msg += "\n\n" + contents
+        else:
+            # if we found an non-text file, include it in msg.files
+            file = _parse_prompt_files(word)
+            if file:
+                # Store path relative to workspace if provided
+                file = file.expanduser()
+                if workspace and not file.is_absolute():
+                    file = file.absolute().relative_to(workspace)
+                files.append(file)
 
     if files:
         msg = msg.replace(files=msg.files + files)
