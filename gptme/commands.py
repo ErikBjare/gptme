@@ -15,8 +15,7 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
-from .tools import ToolUse, execute_msg, loaded_tools
-from .tools.base import ConfirmFunc, get_tool_format
+from .tools import ToolUse, execute_msg, get_tools, ConfirmFunc, get_tool_format
 from .util.cost import log_costs
 from .util.export import export_chat_to_html
 from .util.useredit import edit_text_with_editor
@@ -138,7 +137,7 @@ def handle_cmd(
         case "tools":
             manager.undo(1, quiet=True)
             print("Available tools:")
-            for tool in loaded_tools:
+            for tool in get_tools():
                 print(
                     f"""
   # {tool.name}
@@ -220,7 +219,7 @@ def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
         yield "  /python print('hello')"
         yield ""
         yield "Supported langtags:"
-        for tool in loaded_tools:
+        for tool in get_tools():
             if tool.block_types:
                 yield f"  - {tool.block_types[0]}" + (
                     f"  (alias: {', '.join(tool.block_types[1:])})"

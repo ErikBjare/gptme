@@ -20,6 +20,7 @@ from typing import (
 import json_repair
 from lxml import etree
 
+
 from ..codeblock import Codeblock
 from ..message import Message
 from ..util import clean_example, transform_examples_to_chat_directives
@@ -144,9 +145,6 @@ def callable_signature(func: Callable) -> str:
     return f"{func.__name__}({args}){ret}"
 
 
-_tools: dict[str, "ToolSpec"] = {}
-
-
 @dataclass(frozen=True, eq=False)
 class ToolSpec:
     """
@@ -156,12 +154,16 @@ class ToolSpec:
         name: The name of the tool.
         desc: A description of the tool.
         instructions: Instructions on how to use the tool.
+        instructions_format: Per tool format instructions when needed.
         examples: Example usage of the tool.
         functions: Functions registered in the IPython REPL.
         init: An optional function that is called when the tool is first loaded.
         execute: An optional function that is called when the tool executes a block.
         block_types: A list of block types that the tool will execute.
         available: Whether the tool is available for use.
+        parameters: Descriptor of parameters use by this tool.
+        load_priority: Influence the loading order of this tool. The higher the later.
+        disabled_by_default: Whether this tool should be disabled by default.
     """
 
     name: str
@@ -175,18 +177,8 @@ class ToolSpec:
     block_types: list[str] = field(default_factory=list)
     available: bool = True
     parameters: list[Parameter] = field(default_factory=list)
-
-    def __post_init__(self):
-        global _tools
-        _tools[self.name] = self
-
-    @classmethod
-    def get_tool(cls, name: str) -> "ToolSpec | None":
-        return _tools.get(name)
-
-    @classmethod
-    def get_tools(cls) -> dict[str, "ToolSpec"]:
-        return _tools
+    load_priority: int = 0
+    disabled_by_default: bool = False
 
     def get_doc(self, doc: str | None = None) -> str:
         """Returns an updated docstring with examples."""
@@ -214,6 +206,11 @@ class ToolSpec:
         if not isinstance(other, ToolSpec):
             return False
         return self.name == other.name
+
+    def __lt__(self, other):
+        if not isinstance(other, ToolSpec):
+            return NotImplemented
+        return (self.load_priority, self.name) < (other.load_priority, other.name)
 
     def is_runnable(self):
         return bool(self.execute)
@@ -257,7 +254,7 @@ class ToolSpec:
     def get_functions_description(self) -> str:
         # return a prompt with a brief description of the available functions
         if self.functions:
-            description = "This tool makes the following Python functions available in `ipython`:\n\n"
+            description = "The following Python functions are available using the `ipython` tool:\n\n"
             return description + "\n".join(
                 f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
                 for func in self.functions
@@ -503,7 +500,9 @@ def get_path(
 # TODO: allow using via specifying .py paths with --tools flag
 def load_from_file(path: Path) -> list[ToolSpec]:
     """Import a tool from a Python file and register the ToolSpec."""
-    tools_before = set(ToolSpec.get_tools().keys())
+    from . import get_tools, get_tool
+
+    tools_before = set([t.name for t in get_tools()])
 
     # import the python file
     script_dir = path.resolve().parent
@@ -511,7 +510,7 @@ def load_from_file(path: Path) -> list[ToolSpec]:
         sys.path.append(str(script_dir))
     importlib.import_module(path.stem)
 
-    tools_after = set(ToolSpec.get_tools().keys())
+    tools_after = set([t.name for t in get_tools()])
     tools_new = tools_after - tools_before
     print(f"Loaded tools {tools_new} from {path}")
-    return [tool for tool_name in tools_new if (tool := ToolSpec.get_tool(tool_name))]
+    return [tool for tool_name in tools_new if (tool := get_tool(tool_name))]

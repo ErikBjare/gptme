@@ -19,11 +19,11 @@ class Config:
     env: dict
 
     def get_env(self, key: str, default: str | None = None) -> str | None:
-        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        """Gets an environment variable, checks the config file if it's not set in the environment."""
         return os.environ.get(key) or self.env.get(key) or default
 
     def get_env_required(self, key: str) -> str:
-        """Gets an enviromnent variable, checks the config file if it's not set in the environment."""
+        """Gets an environment variable, checks the config file if it's not set in the environment."""
         if val := os.environ.get(key) or self.env.get(key):
             return val
         raise KeyError(  # pragma: no cover

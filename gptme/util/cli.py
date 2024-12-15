@@ -134,7 +134,7 @@ def tools():
 def tools_list(available: bool, langtags: bool):
     """List available tools."""
     from ..commands import _gen_help  # fmt: skip
-    from ..tools import init_tools, loaded_tools  # fmt: skip
+    from ..tools import init_tools, get_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
@@ -150,7 +150,7 @@ def tools_list(available: bool, langtags: bool):
         return
 
     print("Available tools:")
-    for tool in loaded_tools:
+    for tool in get_tools():
         if not available or tool.available:
             status = "✓" if tool.available else "✗"
             print(
@@ -164,7 +164,7 @@ def tools_list(available: bool, langtags: bool):
 @click.argument("tool_name")
 def tools_info(tool_name: str):
     """Show detailed information about a tool."""
-    from ..tools import get_tool, init_tools, loaded_tools  # fmt: skip
+    from ..tools import get_tool, init_tools, get_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
@@ -172,7 +172,7 @@ def tools_info(tool_name: str):
     tool = get_tool(tool_name)
     if not tool:
         print(f"Tool '{tool_name}' not found. Available tools:")
-        for t in loaded_tools:
+        for t in get_tools():
             print(f"- {t.name}")
         sys.exit(1)
 
@@ -197,7 +197,7 @@ def tools_info(tool_name: str):
 )
 def tools_call(tool_name: str, function_name: str, arg: list[str]):
     """Call a tool with the given arguments."""
-    from ..tools import get_tool, init_tools, loaded_tools  # fmt: skip
+    from ..tools import get_tool, init_tools, get_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
@@ -205,7 +205,7 @@ def tools_call(tool_name: str, function_name: str, arg: list[str]):
     tool = get_tool(tool_name)
     if not tool:
         print(f"Tool '{tool_name}' not found. Available tools:")
-        for t in loaded_tools:
+        for t in get_tools():
             print(f"- {t.name}")
         sys.exit(1)
 

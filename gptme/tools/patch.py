@@ -42,7 +42,8 @@ $ORIGINAL_CONTENT
 $UPDATED_CONTENT
 >>>>>>> UPDATED
 '''.strip()).to_output("markdown")}
-"""
+""",
+    "tool": "The `patch` parameter must be a string containing conflict markers without any code block.",
 }
 
 ORIGINAL = "<<<<<<< ORIGINAL\n"
@@ -275,7 +276,7 @@ tool = ToolSpec(
         Parameter(
             name="patch",
             type="string",
-            description="The patch to apply.",
+            description=f"The patch to apply. Use conflict markers! Example:\n{patch_content}",
             required=True,
         ),
     ],
