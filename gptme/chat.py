@@ -25,17 +25,12 @@ from .tools import (
 )
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
-from .util import (
-    console,
-    path_with_tilde,
-    print_bell,
-    rich_to_str,
-)
+from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
 from .util.context import use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
-from .util.readline import add_history
+from .util.prompt import add_history, get_input
 
 logger = logging.getLogger(__name__)
 
@@ -255,27 +250,25 @@ def prompt_user(value=None) -> str:  # pragma: no cover
         try:
             set_interruptible()
             response = prompt_input(PROMPT_USER, value)
+            if response:
+                add_history(response)
         except KeyboardInterrupt:
             print("\nInterrupted. Press Ctrl-D to exit.")
+        except EOFError:
+            print("\nGoodbye!")
+            sys.exit(0)
     clear_interruptible()
-    if response:
-        add_history(response)  # readline history
     return response
 
 
 def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
+    """Get input using prompt_toolkit with fish-style suggestions."""
     prompt = prompt.strip() + ": "
     if value:
         console.print(prompt + value)
-    else:
-        prompt = rich_to_str(prompt, color_system="256")
+        return value
 
-        # https://stackoverflow.com/a/53260487/965332
-        original_stdout = sys.stdout
-        sys.stdout = sys.__stdout__
-        value = input(prompt.strip() + " ")
-        sys.stdout = original_stdout
-    return value
+    return get_input(prompt)
 
 
 def _find_potential_paths(content: str) -> list[str]:

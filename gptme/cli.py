@@ -31,7 +31,7 @@ from .tools import (
 from .util import epoch_to_age
 from .util.generate_name import generate_name
 from .util.interrupt import handle_keyboard_interrupt, set_interruptible
-from .util.readline import add_history
+from .util.prompt import add_history
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +222,7 @@ def main(
                     "Failed to switch to interactive mode, continuing in non-interactive mode"
                 )
 
-    # add prompts to readline history
+    # add prompts to prompt-toolkit history
     for prompt in prompts:
         if prompt and len(prompt) > 1000:
             # skip adding long prompts to history (slows down startup, unlikely to be useful)

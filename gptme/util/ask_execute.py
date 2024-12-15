@@ -15,6 +15,7 @@ from ..message import Message
 from ..tools.base import ConfirmFunc
 from . import print_bell
 from .clipboard import copy, set_copytext
+from .prompt import get_prompt_session
 from .useredit import edit_text_with_editor
 
 console = Console(log_path=False)
@@ -104,9 +105,10 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     choicestr += "/?"
     choicestr += "]"
 
+    session = get_prompt_session()
     answer = (
-        console.input(
-            f"[bold bright_yellow on red] {question} {choicestr} [/] ",
+        session.prompt(
+            [("bold fg:ansiyellow bg:red", f" {question} {choicestr} "), ("", " ")],
         )
         .lower()
         .strip()

@@ -1,10 +1,10 @@
 """Test configuration and shared fixtures."""
 
-from contextlib import contextmanager
 import os
-import pytest
 import tempfile
+from contextlib import contextmanager
 
+import pytest
 from gptme.tools.rag import _has_gptme_rag
 
 
@@ -17,8 +17,11 @@ def download_model():
     if not _has_gptme_rag():
         return
 
-    # downloads the model if it doesn't exist
-    from chromadb.utils import embedding_functions  # type: ignore # fmt: skip
+    try:
+        # downloads the model if it doesn't exist
+        from chromadb.utils import embedding_functions  # type: ignore # fmt: skip
+    except ImportError:
+        return
 
     ef = embedding_functions.DefaultEmbeddingFunction()
     if ef:

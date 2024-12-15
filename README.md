@@ -173,7 +173,8 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
     - Passing a filename as an argument will read the file and include it as context.
-  - → Tab completion
+  - → Smart completion and highlighting:
+    - Tab completion and highlighting for commands and paths
   - 📝 Automatic naming of conversations
   - 💬 Optional basic [Web UI and REST API][docs-server]
 

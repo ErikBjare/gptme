@@ -16,7 +16,6 @@ from .llm.models import (
 )
 from .tools import init_tools
 from .util import console
-from .util.readline import load_readline_history, register_tabcomplete
 
 logger = logging.getLogger(__name__)
 _init_done = False
@@ -64,12 +63,6 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
     console.log(f"Using model: {provider}/{model}")
     init_llm(provider)
     set_default_model(f"{provider}/{model}")
-
-    if interactive:
-        load_readline_history()
-
-        # for some reason it bugs out shell tests in CI
-        register_tabcomplete()
 
     init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
 

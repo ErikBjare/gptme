@@ -16,7 +16,8 @@ from typing_extensions import Self
 
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
-from .util import console, get_tokenizer, rich_to_str
+from .util import console, get_tokenizer
+from .util.prompt import rich_to_str
 
 logger = logging.getLogger(__name__)
 
@@ -222,8 +223,12 @@ def format_msgs(
                     output += textwrap.indent(block, prefix=indent * " ")
                     continue
                 elif highlight:
-                    lang = block.split("\n")[0]
-                    block = rich_to_str(Syntax(block.rstrip(), lang))
+                    lang = block.split("\n", 1)[0]
+                    content = block.split("\n", 1)[-1]
+                    fmt = "underline blue"
+                    block = f"[{fmt}]{lang}\n[/{fmt}]" + rich_to_str(
+                        Syntax(content.rstrip(), lang)
+                    )
                 output += f"```{block.rstrip()}\n```"
         outputs.append(f"{userprefix}: {output.rstrip()}")
     return outputs

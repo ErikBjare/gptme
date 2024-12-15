@@ -5,6 +5,7 @@ Constants
 # Optimized for code
 # Discussion here: https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683
 # TODO: make these configurable
+
 TEMPERATURE = 0
 TOP_P = 0.1
 
@@ -21,10 +22,7 @@ ROLE_COLOR = {
     "system": "grey42",
 }
 
-# colors wrapped in \001 and \002 to inform readline about non-printable characters
-PROMPT_USER = (
-    f"\001[bold {ROLE_COLOR['user']}]\002User\001[/bold {ROLE_COLOR['user']}]\002"
-)
+PROMPT_USER = f"[bold {ROLE_COLOR['user']}]User[/bold {ROLE_COLOR['user']}]"
 PROMPT_ASSISTANT = (
     f"[bold {ROLE_COLOR['assistant']}]Assistant[/bold {ROLE_COLOR['assistant']}]"
 )
