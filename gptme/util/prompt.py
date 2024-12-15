@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Callable
 
+from gptme.util import rich_to_str
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
@@ -13,9 +14,6 @@ from prompt_toolkit.styles import Style
 from pygments.lexer import RegexLexer
 from pygments.token import Name, Text
 
-from gptme.util import rich_to_str
-
-from ..commands import COMMANDS
 from ..dirs import get_pt_history_file
 
 
@@ -42,6 +40,8 @@ class GptmeCompleter(Completer):
         self.llm_suggest_callback = llm_suggest_callback
 
     def get_completions(self, document, complete_event):
+        from ..commands import COMMANDS  # fmt: skip
+
         document.get_word_before_cursor()
         text = document.text_before_cursor
         path_seg = text.split(" ")[-1]
