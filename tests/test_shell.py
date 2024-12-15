@@ -105,6 +105,7 @@ multiline command"
     commands = split_commands(script_loop)
     assert len(commands) == 1
 
+
 def test_heredoc_complex(shell):
     # Test nested heredocs
     ret, out, err = shell.run("""
@@ -130,6 +131,7 @@ EOF
     assert err.strip() == ""
     assert out.strip() == "Hello, World!"
     assert ret == 0
+
 
 def test_function():
     script = """

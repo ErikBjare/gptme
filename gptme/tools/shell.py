@@ -410,6 +410,7 @@ def _shorten_stdout(
 
     return "\n".join(lines)
 
+
 def split_commands(script: str) -> list[str]:
     # TODO: write proper tests
     parts = bashlex.parse(script)
