@@ -9,7 +9,7 @@ import glob
 import logging
 import platform
 from collections.abc import Generator, Iterable
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
 
@@ -243,7 +243,9 @@ def prompt_systeminfo() -> Generator[Message, None, None]:
 def prompt_timeinfo() -> Generator[Message, None, None]:
     """Generate the current time prompt."""
     # we only set the date in order for prompt caching and such to work
-    prompt = f"## Current Date\n\n**UTC:** {datetime.utcnow().strftime('%Y-%m-%d')}"
+    prompt = (
+        f"## Current Date\n\n**UTC:** {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+    )
     yield Message("system", prompt)
 
 
