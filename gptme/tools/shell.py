@@ -178,9 +178,9 @@ class ShellSession:
 
         self.process.stdin.flush()
 
-        stdout = []
-        stderr = []
-        return_code = None
+        stdout: list[str] = []
+        stderr: list[str] = []
+        return_code: int | None = None
 
         while True:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
