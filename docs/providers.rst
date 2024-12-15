@@ -21,8 +21,9 @@ Use the ``[env]`` section in the ``gptme.toml`` :doc:`config` file to store API 
 - ``ANTHROPIC_API_KEY="your-api-key"``
 - ``OPENROUTER_API_KEY="your-api-key"``
 - ``GEMINI_API_KEY="your-api-key"``
-- ``GROQ_API_KEY="your-api-key"``
 - ``XAI_API_KEY="your-api-key"``
+- ``GROQ_API_KEY="your-api-key"``
+- ``DEEPSEEK_API_KEY="your-api-key"``
 
 .. rubric:: Local
 

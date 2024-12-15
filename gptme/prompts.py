@@ -5,7 +5,6 @@ It is used to instruct the LLM about its role, how to use tools, and provide con
 When prompting, it is important to provide clear instructions and avoid any ambiguity.
 """
 
-import glob
 import logging
 import platform
 from collections.abc import Generator, Iterable
@@ -252,18 +251,25 @@ def get_workspace_prompt(workspace: Path) -> str:
     # TODO: update this prompt if the files change
     # TODO: include `git status -vv`, and keep it up-to-date
     if project := get_project_config(workspace):
-        files = []
-        for file in project.files:
+        files: list[Path] = []
+        for fileglob in project.files:
             # expand user
-            file = str(Path(file).expanduser())
+            fileglob = str(Path(fileglob).expanduser())
             # expand with glob
-            if new_files := glob.glob(file):
+            if new_files := workspace.glob(fileglob):
                 files.extend(new_files)
             else:
-                logger.error(f"File {file} specified in project config does not exist")
+                logger.error(
+                    f"File glob '{fileglob}' specified in project config does not match any files."
+                )
                 exit(1)
-        return "\n\nSelected project files, read more with cat:\n" + "\n\n".join(
-            [f"```{Path(file).name}\n{Path(file).read_text()}\n```" for file in files]
+        files_str = []
+        for file in files:
+            if file.exists():
+                files_str.append(f"```{file}\n{file.read_text()}\n```")
+        return (
+            "# Workspace Context\n\n"
+            "Selected project files, read more with cat:\n\n" + "\n\n".join(files_str)
         )
     return ""
 
