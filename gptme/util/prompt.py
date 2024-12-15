@@ -102,6 +102,7 @@ def check_cwd() -> None:
 __all__ = ["clear_path_cache", "check_cwd", "is_valid_path", "PathLexer"]
 
 
+# TODO: this should prob have a cache, but breaks tests which mutate files, so maybe not
 @lru_cache(maxsize=1024)
 def is_valid_path(path_str: str) -> bool:
     """Check if a string represents a valid path.
@@ -139,8 +140,8 @@ def is_valid_path(path_str: str) -> bool:
         if "/" not in path_str and "\\" not in path_str:
             try:
                 # Check pwd cache for files
-                if path_str in _get_pwd_files():
-                    logger.debug(f"File exists in current directory: {path_str}")
+                if path_str in _get_pwd_files() and Path(path_str).resolve().exists():
+                    logger.warning(f"File exists in current directory: {path_str}")
                     return True
                 # Also check if it's a directory
                 if Path(path_str).is_dir():
