@@ -13,11 +13,10 @@ from collections.abc import Generator
 from pathlib import Path
 
 import bashlex
-
-from ..message import Message
-from ..util import get_installed_programs, get_tokenizer
-from ..util.ask_execute import execute_with_confirmation
-from .base import (
+from gptme.message import Message
+from gptme.util import get_installed_programs, get_tokenizer
+from gptme.util.ask_execute import execute_with_confirmation
+from gptme.tools.base import (
     ConfirmFunc,
     Parameter,
     ToolSpec,
@@ -162,7 +161,8 @@ class ShellSession:
         assert self.process.stdin
 
         # run the command
-        full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
+        full_command = f"{command}\n"
+        full_command += f"echo ReturnCode:$? {self.delimiter}\n"
         try:
             self.process.stdin.write(full_command)
         except BrokenPipeError:
@@ -180,23 +180,30 @@ class ShellSession:
         stdout = []
         stderr = []
         return_code = None
-        read_delimiter = False
 
         while True:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
+            if not rlist: continue
             for fd in rlist:
                 assert fd in [self.stdout_fd, self.stderr_fd]
                 # We use a higher value, because there is a bug which leads to spaces at the boundary
                 # 2**12 = 4096
                 # 2**16 = 65536
                 data = os.read(fd, 2**16).decode("utf-8")
-                re_returncode = re.compile(r"ReturnCode:(\d+)")
-                for line in re.split(r"(\n)", data):
-                    if match := re_returncode.match(line):
-                        return_code = int(match.group(1))
-                    if self.delimiter in line:
-                        read_delimiter = True
-                        continue
+                lines = data.splitlines(True)
+                for line in lines:
+                    if f"ReturnCode:" in line and self.delimiter in line:
+                        return_code = int(line.split("ReturnCode:")[1].split()[0])
+                        # if command is cd and successful, we need to change the directory
+                        if command.startswith("cd ") and return_code == 0:
+                            ex, pwd, _ = self._run("pwd", output=False)
+                            assert ex == 0
+                            os.chdir(pwd.strip())
+                        return (
+                            return_code,
+                            "".join(stdout).strip(),
+                            "".join(stderr).strip(),
+                        )
                     if fd == self.stdout_fd:
                         stdout.append(line)
                         if output:
@@ -205,20 +212,6 @@ class ShellSession:
                         stderr.append(line)
                         if output:
                             print(line, end="", file=sys.stderr)
-            if read_delimiter:
-                break
-
-        # if command is cd and successful, we need to change the directory
-        if command.startswith("cd ") and return_code == 0:
-            ex, pwd, _ = self._run("pwd", output=False)
-            assert ex == 0
-            os.chdir(pwd.strip())
-
-        return (
-            return_code,
-            "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
-            "".join(stderr).strip(),
-        )
 
     def close(self):
         assert self.process.stdin
@@ -414,7 +407,6 @@ def _shorten_stdout(
             )
 
     return "\n".join(lines)
-
 
 def split_commands(script: str) -> list[str]:
     # TODO: write proper tests

@@ -26,12 +26,38 @@ def test_echo(shell):
 
 
 def test_echo_multiline(shell):
-    # tests multiline and trailing + leading whitespace
+    # Test multiline and trailing + leading whitespace
     ret, out, err = shell.run("echo 'Line 1  \n  Line 2'")
-    assert err.strip() == ""  # Expecting no stderr
-    assert (
-        out.strip() == "Line 1  \n  Line 2"
-    )  # Expecting stdout to be "Line 1\nLine 2"
+    assert err.strip() == ""
+    assert out.strip() == "Line 1  \n  Line 2"
+    assert ret == 0
+
+    # Test basic heredoc (<<)
+    ret, out, err = shell.run("""
+cat << EOF
+Hello
+World
+EOF
+""")
+    assert err.strip() == ""
+    assert out.strip() == "Hello\nWorld"
+    assert ret == 0
+
+    # Test stripped heredoc (<<-)
+    ret, out, err = shell.run("""
+cat <<- EOF
+Hello
+World
+EOF
+""")
+    assert err.strip() == ""
+    assert out.strip() == "Hello\nWorld"
+    assert ret == 0
+
+    # Test here-string (<<<)
+    ret, out, err = shell.run("cat <<< 'Hello World'")
+    assert err.strip() == ""
+    assert out.strip() == "Hello World"
     assert ret == 0
 
 
@@ -79,6 +105,31 @@ multiline command"
     commands = split_commands(script_loop)
     assert len(commands) == 1
 
+def test_heredoc_complex(shell):
+    # Test nested heredocs
+    ret, out, err = shell.run("""
+cat << OUTER
+This is the outer heredoc
+$(cat << INNER
+This is the inner heredoc
+INNER
+)
+OUTER
+""")
+    assert err.strip() == ""
+    assert out.strip() == "This is the outer heredoc\nThis is the inner heredoc"
+    assert ret == 0
+
+    # Test heredoc with variable substitution
+    ret, out, err = shell.run("""
+NAME="World"
+cat << EOF
+Hello, $NAME!
+EOF
+""")
+    assert err.strip() == ""
+    assert out.strip() == "Hello, World!"
+    assert ret == 0
 
 def test_function():
     script = """
