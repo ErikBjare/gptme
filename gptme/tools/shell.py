@@ -13,10 +13,11 @@ from collections.abc import Generator
 from pathlib import Path
 
 import bashlex
-from gptme.message import Message
-from gptme.util import get_installed_programs, get_tokenizer
-from gptme.util.ask_execute import execute_with_confirmation
-from gptme.tools.base import (
+
+from ..message import Message
+from ..util import get_installed_programs, get_tokenizer
+from ..util.ask_execute import execute_with_confirmation
+from .base import (
     ConfirmFunc,
     Parameter,
     ToolSpec,
@@ -183,17 +184,18 @@ class ShellSession:
 
         while True:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
-            if not rlist: continue
             for fd in rlist:
                 assert fd in [self.stdout_fd, self.stderr_fd]
                 # We use a higher value, because there is a bug which leads to spaces at the boundary
                 # 2**12 = 4096
                 # 2**16 = 65536
                 data = os.read(fd, 2**16).decode("utf-8")
-                lines = data.splitlines(True)
+                lines = data.splitlines(keepends=True)
+                re_returncode = re.compile(r"ReturnCode:(\d+)")
                 for line in lines:
-                    if f"ReturnCode:" in line and self.delimiter in line:
-                        return_code = int(line.split("ReturnCode:")[1].split()[0])
+                    if "ReturnCode:" in line and self.delimiter in line:
+                        if match := re_returncode.search(line):
+                            return_code = int(match.group(1))
                         # if command is cd and successful, we need to change the directory
                         if command.startswith("cd ") and return_code == 0:
                             ex, pwd, _ = self._run("pwd", output=False)
