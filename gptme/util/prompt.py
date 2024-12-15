@@ -396,7 +396,7 @@ def get_prompt_session() -> PromptSession:
     global _prompt_session
     if not _prompt_session:
         history_path = get_pt_history_file()
-        if history_path.parent.exists():
+        if not history_path.parent.exists():
             history_path.parent.mkdir(parents=True, exist_ok=True)
         history = FileHistory(str(history_path))
         completer = GptmeCompleter()
