@@ -6,16 +6,17 @@ import sys
 import termios
 import urllib.parse
 from collections.abc import Generator
+from functools import lru_cache
 from pathlib import Path
 
+from gptme.constants import PROMPT_USER
+
 from .commands import action_descriptions, execute_cmd
-from .constants import PROMPT_USER
 from .init import init
 from .llm import reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
-from .prompt import add_history, get_input
 from .prompts import get_workspace_prompt
 from .tools import (
     ToolFormat,
@@ -26,16 +27,12 @@ from .tools import (
 )
 from .tools.base import ConfirmFunc
 from .tools.browser import read_url
-from .util import (
-    console,
-    path_with_tilde,
-    print_bell,
-    rich_to_str,
-)
+from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
 from .util.context import use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
+from .util.prompt import add_history, get_input
 
 logger = logging.getLogger(__name__)
 
@@ -272,14 +269,31 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     if value:
         console.print(prompt + value)
         return value
-    prompt = rich_to_str(prompt, color_system="256")
-
-    # TODO: Implement LLM suggestions
-    def get_suggestions(text: str) -> list[str]:
-        # This would be replaced with actual LLM suggestions
-        return []
 
     return get_input(prompt, llm_suggest_callback=get_suggestions)
+
+
+# TODO: Implement LLM suggestions
+@lru_cache
+def get_suggestions(text: str) -> list[str]:
+    enabled = False
+    if enabled:
+        response = reply(
+            messages=[
+                Message(
+                    "system",
+                    """You are to tab-complete the user prompt with a relevant query.
+Respond with one entry per line.
+No preambles or greetings, or postamble.
+Only 10 lines.""",
+                ),
+                Message("user", text),
+            ],
+            model=get_model().model,
+            stream=False,
+        )
+        return response.content.split("\n")
+    return []
 
 
 def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
