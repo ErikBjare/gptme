@@ -6,7 +6,6 @@ import sys
 import termios
 import urllib.parse
 from collections.abc import Generator
-from functools import lru_cache
 from pathlib import Path
 
 from gptme.constants import PROMPT_USER
@@ -270,30 +269,7 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
         console.print(prompt + value)
         return value
 
-    return get_input(prompt, llm_suggest_callback=get_suggestions)
-
-
-# TODO: Implement LLM suggestions
-@lru_cache
-def get_suggestions(text: str) -> list[str]:
-    enabled = False
-    if enabled:
-        response = reply(
-            messages=[
-                Message(
-                    "system",
-                    """You are to tab-complete the user prompt with a relevant query.
-Respond with one entry per line.
-No preambles or greetings, or postamble.
-Only 10 lines.""",
-                ),
-                Message("user", text),
-            ],
-            model=get_model().model,
-            stream=False,
-        )
-        return response.content.split("\n")
-    return []
+    return get_input(prompt)
 
 
 def _include_paths(msg: Message, workspace: Path | None = None) -> Message:

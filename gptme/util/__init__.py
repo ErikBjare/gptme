@@ -3,7 +3,6 @@ Utility package for gptme.
 """
 
 import functools
-import io
 import logging
 import re
 import shutil
@@ -13,7 +12,6 @@ import textwrap
 from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
 
 from rich import print
 from rich.console import Console
@@ -201,12 +199,6 @@ def document_prompt_function(*args, **kwargs):
         return func
 
     return decorator
-
-
-def rich_to_str(s: Any, **kwargs) -> str:
-    c = Console(file=io.StringIO(), **kwargs)
-    c.print(s)
-    return c.file.getvalue()  # type: ignore
 
 
 def path_with_tilde(path: Path) -> str:
