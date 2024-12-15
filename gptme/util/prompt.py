@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import time
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -390,13 +390,14 @@ Only 10 lines.""",
 _prompt_session: PromptSession | None = None
 
 
-def get_prompt_session(
-    llm_suggest_callback: Callable[[str], list[str]] | None = None,
-) -> PromptSession:
+def get_prompt_session() -> PromptSession:
     """Create a PromptSession with history and completion support."""
     global _prompt_session
     if not _prompt_session:
-        history = FileHistory(str(get_pt_history_file()))
+        history_path = get_pt_history_file()
+        if history_path.parent.exists():
+            history_path.parent.mkdir(parents=True, exist_ok=True)
+        history = FileHistory(str(history_path))
         completer = GptmeCompleter()
 
         _prompt_session = PromptSession(
