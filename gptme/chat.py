@@ -8,9 +8,8 @@ import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
 
-from gptme.constants import PROMPT_USER
-
 from .commands import action_descriptions, execute_cmd
+from .constants import PROMPT_USER
 from .init import init
 from .llm import reply
 from .llm.models import get_model
