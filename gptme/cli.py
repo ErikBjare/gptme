@@ -11,9 +11,9 @@ from typing import Literal
 import click
 from pick import pick
 
-from gptme.config import get_config
 
 from .chat import chat
+from .config import get_config
 from .commands import _gen_help
 from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
@@ -22,12 +22,7 @@ from .llm.models import get_recommended_model
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
-from .tools import (
-    ToolFormat,
-    ToolSpec,
-    init_tools,
-    set_tool_format,
-)
+from .tools import ToolFormat, init_tools, get_available_tools
 from .util import epoch_to_age
 from .util.generate_name import generate_name
 from .util.interrupt import handle_keyboard_interrupt, set_interruptible
@@ -39,7 +34,7 @@ logger = logging.getLogger(__name__)
 script_path = Path(os.path.realpath(__file__))
 commands_help = "\n".join(_gen_help(incl_langtags=False))
 available_tool_names = ", ".join(
-    sorted([tool.name for tool in ToolSpec.get_tools().values() if tool.available])
+    sorted([tool.name for tool in get_available_tools() if tool.available])
 )
 
 
@@ -189,7 +184,6 @@ def main(
     selected_tool_format: ToolFormat = (
         tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
     )
-    set_tool_format(selected_tool_format)
 
     # early init tools to generate system prompt
     init_tools(frozenset(tool_allowlist) if tool_allowlist else None)

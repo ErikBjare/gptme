@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 from ..config import Config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
-from ..tools.base import Parameter, ToolSpec, ToolUse
+from ..tools import Parameter, ToolSpec, ToolUse
 from .models import ModelMeta, Provider, get_model
 
 if TYPE_CHECKING:

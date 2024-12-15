@@ -1,32 +1,23 @@
 import logging
-from collections.abc import Generator
 from functools import lru_cache
+from collections.abc import Generator
+
+from gptme.config import get_config
 
 from ..message import Message
 from .base import (
-    ConfirmFunc,
     ToolFormat,
     ToolSpec,
     ToolUse,
+    Parameter,
+    ConfirmFunc,
     get_tool_format,
     set_tool_format,
 )
-from .browser import tool as browser_tool
-from .chats import tool as chats_tool
-from .computer import tool as computer_tool
-from .gh import tool as gh_tool
-from .patch import tool as patch_tool
-from .python import register_function
-from .python import tool as python_tool
-from .rag import tool as rag_tool
-from .read import tool as read_tool
-from .save import tool_append, tool_save
-from .screenshot import tool as screenshot_tool
-from .shell import tool as shell_tool
-from .subagent import tool as subagent_tool
-from .tmux import tool as tmux_tool
-from .vision import tool as vision_tool
-from .youtube import tool as youtube_tool
+
+import importlib
+import pkgutil
+import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -36,82 +27,88 @@ __all__ = [
     "ToolSpec",
     "ToolUse",
     "ToolFormat",
+    "Parameter",
+    "ConfirmFunc",
     # functions
-    "execute_msg",
     "get_tool_format",
     "set_tool_format",
-    # files
-    "read_tool",
-    "tool_append",
-    "tool_save",
-    "patch_tool",
-    # code
-    "shell_tool",
-    "python_tool",
-    "gh_tool",
-    # vision and computer use
-    "vision_tool",
-    "screenshot_tool",
-    "computer_tool",
-    # misc
-    "chats_tool",
-    "rag_tool",
-    "subagent_tool",
-    "tmux_tool",
-    "browser_tool",
-    "youtube_tool",
 ]
 
-loaded_tools: list[ToolSpec] = []
+from .save import tool_save
 
-# Tools that are disabled by default, unless explicitly enabled
-# TODO: find a better way to handle this
-tools_default_disabled = [
-    "computer",
-    "subagent",
-]
+_loaded_tools: list[ToolSpec] = []
+_available_tools: list[ToolSpec] | None = None
+
+
+def _discover_tools(package_names):
+    """Discover tools in a package or module, given the package name as a string."""
+    tools = []
+    for package_name in package_names:
+        try:
+            # Dynamically import the package or module
+            package = importlib.import_module(package_name)
+        except ModuleNotFoundError:
+            logger.warning("Module or package %s not found", package_name)
+            continue
+
+        # Check if it's a package or a module
+        if hasattr(package, "__path__"):  # It's a package
+            # Iterate over modules in the package
+            for _, module_name, _ in pkgutil.iter_modules(package.__path__):
+                full_module_name = f"{package_name}.{module_name}"
+                try:
+                    module = importlib.import_module(full_module_name)
+                except ModuleNotFoundError:
+                    logger.warning("Missing dependency for module %s", full_module_name)
+                    continue
+
+                # Find instances of ToolSpec in the module
+                for _, obj in inspect.getmembers(
+                    module, lambda c: isinstance(c, ToolSpec)
+                ):
+                    tools.append(obj)
+        else:  # It's a single module
+            # Find instances of ToolSpec in the module
+            for _, obj in inspect.getmembers(
+                package, lambda c: isinstance(c, ToolSpec)
+            ):
+                tools.append(obj)
+
+    return tools
 
 
 @lru_cache
-def init_tools(allowlist: frozenset[str] | None = None) -> None:
+def init_tools(
+    allowlist: frozenset[str] | None = None,
+) -> None:
     """Runs initialization logic for tools."""
-    # init python tool last
-    tools = list(
-        sorted(ToolSpec.get_tools().values(), key=lambda tool: tool.name != "ipython")
-    )
-    loaded_tool_names = [tool.name for tool in loaded_tools]
-    for tool in tools:
-        if tool.name in loaded_tool_names:
+
+    config = get_config()
+
+    if allowlist is None:
+        env_allowlist = config.get_env("TOOL_ALLOW_LIST")
+        if env_allowlist:
+            allowlist = frozenset(env_allowlist.split(","))
+
+    for tool in get_available_tools():
+        if tool in _loaded_tools:
+            logger.warning("Tool '%s' already loaded", tool.name)
             continue
         if allowlist and tool.name not in allowlist:
             continue
-        if tool.init:
-            tool = tool.init()
         if not tool.available:
             continue
-        if tool in loaded_tools:
-            continue
-        if tool.name in tools_default_disabled:
+        if tool.disabled_by_default:
             if not allowlist or tool.name not in allowlist:
                 continue
-        _load_tool(tool)
+        if tool.init:
+            tool = tool.init()
+
+        _loaded_tools.append(tool)
 
     for tool_name in allowlist or []:
         if not has_tool(tool_name):
             raise ValueError(f"Tool '{tool_name}' not found")
-
-
-def _load_tool(tool: ToolSpec) -> None:
-    """Loads a tool."""
-    if tool in loaded_tools:
-        logger.warning(f"Tool '{tool.name}' already loaded")
-        return
-
-    # tool init happens in init_tools to check that spec is available
-    if tool.functions:
-        for func in tool.functions:
-            register_function(func)
-    loaded_tools.append(tool)
 
 
 def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, None]:
@@ -128,7 +125,7 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
 @lru_cache
 def get_tool_for_langtag(lang: str) -> ToolSpec | None:
     block_type = lang.split(" ")[0]
-    for tool in loaded_tools:
+    for tool in _loaded_tools:
         if block_type in tool.block_types:
             return tool
     is_filename = "." in lang or "/" in lang
@@ -142,14 +139,45 @@ def is_supported_langtag(lang: str) -> bool:
     return bool(get_tool_for_langtag(lang))
 
 
+def get_available_tools() -> list[ToolSpec]:
+    global _available_tools
+
+    if _available_tools is None:
+        # We need to load tools first
+        config = get_config()
+
+        tool_modules: frozenset[str] = frozenset()
+        env_tool_modules = config.get_env("TOOL_MODULES", "gptme.tools")
+
+        if env_tool_modules:
+            tool_modules = frozenset(env_tool_modules.split(","))
+
+        _available_tools = sorted(_discover_tools(tool_modules))
+
+    return _available_tools
+
+
+def clear_tools():
+    global _available_tools
+    global _loaded_tools
+
+    _available_tools = None
+    _loaded_tools = []
+
+
+def get_tools() -> list[ToolSpec]:
+    """Returns all loaded tools"""
+    return _loaded_tools
+
+
 def get_tool(tool_name: str) -> ToolSpec | None:
     """Returns a loaded tool by name or block type."""
     # check tool names
-    for tool in loaded_tools:
+    for tool in _loaded_tools:
         if tool.name == tool_name:
             return tool
     # check block types
-    for tool in loaded_tools:
+    for tool in _loaded_tools:
         if tool_name in tool.block_types:
             return tool
     return None
@@ -157,7 +185,7 @@ def get_tool(tool_name: str) -> ToolSpec | None:
 
 def has_tool(tool_name: str) -> bool:
     """Returns True if a tool is loaded."""
-    for tool in loaded_tools:
+    for tool in _loaded_tools:
         if tool.name == tool_name:
             return True
     return False

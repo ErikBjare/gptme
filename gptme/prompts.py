@@ -200,14 +200,14 @@ def prompt_tools(
     examples: bool = True, tool_format: ToolFormat = "markdown"
 ) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
-    from .tools import loaded_tools  # fmt: skip
+    from .tools import get_tools  # fmt: skip
 
-    assert loaded_tools, "No tools loaded"
+    assert get_tools(), "No tools loaded"
 
     use_tool = tool_format == "tool"
 
     prompt = "# Tools aliases" if use_tool else "# Tools Overview"
-    for tool in loaded_tools:
+    for tool in get_tools():
         if not use_tool or not tool.is_runnable():
             prompt += tool.get_tool_prompt(examples, tool_format)
 

@@ -37,6 +37,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    evals
    bot
    finetuning
+   custom_tool
    arewetiny
    timeline
    alternatives

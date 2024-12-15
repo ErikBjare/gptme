@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.syntax import Syntax
 
 from ..message import Message
-from ..tools.base import ConfirmFunc
+from ..tools import ConfirmFunc
 from . import print_bell
 from .clipboard import copy, set_copytext
 from .prompt import get_prompt_session
