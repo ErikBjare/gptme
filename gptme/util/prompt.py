@@ -16,6 +16,7 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import ANSI, HTML, to_formatted_text
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.lexers import PygmentsLexer
+from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.shortcuts import CompleteStyle
 from prompt_toolkit.styles import Style
 from pygments.lexer import RegexLexer
@@ -141,7 +142,7 @@ def is_valid_path(path_str: str) -> bool:
             try:
                 # Check pwd cache for files
                 if path_str in _get_pwd_files() and Path(path_str).resolve().exists():
-                    logger.warning(f"File exists in current directory: {path_str}")
+                    logger.debug(f"File exists in current directory: {path_str}")
                     return True
                 # Also check if it's a directory
                 if Path(path_str).is_dir():
@@ -295,7 +296,7 @@ class PathCompleter2(PathCompleter):
         """Completed paths and ends directories with a slash."""
         for c in super().get_completions(document, complete_event):
             # ideally do this on the first tab, not sure why we have to tab twice
-            if Path(c.text).is_dir():
+            if Path(document.text_before_cursor + c.text).is_dir():
                 yield Completion(c.text + "/", c.start_position, display=c.display)
             else:
                 yield c
@@ -421,18 +422,19 @@ def get_input(prompt: str) -> str:
     try:
         logger.debug(f"Original prompt: {repr(prompt)}")
 
-        result = session.prompt(
-            to_formatted_text(
-                ANSI(rich_to_str(prompt.rstrip() + " ", color_system="256"))
-            ),
-            lexer=PygmentsLexer(PathLexer),
-            style=Style.from_dict(
-                {
-                    "pygments.name.variable": "#87afff underline",  # bright blue, bold for paths
-                }
-            ),
-            include_default_pygments_style=False,
-        )
+        with patch_stdout(raw=True):
+            result = session.prompt(
+                to_formatted_text(
+                    ANSI(rich_to_str(prompt.rstrip() + " ", color_system="256"))
+                ),
+                lexer=PygmentsLexer(PathLexer),
+                style=Style.from_dict(
+                    {
+                        "pygments.name.variable": "#87afff underline",  # bright blue, bold for paths
+                    }
+                ),
+                include_default_pygments_style=False,
+            )
         return result
     except (EOFError, KeyboardInterrupt) as e:
         # Re-raise EOFError to handle Ctrl+D properly
