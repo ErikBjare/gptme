@@ -162,7 +162,8 @@ class ShellSession:
         assert self.process.stdin
 
         # run the command
-        full_command = f"{command}; echo ReturnCode:$? {self.delimiter}\n"
+        full_command = f"{command}\n"
+        full_command += f"echo ReturnCode:$? {self.delimiter}\n"
         try:
             self.process.stdin.write(full_command)
         except BrokenPipeError:
@@ -177,10 +178,9 @@ class ShellSession:
 
         self.process.stdin.flush()
 
-        stdout = []
-        stderr = []
-        return_code = None
-        read_delimiter = False
+        stdout: list[str] = []
+        stderr: list[str] = []
+        return_code: int | None = None
 
         while True:
             rlist, _, _ = select.select([self.stdout_fd, self.stderr_fd], [], [])
@@ -190,13 +190,22 @@ class ShellSession:
                 # 2**12 = 4096
                 # 2**16 = 65536
                 data = os.read(fd, 2**16).decode("utf-8")
+                lines = data.splitlines(keepends=True)
                 re_returncode = re.compile(r"ReturnCode:(\d+)")
-                for line in re.split(r"(\n)", data):
-                    if match := re_returncode.match(line):
-                        return_code = int(match.group(1))
-                    if self.delimiter in line:
-                        read_delimiter = True
-                        continue
+                for line in lines:
+                    if "ReturnCode:" in line and self.delimiter in line:
+                        if match := re_returncode.search(line):
+                            return_code = int(match.group(1))
+                        # if command is cd and successful, we need to change the directory
+                        if command.startswith("cd ") and return_code == 0:
+                            ex, pwd, _ = self._run("pwd", output=False)
+                            assert ex == 0
+                            os.chdir(pwd.strip())
+                        return (
+                            return_code,
+                            "".join(stdout).strip(),
+                            "".join(stderr).strip(),
+                        )
                     if fd == self.stdout_fd:
                         stdout.append(line)
                         if output:
@@ -205,20 +214,6 @@ class ShellSession:
                         stderr.append(line)
                         if output:
                             print(line, end="", file=sys.stderr)
-            if read_delimiter:
-                break
-
-        # if command is cd and successful, we need to change the directory
-        if command.startswith("cd ") and return_code == 0:
-            ex, pwd, _ = self._run("pwd", output=False)
-            assert ex == 0
-            os.chdir(pwd.strip())
-
-        return (
-            return_code,
-            "".join(stdout).replace(f"ReturnCode:{return_code}", "").strip(),
-            "".join(stderr).strip(),
-        )
 
     def close(self):
         assert self.process.stdin
