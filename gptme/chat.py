@@ -4,11 +4,13 @@ import os
 import re
 import sys
 import termios
+from typing import cast
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
+from .config import get_config
 from .constants import PROMPT_USER
 from .init import init
 from .llm import reply
@@ -23,7 +25,7 @@ from .tools import (
     has_tool,
     loaded_tools,
 )
-from .tools.base import ConfirmFunc
+from .tools.base import ConfirmFunc, set_tool_format
 from .tools.browser import read_url
 from .util import (
     console,
@@ -51,7 +53,7 @@ def chat(
     show_hidden: bool = False,
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
-    tool_format: ToolFormat = "markdown",
+    tool_format: ToolFormat | None = None,
 ) -> None:
     """
     Run the chat loop.
@@ -75,6 +77,15 @@ def chat(
 
     console.log(f"Using logdir {path_with_tilde(logdir)}")
     manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
+
+    config = get_config()
+    tool_format_with_default: ToolFormat = tool_format or cast(
+        ToolFormat, config.get_env("TOOL_FORMAT", "markdown")
+    )
+
+    # By defining the tool_format at the last moment we ensure we can use the
+    # configuration for subagent
+    set_tool_format(tool_format_with_default)
 
     # change to workspace directory
     # use if exists, create if @log, or use given path
@@ -133,7 +144,7 @@ def chat(
                                 manager.log,
                                 stream,
                                 confirm_func,
-                                tool_format,
+                                tool_format_with_default,
                                 workspace,
                             )
                         )
@@ -182,7 +193,7 @@ def chat(
         # ask for input if no prompt, generate reply, and run tools
         clear_interruptible()  # Ensure we're not interruptible during user input
         for msg in step(
-            manager.log, stream, confirm_func, tool_format, workspace
+            manager.log, stream, confirm_func, tool_format_with_default, workspace
         ):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
@@ -194,7 +205,7 @@ def step(
     log: Log | list[Message],
     stream: bool,
     confirm: ConfirmFunc,
-    tool_format: ToolFormat = "markdown",
+    tool_format: ToolFormat,
     workspace: Path | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""

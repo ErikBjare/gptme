@@ -112,7 +112,7 @@ def rag_status() -> str:
     return result.stdout.strip()
 
 
-def init() -> ToolSpec:
+def init(loaded_tools) -> ToolSpec:
     """Initialize the RAG tool."""
     # Check if gptme-rag CLI is available
     if not _has_gptme_rag():
