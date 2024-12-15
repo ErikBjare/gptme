@@ -114,6 +114,7 @@ def test_path_lexer_caching():
 def test_symlink_handling(test_dir):
     """Test handling of symlinks."""
     os.chdir(test_dir)
+    check_cwd()  # we should run this automatically somehow
 
     # Create a symlink
     source = test_dir / "file.txt"
