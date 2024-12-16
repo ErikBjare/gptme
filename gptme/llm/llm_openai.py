@@ -133,12 +133,13 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     choice = response.choices[0]
     result = []
     if choice.finish_reason == "tool_calls":
-        for tool_call in choice.message.tool_calls:
+        for tool_call in choice.message.tool_calls or []:
             result.append(
                 f"@{tool_call.function.name}({tool_call.id}): {tool_call.function.arguments}"
             )
     else:
-        result.append(choice.message.content)
+        if choice.message.content:
+            result.append(choice.message.content)
 
     assert result
     return "\n".join(result)
