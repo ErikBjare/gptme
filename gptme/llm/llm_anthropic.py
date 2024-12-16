@@ -298,7 +298,9 @@ def _transform_system_messages(
     messages = messages.copy()
     messages.pop(0)
 
-    # for any subsequent system messages, transform them into a <system> message
+    # Convert subsequent system messages into <system> messages,
+    # unless a `call_id` is present, indicating the tool_format is 'tool'.
+    # Tool responses are handled separately by _handle_tool.
     for i, message in enumerate(messages):
         if message.role == "system" and message.call_id is None:
             messages[i] = Message(
