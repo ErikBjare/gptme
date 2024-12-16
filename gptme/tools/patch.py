@@ -237,7 +237,7 @@ def execute_patch(
     confirm: ConfirmFunc = lambda _: True,
 ) -> Generator[Message, None, None]:
     """Applies the patch."""
-    if code is not None and kwargs is not None:
+    if code is None and kwargs is not None:
         code = kwargs.get("patch", code)
 
     if not code:
