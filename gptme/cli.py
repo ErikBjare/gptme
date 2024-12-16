@@ -213,14 +213,18 @@ def main(
             was_piped = True
 
             # Attempt to switch to interactive mode
-            sys.stdin.close()
-            try:
-                sys.stdin = open("/dev/tty")
-            except OSError:
-                # if we can't open /dev/tty, we're probably in a CI environment, so we should just continue
-                logger.warning(
-                    "Failed to switch to interactive mode, continuing in non-interactive mode"
-                )
+            # https://github.com/prompt-toolkit/python-prompt-toolkit/issues/502#issuecomment-466591259
+            sys.stdin = sys.stdout
+
+            # Old code, doesn't work with prompt-toolkit
+            # sys.stdin.close()
+            # try:
+            #     sys.stdin = open("/dev/tty")
+            # except OSError:
+            #     # if we can't open /dev/tty, we're probably in a CI environment, so we should just continue
+            #     logger.warning(
+            #         "Failed to switch to interactive mode, continuing in non-interactive mode"
+            #     )
 
     # add prompts to prompt-toolkit history
     for prompt in prompts:
