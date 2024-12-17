@@ -250,7 +250,6 @@ def main(
     else:
         logdir = get_logdir(name)
         if piped_input:
-            # Add piped input to initial messages for new conversations
             initial_msgs.append(Message("system", f"```stdin\n{piped_input}\n```"))
 
     if workspace == "@log":
