@@ -2,19 +2,39 @@
 Tools to let the assistant control a browser, including:
  - loading pages
  - reading their contents
- - viewing them through screenshots
- - searching
+ - searching the web
+ - taking screenshots (Playwright only)
+
+Two backends are available:
+
+Playwright backend:
+ - Full browser automation with screenshots
+ - Installation:
+
+   .. code-block:: bash
+
+       pipx install 'gptme[browser]'
+       # We need to use the same version of Playwright as the one installed by gptme
+       # when downloading the browser binaries.
+       PW_VERSION=$(pipx runpip gptme show playwright | grep Version | cut -d' ' -f2)
+       pipx run playwright==$PW_VERSION install chromium
+
+Lynx backend:
+ - Text-only browser for basic page reading and searching
+ - No screenshot support
+ - Installation:
+
+   .. code-block:: bash
+
+       # On Ubuntu
+       sudo apt install lynx
+       # On macOS
+       brew install lynx
+       # or any other way that gets you the `lynx` command
 
 .. note::
 
     This is an experimental feature. It needs some work to be more robust and useful.
-
-To use the browser tool, you need to have the `playwright` Python package installed along with gptme, which you can install with:
-
-.. code-block:: bash
-
-    pipx install 'gptme[browser]'
-    gptme '/shell playwright install chromium'
 """
 
 import importlib.util
