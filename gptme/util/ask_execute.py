@@ -138,7 +138,7 @@ def ask_execute(question="Execute code?", default=True) -> bool:
         if match.group(2):
             auto_skip_count = int(match.group(2))
             return True
-        if match.group(1):
+        else:
             return (override_auto := True)
 
     # secret option to ask for help
