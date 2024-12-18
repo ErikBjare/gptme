@@ -9,88 +9,88 @@ import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 
-from playwright.sync_api import (
-    ElementHandle,
-    Geolocation,
-    Page,
-    Playwright,
-    sync_playwright,
-)
+from playwright.sync_api import Browser, ElementHandle
+from ._browser_thread import BrowserThread
 
-_p: Playwright | None = None
+_browser: BrowserThread | None = None
 logger = logging.getLogger(__name__)
 
 
-def get_browser():
-    """
-    Return a browser object.
-    """
-    global _p
-    if _p is None:
-        logger.info("Starting browser")
-        _p = sync_playwright().start()
-
-        atexit.register(_p.stop)
-    browser = _p.chromium.launch()
-    return browser
+def get_browser() -> BrowserThread:
+    global _browser
+    if _browser is None:
+        logger.info("Starting browser thread")
+        _browser = BrowserThread()
+        atexit.register(_browser.stop)
+    return _browser
 
 
-def load_page(url: str) -> Page:
-    browser = get_browser()
-
-    # set browser language to English such that Google uses English
-    coords_sf: Geolocation = {"latitude": 37.773972, "longitude": 13.39}
+def _load_page(browser: Browser, url: str) -> str:
+    """Load a page and return its body HTML"""
     context = browser.new_context(
         locale="en-US",
-        geolocation=coords_sf,
+        geolocation={"latitude": 37.773972, "longitude": 13.39},
         permissions=["geolocation"],
     )
 
-    # create a new page
     logger.info(f"Loading page: {url}")
     page = context.new_page()
     page.goto(url)
 
-    return page
+    return page.inner_html("body")
 
 
 def read_url(url: str) -> str:
     """Read the text of a webpage and return the text in Markdown format."""
-    page = load_page(url)
-
-    # Get the HTML of the body
-    body_html = page.inner_html("body")
-
-    # Convert the HTML to Markdown
-    markdown = html_to_markdown(body_html)
-
-    return markdown
+    browser = get_browser()
+    body_html = browser.execute(_load_page, url)
+    return html_to_markdown(body_html)
 
 
-def search_google(query: str) -> str:
+def _search_google(browser: Browser, query: str) -> str:
     query = urllib.parse.quote(query)
     url = f"https://www.google.com/search?q={query}&hl=en"
-    page = load_page(url)
+
+    context = browser.new_context(
+        locale="en-US",
+        geolocation={"latitude": 37.773972, "longitude": 13.39},
+        permissions=["geolocation"],
+    )
+    page = context.new_page()
+    page.goto(url)
 
     els = _list_clickable_elements(page)
     for el in els:
-        # print(f"{el['type']}: {el['text']}")
         if "Accept all" in el.text:
             el.element.click()
             logger.debug("Accepted Google terms")
             break
 
-    # list results
-    result_str = _list_results_google(page)
+    return _list_results_google(page)
 
-    return result_str
+
+def search_google(query: str) -> str:
+    browser = get_browser()
+    return browser.execute(_search_google, query)
+
+
+def _search_duckduckgo(browser: Browser, query: str) -> str:
+    url = f"https://duckduckgo.com/?q={query}"
+
+    context = browser.new_context(
+        locale="en-US",
+        geolocation={"latitude": 37.773972, "longitude": 13.39},
+        permissions=["geolocation"],
+    )
+    page = context.new_page()
+    page.goto(url)
+
+    return _list_results_duckduckgo(page)
 
 
 def search_duckduckgo(query: str) -> str:
-    url = f"https://duckduckgo.com/?q={query}"
-    page = load_page(url)
-
-    return _list_results_duckduckgo(page)
+    browser = get_browser()
+    return browser.execute(_search_duckduckgo, query)
 
 
 @dataclass
@@ -190,22 +190,31 @@ def _list_results_duckduckgo(page) -> str:
     return titleurl_to_list(hits)
 
 
-def screenshot_url(url: str, path: Path | str | None = None) -> Path:
+def _take_screenshot(
+    browser: Browser, url: str, path: Path | str | None = None
+) -> Path:
     """Take a screenshot of a webpage and save it to a file."""
-    logger.info(f"Taking screenshot of '{url}' and saving to '{path}'")
-    page = load_page(url)
-
     if path is None:
         path = tempfile.mktemp(suffix=".png")
     else:
         # create the directory if it doesn't exist
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    # Take the screenshot
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(url)
     page.screenshot(path=path)
 
-    print(f"Screenshot saved to {path}")
     return Path(path)
+
+
+def screenshot_url(url: str, path: Path | str | None = None) -> Path:
+    """Take a screenshot of a webpage and save it to a file."""
+    logger.info(f"Taking screenshot of '{url}' and saving to '{path}'")
+    browser = get_browser()
+    path = browser.execute(_take_screenshot, url, path)
+    print(f"Screenshot saved to {path}")
+    return path
 
 
 def html_to_markdown(html):
