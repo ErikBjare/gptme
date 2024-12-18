@@ -1139,19 +1139,44 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
 <dt>Tools to let the assistant control a browser, including:</dt><dd><ul class="simple">
 <li><p>loading pages</p></li>
 <li><p>reading their contents</p></li>
-<li><p>viewing them through screenshots</p></li>
-<li><p>searching</p></li>
+<li><p>searching the web</p></li>
+<li><p>taking screenshots (Playwright only)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Two backends are available:</p>
+<dl>
+<dt>Playwright backend:</dt><dd><ul>
+<li><p>Full browser automation with screenshots</p></li>
+<li><p>Installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;gptme[browser]&#39;</span>
+<span class="c1"># We need to use the same version of Playwright as the one installed by gptme</span>
+<span class="c1"># when downloading the browser binaries.</span>
+<span class="nv">PW_VERSION</span><span class="o">=</span><span class="k">$(</span>pipx<span class="w"> </span>runpip<span class="w"> </span>gptme<span class="w"> </span>show<span class="w"> </span>playwright<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Version<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="k">)</span>
+pipx<span class="w"> </span>run<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="nv">$PW_VERSION</span><span class="w"> </span>install<span class="w"> </span>chromium
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+<dt>Lynx backend:</dt><dd><ul>
+<li><p>Text-only browser for basic page reading and searching</p></li>
+<li><p>No screenshot support</p></li>
+<li><p>Installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># On Ubuntu</span>
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>lynx
+<span class="c1"># On macOS</span>
+brew<span class="w"> </span>install<span class="w"> </span>lynx
+<span class="c1"># or any other way that gets you the `lynx` command</span>
+</pre></div>
+</div>
+</li>
 </ul>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is an experimental feature. It needs some work to be more robust and useful.</p>
-</div>
-<p>To use the browser tool, you need to have the <cite>playwright</cite> Python package installed along with gptme, which you can install with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;gptme[browser]&#39;</span>
-gptme<span class="w"> </span><span class="s1">&#39;/shell playwright install chromium&#39;</span>
-</pre></div>
 </div>
 <p class="rubric">Examples</p>
 <p>Answer question from URL with browsing</p>
