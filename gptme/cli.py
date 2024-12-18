@@ -238,10 +238,22 @@ def main(
     # TODO: referenced file paths in multiprompts should be read when run, not when parsed
     prompt_msgs = [Message("user", p) for p in prompts]
 
+    def inject_stdin(prompt_msgs, piped_input: str | None) -> list[Message]:
+        # if piped input, append it to first prompt, or create a new prompt if none exists
+        if not piped_input:
+            return prompt_msgs
+        stdin_msg = Message("user", f"```stdin\n{piped_input}\n```")
+        if not prompt_msgs:
+            prompt_msgs.append(stdin_msg)
+        else:
+            prompt_msgs[0] = prompt_msgs[0].replace(
+                content=f"{prompt_msgs[0].content}\n\n{stdin_msg.content}"
+            )
+        return prompt_msgs
+
     if resume:
         logdir = get_logdir_resume()
-        if piped_input:
-            prompt_msgs.append(Message("system", f"```stdin\n{piped_input}\n```"))
+        prompt_msgs = inject_stdin(prompt_msgs, piped_input)
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
     elif (
         interactive
@@ -253,8 +265,7 @@ def main(
         logdir = pick_log()
     else:
         logdir = get_logdir(name)
-        if piped_input:
-            initial_msgs.append(Message("system", f"```stdin\n{piped_input}\n```"))
+        prompt_msgs = inject_stdin(prompt_msgs, piped_input)
 
     if workspace == "@log":
         workspace_path: Path | None = logdir / "workspace"
