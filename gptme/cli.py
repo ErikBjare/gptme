@@ -204,12 +204,11 @@ def main(
 
     # if stdin is not a tty, we might be getting piped input, which we should include in the prompt
     was_piped = False
+    piped_input = None
     if not sys.stdin.isatty():
         # fetch prompt from stdin
-        prompt_stdin = _read_stdin()
-        if prompt_stdin:
-            # TODO: also append if existing convo loaded/resumed
-            initial_msgs += [Message("system", f"```stdin\n{prompt_stdin}\n```")]
+        piped_input = _read_stdin()
+        if piped_input:
             was_piped = True
 
             # Attempt to switch to interactive mode
@@ -241,6 +240,8 @@ def main(
 
     if resume:
         logdir = get_logdir_resume()
+        if piped_input:
+            prompt_msgs.append(Message("system", f"```stdin\n{piped_input}\n```"))
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
     elif (
         interactive
@@ -252,6 +253,8 @@ def main(
         logdir = pick_log()
     else:
         logdir = get_logdir(name)
+        if piped_input:
+            initial_msgs.append(Message("system", f"```stdin\n{piped_input}\n```"))
 
     if workspace == "@log":
         workspace_path: Path | None = logdir / "workspace"

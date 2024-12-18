@@ -112,11 +112,11 @@ def chat(
         if prompt_msgs:
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
-                if not msg.content.startswith("/"):
+                if not msg.content.startswith("/") and msg.role == "user":
                     msg = _include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
-                if execute_cmd(msg, manager, confirm_func):
+                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
                     continue
 
                 # Generate and execute response for this prompt
