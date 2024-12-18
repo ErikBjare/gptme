@@ -59,7 +59,7 @@ json-repair = "^0.30.2"
 
 # providers
 openai = "^1.0"
-anthropic = "^0.40"
+anthropic = "^0.42"
 
 # tools
 ipython = "^8.17.2"
