@@ -185,7 +185,13 @@ fib(10)
 """.strip()
 
 
-def init() -> ToolSpec:
+def init(loaded_tools) -> ToolSpec:
+    # Register python functions from other tools
+    for loaded_tool in loaded_tools:
+        if loaded_tool.functions:
+            for func in loaded_tool.functions:
+                register_function(func)
+
     python_libraries = get_installed_python_libraries()
     python_libraries_str = (
         "\n".join(f"- {lib}" for lib in python_libraries)
@@ -225,5 +231,6 @@ tool = ToolSpec(
             required=True,
         ),
     ],
+    load_priority=10,
 )
 __doc__ = tool.get_doc(__doc__)
