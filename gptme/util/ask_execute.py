@@ -4,6 +4,7 @@ Utilities for asking user confirmation and handling editable/copiable content.
 
 import sys
 import termios
+import re
 from collections.abc import Callable, Generator
 from pathlib import Path
 
@@ -22,6 +23,7 @@ console = Console(log_path=False)
 
 # Global state
 override_auto = False
+auto_skip_count = 0
 copiable = False
 editable = False
 
@@ -88,9 +90,11 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     Returns:
         bool: True if user confirms execution, False otherwise
     """
-    global override_auto, copiable, editable
+    global override_auto, auto_skip_count, copiable, editable
 
-    if override_auto:
+    if override_auto or auto_skip_count > 0:
+        if auto_skip_count > 0:
+            auto_skip_count -= 1
         return True
 
     print_bell()  # Ring the bell just before asking for input
@@ -128,9 +132,14 @@ def ask_execute(question="Execute code?", default=True) -> bool:
                 return ask_execute("Execute with changes?", default)
             return False
 
-    # secret option to stop asking for the rest of the session
-    if answer == "auto":
-        return (override_auto := True)
+    re_auto = r"auto(?:\s+(\d+))?"
+    match = re.match(re_auto, answer)
+    if match:
+        if match.group(2):
+            auto_skip_count = int(match.group(2))
+            return True
+        else:
+            return (override_auto := True)
 
     # secret option to ask for help
     if answer in ["help", "h", "?"]:
