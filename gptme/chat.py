@@ -219,8 +219,6 @@ def step(
 
         # performs reduction/context trimming, if necessary
         msgs = prepare_messages(log.messages, workspace)
-        for m in msgs:
-            logger.debug(f"Prepared message: {m}")
 
         tools = None
         if tool_format == "tool":
