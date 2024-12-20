@@ -147,10 +147,10 @@ def execute_python(
         output += f"```stderr\n{captured_stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
         tb = result.error_in_exec.__traceback__
-        while tb.tb_next:  # type: ignore
-            tb = tb.tb_next  # type: ignore
-        # type: ignore
-        output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"
+        while tb and tb.tb_next:
+            tb = tb.tb_next
+        if tb:
+            output += f"Exception during execution on line {tb.tb_lineno}:\n  {result.error_in_exec.__class__.__name__}: {result.error_in_exec}"
 
     # strip ANSI escape sequences
     # TODO: better to signal to the terminal that we don't want colors?
