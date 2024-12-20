@@ -1174,9 +1174,9 @@ Note that a minimal diff isn’t necessarily a unique diff.</p>
 <li><p>Installation:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;gptme[browser]&#39;</span>
 <span class="c1"># We need to use the same version of Playwright as the one installed by gptme</span>
-<span class="c1"># when downloading the browser binaries.</span>
+<span class="c1"># when downloading the browser binaries. gptme will attempt this automatically</span>
 <span class="nv">PW_VERSION</span><span class="o">=</span><span class="k">$(</span>pipx<span class="w"> </span>runpip<span class="w"> </span>gptme<span class="w"> </span>show<span class="w"> </span>playwright<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Version<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">&#39; &#39;</span><span class="w"> </span>-f2<span class="k">)</span>
-pipx<span class="w"> </span>run<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="nv">$PW_VERSION</span><span class="w"> </span>install<span class="w"> </span>chromium
+pipx<span class="w"> </span>run<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="nv">$PW_VERSION</span><span class="w"> </span>install<span class="w"> </span>chromium-headless-shell
 </pre></div>
 </div>
 </li>
