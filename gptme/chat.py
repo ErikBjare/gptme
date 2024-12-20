@@ -226,7 +226,8 @@ def step(
 
         # generate response
         msg_response = reply(msgs, get_model().model, stream, tools)
-        log_costs(msgs + [msg_response])
+        if os.environ.get("GPTME_COSTS") in ["1", "true"]:
+            log_costs(msgs + [msg_response])
 
         # log response and run tools
         if msg_response:
