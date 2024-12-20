@@ -1,6 +1,8 @@
 import base64
 import logging
+import time
 from collections.abc import Generator
+from functools import wraps
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -19,11 +21,39 @@ if TYPE_CHECKING:
     import anthropic.types  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
 
+
 logger = logging.getLogger(__name__)
 
 _anthropic: "Anthropic | None" = None
 
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
+
+
+def retry_generator_on_overloaded(max_retries: int = 5, base_delay: float = 1.0):
+    """Decorator to retry generator functions on Anthropic API overloaded errors with exponential backoff."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            from anthropic import APIStatusError  # fmt: skip
+
+            for attempt in range(max_retries):
+                try:
+                    yield from func(*args, **kwargs)
+                    break  # If generator completes successfully, exit retry loop
+                except APIStatusError as e:
+                    if e.status_code != 503 or attempt == max_retries - 1:
+                        raise
+
+                    delay = base_delay * (2**attempt)
+                    logger.warning(
+                        f"Anthropic API overloaded, retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                    )
+                    time.sleep(delay)
+
+        return wrapper
+
+    return decorator
 
 
 def init(config):
@@ -69,6 +99,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     return content[0].text  # type: ignore
 
 
+@retry_generator_on_overloaded()
 def stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Generator[str, None, None]:
