@@ -419,15 +419,15 @@ This is a major goal of the project, and it is important to keep in mind that th
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     291266 |       gptme.commands
-     299175 |     gptme.chat
-     355411 |   gptme.cli
-     390844 | openai
-     403366 | gptme
+     282532 |       gptme.commands
+     289936 |     gptme.chat
+     345420 |   gptme.cli
+     383664 | openai
+     393039 | gptme
 
-real	0m1.310s
-user	0m1.148s
-sys	0m0.174s
+real	0m1.260s
+user	0m1.084s
+sys	0m0.177s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -444,7 +444,7 @@ classified 34 files
       34 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.05 s (699.8 files/s, 144912.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.05 s (710.7 files/s, 147177.7 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -499,7 +499,7 @@ classified 5 files
        5 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (366.2 files/s, 100183.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (379.3 files/s, 103778.5 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
@@ -525,7 +525,7 @@ classified 20 files
       20 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (703.7 files/s, 130678.4 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (711.3 files/s, 133468.1 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -534,9 +534,9 @@ gptme/tools/shell.py                                 74             68          
 gptme/tools/patch.py                                 43             56            184
 gptme/tools/_browser_playwright.py                   59             20            181
 gptme/tools/tmux.py                                  45             62            172
+gptme/tools/python.py                                54             48            166
 gptme/tools/save.py                                  32             38            162
 gptme/tools/computer.py                              55             84            156
-gptme/tools/python.py                                49             48            132
 gptme/tools/__init__.py                              23             20            120
 gptme/tools/subagent.py                              37             29            101
 gptme/tools/chats.py                                 32             34             93
@@ -550,7 +550,7 @@ gptme/tools/gh.py                                    14             21          
 gptme/tools/vision.py                                 8              7             15
 gptme/tools/read.py                                   6              8             13
 -------------------------------------------------------------------------------------
-SUM:                                                691            703           2320
+SUM:                                                696            703           2354
 -------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -566,7 +566,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (719.7 files/s, 106432.0 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (754.9 files/s, 111625.4 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -595,7 +595,7 @@ classified 26 files
       26 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1163.7 files/s, 108629.6 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1207.6 files/s, 112725.6 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
@@ -642,7 +642,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (636.8 files/s, 77933.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (657.4 files/s, 80443.2 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -673,7 +673,7 @@ Unique:      100 files
 Counting:  100
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.10 s (1028.1 files/s, 151173.1 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.10 s (1032.1 files/s, 152160.8 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
@@ -700,12 +700,12 @@ gptme/tools/_browser_playwright.py                   59             20          
 gptme/server/api.py                                  53             35            179
 gptme/tools/tmux.py                                  45             62            172
 gptme/util/__init__.py                               39             22            171
+gptme/tools/python.py                                54             48            166
 gptme/tools/save.py                                  32             38            162
 gptme/util/cli.py                                    48             28            161
 gptme/tools/computer.py                              55             84            156
 gptme/prompts.py                                     56             80            149
 gptme/llm/llm_openai_models.py                        3              9            132
-gptme/tools/python.py                                49             48            132
 tests/test_tool_use.py                                8             18            126
 gptme/tools/__init__.py                              23             20            120
 tests/test_prompt.py                                 35             36            120
@@ -778,7 +778,7 @@ gptme/eval/__main__.py                                1              0          
 gptme/server/__init__.py                              2              3              3
 gptme/server/__main__.py                              1              0              3
 -------------------------------------------------------------------------------------
-SUM:                                               2558           2400           9746
+SUM:                                               2563           2400           9780
 -------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>

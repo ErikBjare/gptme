@@ -664,7 +664,25 @@ fib(10)
 </pre></div></pre>
   </td>
 </tr>
-</table><dl class="py function">
+</table><dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.python.</span></span><span class="sig-name descname"><span class="pre">TeeIO</span></span></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_stream</span></span></em><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Write string to file.</p>
+<p>Returns the number of characters written, which is always equal to
+the length of the string.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.python.</span></span><span class="sig-name descname"><span class="pre">execute_python</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">code:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">args:</span> <span class="pre">list[str]</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">kwargs:</span> <span class="pre">dict[str,</span> <span class="pre">str]</span> <span class="pre">|</span> <span class="pre">None,</span> <span class="pre">confirm:</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">bool]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dd><p>Executes a python codeblock and returns the output.</p>
