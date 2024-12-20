@@ -16,8 +16,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
@@ -36,10 +36,10 @@
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3a28e17f" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
@@ -190,9 +190,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -412,21 +417,21 @@ docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</spa
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/*/eval_results.csv
 Model                                     hello           hello-patch     hello-ask       prime100        init-git         init-rust      whois-superuserlabs-ceo
 ----------------------------------------  --------------  --------------  --------------  --------------  ---------------  -------------  -------------------------
-anthropic/claude-3-5-haiku-20241022       ✅ 38/40 481tk  ✅ 39/40 411tk  ✅ 39/40 494tk  ✅ 39/40 944tk  ✅ 37/39 949tk   ❓ N/A         ✅ 1/1 2619tk
+anthropic/claude-3-5-haiku-20241022       ✅ 39/41 485tk  ✅ 40/41 410tk  ✅ 40/41 494tk  ✅ 40/41 943tk  ✅ 38/40 949tk   ❓ N/A         ✅ 1/1 2619tk
 anthropic/claude-3-5-sonnet-20240620      ✅ 34/34 630tk  ✅ 34/34 542tk  ✅ 34/34 710tk  ✅ 34/34 924tk  ✅ 34/34 1098tk  ✅ 4/4 1504tk  🔶 3/4 1306tk
-anthropic/claude-3-5-sonnet-20241022      ✅ 37/39 419tk  ✅ 37/39 394tk  ✅ 37/39 430tk  ✅ 38/39 925tk  ✅ 38/39 774tk   ❓ N/A         ❓ N/A
+anthropic/claude-3-5-sonnet-20241022      ✅ 38/40 418tk  ✅ 38/40 394tk  ✅ 38/40 431tk  ✅ 39/40 924tk  ✅ 39/40 776tk   ❓ N/A         ❓ N/A
 anthropic/claude-3-haiku-20240307         ✅ 34/34 388tk  ✅ 34/34 375tk  ✅ 34/34 432tk  ❌ 6/34 781tk   🔶 24/34 903tk   🔶 3/4 670tk   ✅ 4/4 1535tk
-gemini/gemini-1.5-flash-latest            ❌ 0/25 28tk    ❌ 0/25 28tk    ❌ 0/25 28tk    ❌ 0/25 28tk    ❌ 0/25 28tk     ❓ N/A         ❓ N/A
+gemini/gemini-1.5-flash-latest            ❌ 0/26 28tk    ❌ 0/26 28tk    ❌ 0/26 28tk    ❌ 0/26 28tk    ❌ 0/26 28tk     ❓ N/A         ❓ N/A
 openai/gpt-4-turbo                        ✅ 3/3 255tk    ✅ 3/3 312tk    ✅ 3/3 376tk    ✅ 3/3 527tk    ✅ 4/4 590tk     ✅ 4/4 784tk   ✅ 6/7 819tk
-openai/gpt-4o                             ✅ 73/74 324tk  ✅ 73/74 316tk  ✅ 63/74 355tk  🔶 35/74 445tk  ✅ 65/74 696tk   ✅ 5/5 663tk   ✅ 5/5 1253tk
-openai/gpt-4o-mini                        🔶 59/75 281tk  ✅ 74/75 324tk  ✅ 74/75 380tk  ✅ 62/75 551tk  ✅ 65/75 770tk   ✅ 6/6 813tk   ✅ 6/6 951tk
+openai/gpt-4o                             ✅ 74/75 326tk  ✅ 74/75 317tk  ✅ 63/75 354tk  🔶 35/75 445tk  ✅ 65/75 691tk   ✅ 5/5 663tk   ✅ 5/5 1253tk
+openai/gpt-4o-mini                        🔶 59/76 281tk  ✅ 75/76 325tk  ✅ 75/76 381tk  ✅ 62/76 549tk  ✅ 66/76 772tk   ✅ 6/6 813tk   ✅ 6/6 951tk
 openai/o1-mini                            ✅ 3/3 354tk    ✅ 3/3 431tk    ✅ 3/3 460tk    🔶 2/3 567tk    🔶 3/5 2222tk    🔶 1/5 1412tk  🔶 2/3 813tk
 openai/o1-preview                         ✅ 2/2 308tk    ✅ 2/2 570tk    🔶 1/2 549tk    ✅ 2/2 490tk    ✅ 3/3 823tk     ✅ 1/1 656tk   ✅ 1/1 1998tk
 google/gemini-flash-1.5                   ✅ 2/2 225tk    ✅ 2/2 401tk    ✅ 2/2 430tk    ❌ 0/2 296tk    ✅ 1/1 686tk     ❌ 0/1 661tk   ✅ 1/1 1014tk
 google/gemini-pro-1.5                     ✅ 1/1 341tk    ✅ 1/1 419tk    ✅ 1/1 456tk    ✅ 1/1 676tk    🔶 2/3 431tk     🔶 1/2 1016tk  ✅ 2/2 1308tk
 google/gemma-2-27b-it                     ✅ 1/1 288tk    ✅ 1/1 384tk    ✅ 1/1 446tk    ✅ 1/1 714tk    ✅ 1/1 570tk     ❌ 0/1 535tk   ❌ 0/1 235tk
 google/gemma-2-9b-it                      ❌ 0/2 186tk    ✅ 2/2 370tk    ✅ 2/2 368tk    ❌ 0/2 545tk    ✅ 1/1 492tk     ❌ 0/1 1730tk  ❌ 0/1 352tk
-meta-llama/llama-3.1-405b-instruct        🔶 53/74 236tk  🔶 58/74 435tk  🔶 57/74 360tk  🔶 55/74 406tk  🔶 46/74 478tk   🔶 2/5 255tk   ❌ 0/5 85tk
+meta-llama/llama-3.1-405b-instruct        🔶 54/75 238tk  🔶 59/75 434tk  🔶 58/75 361tk  🔶 56/75 409tk  🔶 47/75 481tk   🔶 2/5 255tk   ❌ 0/5 85tk
 meta-llama/llama-3.1-70b-instruct         ✅ 5/6 367tk    ✅ 5/6 424tk    ✅ 6/6 452tk    🔶 2/6 546tk    ✅ 5/6 813tk     🔶 3/4 682tk   🔶 2/3 1461tk
 meta-llama/llama-3.1-8b-instruct          ✅ 1/1 277tk    ✅ 1/1 441tk    ❌ 0/1 400tk    ❌ 0/1 5095tk   ✅ 1/1 2266tk    ❓ N/A         ❓ N/A
 meta-llama/llama-3.2-11b-vision-instruct  ✅ 2/2 352tk    ✅ 2/2 493tk    ❌ 0/2 479tk    ✅ 2/2 2643tk   ❓ N/A           ❓ N/A         ❓ N/A
@@ -542,8 +547,8 @@ By Erik Bjäreholt
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>
