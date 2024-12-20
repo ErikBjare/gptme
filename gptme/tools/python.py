@@ -7,8 +7,11 @@ It uses IPython to do so, and persists the IPython instance between calls to giv
 import dataclasses
 import functools
 import importlib.util
+import io
 import re
+import sys
 from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from logging import getLogger
 from typing import TYPE_CHECKING, TypeVar
 
@@ -84,12 +87,35 @@ def execute_python(
     # Create an IPython instance if it doesn't exist yet
     _ipython = _get_ipython()
 
-    # Capture the standard output and error streams
-    from IPython.utils.capture import capture_output  # fmt: skip
+    # Capture and display output in real-time
 
-    with capture_output() as captured:
-        # Execute the code
+    class TeeIO(io.StringIO):
+        def __init__(self, original_stream):
+            super().__init__()
+            self.original_stream = original_stream
+
+        def write(self, s):
+            self.original_stream.write(s)
+            self.original_stream.flush()  # Ensure immediate display
+            return super().write(s)
+
+    @contextmanager
+    def capture_and_display():
+        stdout_capture = TeeIO(sys.stdout)
+        stderr_capture = TeeIO(sys.stderr)
+        old_stdout, old_stderr = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = stdout_capture, stderr_capture
+        try:
+            yield stdout_capture, stderr_capture
+        finally:
+            sys.stdout, sys.stderr = old_stdout, old_stderr
+
+    with capture_and_display() as (stdout_capture, stderr_capture):
+        # Execute the code (output will be displayed in real-time)
         result = _ipython.run_cell(code, silent=False, store_history=False)
+
+    captured_stdout = stdout_capture.getvalue()
+    captured_stderr = stderr_capture.getvalue()
 
     output = ""
     # TODO: should we include captured stdout with messages like these?
@@ -102,10 +128,10 @@ def execute_python(
         output += f"Result:\n```\n{result.result}\n```\n\n"
 
     # only show stdout if there is no result
-    elif captured.stdout:
-        output += f"```stdout\n{captured.stdout.rstrip()}\n```\n\n"
-    if captured.stderr:
-        output += f"```stderr\n{captured.stderr.rstrip()}\n```\n\n"
+    elif captured_stdout:
+        output += f"```stdout\n{captured_stdout.rstrip()}\n```\n\n"
+    if captured_stderr:
+        output += f"```stderr\n{captured_stderr.rstrip()}\n```\n\n"
     if result.error_in_exec:
         tb = result.error_in_exec.__traceback__
         while tb.tb_next:  # type: ignore
