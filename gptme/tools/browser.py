@@ -15,9 +15,9 @@ Playwright backend:
 
        pipx install 'gptme[browser]'
        # We need to use the same version of Playwright as the one installed by gptme
-       # when downloading the browser binaries.
+       # when downloading the browser binaries. gptme will attempt this automatically
        PW_VERSION=$(pipx runpip gptme show playwright | grep Version | cut -d' ' -f2)
-       pipx run playwright==$PW_VERSION install chromium
+       pipx run playwright==$PW_VERSION install chromium-headless-shell
 
 Lynx backend:
  - Text-only browser for basic page reading and searching
@@ -38,11 +38,13 @@ Lynx backend:
 """
 
 import importlib.util
+import importlib.metadata
 import logging
 import shutil
 from pathlib import Path
 from typing import Literal
 
+from ..util import console
 from .base import ToolSpec, ToolUse
 
 has_playwright = lambda: importlib.util.find_spec("playwright") is not None  # noqa
@@ -103,6 +105,10 @@ System:
 
 
 def has_browser_tool():
+    if browser == "playwright":
+        console.log("Browser tool available (using playwright)")
+    elif browser == "lynx":
+        console.log("Browser tool available (using lynx)")
     return browser is not None
 
 
