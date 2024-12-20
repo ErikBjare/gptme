@@ -55,7 +55,7 @@ tomlkit = "*"
 typing-extensions = "*"
 platformdirs = "^4.3"
 lxml = "*"
-json-repair = "^0.30.2"
+json-repair = "^0.32.0"
 
 # providers
 openai = "^1.0"
@@ -64,7 +64,7 @@ anthropic = "^0.42"
 # tools
 ipython = "^8.17.2"
 bashlex = "^0.18"
-playwright = {version = "1.47.*", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
+playwright = {version = "1.49.1", optional=true}  # version constrained due to annoying to have to run `playwright install` on every update
 youtube_transcript_api = {version = "^0.6.1", optional=true}
 python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 
@@ -103,8 +103,8 @@ greenlet = "*"  # dependency of playwright, but needed for coverage
 sphinx = "^8.0"
 sphinx-click = "^6.0"
 sphinx-book-theme = "^1.0.1"
-sphinxcontrib-programoutput = "^0.17"
-sphinxcontrib-asciinema = "^0.4.2"
+sphinxcontrib-programoutput = "*"
+sphinxcontrib-asciinema = "*"
 myst-parser = "*"
 
 # types
@@ -115,7 +115,7 @@ types-lxml = "*"
 server = ["flask", "flask-cors"]
 browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
-computer = ["python-xlib", "pillow"]  # pillow already in datascience but listed for clarity
+computer = ["pillow"]
 youtube = ["youtube_transcript_api"]
 all = [
     # server
@@ -125,7 +125,7 @@ all = [
     # datascience
     "matplotlib", "pandas", "numpy", "pillow",
     # computer
-    "python-xlib",
+    "pillow",
     # youtube transcript tool
     "youtube_transcript_api",
 ]
