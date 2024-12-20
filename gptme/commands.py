@@ -7,7 +7,6 @@ from time import sleep
 from typing import Literal
 
 from . import llm
-from .util.export import export_chat_to_html
 from .logmanager import LogManager, prepare_messages
 from .message import (
     Message,
@@ -16,10 +15,11 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
-from .llm.models import get_model
 from .tools import ToolUse, execute_msg, loaded_tools
 from .tools.base import ConfirmFunc, get_tool_format
+from .util.export import export_chat_to_html
 from .util.useredit import edit_text_with_editor
+from .util.cost import log_costs
 
 logger = logging.getLogger(__name__)
 
@@ -134,16 +134,7 @@ def handle_cmd(
             yield from execute_msg(msg, confirm=lambda _: True)
         case "tokens":
             manager.undo(1, quiet=True)
-            model = get_model()
-            n_tokens = len_tokens(
-                manager.log.messages, model.model if model else "gpt-4"
-            )
-            print(f"Tokens used: {n_tokens}")
-            model = get_model()
-            if model:
-                print(f"Model: {model.model}")
-                if model.price_input:
-                    print(f"Cost (input): ${n_tokens * model.price_input / 1_000_000}")
+            log_costs(manager.log.messages)
         case "tools":
             manager.undo(1, quiet=True)
             print("Available tools:")

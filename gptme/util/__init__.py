@@ -36,7 +36,7 @@ def get_tokenizer(model: str):
     except KeyError:
         global _warned_models
         if model not in _warned_models:
-            logger.info(
+            logger.debug(
                 f"No tokenizer for '{model}'. Using tiktoken cl100k_base. Use results only as estimates."
             )
             _warned_models |= {model}
