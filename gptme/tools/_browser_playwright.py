@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from playwright.sync_api import Browser, ElementHandle
+
 from ._browser_thread import BrowserThread
 
 _browser: BrowserThread | None = None
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
 def get_browser() -> BrowserThread:
     global _browser
     if _browser is None:
-        logger.info("Starting browser thread")
         _browser = BrowserThread()
         atexit.register(_browser.stop)
     return _browser

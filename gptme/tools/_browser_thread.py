@@ -1,3 +1,4 @@
+import importlib
 import logging
 import time
 from collections.abc import Callable
@@ -31,19 +32,35 @@ class BrowserThread:
         self.results: dict[object, tuple[Any, Exception | None]] = {}
         self.lock = Lock()
         self.ready = Event()
+        self._init_error: Exception | None = None
         self.thread = Thread(target=self._run, daemon=True)
         self.thread.start()
         # Wait for browser to be ready
         if not self.ready.wait(timeout=TIMEOUT):
             raise TimeoutError("Browser failed to start")
-        logger.info("Browser thread started")
+        if self._init_error:
+            raise self._init_error
+
+        logger.debug("Browser thread started")
 
     def _run(self):
         try:
             playwright = sync_playwright().start()
-            browser = playwright.chromium.launch()
-            logger.info("Browser launched")
-            self.ready.set()
+            try:
+                browser = playwright.chromium.launch()
+                logger.info("Browser launched")
+            except Exception as e:
+                if "Executable doesn't exist" in str(e):
+                    pw_version = importlib.metadata.version("playwright")
+                    self._init_error = RuntimeError(
+                        f"Browser executable not found. Run: pipx run playwright=={pw_version} install chromium-headless-shell"
+                    )
+                else:
+                    self._init_error = e
+                self.ready.set()  # Signal init complete (with error)
+                return
+
+            self.ready.set()  # Signal successful init
 
             while True:
                 try:
@@ -88,6 +105,7 @@ class BrowserThread:
                     result, error = self.results.pop(cmd_id)
                     if error:
                         raise error
+                    logger.info("Browser operation completed")
                     return result
             time.sleep(0.1)  # Prevent busy-waiting
 
