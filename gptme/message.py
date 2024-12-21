@@ -45,6 +45,7 @@ class Message:
     quiet: bool = False
     timestamp: datetime = field(default_factory=datetime.now)
     files: list[Path] = field(default_factory=list)
+    call_id: str | None = None
 
     def __post_init__(self):
         assert isinstance(self.timestamp, datetime)
@@ -81,6 +82,8 @@ class Message:
             d["pinned"] = True
         if self.hide:
             d["hide"] = True
+        if self.call_id:
+            d["call_id"] = self.call_id
         if keys:
             return {k: d[k] for k in keys if k in d}
         return d
@@ -142,6 +145,7 @@ content = """
 {content}
 """
 timestamp = "{self.timestamp.isoformat()}"
+call_id = "{self.call_id}"
 {extra}
 '''
 
@@ -164,6 +168,7 @@ timestamp = "{self.timestamp.isoformat()}"
             hide=msg.get("hide", False),
             files=[Path(f) for f in msg.get("files", [])],
             timestamp=datetime.fromisoformat(msg["timestamp"]),
+            call_id=msg.get("call_id", None),
         )
 
     def get_codeblocks(self) -> list[Codeblock]:
@@ -297,7 +302,7 @@ def toml_to_msgs(toml: str) -> list[Message]:
 
 def msgs2dicts(msgs: list[Message]) -> list[dict]:
     """Convert a list of Message objects to a list of dicts ready to pass to an LLM."""
-    return [msg.to_dict(keys=["role", "content", "files"]) for msg in msgs]
+    return [msg.to_dict(keys=["role", "content", "files", "call_id"]) for msg in msgs]
 
 
 # Global cache mapping hashes to token counts

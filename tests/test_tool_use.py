@@ -70,52 +70,52 @@ def test_tool_use_output_patch(tool_format, args, content, kwargs, expected):
     "content, expected_tool, expected_json",
     [
         (
-            '@tool: {"param": "value"}',
+            '@tool(tool_uid): {"param": "value"}',
             "tool",
             '{"param": "value"}',
         ),
         (
-            '@tool: {"missing": "comma" "key": "value"}',  # json_repair can fix this
+            '@tool(tool_uid): {"missing": "comma" "key": "value"}',  # json_repair can fix this
             "tool",
             '{"missing": "comma", "key": "value"}',
         ),
         (
-            "@tool: {invalid json}",  # json_repair can handle this
+            "@tool(tool_uid): {invalid json}",  # json_repair can handle this
             "tool",
             "{}",
         ),
         (
-            '@tool: {\n  "param": "value"\n}',
+            '@tool(tool_uid): {\n  "param": "value"\n}',
             "tool",
             '{\n  "param": "value"\n}',
         ),
         (
-            '@tool: {\n  "param": "value with\nnewline",\n  "another": "value"\n}',
+            '@tool(tool_uid): {\n  "param": "value with\nnewline",\n  "another": "value"\n}',
             "tool",
             '{\n  "param": "value with\nnewline",\n  "another": "value"\n}',
         ),
         (
-            '@tool: {"param": {"nested": "value"}}',
+            '@tool(tool_uid): {"param": {"nested": "value"}}',
             "tool",
             '{"param": {"nested": "value"}}',
         ),
         (
-            '@tool: {"param": {"deeply": {"nested": "value"}}}',
+            '@tool(tool_uid): {"param": {"deeply": {"nested": "value"}}}',
             "tool",
             '{"param": {"deeply": {"nested": "value"}}}',
         ),
         (
-            '@tool: {"text": "a string with } brace"}',
+            '@tool(tool_uid): {"text": "a string with } brace"}',
             "tool",
             '{"text": "a string with } brace"}',
         ),
         (
-            '@tool: {"text": "a string with \\"quote\\" and } brace"}',
+            '@tool(tool_uid): {"text": "a string with \\"quote\\" and } brace"}',
             "tool",
             '{"text": "a string with \\"quote\\" and } brace"}',
         ),
         (
-            '@save: {"path": "hello.py", "content": "def main():\n    print(\\"Hello, World!\\")\n    \nif __name__ == \\"__main__\\":\n    main()"}',
+            '@save(tool_uid): {"path": "hello.py", "content": "def main():\n    print(\\"Hello, World!\\")\n    \nif __name__ == \\"__main__\\":\n    main()"}',
             "save",
             '{"path": "hello.py", "content": "def main():\n    print(\\"Hello, World!\\")\n    \nif __name__ == \\"__main__\\":\n    main()"}',
         ),

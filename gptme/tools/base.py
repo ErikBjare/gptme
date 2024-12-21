@@ -35,7 +35,7 @@ tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
 # Match tool name and start of JSON
-toolcall_re = re.compile(r"^@(\w+):\s*({.*)", re.M | re.S)
+toolcall_re = re.compile(r"^@(\w+)\((\w+)\):\s*({.*)", re.M | re.S)
 
 
 def find_json_end(s: str, start: int) -> int | None:
@@ -67,7 +67,7 @@ def find_json_end(s: str, start: int) -> int | None:
 
 def extract_json(content: str, match: re.Match) -> str | None:
     """Extract complete JSON object starting from a regex match"""
-    json_start = match.start(2)  # start of the JSON content
+    json_start = match.start(3)  # start of the JSON content
     json_end = find_json_end(content, json_start)
     if json_end is None:
         return None
@@ -272,6 +272,7 @@ class ToolUse:
     args: list[str] | None
     content: str | None
     kwargs: dict[str, str] | None = None
+    call_id: str | None = None
     start: int | None = None
 
     def execute(self, confirm: ConfirmFunc) -> Generator[Message, None, None]:
@@ -289,9 +290,10 @@ class ToolUse:
                     confirm,
                 )
                 if isinstance(ex, Generator):
-                    yield from ex
+                    for msg in ex:
+                        yield msg.replace(call_id=self.call_id)
                 else:
-                    yield ex
+                    yield ex.replace(call_id=self.call_id)
             except Exception as e:
                 # if we are testing, raise the exception
                 logger.exception(e)
@@ -358,14 +360,21 @@ class ToolUse:
         # check if its a toolcall and extract valid JSON
         if match := toolcall_re.search(content):
             tool_name = match.group(1)
+            call_id = match.group(2)
             if (json_str := extract_json(content, match)) is not None:
                 try:
                     kwargs = json_repair.loads(json_str)
                     if not isinstance(kwargs, dict):
                         logger.debug(f"JSON repair result is not a dict: {kwargs}")
                         return
+                    start_pos = content.find(f"@{tool_name}(")
                     yield ToolUse(
-                        tool_name, None, None, kwargs=cast(dict[str, str], kwargs)
+                        tool_name,
+                        None,
+                        None,
+                        kwargs=cast(dict[str, str], kwargs),
+                        call_id=call_id,
+                        start=start_pos,
                     )
                 except json.JSONDecodeError:
                     logger.debug(f"Failed to parse JSON: {json_str}")
