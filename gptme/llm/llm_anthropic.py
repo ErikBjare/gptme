@@ -29,6 +29,31 @@ _anthropic: "Anthropic | None" = None
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
+def retry_on_overloaded(max_retries: int = 5, base_delay: float = 1.0):
+    """Decorator to retry functions on Anthropic API overloaded errors with exponential backoff."""
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            from anthropic import APIStatusError  # fmt: skip
+
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except APIStatusError as e:
+                    if e.status_code != 503 or attempt == max_retries - 1:
+                        raise
+                    delay = base_delay * (2**attempt)
+                    logger.warning(
+                        f"Anthropic API overloaded, retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
+                    )
+                    time.sleep(delay)
+
+        return wrapper
+
+    return decorator
+
+
 def retry_generator_on_overloaded(max_retries: int = 5, base_delay: float = 1.0):
     """Decorator to retry generator functions on Anthropic API overloaded errors with exponential backoff."""
 
@@ -44,7 +69,6 @@ def retry_generator_on_overloaded(max_retries: int = 5, base_delay: float = 1.0)
                 except APIStatusError as e:
                     if e.status_code != 503 or attempt == max_retries - 1:
                         raise
-
                     delay = base_delay * (2**attempt)
                     logger.warning(
                         f"Anthropic API overloaded, retrying in {delay}s (attempt {attempt + 1}/{max_retries})"
@@ -75,6 +99,7 @@ class CacheControl(TypedDict):
     type: Literal["ephemeral"]
 
 
+@retry_on_overloaded()
 def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
     from anthropic import NOT_GIVEN  # fmt: skip
 
