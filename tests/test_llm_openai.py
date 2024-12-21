@@ -11,7 +11,7 @@ def test_message_conversion():
         Message(role="user", content="First user prompt"),
     ]
 
-    set_default_model("openai/gpt-o4")
+    set_default_model("openai/gpt-4o")
 
     messages_dict, tools_dict = _prepare_messages_for_api(messages, None)
 
@@ -65,7 +65,7 @@ def test_message_conversion_without_tools():
         Message(role="system", content="Saved to toto.txt"),
     ]
 
-    set_default_model("openai/gpt-o4")
+    set_default_model("openai/gpt-4o")
 
     messages_dicts, _ = _prepare_messages_for_api(messages, None)
 
@@ -108,7 +108,7 @@ def test_message_conversion_with_tools():
         Message(role="system", content="Saved to toto.txt", call_id="tool_call_id"),
     ]
 
-    set_default_model("openai/gpt-o4")
+    set_default_model("openai/gpt-4o")
 
     tool_save = get_tool("save")
 
