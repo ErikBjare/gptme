@@ -2,9 +2,9 @@
 Utilities for asking user confirmation and handling editable/copiable content.
 """
 
+import re
 import sys
 import termios
-import re
 from collections.abc import Callable, Generator
 from pathlib import Path
 
@@ -95,6 +95,7 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     if override_auto or auto_skip_count > 0:
         if auto_skip_count > 0:
             auto_skip_count -= 1
+            console.log(f"Auto-skipping, {auto_skip_count} skips left")
         return True
 
     print_bell()  # Ring the bell just before asking for input
@@ -135,8 +136,8 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     re_auto = r"auto(?:\s+(\d+))?"
     match = re.match(re_auto, answer)
     if match:
-        if match.group(2):
-            auto_skip_count = int(match.group(2))
+        if num := match.group(1):
+            auto_skip_count = int(num)
             return True
         else:
             return (override_auto := True)
