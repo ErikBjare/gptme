@@ -6,6 +6,7 @@ from contextlib import contextmanager
 
 import pytest
 from gptme.tools.rag import _has_gptme_rag
+from gptme.tools import clear_tools, init_tools
 
 
 def pytest_sessionstart(session):
@@ -26,6 +27,13 @@ def download_model():
     ef = embedding_functions.DefaultEmbeddingFunction()
     if ef:
         ef._download_model_if_not_exists()  # type: ignore
+
+
+@pytest.fixture(autouse=True)
+def clear_tools_before():
+    # Clear all tools and cache to prevent test conflicts
+    clear_tools()
+    init_tools.cache_clear()
 
 
 @pytest.fixture
