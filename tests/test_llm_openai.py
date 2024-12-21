@@ -1,7 +1,16 @@
+import pytest
 from gptme.llm.llm_openai import _prepare_messages_for_api
-from gptme.llm.models import set_default_model
+from gptme.llm.models import get_default_model, set_default_model
 from gptme.message import Message
 from gptme.tools import get_tool, init_tools
+
+
+@pytest.fixture(autouse=True)
+def reset_default_model():
+    default_model = get_default_model()
+    assert default_model
+    yield
+    set_default_model(default_model)
 
 
 def test_message_conversion():

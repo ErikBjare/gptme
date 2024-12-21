@@ -160,8 +160,8 @@ def get_default_model() -> ModelMeta | None:
     return DEFAULT_MODEL
 
 
-def set_default_model(model: str) -> None:
-    modelmeta = get_model(model)
+def set_default_model(model: str | ModelMeta) -> None:
+    modelmeta = model if isinstance(model, ModelMeta) else get_model(model)
     assert modelmeta
     global DEFAULT_MODEL
     DEFAULT_MODEL = modelmeta
