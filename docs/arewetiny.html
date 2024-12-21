@@ -419,15 +419,15 @@ This is a major goal of the project, and it is important to keep in mind that th
 <h2>Startup time<a class="headerlink" href="#startup-time" title="Link to this heading">#</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make bench-importtime
 ...
-     289288 |       gptme.commands
-     296605 |     gptme.chat
-     353340 |   gptme.cli
-     383156 | openai
-     401984 | gptme
+     284898 |       gptme.commands
+     292023 |     gptme.chat
+     347615 |   gptme.cli
+     369245 | openai
+     395001 | gptme
 
-real	0m1.286s
-user	0m1.110s
-sys	0m0.190s
+real	0m1.238s
+user	0m1.114s
+sys	0m0.136s
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
 </div>
@@ -444,19 +444,19 @@ classified 34 files
       34 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.05 s (714.6 files/s, 147844.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.05 s (689.9 files/s, 146712.9 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
-gptme/tools/base.py                              91             73            344
+gptme/tools/base.py                              91             73            353
 gptme/logmanager.py                              74             66            326
 gptme/chat.py                                    63             95            315
-gptme/cli.py                                     55             50            298
+gptme/llm/llm_openai.py                          78             37            315
+gptme/llm/llm_anthropic.py                       72             63            307
+gptme/cli.py                                     55             50            300
 gptme/util/prompt.py                             73             93            283
-gptme/llm/llm_anthropic.py                       60             51            247
-gptme/llm/llm_openai.py                          61             27            246
 gptme/ncurses.py                                 39              5            238
-gptme/message.py                                 55             64            221
+gptme/message.py                                 55             65            225
 gptme/llm/__init__.py                            48             40            220
 gptme/util/context.py                            49             59            201
 gptme/commands.py                                18             18            198
@@ -483,7 +483,7 @@ gptme/__init__.py                                 1              0              
 gptme/__version__.py                              2              0              7
 gptme/__main__.py                                 1              0              3
 ---------------------------------------------------------------------------------
-SUM:                                           1115           1030           4889
+SUM:                                           1144           1053           5033
 ---------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -499,17 +499,17 @@ classified 5 files
        5 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (355.5 files/s, 97262.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (354.4 files/s, 109732.8 lines/s)
 ---------------------------------------------------------------------------------
 File                                          blank        comment           code
 ---------------------------------------------------------------------------------
-gptme/llm/llm_anthropic.py                       60             51            247
-gptme/llm/llm_openai.py                          61             27            246
+gptme/llm/llm_openai.py                          78             37            315
+gptme/llm/llm_anthropic.py                       72             63            307
 gptme/llm/__init__.py                            48             40            220
 gptme/llm/models.py                              26             15            183
 gptme/llm/llm_openai_models.py                    3              9            132
 ---------------------------------------------------------------------------------
-SUM:                                            198            142           1028
+SUM:                                            227            164           1157
 ---------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -525,11 +525,11 @@ classified 20 files
       20 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.03 s (705.2 files/s, 133175.5 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.03 s (718.9 files/s, 136094.4 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
-gptme/tools/base.py                                  91             73            344
+gptme/tools/base.py                                  91             73            353
 gptme/tools/shell.py                                 74             68            317
 gptme/tools/patch.py                                 43             56            184
 gptme/tools/_browser_playwright.py                   60             20            180
@@ -550,7 +550,7 @@ gptme/tools/gh.py                                    14             21          
 gptme/tools/vision.py                                 8              7             15
 gptme/tools/read.py                                   6              8             13
 -------------------------------------------------------------------------------------
-SUM:                                                699            703           2375
+SUM:                                                699            703           2384
 -------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -566,7 +566,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (739.2 files/s, 109316.2 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (747.8 files/s, 110583.1 lines/s)
 ------------------------------------------------------------------------------------
 File                                             blank        comment           code
 ------------------------------------------------------------------------------------
@@ -590,16 +590,18 @@ make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make cloc-tests
 make[2]: Entering directory &#39;/home/runner/work/gptme/gptme&#39;
 cloc tests --by-file
-      26 text files.
-classified 26 files
-      26 unique files.                              
+      28 text files.
+classified 28 files
+      28 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.02 s (1221.9 files/s, 114056.9 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.02 s (1191.3 files/s, 118154.8 lines/s)
 ------------------------------------------------------------------------------------------
 File                                        blank        comment           code
 ------------------------------------------------------------------------------------------
 tests/test_cli.py                              77             41            285
+tests/test_llm_openai.py                       25              1            163
+tests/test_llm_anthropic.py                    19              0            142
 tests/test_tool_use.py                          8             18            126
 tests/test_prompt.py                           35             36            120
 tests/test_util_cli.py                         32             23             94
@@ -626,7 +628,7 @@ tests/test_tools_shell.py                       9             11             13
 tests/test_tools_subagent.py                    7             10             11
 tests/test_config.py                            2              0              5
 ------------------------------------------------------------------------------------------
-SUM:                                          465            520           1442
+SUM:                                          509            521           1747
 ------------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
@@ -642,7 +644,7 @@ classified 8 files
        8 unique files.                              
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.01 s (638.2 files/s, 78094.8 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.01 s (649.8 files/s, 79516.3 lines/s)
 -------------------------------------------------------------------------------------
 File                                   blank        comment           code
 -------------------------------------------------------------------------------------
@@ -665,31 +667,32 @@ make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 <h3>LoC Total<a class="headerlink" href="#loc-total" title="Link to this heading">#</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ make cloc-total
 make[2]: Entering directory &#39;/home/runner/work/gptme/gptme&#39;
-cloc gptme/eval/main.py gptme/eval/suites/init_projects.py gptme/eval/suites/basic.py gptme/eval/suites/__init__.py gptme/eval/suites/browser.py gptme/eval/run.py gptme/eval/execenv.py gptme/eval/__init__.py gptme/eval/types.py gptme/eval/__main__.py gptme/eval/agents.py gptme/eval/filestore.py gptme/__version__.py gptme/commands.py gptme/init.py gptme/chat.py gptme/server/__init__.py gptme/server/api.py gptme/server/cli.py gptme/server/__main__.py gptme/ncurses.py gptme/constants.py gptme/message.py gptme/__init__.py gptme/tools/_browser_lynx.py gptme/tools/vision.py gptme/tools/patch.py gptme/tools/chats.py gptme/tools/save.py gptme/tools/python.py gptme/tools/_browser_playwright.py gptme/tools/shell.py gptme/tools/gh.py gptme/tools/youtube.py gptme/tools/__init__.py gptme/tools/subagent.py gptme/tools/tmux.py gptme/tools/screenshot.py gptme/tools/base.py gptme/tools/_browser_thread.py gptme/tools/browser.py gptme/tools/read.py gptme/tools/computer.py gptme/tools/rag.py gptme/dirs.py gptme/util/context.py gptme/util/export.py gptme/util/prompt.py gptme/util/__init__.py gptme/util/reduce.py gptme/util/clipboard.py gptme/util/cli.py gptme/util/generate_name.py gptme/util/ask_execute.py gptme/util/interrupt.py gptme/util/cost.py gptme/util/useredit.py gptme/codeblock.py gptme/cli.py gptme/logmanager.py gptme/__main__.py gptme/llm/llm_openai_models.py gptme/llm/__init__.py gptme/llm/models.py gptme/llm/llm_openai.py gptme/llm/llm_anthropic.py gptme/prompts.py gptme/config.py tests/test_prompts.py tests/test_chat.py tests/test_codeblock.py tests/test_browser.py tests/test_util_cli.py tests/conftest.py tests/test_tools_chats.py tests/test_cli.py tests/test_prompt.py tests/test_reduce.py tests/test_util.py tests/test_message.py tests/test_context.py tests/test_server.py tests/test_tools_shell.py tests/test_config.py tests/test_shell.py tests/test_logmanager.py tests/test_tools_rag.py tests/test_prompt_tools.py tests/test_tools_python.py tests/test_eval.py tests/test_tools_subagent.py tests/test_tool_use.py tests/test_tools_patch.py scripts/list_user_messages.py scripts/describe_api.py scripts/summarize_project.py scripts/gpt_todoer.py scripts/train/collect.py scripts/shorten_details.py scripts/treeofthoughts.py --by-file
-     100 text files.
-classified 100 files
+cloc gptme/eval/main.py gptme/eval/suites/init_projects.py gptme/eval/suites/basic.py gptme/eval/suites/__init__.py gptme/eval/suites/browser.py gptme/eval/run.py gptme/eval/execenv.py gptme/eval/__init__.py gptme/eval/types.py gptme/eval/__main__.py gptme/eval/agents.py gptme/eval/filestore.py gptme/__version__.py gptme/commands.py gptme/init.py gptme/chat.py gptme/server/__init__.py gptme/server/api.py gptme/server/cli.py gptme/server/__main__.py gptme/ncurses.py gptme/constants.py gptme/message.py gptme/__init__.py gptme/tools/_browser_lynx.py gptme/tools/vision.py gptme/tools/patch.py gptme/tools/chats.py gptme/tools/save.py gptme/tools/python.py gptme/tools/_browser_playwright.py gptme/tools/shell.py gptme/tools/gh.py gptme/tools/youtube.py gptme/tools/__init__.py gptme/tools/subagent.py gptme/tools/tmux.py gptme/tools/screenshot.py gptme/tools/base.py gptme/tools/_browser_thread.py gptme/tools/browser.py gptme/tools/read.py gptme/tools/computer.py gptme/tools/rag.py gptme/dirs.py gptme/util/context.py gptme/util/export.py gptme/util/prompt.py gptme/util/__init__.py gptme/util/reduce.py gptme/util/clipboard.py gptme/util/cli.py gptme/util/generate_name.py gptme/util/ask_execute.py gptme/util/interrupt.py gptme/util/cost.py gptme/util/useredit.py gptme/codeblock.py gptme/cli.py gptme/logmanager.py gptme/__main__.py gptme/llm/llm_openai_models.py gptme/llm/__init__.py gptme/llm/models.py gptme/llm/llm_openai.py gptme/llm/llm_anthropic.py gptme/prompts.py gptme/config.py tests/test_prompts.py tests/test_chat.py tests/test_llm_openai.py tests/test_llm_anthropic.py tests/test_codeblock.py tests/test_browser.py tests/test_util_cli.py tests/conftest.py tests/test_tools_chats.py tests/test_cli.py tests/test_prompt.py tests/test_reduce.py tests/test_util.py tests/test_message.py tests/test_context.py tests/test_server.py tests/test_tools_shell.py tests/test_config.py tests/test_shell.py tests/test_logmanager.py tests/test_tools_rag.py tests/test_prompt_tools.py tests/test_tools_python.py tests/test_eval.py tests/test_tools_subagent.py tests/test_tool_use.py tests/test_tools_patch.py scripts/list_user_messages.py scripts/describe_api.py scripts/summarize_project.py scripts/gpt_todoer.py scripts/train/collect.py scripts/shorten_details.py scripts/treeofthoughts.py --by-file
+     102 text files.
+classified 102 files
+Duplicate file check 102 files (102 known unique)
 Unique:      100 files                                          
-     100 unique files.                              
+     102 unique files.                              
 Counting:  100
        0 files ignored.
 
-github.com/AlDanial/cloc v 1.90  T=0.10 s (1038.2 files/s, 153242.4 lines/s)
+github.com/AlDanial/cloc v 1.90  T=0.10 s (1023.1 files/s, 153523.5 lines/s)
 -------------------------------------------------------------------------------------
 File                                              blank        comment           code
 -------------------------------------------------------------------------------------
-gptme/tools/base.py                                  91             73            344
+gptme/tools/base.py                                  91             73            353
 gptme/logmanager.py                                  74             66            326
 gptme/tools/shell.py                                 74             68            317
 gptme/chat.py                                        63             95            315
+gptme/llm/llm_openai.py                              78             37            315
 gptme/eval/main.py                                   52             18            308
-gptme/cli.py                                         55             50            298
+gptme/llm/llm_anthropic.py                           72             63            307
+gptme/cli.py                                         55             50            300
 tests/test_cli.py                                    77             41            285
 gptme/util/prompt.py                                 73             93            283
 gptme/eval/run.py                                    47             27            274
-gptme/llm/llm_anthropic.py                           60             51            247
-gptme/llm/llm_openai.py                              61             27            246
 gptme/ncurses.py                                     39              5            238
-gptme/message.py                                     55             64            221
+gptme/message.py                                     55             65            225
 gptme/llm/__init__.py                                48             40            220
 gptme/util/context.py                                49             59            201
 gptme/commands.py                                    18             18            198
@@ -701,10 +704,12 @@ gptme/server/api.py                                  53             35          
 gptme/tools/tmux.py                                  45             62            172
 gptme/util/__init__.py                               39             22            171
 gptme/tools/python.py                                54             48            166
+tests/test_llm_openai.py                             25              1            163
 gptme/tools/save.py                                  32             38            162
 gptme/util/cli.py                                    48             28            161
 gptme/tools/computer.py                              55             84            156
 gptme/prompts.py                                     56             80            149
+tests/test_llm_anthropic.py                          19              0            142
 gptme/llm/llm_openai_models.py                        3              9            132
 tests/test_tool_use.py                                8             18            126
 gptme/tools/__init__.py                              23             20            120
@@ -778,7 +783,7 @@ gptme/eval/__main__.py                                1              0          
 gptme/server/__init__.py                              2              3              3
 gptme/server/__main__.py                              1              0              3
 -------------------------------------------------------------------------------------
-SUM:                                               2566           2400           9794
+SUM:                                               2639           2424          10243
 -------------------------------------------------------------------------------------
 make[2]: Leaving directory &#39;/home/runner/work/gptme/gptme&#39;
 </pre></div>
