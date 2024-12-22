@@ -315,15 +315,18 @@ class GptmeCompleter(Completer):
         text = document.text_before_cursor
         path_seg = text.split(" ")[-1]
 
+        completions = [f"/{cmd}" for cmd in COMMANDS]
+
         # Command completion
         if text.startswith("/"):
-            cmd_text = text[1:]
-            for cmd in COMMANDS:
-                if cmd.startswith(cmd_text):
+            for option in completions:
+                if option.startswith(text):
+                    # make the already typed part bold and underlined
+                    html = f"<teal><u><b>{text}</b></u>{option[len(text):]}</teal>"
                     yield Completion(
-                        cmd,
-                        start_position=-len(cmd_text),
-                        display=HTML(f"<blue>/{cmd}</blue>"),
+                        option,
+                        start_position=-len(text),
+                        display=HTML(html),
                     )
 
         # Path completion
