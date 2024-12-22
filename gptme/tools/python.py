@@ -28,6 +28,7 @@ from .base import (
 if TYPE_CHECKING:
     from IPython.core.interactiveshell import InteractiveShell  # fmt: skip
 
+
 logger = getLogger(__name__)
 
 # TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme venv (for example) in which gptme itself runs
@@ -245,7 +246,7 @@ Available functions:
 
 
 tool = ToolSpec(
-    name="python",
+    name="ipython",
     desc="Execute Python code",
     instructions=instructions,
     examples=examples,
