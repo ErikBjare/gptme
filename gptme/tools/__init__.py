@@ -77,7 +77,7 @@ def init_tools(allowlist: frozenset[str] | None = None) -> None:
     """Runs initialization logic for tools."""
     # init python tool last
     tools = list(
-        sorted(ToolSpec.get_tools().values(), key=lambda tool: tool.name != "python")
+        sorted(ToolSpec.get_tools().values(), key=lambda tool: tool.name != "ipython")
     )
     loaded_tool_names = [tool.name for tool in loaded_tools]
     for tool in tools:
