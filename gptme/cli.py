@@ -63,7 +63,6 @@ The interface provides user commands that can be used to interact with the syste
     nargs=-1,
 )
 @click.option(
-    "-n",
     "--name",
     default="random",
     help="Name of conversation. Defaults to generating a random name.",
