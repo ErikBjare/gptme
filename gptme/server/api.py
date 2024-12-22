@@ -24,8 +24,7 @@ from ..llm import _stream
 from ..llm.models import get_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..tools import execute_msg
-from ..tools.base import ToolUse
+from ..tools import ToolUse, execute_msg
 
 logger = logging.getLogger(__name__)
 

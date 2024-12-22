@@ -290,6 +290,7 @@ tool = ToolSpec(
     instructions=instructions,
     examples=examples,
     functions=[computer],
+    disabled_by_default=True,
 )
 
 __doc__ = tool.get_doc(__doc__)
