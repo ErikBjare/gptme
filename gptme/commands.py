@@ -17,9 +17,9 @@ from .message import (
 )
 from .tools import ToolUse, execute_msg, loaded_tools
 from .tools.base import ConfirmFunc, get_tool_format
+from .util.cost import log_costs
 from .util.export import export_chat_to_html
 from .util.useredit import edit_text_with_editor
-from .util.cost import log_costs
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +45,12 @@ action_descriptions: dict[Actions, str] = {
     "tools": "Show available tools",
     "edit": "Edit the conversation in your editor",
     "rename": "Rename the conversation",
-    "fork": "Create a copy of the conversation with a new name",
+    "fork": "Copy the conversation using a new name",
     "summarize": "Summarize the conversation",
-    "replay": "Re-execute codeblocks in the conversation, wont store output in log",
+    "replay": "Rerun tools in the conversation, won't store output",
     "impersonate": "Impersonate the assistant",
     "tokens": "Show the number of tokens used",
-    "export": "Export conversation as standalone HTML",
+    "export": "Export conversation as HTML",
     "help": "Show this help message",
     "exit": "Exit the program",
 }

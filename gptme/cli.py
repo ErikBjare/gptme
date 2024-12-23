@@ -97,7 +97,7 @@ The interface provides user commands that can be used to interact with the syste
     "interactive",
     default=True,
     flag_value=False,
-    help="Force non-interactive mode. Implies --no-confirm.",
+    help="Non-interactive mode. Implies --no-confirm.",
 )
 @click.option(
     "--system",
