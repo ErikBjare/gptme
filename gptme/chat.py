@@ -73,15 +73,17 @@ def chat(
 
     # change to workspace directory
     # use if exists, create if @log, or use given path
+    # TODO: move this into LogManager? then just os.chdir(manager.workspace)
     log_workspace = logdir / "workspace"
     if log_workspace.exists():
         assert not workspace or (
             workspace == log_workspace
         ), f"Workspace already exists in {log_workspace}, wont override."
-        workspace = log_workspace
+        workspace = log_workspace.resolve()
     else:
         if not workspace:
             workspace = Path.cwd()
+            log_workspace.symlink_to(workspace, target_is_directory=True)
         assert workspace.exists(), f"Workspace path {workspace} does not exist"
     console.log(f"Using workspace at {path_with_tilde(workspace)}")
     os.chdir(workspace)
