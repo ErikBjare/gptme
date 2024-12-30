@@ -113,7 +113,15 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
 
     for tooluse in ToolUse.iter_from_content(msg.content):
         if tooluse.is_runnable:
-            yield from tooluse.execute(confirm)
+            try:
+                for tool_response in tooluse.execute(confirm):
+                    yield tool_response.replace(call_id=tooluse.call_id)
+            except KeyboardInterrupt:
+                yield Message(
+                    "system",
+                    "User hit Ctrl-c to interrupt the process",
+                    call_id=tooluse.call_id,
+                )
 
 
 # Called often when checking streaming output for executable blocks,
