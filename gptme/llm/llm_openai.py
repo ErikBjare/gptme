@@ -274,6 +274,7 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
                 modified_message["content"] = content
 
             if tool_calls:
+                # Clean content property if empty otherwise the call fails
                 if not content:
                     del modified_message["content"]
                 modified_message["tool_calls"] = tool_calls
@@ -281,6 +282,41 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
             yield modified_message
         else:
             yield message
+
+
+def _merge_tool_results_with_same_call_id(
+    messages_dicts: Iterable[dict],
+) -> list[dict]:  # Generator[dict, None, None]:
+    """
+    When we call a tool, this tool can potentially yield multiple messages. However
+    the API expect to have only one tool result per tool call. This function tries
+    to merge subsequent tool results with the same call ID as expected by
+    the API.
+    """
+
+    messages_dicts = iter(messages_dicts)
+
+    messages_new: list[dict] = []
+    while message := next(messages_dicts, None):
+        if messages_new and (
+            message["role"] == "tool"
+            and messages_new[-1]["role"] == "tool"
+            and message["tool_call_id"] == messages_new[-1]["tool_call_id"]
+        ):
+            prev_msg = messages_new[-1]
+            content = message["content"]
+            if not isinstance(content, list):
+                content = {"type": "text", "text": content}
+
+            messages_new[-1] = {
+                "role": "tool",
+                "content": prev_msg["content"] + content,
+                "tool_call_id": prev_msg["tool_call_id"],
+            }
+        else:
+            messages_new.append(message)
+
+    return messages_new
 
 
 def _process_file(msg: dict, model: ModelMeta) -> dict:
@@ -423,7 +459,9 @@ def _prepare_messages_for_api(
     tools_dict = [_spec2tool(tool, model) for tool in tools] if tools else None
 
     if tools_dict is not None:
-        messages_dicts = _handle_tools(messages_dicts)
+        messages_dicts = _merge_tool_results_with_same_call_id(
+            _handle_tools(messages_dicts)
+        )
 
     messages_dicts = _transform_msgs_for_special_provider(messages_dicts, model)
 

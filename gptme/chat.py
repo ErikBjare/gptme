@@ -235,9 +235,6 @@ def step(
         if msg_response:
             yield msg_response.replace(quiet=True)
             yield from execute_msg(msg_response, confirm)
-    except KeyboardInterrupt:
-        clear_interruptible()
-        yield Message("system", "Interrupted")
     finally:
         clear_interruptible()
 

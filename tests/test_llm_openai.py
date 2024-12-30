@@ -116,6 +116,7 @@ def test_message_conversion_with_tools():
             content='\n@save(tool_call_id): {"path": "path.txt", "content": "file_content"}',
         ),
         Message(role="system", content="Saved to toto.txt", call_id="tool_call_id"),
+        Message(role="system", content="(Modified by user)", call_id="tool_call_id"),
     ]
 
     set_default_model("openai/gpt-4o")
@@ -193,7 +194,10 @@ def test_message_conversion_with_tools():
         },
         {
             "role": "tool",
-            "content": [{"type": "text", "text": "Saved to toto.txt"}],
+            "content": [
+                {"type": "text", "text": "Saved to toto.txt"},
+                {"type": "text", "text": "(Modified by user)"},
+            ],
             "tool_call_id": "tool_call_id",
         },
     ]

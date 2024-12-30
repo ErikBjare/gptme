@@ -200,9 +200,8 @@ def stream(
 def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
     for message in message_dicts:
         # Format tool result as expected by the model
-        if message["role"] == "system" and "call_id" in message:
+        if message["role"] == "user" and "call_id" in message:
             modified_message = dict(message)
-            modified_message["role"] = "user"
             modified_message["content"] = [
                 {
                     "type": "tool_result",
@@ -358,22 +357,35 @@ def _transform_system_messages(
     # unless a `call_id` is present, indicating the tool_format is 'tool'.
     # Tool responses are handled separately by _handle_tool.
     for i, message in enumerate(messages):
-        if message.role == "system" and message.call_id is None:
+        if message.role == "system":
+            content = (
+                f"<system>{message.content}</system>"
+                if message.call_id is None
+                else message.content
+            )
+
             messages[i] = Message(
                 "user",
-                content=f"<system>{message.content}</system>",
+                content=content,
                 files=message.files,  # type: ignore
+                call_id=message.call_id,
             )
 
     # find consecutive user role messages and merge them together
     messages_new: list[Message] = []
     while messages:
         message = messages.pop(0)
-        if messages_new and messages_new[-1].role == "user" and message.role == "user":
+        if (
+            messages_new
+            and messages_new[-1].role == "user"
+            and message.role == "user"
+            and message.call_id == messages_new[-1].call_id
+        ):
             messages_new[-1] = Message(
                 "user",
                 content=f"{messages_new[-1].content}\n\n{message.content}",
                 files=messages_new[-1].files + message.files,  # type: ignore
+                call_id=messages_new[-1].call_id,
             )
         else:
             messages_new.append(message)
