@@ -4,6 +4,8 @@ from collections.abc import Generator
 
 from gptme.config import get_config
 
+from ..util.interrupt import clear_interruptible
+
 from ..message import Message
 from .base import (
     ToolFormat,
@@ -117,11 +119,13 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
                 for tool_response in tooluse.execute(confirm):
                     yield tool_response.replace(call_id=tooluse.call_id)
             except KeyboardInterrupt:
+                clear_interruptible()
                 yield Message(
                     "system",
                     "User hit Ctrl-c to interrupt the process",
                     call_id=tooluse.call_id,
                 )
+                break
 
 
 # Called often when checking streaming output for executable blocks,
