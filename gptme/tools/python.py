@@ -114,7 +114,7 @@ def execute_python(
     print_preview(code, "python")
     if not confirm("Execute this code?"):
         # early return
-        yield Message("system", "Aborted, user chose not to run command.")
+        yield Message("system", "Execution aborted: user chose not to run this code.")
         return
 
     # Create an IPython instance if it doesn't exist yet

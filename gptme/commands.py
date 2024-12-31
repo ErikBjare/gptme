@@ -183,7 +183,7 @@ def edit(manager: LogManager) -> Generator[Message, None, None]:  # pragma: no c
             try:
                 sleep(1)
             except KeyboardInterrupt:
-                yield Message("system", "Interrupted")
+                yield Message("system", "User hit Ctrl-c to interrupt the process")
                 return
     manager.edit(list(reversed(res)))
     print("Applied edited messages, write /log to see the result")

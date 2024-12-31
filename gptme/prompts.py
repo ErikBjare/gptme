@@ -128,6 +128,7 @@ Use `<thinking>` tags to think before you answer.
 You are in interactive mode. The user is available to provide feedback.
 You should show the user how you can use your tools to write code, interact with the terminal, and access the internet.
 The user can execute the suggested commands so that you see their output.
+If the user aborted or interrupted an operation don't try it again, ask for clarification instead.
 If clarification is needed, ask the user.
 """.strip()
 
