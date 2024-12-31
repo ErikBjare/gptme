@@ -170,7 +170,7 @@ def execute_tmux(
 
     print_preview(f"Command: {cmd}", "bash", copy=True)
     if not confirm(f"Execute command: {cmd}?"):
-        yield Message("system", "Command execution cancelled.")
+        yield Message("system", "Execution aborted: user chose not to run the command.")
         return
 
     parts = cmd.split(maxsplit=1)

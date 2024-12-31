@@ -136,7 +136,11 @@ def chat(
                         )
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
-                        manager.append(Message("system", "Interrupted"))
+                        manager.append(
+                            Message(
+                                "system", "User hit Ctrl-c to interrupt the process"
+                            )
+                        )
                         break
                     finally:
                         clear_interruptible()
@@ -237,7 +241,7 @@ def step(
             yield from execute_msg(msg_response, confirm)
     except KeyboardInterrupt:
         clear_interruptible()
-        yield Message("system", "Interrupted")
+        yield Message("system", "User hit Ctrl-c to interrupt the process")
     finally:
         clear_interruptible()
 
