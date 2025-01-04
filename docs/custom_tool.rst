@@ -9,7 +9,7 @@ This guide will walk you through the process of creating and registering a custo
 
 Creating a Custom Tool
 -----------------------
-To create a custom tool, you need to define a new instance of the `ToolSpec` class.
+To create a custom tool, you need to define a new instance of the ``ToolSpec`` class.
 This class requires several parameters:
 
 - **name**: The name of the tool.
@@ -63,17 +63,18 @@ Here is a basic example of defining a custom tool:
 
 Registering the Tool
 ---------------------
-To ensure your tool is available for use, you can specify the module in the `TOOL_MODULES` env variable or
+To ensure your tool is available for use, you can specify the module in the ``TOOL_MODULES`` env variable or
 setting in your :doc:`project configuration file <config>`, which will automatically load your custom tools.
 
 .. code-block:: toml
 
     TOOL_MODULES = "gptme.tools,path.to.your.custom_tool_module"
 
-Don't remove the `gptme.tools` package unless you know exactly what you are doing.
+Don't remove the ``gptme.tools`` package unless you know exactly what you are doing.
 
-Ensure your module is in the Python path by either installing it (e.g., with `pip install .`) or
-by temporarily modifying the `PYTHONPATH` environment variable. For example:
+Ensure your module is in the Python path by either installing it
+(e.g. with ``pip install .`` or ``pipx runpip gptme install .``, depending on installation method)
+or by temporarily modifying the `PYTHONPATH` environment variable. For example:
 
 .. code-block:: bash
 
