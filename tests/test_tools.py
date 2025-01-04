@@ -36,7 +36,7 @@ def test_init_tools_allowlist():
 def test_init_tools_allowlist_from_env():
     # Define the behavior for get_env based on the input key
     def mock_get_env(key, default=None):
-        if key == "TOOL_ALLOW_LIST":
+        if key == "TOOL_ALLOWLIST":
             return "save,patch"
         return default  # Return the default value for other keys
 

@@ -86,7 +86,7 @@ def init_tools(
     config = get_config()
 
     if allowlist is None:
-        env_allowlist = config.get_env("TOOL_ALLOW_LIST")
+        env_allowlist = config.get_env("TOOL_ALLOWLIST")
         if env_allowlist:
             allowlist = frozenset(env_allowlist.split(","))
 
