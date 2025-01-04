@@ -34,11 +34,9 @@ import subprocess
 import time
 from dataclasses import replace
 from functools import lru_cache
-from pathlib import Path
 
-from ..config import get_project_config
+from ..config import get_config
 from ..message import Message
-from ..util import get_project_dir
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -126,15 +124,10 @@ def init() -> ToolSpec:
         logger.debug("gptme-rag CLI not found in PATH")
         return replace(tool, available=False)
 
-    # Check project configuration
-    project_dir = get_project_dir()
-    if project_dir and (config := get_project_config(project_dir)):
-        enabled = config.rag.get("enabled", False)
-        if not enabled:
-            logger.debug("RAG not enabled in the project configuration")
-            return replace(tool, available=False)
-    else:
-        logger.debug("Project configuration not found, not enabling")
+    # Check configuration
+    enabled = get_config().rag.get("enabled", False)
+    if not enabled:
+        logger.debug("RAG not enabled in the project configuration")
         return replace(tool, available=False)
 
     return tool
@@ -146,8 +139,8 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
         return messages
 
     # Load config
-    config = get_project_config(Path.cwd())
-    rag_config = config.rag if config and config.rag else {}
+    config = get_config()
+    rag_config = config.rag if config.has_project_config() else {}
 
     if not rag_config.get("enabled", False):
         return messages

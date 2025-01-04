@@ -4,13 +4,13 @@ A subagent tool for gptme
 Lets gptme break down a task into smaller parts, and delegate them to subagents.
 """
 
+import os
 import json
 import logging
 import random
 import string
 import threading
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from ..message import Message
@@ -38,13 +38,18 @@ class Subagent:
     agent_id: str
     prompt: str
     thread: threading.Thread
-    logdir: Path
+    name: str
 
     def get_log(self) -> "LogManager":
         # noreorder
         from ..logmanager import LogManager  # fmt: skip
+        from ..config import get_config  # fmt: skip
 
-        return LogManager.load(self.logdir)
+        config = get_config()
+
+        logdir = config.get_log_dir(force_name=self.name)
+
+        return LogManager.load(logdir)
 
     def status(self) -> ReturnType:
         if self.thread.is_alive():
@@ -72,7 +77,6 @@ def subagent(agent_id: str, prompt: str):
     """Runs a subagent and returns the resulting JSON output."""
     # noreorder
     from gptme import chat  # fmt: skip
-    from gptme.cli import get_logdir  # fmt: skip
 
     from ..prompts import get_prompt  # fmt: skip
 
@@ -80,10 +84,11 @@ def subagent(agent_id: str, prompt: str):
         s = string.ascii_lowercase + string.digits
         return "".join(random.choice(s) for _ in range(n))
 
-    name = f"subagent-{agent_id}"
-    logdir = get_logdir(name + "-" + random_string(4))
+    name = f"subagent-{agent_id}" + "-" + random_string(4)
 
     def run_subagent():
+        os.environ["SESSION_NAME"] = name
+
         prompt_msgs = [Message("user", prompt)]
         initial_msgs = [get_prompt(interactive=False)]
 
@@ -101,7 +106,6 @@ def subagent(agent_id: str, prompt: str):
         chat(
             prompt_msgs,
             initial_msgs,
-            logdir=logdir,
             model=None,
             stream=False,
             no_confirm=True,
@@ -115,7 +119,7 @@ def subagent(agent_id: str, prompt: str):
         daemon=True,
     )
     t.start()
-    _subagents.append(Subagent(agent_id, prompt, t, logdir))
+    _subagents.append(Subagent(agent_id, prompt, t, name))
 
 
 def subagent_status(agent_id: str) -> dict:

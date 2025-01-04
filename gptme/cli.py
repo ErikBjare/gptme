@@ -5,7 +5,6 @@ import sys
 from datetime import datetime
 from itertools import islice
 from pathlib import Path
-from typing import Literal
 
 import click
 from pick import pick
@@ -176,28 +175,6 @@ def main(
     if no_confirm:
         logger.warning("Skipping all confirmation prompts.")
 
-    if tool_allowlist:
-        # split comma-separated values
-        tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
-
-    config = get_config()
-
-    selected_tool_format: ToolFormat = (
-        tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
-    )
-
-    # early init tools to generate system prompt
-    init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
-
-    # get initial system prompt
-    initial_msgs = [
-        get_prompt(
-            prompt_system,
-            interactive=interactive,
-            tool_format=selected_tool_format,
-        )
-    ]
-
     # if stdin is not a tty, we might be getting piped input, which we should include in the prompt
     was_piped = False
     piped_input = None
@@ -248,7 +225,7 @@ def main(
         return prompt_msgs
 
     if resume:
-        logdir = get_logdir_resume()
+        name = get_name_resume()
         prompt_msgs = inject_stdin(prompt_msgs, piped_input)
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
     elif (
@@ -258,17 +235,36 @@ def main(
         and not was_piped
         and sys.stdin.isatty()
     ):
-        logdir = pick_log()
+        name = pick_existing_session()
     else:
-        logdir = get_logdir(name)
         prompt_msgs = inject_stdin(prompt_msgs, piped_input)
 
-    if workspace == "@log":
-        workspace_path: Path | None = logdir / "workspace"
-        assert workspace_path  # mypy not smart enough to see its not None
-        workspace_path.mkdir(parents=True, exist_ok=True)
-    else:
-        workspace_path = Path(workspace) if workspace else None
+    os.environ["SESSION_NAME"] = name
+
+    config = get_config()
+
+    selected_tool_format: ToolFormat = (
+        tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
+    )
+
+    if tool_allowlist:
+        # split comma-separated values
+        tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
+
+    # early init tools to generate system prompt
+    init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
+
+    # get initial system prompt
+    initial_msgs = [
+        get_prompt(
+            prompt_system,
+            interactive=interactive,
+            tool_format=selected_tool_format,
+        )
+    ]
+
+    if workspace:  # The user forced the workspace
+        os.environ["WORKSPACE"] = workspace
 
     # register a handler for Ctrl-C
     set_interruptible()  # prepare, user should be able to Ctrl+C until user prompt ready
@@ -278,13 +274,11 @@ def main(
         chat(
             prompt_msgs,
             initial_msgs,
-            logdir,
             model,
             stream,
             no_confirm,
             interactive,
             show_hidden,
-            workspace_path,
             tool_allowlist,
             selected_tool_format,
         )
@@ -324,7 +318,7 @@ def get_name(name: str) -> str:
     return name
 
 
-def pick_log(limit=20) -> Path:  # pragma: no cover
+def pick_existing_session(limit=20) -> str:  # pragma: no cover
     # let user select between starting a new conversation and loading a previous one
     # using the library
     title = "New conversation or load previous? "
@@ -362,26 +356,16 @@ def pick_log(limit=20) -> Path:  # pragma: no cover
     index: int
     _, index = pick(options, title)  # type: ignore
     if index == 0:
-        return get_logdir("random")
+        return get_name("random")
     elif index == len(options) - 1:
-        return pick_log(limit + 100)
+        return pick_existing_session(limit + 100)
     else:
-        return get_logdir(convs[index - 1].name)
+        return convs[index - 1].name
 
 
-def get_logdir(logdir: Path | str | Literal["random"]) -> Path:
-    if logdir == "random":
-        logdir = get_logs_dir() / get_name("random")
-    elif isinstance(logdir, str):
-        logdir = get_logs_dir() / logdir
-
-    logdir.mkdir(parents=True, exist_ok=True)
-    return logdir
-
-
-def get_logdir_resume() -> Path:
+def get_name_resume() -> str:
     if conv := next(get_user_conversations(), None):
-        return Path(conv.path).parent
+        return conv.name
     else:
         raise ValueError("No previous conversations to resume")
 
