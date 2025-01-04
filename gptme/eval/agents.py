@@ -1,11 +1,12 @@
 import logging
 from abc import abstractmethod
+import os
 
 from gptme import Message
 from gptme import chat as gptme_chat
 from gptme import get_prompt
 from gptme.cli import get_name
-from gptme.dirs import get_logs_dir
+from gptme.config import get_config
 from gptme.tools import init_tools
 
 from ..tools import ToolFormat
@@ -33,14 +34,14 @@ class GPTMe(Agent):
         _id = abs(hash(prompt)) % 1000000
         model_fmt = f"{self.model.replace('/', '--')}-{self.tool_format}"
         name = get_name(f"gptme-evals-{model_fmt}-{_id}")
-        log_dir = get_logs_dir() / name
-        workspace_dir = log_dir / "workspace"
-        if workspace_dir.exists():
-            raise FileExistsError(
-                f"Workspace directory {workspace_dir} already exists."
-            )
 
-        store = FileStore(working_dir=workspace_dir)
+        os.environ["SESSION_NAME"] = name
+        os.environ["WORKSPACE"] = "@log"
+
+        config = get_config()
+
+        store = FileStore(working_dir=config.get_workspace_dir())
+
         if files:
             store.upload(files)
 
@@ -58,11 +59,9 @@ class GPTMe(Agent):
             gptme_chat(
                 [Message("user", prompt)],
                 [prompt_sys],
-                logdir=log_dir,
                 model=self.model,
                 no_confirm=True,
                 interactive=False,
-                workspace=workspace_dir,
                 tool_format=self.tool_format,
             )
         # don't exit on sys.exit()

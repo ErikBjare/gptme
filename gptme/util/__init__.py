@@ -218,7 +218,7 @@ def get_installed_programs(candidates: tuple[str, ...]) -> set[str]:
     return installed
 
 
-def get_project_dir() -> Path | None:
+def get_git_repo_root() -> Path | None:
     try:
         projectdir = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
