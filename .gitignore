@@ -31,3 +31,5 @@ __pycache__
 *.gif
 *.cast
 *.png
+.aider*
+.env
