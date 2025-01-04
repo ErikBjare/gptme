@@ -1,4 +1,3 @@
-import importlib
 import os
 import random
 from pathlib import Path
@@ -6,6 +5,7 @@ from tempfile import TemporaryDirectory
 
 import gptme.cli
 import gptme.constants
+import gptme.tools.browser
 import pytest
 from click.testing import CliRunner
 from gptme.tools import ToolUse
@@ -350,8 +350,8 @@ def test_subagent(args: list[str], runner: CliRunner):
 
 @pytest.mark.slow
 @pytest.mark.skipif(
-    importlib.util.find_spec("playwright") is None,
-    reason="playwright not installed",
+    gptme.tools.browser.browser is None,
+    reason="no browser tool available",
 )
 def test_url(args: list[str], runner: CliRunner):
     args.append("Who is the CEO of https://superuserlabs.org?")
@@ -389,7 +389,7 @@ def test_tool_format_option(
     args.append("--show-hidden")
     args.append("--tool-format")
     args.append(tool_format)
-    args.append("ls the current dir")
+    args.append("we are testing, just ls the current dir and then do nothing else")
 
     result = runner.invoke(gptme.cli.main, args)
     if result.exception:
