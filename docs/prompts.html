@@ -918,12 +918,12 @@ Available commands:
 <span class="sb">```tmux</span>
 <span class="s">new_session &#39;npm run dev&#39;</span>
 <span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Running `npm run dev` in session 0</span>
+<span class="k">&gt; </span><span class="ge">System: Running `npm run dev` in session gptme_1</span>
 
 <span class="k">&gt; </span><span class="ge">User: Can you show me the current content of the pane?</span>
 <span class="k">&gt; </span><span class="ge">Assistant: Of course! Let&#39;s inspect the pane content:</span>
 <span class="sb">```tmux</span>
-<span class="s">inspect_pane 0</span>
+<span class="s">inspect_pane gptme_1</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System:</span>
 <span class="sb">```output</span>
@@ -944,16 +944,32 @@ Available commands:
 <span class="sb">```tmux</span>
 <span class="s">new_session &#39;top&#39;</span>
 <span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Running `top` in session 1.</span>
+<span class="k">&gt; </span><span class="ge">System: Running `top` in session gptme_1.</span>
 <span class="sb">```output</span>
 <span class="go">(output from top shown here)</span>
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">Assistant: The load is...</span>
 
+<span class="gu">#### Send keys to a session</span>
+
+<span class="k">&gt; </span><span class="ge">User: start ipython</span>
+<span class="k">&gt; </span><span class="ge">Assistant: Let&#39;s start an ipython session:</span>
+<span class="sb">```tmux</span>
+<span class="s">new_session &#39;ipython&#39;</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Running `ipython` in session 2.</span>
+<span class="sb">```output</span>
+<span class="go">(output from ipython shown here)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">User: Run &#39;print(&quot;Hello, world!&quot;)&#39; in the ipython session</span>
+<span class="sb">```tmux</span>
+<span class="s">send_keys 2 &#39;print(&quot;Hello, world!&quot;)&#39; Enter</span>
+<span class="sb">```</span>
+
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 2881</p>
+<p>Tokens: 3003</p>
 </dd></dl>
 
 <dl class="py function">
