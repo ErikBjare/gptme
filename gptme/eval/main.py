@@ -19,6 +19,7 @@ import multiprocessing_logging
 from tabulate import tabulate
 
 from ..message import len_tokens
+from ..tools import ToolFormat
 from .run import run_evals
 from .suites import suites, tests_default, tests_map
 from .types import CaseResult, EvalResult, EvalSpec
@@ -180,15 +181,21 @@ def aggregate_and_display_results(result_files: list[str]):
     "--model",
     "-m",
     multiple=True,
-    help="Model to use, can be passed multiple times.",
+    help="Model to use, can be passed multiple times. Can include tool format with @, e.g. 'gpt-4@tool'",
 )
 @click.option("--timeout", "-t", default=30, help="Timeout for code generation")
 @click.option("--parallel", "-p", default=10, help="Number of parallel evals to run")
+@click.option(
+    "--tool-format",
+    type=click.Choice(["markdown", "xml", "tool"]),
+    help="Tool format to use. Can also be specified per model with @format.",
+)
 def main(
     eval_names_or_result_files: list[str],
     _model: list[str],
     timeout: int,
     parallel: int,
+    tool_format: str | None = None,
 ):
     """
     Run evals for gptme.
@@ -199,7 +206,8 @@ def main(
     # init
     multiprocessing_logging.install_mp_handler()
 
-    models = _model or [
+    # Generate model+format combinations
+    default_models = [
         "openai/gpt-4o",
         "openai/gpt-4o-mini",
         "anthropic/claude-3-5-sonnet-20241022",
@@ -207,6 +215,15 @@ def main(
         "openrouter/meta-llama/llama-3.1-405b-instruct",
         "gemini/gemini-1.5-flash-latest",
     ]
+
+    models = _model or default_models
+    formats: list[ToolFormat] = [tool_format] if tool_format else ["markdown", "tool"]  # type: ignore
+
+    # Create model+format combinations
+    model_configs: list[tuple[str, ToolFormat]] = []
+    for model in models:
+        for fmt in formats:
+            model_configs.append((model, fmt))
 
     results_files = []
     for f in eval_names_or_result_files:
@@ -238,7 +255,7 @@ def main(
         evals_to_run = tests_default
 
     print("=== Running evals ===")
-    model_results = run_evals(evals_to_run, models, timeout, parallel)
+    model_results = run_evals(evals_to_run, model_configs, timeout, parallel)
     print("=== Finished ===")
 
     print("\n=== Model Results ===")

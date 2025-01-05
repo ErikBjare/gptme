@@ -8,6 +8,7 @@ from gptme.cli import get_name
 from gptme.dirs import get_logs_dir
 from gptme.tools import init_tools
 
+from ..tools import ToolFormat
 from .filestore import FileStore
 from .types import Files
 
@@ -15,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class Agent:
-    def __init__(self, model: str):
+    def __init__(self, model: str, tool_format: ToolFormat = "markdown"):
         self.model = model
+        self.tool_format = tool_format
 
     @abstractmethod
     def act(self, files: Files | None, prompt: str) -> Files:
@@ -60,6 +62,7 @@ class GPTMe(Agent):
                 no_confirm=True,
                 interactive=False,
                 workspace=workspace_dir,
+                tool_format=self.tool_format,
             )
         # don't exit on sys.exit()
         except (SystemExit, KeyboardInterrupt):
