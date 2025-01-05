@@ -102,7 +102,7 @@ def new_session(command: str) -> Message:
     output = _capture_pane(f"{session_id}")
     return Message(
         "system",
-        f"Running '{command}' in session {session_id}.\n```output\n{output}\n```",
+        f"""Running `{command.strip("'")}` in session {session_id}.\n```output\n{output}\n```""",
     )
 
 
@@ -258,6 +258,7 @@ Available commands:
 
 
 def examples(tool_format):
+    escaped_hello_world = "'print(\"Hello, world!\")'"
     all_examples = f"""
 #### Managing a dev server
 
@@ -282,7 +283,7 @@ def examples(tool_format):
 > User: start top and give me a summary
 > Assistant: Sure! Let's start the top command in a tmux session:
 {ToolUse("tmux", [], "new_session 'top'").to_output(tool_format)}
-> System: Running `top` in session 1.
+> System: Running `top` in session gptme_1.
 {ToolUse("output", [], "(output from top shown here)").to_output()}
 > Assistant: The load is...
 
@@ -294,27 +295,21 @@ def examples(tool_format):
 > System: Running `ipython` in session 2.
 {ToolUse("output", [], "(output from ipython shown here)").to_output()}
 > User: Run 'print("Hello, world!")' in the ipython session
-{ToolUse("tmux", [], 'send_keys 2 print("Hello, world!") Enter').to_output(tool_format)}
-
-#### Background process
-
-> User: Start the dev server
-> Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
-{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
+{ToolUse("tmux", [], f'send_keys 2 {escaped_hello_world} Enter').to_output(tool_format)}
 
 #### Listing active sessions
 
 > User: List all active tmux sessions
 {ToolUse("tmux", [], "list_sessions").to_output(tool_format)}
-> System: Active tmux sessions [0]
+> System: Active tmux sessions ['0', 'gptme_1']
 
 #### Ending a session
 
 > User: I changed my mind
 > Assistant: No problem! Let's kill the session and start over:
 > Assistant:
-{ToolUse("tmux", [], "kill_session gptme_0").to_output(tool_format)}
-> System: Killed tmux session with ID 0
+{ToolUse("tmux", [], "kill_session gptme_1").to_output(tool_format)}
+> System: Killed tmux session with ID gptme_1
 """
     # we want to skip the last two examples in prompting
     return "####".join(all_examples.split("####")[:-2])
