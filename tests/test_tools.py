@@ -126,13 +126,6 @@ def test_get_tool_for_lang_tag():
     assert (tool_python := get_tool_for_langtag("ipython"))
     assert tool_python.name == "python"
 
-    # Also test special use cases
-    assert (tool_save := get_tool_for_langtag("test.txt"))
-    assert tool_save.name == "save"
-
-    assert (tool_save := get_tool_for_langtag("/src/test"))
-    assert tool_save.name == "save"
-
     assert not get_tool_for_langtag("randomtag")
 
 

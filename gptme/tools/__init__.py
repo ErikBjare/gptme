@@ -34,8 +34,6 @@ __all__ = [
     "set_tool_format",
 ]
 
-from .save import tool_save
-
 _loaded_tools: list[ToolSpec] = []
 _available_tools: list[ToolSpec] | None = None
 
@@ -128,10 +126,6 @@ def get_tool_for_langtag(lang: str) -> ToolSpec | None:
     for tool in _loaded_tools:
         if block_type in tool.block_types:
             return tool
-    is_filename = "." in lang or "/" in lang
-    if is_filename:
-        # NOTE: special case
-        return tool_save
     return None
 
 
