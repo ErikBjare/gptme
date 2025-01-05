@@ -38,38 +38,36 @@ _loaded_tools: list[ToolSpec] = []
 _available_tools: list[ToolSpec] | None = None
 
 
-def _discover_tools(package_names):
-    """Discover tools in a package or module, given the package name as a string."""
+def _discover_tools(module_names: frozenset[str]) -> list[ToolSpec]:
+    """Discover tools in a package or module, given the module/package name as a string."""
     tools = []
-    for package_name in package_names:
+    for module_name in module_names:
         try:
             # Dynamically import the package or module
-            package = importlib.import_module(package_name)
+            module = importlib.import_module(module_name)
         except ModuleNotFoundError:
-            logger.warning("Module or package %s not found", package_name)
+            logger.warning("Module or package %s not found", module_name)
             continue
 
+        modules = []
         # Check if it's a package or a module
-        if hasattr(package, "__path__"):  # It's a package
+        if hasattr(module, "__path__"):  # It's a package
             # Iterate over modules in the package
-            for _, module_name, _ in pkgutil.iter_modules(package.__path__):
-                full_module_name = f"{package_name}.{module_name}"
+            for _, submodule_name, _ in pkgutil.iter_modules(module.__path__):
+                full_submodule_name = f"{module_name}.{submodule_name}"
                 try:
-                    module = importlib.import_module(full_module_name)
+                    modules.append(importlib.import_module(full_submodule_name))
                 except ModuleNotFoundError:
-                    logger.warning("Missing dependency for module %s", full_module_name)
+                    logger.warning(
+                        "Missing dependency for module %s", full_submodule_name
+                    )
                     continue
-
-                # Find instances of ToolSpec in the module
-                for _, obj in inspect.getmembers(
-                    module, lambda c: isinstance(c, ToolSpec)
-                ):
-                    tools.append(obj)
         else:  # It's a single module
-            # Find instances of ToolSpec in the module
-            for _, obj in inspect.getmembers(
-                package, lambda c: isinstance(c, ToolSpec)
-            ):
+            modules.append(module)
+
+        # Find instances of ToolSpec in the modules
+        for module in modules:
+            for _, obj in inspect.getmembers(module, lambda c: isinstance(c, ToolSpec)):
                 tools.append(obj)
 
     return tools

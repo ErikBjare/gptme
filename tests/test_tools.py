@@ -57,25 +57,25 @@ def test_init_tools_fails():
 
 
 def test_tool_loading_with_package():
-    found = _discover_tools(["gptme.tools"])
+    found = _discover_tools(frozenset(("gptme.tools",)))
 
     found_names = [t.name for t in found]
 
     assert "save" in found_names
-    assert "python" in found_names
+    assert "ipython" in found_names
 
 
 def test_tool_loading_with_module():
-    found = _discover_tools(["gptme.tools.save"])
+    found = _discover_tools(frozenset(("gptme.tools.save",)))
 
     found_names = [t.name for t in found]
 
     assert "save" in found_names
-    assert "python" not in found_names
+    assert "ipython" not in found_names
 
 
 def test_tool_loading_with_missing_package():
-    found = _discover_tools(["gptme.fake_"])
+    found = _discover_tools(frozenset(("gptme.fake_",)))
 
     assert len(found) == 0
 
@@ -118,13 +118,13 @@ def test_get_tool_for_lang_tag():
         allowlist=frozenset(
             (
                 "save",
-                "python",
+                "ipython",
             )
         )
     )
 
     assert (tool_python := get_tool_for_langtag("ipython"))
-    assert tool_python.name == "python"
+    assert tool_python.name == "ipython"
 
     assert not get_tool_for_langtag("randomtag")
 
