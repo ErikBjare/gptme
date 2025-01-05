@@ -600,7 +600,7 @@ Pass eval or suite names to run, or result files to print.</p>
 <dl class="std option">
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-m">
 <span id="cmdoption-gptme-eval-model"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--model</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;_model&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-m" title="Link to this definition">#</a></dt>
-<dd><p>Model to use, can be passed multiple times.</p>
+<dd><p>Model to use, can be passed multiple times. Can include tool format with &#64;, e.g. <a class="reference external" href="mailto:'gpt-4&#37;&#52;&#48;tool">‘gpt-4<span>&#64;</span>tool</a>’</p>
 </dd></dl>
 
 <dl class="std option">
@@ -613,6 +613,17 @@ Pass eval or suite names to run, or result files to print.</p>
 <dt class="sig sig-object std" id="cmdoption-gptme-eval-p">
 <span id="cmdoption-gptme-eval-parallel"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--parallel</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;parallel&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-p" title="Link to this definition">#</a></dt>
 <dd><p>Number of parallel evals to run</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-eval-tool-format">
+<span class="sig-name descname"><span class="pre">--tool-format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;tool_format&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-eval-tool-format" title="Link to this definition">#</a></dt>
+<dd><p>Tool format to use. Can also be specified per model with &#64;format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>markdown | xml | tool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <p class="rubric">Arguments</p>
