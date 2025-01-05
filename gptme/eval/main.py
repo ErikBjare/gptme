@@ -13,12 +13,14 @@ from collections import defaultdict
 from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import cast, get_args
 
 import click
 import multiprocessing_logging
 from tabulate import tabulate
 
 from ..message import len_tokens
+from ..tools import ToolFormat
 from .run import run_evals
 from .suites import suites, tests_default, tests_map
 from .types import CaseResult, EvalResult, EvalSpec
@@ -180,15 +182,21 @@ def aggregate_and_display_results(result_files: list[str]):
     "--model",
     "-m",
     multiple=True,
-    help="Model to use, can be passed multiple times.",
+    help="Model to use, can be passed multiple times. Can include tool format with @, e.g. 'gpt-4@tool'",
 )
 @click.option("--timeout", "-t", default=30, help="Timeout for code generation")
 @click.option("--parallel", "-p", default=10, help="Number of parallel evals to run")
+@click.option(
+    "--tool-format",
+    type=click.Choice(get_args(ToolFormat)),
+    help="Tool format to use. Can also be specified per model with @format.",
+)
 def main(
     eval_names_or_result_files: list[str],
     _model: list[str],
     timeout: int,
     parallel: int,
+    tool_format: ToolFormat | None = None,
 ):
     """
     Run evals for gptme.
@@ -199,7 +207,8 @@ def main(
     # init
     multiprocessing_logging.install_mp_handler()
 
-    models = _model or [
+    # Generate model+format combinations
+    default_models = [
         "openai/gpt-4o",
         "openai/gpt-4o-mini",
         "anthropic/claude-3-5-sonnet-20241022",
@@ -207,6 +216,25 @@ def main(
         "openrouter/meta-llama/llama-3.1-405b-instruct",
         "gemini/gemini-1.5-flash-latest",
     ]
+
+    def parse_format(fmt: str) -> ToolFormat:
+        if fmt not in get_args(ToolFormat):
+            raise ValueError(f"Invalid tool format: {fmt}")
+        return cast(ToolFormat, fmt)
+
+    # Process model specifications
+    model_configs: list[tuple[str, ToolFormat]] = []
+    for model_spec in _model or default_models:
+        if "@" in model_spec:
+            model, fmt = model_spec.split("@", 1)
+            model_configs.append((model, parse_format(fmt)))
+        else:
+            # If no format specified for model, use either provided default or test all formats
+            formats: list[ToolFormat] = (
+                [cast(ToolFormat, tool_format)] if tool_format else ["markdown", "tool"]
+            )
+            for fmt in formats:
+                model_configs.append((model_spec, fmt))
 
     results_files = []
     for f in eval_names_or_result_files:
@@ -238,7 +266,7 @@ def main(
         evals_to_run = tests_default
 
     print("=== Running evals ===")
-    model_results = run_evals(evals_to_run, models, timeout, parallel)
+    model_results = run_evals(evals_to_run, model_configs, timeout, parallel)
     print("=== Finished ===")
 
     print("\n=== Model Results ===")

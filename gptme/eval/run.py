@@ -13,6 +13,7 @@ from typing import TypedDict
 
 from tqdm import tqdm
 
+from ..tools import ToolFormat
 from .agents import Agent, GPTMe
 from .execenv import SimpleExecutionEnv
 from .types import (
@@ -50,10 +51,19 @@ class SyncedDict(TypedDict):
 
 
 def run_evals(
-    evals: list[EvalSpec], models: list[str], timeout: int, parallel: int
+    evals: list[EvalSpec],
+    model_configs: list[tuple[str, ToolFormat]],  # (model, tool_format)
+    timeout: int,
+    parallel: int,
 ) -> dict[str, list[EvalResult]]:
     """
     Run evals for a list of tests.
+
+    Args:
+        evals: List of evaluation specifications
+        model_configs: List of (model, tool_format) tuples
+        timeout: Timeout in seconds for each eval
+        parallel: Number of parallel evaluations to run
     """
     # For coverage to work with multiprocessing
     # https://pytest-cov.readthedocs.io/en/latest/subprocess-support.html
@@ -65,23 +75,24 @@ def run_evals(
     else:
         cleanup_on_sigterm()
 
-    n_runs = len(evals) * len(models)
+    n_runs = len(evals) * len(model_configs)
     model_results: dict[str, dict[str, EvalResult]] = defaultdict(dict)
     parallel = min(n_runs, parallel)
     with ProcessPoolExecutor(parallel) as executor:
         futures = []
         future_to_model_test = {}
-        for model in models:
+        for model, tool_format in model_configs:
+            model_id = f"{model}@{tool_format}"
             for test in evals:
                 future = executor.submit(
                     execute,
                     test,
-                    GPTMe(model=model),
+                    GPTMe(model=model, tool_format=tool_format),
                     timeout,
                     parallel > 1,
                 )
                 futures.append(future)
-                future_to_model_test[future] = (model, test)
+                future_to_model_test[future] = (model_id, test)
 
         def _handle_future(future: Future):
             model, test = future_to_model_test[future]

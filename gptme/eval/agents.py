@@ -8,6 +8,7 @@ from gptme.cli import get_name
 from gptme.dirs import get_logs_dir
 from gptme.tools import init_tools
 
+from ..tools import ToolFormat
 from .filestore import FileStore
 from .types import Files
 
@@ -15,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class Agent:
-    def __init__(self, model: str):
+    def __init__(self, model: str, tool_format: ToolFormat = "markdown"):
         self.model = model
+        self.tool_format = tool_format
 
     @abstractmethod
     def act(self, files: Files | None, prompt: str) -> Files:
@@ -29,7 +31,8 @@ class Agent:
 class GPTMe(Agent):
     def act(self, files: Files | None, prompt: str):
         _id = abs(hash(prompt)) % 1000000
-        name = get_name(f"gptme-evals-{self.model.replace('/', '--')}-{_id}")
+        model_fmt = f"{self.model.replace('/', '--')}-{self.tool_format}"
+        name = get_name(f"gptme-evals-{model_fmt}-{_id}")
         log_dir = get_logs_dir() / name
         workspace_dir = log_dir / "workspace"
         if workspace_dir.exists():
@@ -60,6 +63,7 @@ class GPTMe(Agent):
                 no_confirm=True,
                 interactive=False,
                 workspace=workspace_dir,
+                tool_format=self.tool_format,
             )
         # don't exit on sys.exit()
         except (SystemExit, KeyboardInterrupt):
