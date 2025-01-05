@@ -18,7 +18,8 @@ COPY pyproject.toml poetry.lock README.md ./
 COPY gptme gptme/
 
 # Install dependencies and export requirements for server
-RUN /opt/poetry/bin/poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt && \
+RUN /opt/poetry/bin/poetry self add poetry-plugin-export && \
+    /opt/poetry/bin/poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt && \
     /opt/poetry/bin/poetry export --without-hashes --without dev -E server -f requirements.txt -o requirements-server.txt && \
     /opt/poetry/bin/poetry build
 
