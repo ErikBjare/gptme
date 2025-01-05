@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_config
-from .constants import PROMPT_USER
+from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
 from .llm import reply
 from .llm.models import get_model
@@ -148,11 +148,7 @@ def chat(
                         )
                     except KeyboardInterrupt:
                         console.log("Interrupted. Stopping current execution.")
-                        manager.append(
-                            Message(
-                                "system", "User hit Ctrl-c to interrupt the process"
-                            )
-                        )
+                        manager.append(Message("system", INTERRUPT_CONTENT))
                         break
                     finally:
                         clear_interruptible()
@@ -225,7 +221,7 @@ def step(
     if (
         not last_msg
         or (last_msg.role in ["assistant"])
-        or last_msg.content == "Interrupted"
+        or last_msg.content == INTERRUPT_CONTENT
         or last_msg.pinned
         or not any(role == "user" for role in [m.role for m in log])
     ):  # pragma: no cover

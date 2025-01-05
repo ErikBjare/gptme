@@ -4,6 +4,8 @@ from collections.abc import Generator
 
 from gptme.config import get_config
 
+from gptme.constants import INTERRUPT_CONTENT
+
 from ..util.interrupt import clear_interruptible
 
 from ..message import Message
@@ -122,7 +124,7 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
                 clear_interruptible()
                 yield Message(
                     "system",
-                    "User hit Ctrl-c to interrupt the process",
+                    INTERRUPT_CONTENT,
                     call_id=tooluse.call_id,
                 )
                 break
