@@ -137,9 +137,9 @@ def test_tools_info():
     runner = CliRunner()
 
     # Test valid tool
-    result = runner.invoke(main, ["tools", "info", "python"])
+    result = runner.invoke(main, ["tools", "info", "ipython"])
     assert result.exit_code == 0
-    assert "Tool: python" in result.output
+    assert "Tool: ipython" in result.output
     assert "Description:" in result.output
     assert "Instructions:" in result.output
 

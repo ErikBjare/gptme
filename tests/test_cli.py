@@ -326,7 +326,7 @@ def test_subagent(args: list[str], runner: CliRunner):
     # f14: 377
     # f15: 610
     # f16: 987
-    args.extend(["--tools", "python,subagent"])
+    args.extend(["--tools", "ipython,subagent"])
     args.extend(
         [
             "We are in a test. Use the subagent tool to compute `fib(15)`, where `fib(1) = 1` and `fib(2) = 1`.",
