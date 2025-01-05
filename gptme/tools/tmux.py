@@ -24,9 +24,9 @@ from .base import (
 logger = logging.getLogger(__name__)
 
 # Examples of identifiers:
-#   session: gpt_0
-#   window: gpt_0:0
-#   pane: gpt_0:0.0
+#   session: gptme_0
+#   window: gptme_0:0
+#   pane: gptme_0:0.0
 
 
 def get_sessions() -> list[str]:
@@ -102,11 +102,13 @@ def new_session(command: str) -> Message:
     output = _capture_pane(f"{session_id}")
     return Message(
         "system",
-        f"Running '{command}' in session {session_id}.\n```output\n{output}\n```",
+        f"""Running `{command.strip("'")}` in session {session_id}.\n```output\n{output}\n```""",
     )
 
 
 def send_keys(pane_id: str, keys: str) -> Message:
+    if not pane_id.startswith("gptme_"):
+        pane_id = f"gptme_{pane_id}"
     result = subprocess.run(
         f"tmux send-keys -t {pane_id} {keys}",
         shell=True,
@@ -134,8 +136,10 @@ def inspect_pane(pane_id: str) -> Message:
 
 
 def kill_session(session_id: str) -> Message:
+    if not session_id.startswith("gptme_"):
+        session_id = f"gptme_{session_id}"
     result = subprocess.run(
-        ["tmux", "kill-session", "-t", f"gptme_{session_id}"],
+        ["tmux", "kill-session", "-t", session_id],
         check=True,
         capture_output=True,
         text=True,
@@ -161,6 +165,7 @@ def execute_tmux(
 ) -> Generator[Message, None, None]:
     """Executes a command in tmux and returns the output."""
 
+    # Get the command string
     cmd = ""
     if code is not None and args is not None:
         assert not args
@@ -168,29 +173,71 @@ def execute_tmux(
     elif kwargs is not None:
         cmd = kwargs.get("command", "")
 
-    print_preview(f"Command: {cmd}", "bash", copy=True)
-    if not confirm(f"Execute command: {cmd}?"):
-        yield Message("system", "Execution aborted: user chose not to run the command.")
+    # Split into multiple commands, handling quoted strings and newlines
+    commands = []
+    current = []
+    in_quotes = False
+    quote_char = None
+
+    for char in cmd:
+        if char in ["'", '"']:
+            if not in_quotes:
+                in_quotes = True
+                quote_char = char
+            elif quote_char == char:
+                in_quotes = False
+                quote_char = None
+            current.append(char)
+        elif char == "\n" and not in_quotes:
+            if current:
+                commands.append("".join(current).strip())
+                current = []
+        elif char == ";" and not in_quotes:
+            if current:
+                commands.append("".join(current).strip())
+                current = []
+        else:
+            current.append(char)
+
+    if current:
+        commands.append("".join(current).strip())
+
+    # Preview all commands
+    preview = "\n".join(commands)
+    print_preview(preview, "bash", copy=True)
+    if not confirm("Execute commands?"):
+        yield Message(
+            "system", "Execution aborted: user chose not to run the commands."
+        )
         return
 
-    parts = cmd.split(maxsplit=1)
-    command = parts[0]
-    if command == "list_sessions":
-        yield list_sessions()
-        return
+    # Execute each command
+    for cmd in commands:
+        parts = cmd.split(maxsplit=1)
+        if not parts:
+            continue
 
-    _args = parts[1]
-    if command == "new_session":
-        yield new_session(_args)
-    elif command == "send_keys":
-        pane_id, keys = _args.split(maxsplit=1)
-        yield send_keys(pane_id, keys)
-    elif command == "inspect_pane":
-        yield inspect_pane(_args)
-    elif command == "kill_session":
-        yield kill_session(_args)
-    else:
-        yield Message("system", f"Unknown command: {command}")
+        command = parts[0]
+        if command == "list_sessions":
+            yield list_sessions()
+            continue
+
+        if len(parts) < 2:
+            yield Message("system", f"Missing arguments for command: {command}")
+            continue
+
+        _args = parts[1]
+        if command == "new_session":
+            yield new_session(_args)
+        elif command == "send_keys":
+            pane_id, keys = _args.split(maxsplit=1)
+            yield send_keys(pane_id, keys)
+        elif command == "inspect_pane":
+            yield inspect_pane(_args)
+        elif command == "kill_session":
+            yield kill_session(_args)
+        else:
+            yield Message("system", f"Unknown command: {command}")
 
 
 instructions = """
@@ -211,17 +258,18 @@ Available commands:
 
 
 def examples(tool_format):
+    escaped_hello_world = "'print(\"Hello, world!\")'"
     all_examples = f"""
 #### Managing a dev server
 
 > User: Start the dev server
 > Assistant: Certainly! To start the dev server we should use tmux:
 {ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
-> System: Running `npm run dev` in session 0
+> System: Running `npm run dev` in session gptme_1
 
 > User: Can you show me the current content of the pane?
 > Assistant: Of course! Let's inspect the pane content:
-{ToolUse("tmux", [], "inspect_pane 0").to_output(tool_format)}
+{ToolUse("tmux", [], "inspect_pane gptme_1").to_output(tool_format)}
 > System:
 {ToolUse("output", [], "Server is running on localhost:5600").to_output()}
 
@@ -235,25 +283,33 @@ def examples(tool_format):
 > User: start top and give me a summary
 > Assistant: Sure! Let's start the top command in a tmux session:
 {ToolUse("tmux", [], "new_session 'top'").to_output(tool_format)}
-> System: Running `top` in session 1.
+> System: Running `top` in session gptme_1.
 {ToolUse("output", [], "(output from top shown here)").to_output()}
 > Assistant: The load is...
 
-#### Background process
+#### Send keys to a session
 
-> User: Start the dev server
-> Assistant: Certainly! To start the dev server we should use the tmux tool to run it in a tmux session:
-{ToolUse("tmux", [], "new_session 'npm run dev'").to_output(tool_format)}
+> User: start ipython
+> Assistant: Let's start an ipython session:
+{ToolUse("tmux", [], "new_session 'ipython'").to_output(tool_format)}
+> System: Running `ipython` in session 2.
+{ToolUse("output", [], "(output from ipython shown here)").to_output()}
+> User: Run 'print("Hello, world!")' in the ipython session
+{ToolUse("tmux", [], f'send_keys 2 {escaped_hello_world} Enter').to_output(tool_format)}
+
+#### Listing active sessions
+
+> User: List all active tmux sessions
+{ToolUse("tmux", [], "list_sessions").to_output(tool_format)}
+> System: Active tmux sessions ['0', 'gptme_1']
 
 #### Ending a session
 
 > User: I changed my mind
 > Assistant: No problem! Let's kill the session and start over:
-{ToolUse("tmux", [], "list_session 0").to_output(tool_format)}
-> System: Active tmux sessions [0]
 > Assistant:
-{ToolUse("tmux", [], "kill_session 0").to_output(tool_format)}
-> System: Killed tmux session with ID 0
+{ToolUse("tmux", [], "kill_session gptme_1").to_output(tool_format)}
+> System: Killed tmux session with ID gptme_1
 """
     # we want to skip the last two examples in prompting
     return "####".join(all_examples.split("####")[:-2])
@@ -271,7 +327,7 @@ tool = ToolSpec(
         Parameter(
             name="command",
             type="string",
-            description="The shell command with arguments to execute.",
+            description="The command and arguments to execute.",
             required=True,
         ),
     ],
