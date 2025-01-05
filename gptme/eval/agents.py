@@ -31,7 +31,8 @@ class Agent:
 class GPTMe(Agent):
     def act(self, files: Files | None, prompt: str):
         _id = abs(hash(prompt)) % 1000000
-        name = get_name(f"gptme-evals-{self.model.replace('/', '--')}-{_id}")
+        model_fmt = f"{self.model.replace('/', '--')}-{self.tool_format}"
+        name = get_name(f"gptme-evals-{model_fmt}-{_id}")
         log_dir = get_logs_dir() / name
         workspace_dir = log_dir / "workspace"
         if workspace_dir.exists():

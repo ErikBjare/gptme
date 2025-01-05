@@ -13,6 +13,7 @@ from collections import defaultdict
 from collections.abc import Generator
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import cast, get_args
 
 import click
 import multiprocessing_logging
@@ -187,7 +188,7 @@ def aggregate_and_display_results(result_files: list[str]):
 @click.option("--parallel", "-p", default=10, help="Number of parallel evals to run")
 @click.option(
     "--tool-format",
-    type=click.Choice(["markdown", "xml", "tool"]),
+    type=click.Choice(get_args(ToolFormat)),
     help="Tool format to use. Can also be specified per model with @format.",
 )
 def main(
@@ -195,7 +196,7 @@ def main(
     _model: list[str],
     timeout: int,
     parallel: int,
-    tool_format: str | None = None,
+    tool_format: ToolFormat | None = None,
 ):
     """
     Run evals for gptme.
@@ -216,14 +217,24 @@ def main(
         "gemini/gemini-1.5-flash-latest",
     ]
 
-    models = _model or default_models
-    formats: list[ToolFormat] = [tool_format] if tool_format else ["markdown", "tool"]  # type: ignore
+    def parse_format(fmt: str) -> ToolFormat:
+        if fmt not in get_args(ToolFormat):
+            raise ValueError(f"Invalid tool format: {fmt}")
+        return cast(ToolFormat, fmt)
 
-    # Create model+format combinations
+    # Process model specifications
     model_configs: list[tuple[str, ToolFormat]] = []
-    for model in models:
-        for fmt in formats:
-            model_configs.append((model, fmt))
+    for model_spec in _model or default_models:
+        if "@" in model_spec:
+            model, fmt = model_spec.split("@", 1)
+            model_configs.append((model, parse_format(fmt)))
+        else:
+            # If no format specified for model, use either provided default or test all formats
+            formats: list[ToolFormat] = (
+                [cast(ToolFormat, tool_format)] if tool_format else ["markdown", "tool"]
+            )
+            for fmt in formats:
+                model_configs.append((model_spec, fmt))
 
     results_files = []
     for f in eval_names_or_result_files:
