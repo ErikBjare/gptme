@@ -55,7 +55,7 @@ tomlkit = "*"
 typing-extensions = "*"
 platformdirs = "^4.3"
 lxml = "*"
-json-repair = "^0.32.0"
+json-repair = ">=0.32,<0.36"
 
 # providers
 openai = "^1.0"
