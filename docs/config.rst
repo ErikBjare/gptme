@@ -44,7 +44,7 @@ Here is an example:
 
     # Uncomment to change tool configuration
     #TOOL_FORMAT = "markdown" # Select the tool formal. One of `markdown`, `xml`, `tool`
-    #TOOL_ALLOWLIST = "save,append,patch,python"  # Comma separated list of allowed tools
+    #TOOL_ALLOWLIST = "save,append,patch,ipython,shell,browser"  # Comma separated list of allowed tools
     #TOOL_MODULES = "gptme.tools,custom.tools" # List of python comma separated python module path
 
 The ``prompt`` section contains options for the prompt.
