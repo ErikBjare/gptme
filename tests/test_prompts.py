@@ -4,7 +4,7 @@ from gptme.prompts import get_prompt
 from gptme.tools import init_tools
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(autouse=True)
 def init():
     init_tools()
 

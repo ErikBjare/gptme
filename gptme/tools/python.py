@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from logging import getLogger
 from typing import TYPE_CHECKING, TypeVar
 
+from . import get_tools
 from ..message import Message
 from ..util.ask_execute import print_preview
 from .base import (
@@ -226,6 +227,12 @@ fib(10)
 
 
 def init() -> ToolSpec:
+    # Register python functions from other tools
+    for loaded_tool in get_tools():
+        if loaded_tool.functions:
+            for func in loaded_tool.functions:
+                register_function(func)
+
     python_libraries = get_installed_python_libraries()
     python_libraries_str = (
         "\n".join(f"- {lib}" for lib in python_libraries)
@@ -265,5 +272,6 @@ tool = ToolSpec(
             required=True,
         ),
     ],
+    load_priority=10,
 )
 __doc__ = tool.get_doc(__doc__)

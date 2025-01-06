@@ -163,5 +163,6 @@ tool = ToolSpec(
     desc="Create and manage subagents",
     examples=examples,
     functions=[subagent, subagent_status, subagent_wait],
+    disabled_by_default=True,
 )
 __doc__ = tool.get_doc(__doc__)
