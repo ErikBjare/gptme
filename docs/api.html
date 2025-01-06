@@ -170,6 +170,7 @@
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_tool.html">Creating a Custom Tool for gptme</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a></li>
@@ -439,6 +440,10 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prompts">prompts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tools">tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.Parameter"><code class="docutils literal notranslate"><span class="pre">Parameter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.Parameter.__init__"><code class="docutils literal notranslate"><span class="pre">Parameter.__init__()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec"><code class="docutils literal notranslate"><span class="pre">ToolSpec</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec.__init__"><code class="docutils literal notranslate"><span class="pre">ToolSpec.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec.get_doc"><code class="docutils literal notranslate"><span class="pre">ToolSpec.get_doc()</span></code></a></li>
@@ -450,7 +455,6 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolUse.iter_from_content"><code class="docutils literal notranslate"><span class="pre">ToolUse.iter_from_content()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_msg"><code class="docutils literal notranslate"><span class="pre">execute_msg()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server">server</a><ul class="nav section-nav flex-column">
@@ -786,6 +790,17 @@ If you want to keep the old log, use fork()</p>
 <h2>tools<a class="headerlink" href="#tools" title="Link to this heading">#</a></h2>
 <p>Supporting classes and functions for creating and using tools.</p>
 <dl class="py class" id="module-gptme.tools">
+<dt class="sig sig-object py" id="gptme.tools.Parameter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">Parameter</span></span><a class="headerlink" href="#gptme.tools.Parameter" title="Link to this definition">#</a></dt>
+<dd><p>A wrapper for function parameters to convert them to JSON schema.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gptme.tools.Parameter.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.tools.Parameter.__init__" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="gptme.tools.ToolSpec">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">ToolSpec</span></span><a class="headerlink" href="#gptme.tools.ToolSpec" title="Link to this definition">#</a></dt>
 <dd><p>Tool specification. Defines a tool that can be used by the agent.</p>
@@ -795,18 +810,22 @@ If you want to keep the old log, use fork()</p>
 <li><p><strong>name</strong> – The name of the tool.</p></li>
 <li><p><strong>desc</strong> – A description of the tool.</p></li>
 <li><p><strong>instructions</strong> – Instructions on how to use the tool.</p></li>
+<li><p><strong>instructions_format</strong> – Per tool format instructions when needed.</p></li>
 <li><p><strong>examples</strong> – Example usage of the tool.</p></li>
 <li><p><strong>functions</strong> – Functions registered in the IPython REPL.</p></li>
 <li><p><strong>init</strong> – An optional function that is called when the tool is first loaded.</p></li>
 <li><p><strong>execute</strong> – An optional function that is called when the tool executes a block.</p></li>
 <li><p><strong>block_types</strong> – A list of block types that the tool will execute.</p></li>
 <li><p><strong>available</strong> – Whether the tool is available for use.</p></li>
+<li><p><strong>parameters</strong> – Descriptor of parameters use by this tool.</p></li>
+<li><p><strong>load_priority</strong> – Influence the loading order of this tool. The higher the later.</p></li>
+<li><p><strong>disabled_by_default</strong> – Whether this tool should be disabled by default.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="gptme.tools.ToolSpec.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">desc:</span> <span class="pre">str,</span> <span class="pre">instructions:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">instructions_format:</span> <span class="pre">dict[str,</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">examples:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">functions:</span> <span class="pre">list[~collections.abc.Callable]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">init:</span> <span class="pre">~collections.abc.Callable[[],</span> <span class="pre">~gptme.tools.base.ToolSpec]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">execute:</span> <span class="pre">~gptme.tools.base.ExecuteFuncGen</span> <span class="pre">|</span> <span class="pre">~gptme.tools.base.ExecuteFuncMsg</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">block_types:</span> <span class="pre">list[str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">available:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">parameters:</span> <span class="pre">list[~gptme.tools.base.Parameter]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.tools.ToolSpec.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">desc:</span> <span class="pre">str,</span> <span class="pre">instructions:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">instructions_format:</span> <span class="pre">dict[str,</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">examples:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~collections.abc.Callable[[str],</span> <span class="pre">str]</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">functions:</span> <span class="pre">list[~collections.abc.Callable]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">init:</span> <span class="pre">~collections.abc.Callable[[],</span> <span class="pre">~gptme.tools.base.ToolSpec]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">execute:</span> <span class="pre">~gptme.tools.base.ExecuteFuncGen</span> <span class="pre">|</span> <span class="pre">~gptme.tools.base.ExecuteFuncMsg</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">block_types:</span> <span class="pre">list[str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">available:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">parameters:</span> <span class="pre">list[~gptme.tools.base.Parameter]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;,</span> <span class="pre">load_priority:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0,</span> <span class="pre">disabled_by_default:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#gptme.tools.ToolSpec.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -838,12 +857,6 @@ If you want to keep the old log, use fork()</p>
 <dd><p>Returns all ToolUse in a message, markdown or XML, in order.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="gptme.tools.execute_msg">
-<span class="sig-prename descclassname"><span class="pre">gptme.tools.</span></span><span class="sig-name descname"><span class="pre">execute_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">confirm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#gptme.tools.execute_msg" title="Link to this definition">#</a></dt>
-<dd><p>Uses any tools called in a message and returns the response.</p>
 </dd></dl>
 
 </section>
@@ -968,6 +981,10 @@ If you want to keep the old log, use fork()</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prompts">prompts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tools">tools</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.Parameter"><code class="docutils literal notranslate"><span class="pre">Parameter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.Parameter.__init__"><code class="docutils literal notranslate"><span class="pre">Parameter.__init__()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec"><code class="docutils literal notranslate"><span class="pre">ToolSpec</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec.__init__"><code class="docutils literal notranslate"><span class="pre">ToolSpec.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolSpec.get_doc"><code class="docutils literal notranslate"><span class="pre">ToolSpec.get_doc()</span></code></a></li>
@@ -979,7 +996,6 @@ If you want to keep the old log, use fork()</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.ToolUse.iter_from_content"><code class="docutils literal notranslate"><span class="pre">ToolUse.iter_from_content()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme.tools.execute_msg"><code class="docutils literal notranslate"><span class="pre">execute_msg()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server">server</a><ul class="nav section-nav flex-column">

@@ -171,6 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_tool.html">Creating a Custom Tool for gptme</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a></li>
@@ -514,53 +515,29 @@ This is gptme
 <p>Example output (tool_format=’markdown’):</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gh"># Tools Overview</span>
 
-<span class="gu">## ipython</span>
+<span class="gu">## append</span>
 
-<span class="gs">**Description:**</span> Execute Python code
+<span class="gs">**Description:**</span> Append text to file
 
-<span class="gs">**Instructions:**</span> Use this tool to execute Python code in an interactive IPython session.
-It will respond with the output and result of the execution.
+<span class="gs">**Instructions:**</span> Append the given content to a file.`.
 
-Available libraries:
-<span class="k">-</span><span class="w"> </span>no common libraries found
-
-Available functions:
+Use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
+to append the code block content to the file at the given path.
 
 <span class="gu">### Examples</span>
 
-<span class="gu">#### Result of the last expression will be returned</span>
-
-<span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
+<span class="k">&gt; </span><span class="ge">User: append a print &quot;Hello world&quot; to hello.py</span>
 <span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```ipython</span>
-<span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="sb">```append</span><span class="w"> </span>hello.py
+<span class="s">print(&quot;Hello world&quot;)</span>
 <span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
-<span class="sb">```result</span>
-<span class="s">4</span>
-<span class="sb">```</span>
-
-<span class="gu">#### Write a function and call it</span>
-
-<span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
-<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we can run the following code:</span>
-<span class="sb">```ipython</span>
-<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">n</span>
-    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
-<span class="sb">```result</span>
-<span class="s">55</span>
-<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Appended to `hello.py`</span>
 
 <span class="gu">## browser</span>
 
 <span class="gs">**Description:**</span> Browse, search or screenshot the web
 
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+<span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
 read_url(url: str) -&gt; str: Read a webpage in a text format.
 search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
@@ -625,7 +602,7 @@ screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a sc
 
 <span class="gs">**Description:**</span> List, search, and summarize past conversation logs
 
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
+<span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
 list_chats(max_results: int, include_summary: bool):
     List recent chat conversations and optionally summarize them using an LLM.
@@ -662,24 +639,6 @@ read_chat(conversation: str, max_results: int):
 <span class="sb">```ipython</span>
 <span class="n">search_chats</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
 <span class="sb">```</span>
-
-<span class="gu">## screenshot</span>
-
-<span class="gs">**Description:**</span> Take a screenshot
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-screenshot(path: Union[Path, NoneType]) -&gt; Path:
-    Take a screenshot and save it to a file.
-
-
-<span class="gu">## vision</span>
-
-<span class="gs">**Description:**</span> Viewing images
-
-<span class="gs">**Instructions:**</span> This tool makes the following Python functions available in <span class="sb">`ipython`</span>:
-
-view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
 
 <span class="gu">## gh</span>
 
@@ -800,23 +759,15 @@ To write to a file, use a code block with the language tag: <span class="sb">`sa
 <span class="sb">```</span>
 <span class="k">&gt; </span><span class="ge">System: Saved to `hello.py`</span>
 
-<span class="gu">## append</span>
+<span class="gu">## screenshot</span>
 
-<span class="gs">**Description:**</span> Append text to file
+<span class="gs">**Description:**</span> Take a screenshot
 
-<span class="gs">**Instructions:**</span> Append the given content to a file.`.
+<span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-Use a code block with the language tag: <span class="sb">`append &lt;path&gt;`</span>
-to append the code block content to the file at the given path.
+screenshot(path: Union[Path, NoneType]) -&gt; Path:
+    Take a screenshot and save it to a file.
 
-<span class="gu">### Examples</span>
-
-<span class="k">&gt; </span><span class="ge">User: append a print &quot;Hello world&quot; to hello.py</span>
-<span class="k">&gt; </span><span class="ge">Assistant:</span>
-<span class="sb">```append</span><span class="w"> </span>hello.py
-<span class="s">print(&quot;Hello world&quot;)</span>
-<span class="sb">```</span>
-<span class="k">&gt; </span><span class="ge">System: Appended to `hello.py`</span>
 
 <span class="gu">## shell</span>
 
@@ -966,10 +917,68 @@ Available commands:
 <span class="s">send_keys 2 &#39;print(&quot;Hello, world!&quot;)&#39; Enter</span>
 <span class="sb">```</span>
 
+<span class="gu">## vision</span>
+
+<span class="gs">**Description:**</span> Viewing images
+
+<span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
+
+view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
+
+<span class="gu">## ipython</span>
+
+<span class="gs">**Description:**</span> Execute Python code
+
+<span class="gs">**Instructions:**</span> Use this tool to execute Python code in an interactive IPython session.
+It will respond with the output and result of the execution.
+
+Available libraries:
+<span class="k">-</span><span class="w"> </span>no common libraries found
+
+Available functions:
+<span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str
+<span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str
+<span class="k">-</span><span class="w"> </span>screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path
+<span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool)
+<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int)
+<span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int)
+<span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path
+<span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Message
+
+<span class="gu">### Examples</span>
+
+<span class="gu">#### Result of the last expression will be returned</span>
+
+<span class="k">&gt; </span><span class="ge">User: What is 2 + 2?</span>
+<span class="k">&gt; </span><span class="ge">Assistant:</span>
+<span class="sb">```ipython</span>
+<span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
+<span class="s">4</span>
+<span class="sb">```</span>
+
+<span class="gu">#### Write a function and call it</span>
+
+<span class="k">&gt; </span><span class="ge">User: compute fib 10</span>
+<span class="k">&gt; </span><span class="ge">Assistant: To compute the 10th Fibonacci number, we can run the following code:</span>
+<span class="sb">```ipython</span>
+<span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">fib</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="sb">```</span>
+<span class="k">&gt; </span><span class="ge">System: Executed code block.</span>
+<span class="sb">```result</span>
+<span class="s">55</span>
+<span class="sb">```</span>
+
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3003</p>
+<p>Tokens: 3131</p>
 </dd></dl>
 
 <dl class="py function">
