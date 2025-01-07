@@ -6,9 +6,8 @@ from pathlib import Path
 from time import sleep
 from typing import Literal
 
-from .constants import INTERRUPT_CONTENT
-
 from . import llm
+from .constants import INTERRUPT_CONTENT
 from .logmanager import LogManager, prepare_messages
 from .message import (
     Message,
@@ -17,7 +16,13 @@ from .message import (
     print_msg,
     toml_to_msgs,
 )
-from .tools import ToolUse, execute_msg, get_tools, ConfirmFunc, get_tool_format
+from .tools import (
+    ConfirmFunc,
+    ToolUse,
+    execute_msg,
+    get_tool_format,
+    get_tools,
+)
 from .util.cost import log_costs
 from .util.export import export_chat_to_html
 from .util.useredit import edit_text_with_editor
@@ -101,10 +106,10 @@ def handle_cmd(
             new_name = args[0] if args else input("New name: ")
             manager.fork(new_name)
         case "summarize":
+            manager.undo(1, quiet=True)
             msgs = prepare_messages(manager.log.messages)
             msgs = [m for m in msgs if not m.hide]
-            summary = llm.summarize(msgs)
-            print(f"Summary: {summary}")
+            print_msg(llm.summarize(msgs))
         case "edit":
             # edit previous messages
             # first undo the '/edit' command itself

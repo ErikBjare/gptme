@@ -171,7 +171,7 @@ def _summarize_str(content: str) -> str:
     messages = [
         Message(
             "system",
-            content="You are a helpful assistant that helps summarize messages with an AI assistant through a tool called gptme.",
+            content="You are a helpful assistant that helps summarize messages into bullet format. Dont use any preamble or heading, start directly with a bullet list.",
         ),
         Message("user", content=f"Summarize this:\n{content}"),
     ]
@@ -245,9 +245,7 @@ def summarize(msg: str | Message | list[Message]) -> Message:
     else:
         content = "\n".join(format_msgs(msg))
 
-    logger.info(f"{content[:200]=}")
     summary = _summarize_helper(content)
-    logger.info(f"{summary[:200]=}")
 
     # construct message from summary
     content = f"Here's a summary of the conversation:\n{summary}"
