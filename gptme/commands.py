@@ -65,11 +65,8 @@ COMMANDS = list(action_descriptions.keys())
 
 def execute_cmd(msg: Message, log: LogManager, confirm: ConfirmFunc) -> bool:
     """Executes any user-command, returns True if command was executed."""
-    assert msg.role == "user"
-
-    # if message starts with / treat as command
-    # when command has been run,
-    if msg.content[:1] in ["/"]:
+    # if message is from user and starts with / treat as command
+    if msg.role == "user" and msg.content.startswith("/"):
         for resp in handle_cmd(msg.content, log, confirm):
             log.append(resp)
         return True
@@ -161,19 +158,18 @@ def handle_cmd(
             # Export the chat
             export_chat_to_html(manager.name, manager.log, output_path)
             print(f"Exported conversation to {output_path}")
+        case "help":
+            # undo the '/help' command itself
+            manager.undo(1, quiet=True)
+            manager.write()
+            help()
         case _:
             # the case for python, shell, and other block_types supported by tools
             tooluse = ToolUse(name, [], full_args)
             if tooluse.is_runnable:
                 yield from tooluse.execute(confirm)
             else:
-                if manager.log[-1].content.strip() == "/help":
-                    # undo the '/help' command itself
-                    manager.undo(1, quiet=True)
-                    manager.write()
-                    help()
-                else:
-                    print("Unknown command")
+                print(f"Unknown command: {name}")
 
 
 def edit(manager: LogManager) -> Generator[Message, None, None]:  # pragma: no cover

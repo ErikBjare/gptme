@@ -4,10 +4,10 @@ import os
 import re
 import sys
 import termios
-from typing import cast
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
+from typing import cast
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_config
@@ -19,12 +19,12 @@ from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
 from .tools import (
+    ConfirmFunc,
     ToolFormat,
     ToolUse,
-    has_tool,
-    get_tools,
     execute_msg,
-    ConfirmFunc,
+    get_tools,
+    has_tool,
     set_tool_format,
 )
 from .tools.browser import read_url
@@ -126,40 +126,30 @@ def chat(
         if prompt_msgs:
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
-                if not msg.content.startswith("/") and msg.role == "user":
-                    msg = _include_paths(msg, workspace)
-                manager.append(msg)
                 # if prompt is a user-command, execute it
-                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+                if execute_cmd(msg, manager, confirm_func):
                     continue
+                # else, collect paths
+                msg = _include_paths(msg, workspace)
+                manager.append(msg)
 
                 # Generate and execute response for this prompt
                 while True:
                     try:
                         set_interruptible()
-                        response_msgs = list(
-                            step(
-                                manager.log,
-                                stream,
-                                confirm_func,
-                                tool_format=tool_format_with_default,
-                                workspace=workspace,
-                            )
-                        )
-                    except KeyboardInterrupt:
-                        console.log("Interrupted. Stopping current execution.")
-                        manager.append(Message("system", INTERRUPT_CONTENT))
-                        break
+                        for msg in step(
+                            manager.log,
+                            stream,
+                            confirm_func,
+                            tool_format=tool_format_with_default,
+                            workspace=workspace,
+                        ):
+                            manager.append(msg)
+                            # run any user-commands, if msg is from user
+                            if execute_cmd(msg, manager, confirm_func):
+                                break
                     finally:
                         clear_interruptible()
-
-                    for response_msg in response_msgs:
-                        manager.append(response_msg)
-                        # run any user-commands, if msg is from user
-                        if response_msg.role == "user" and execute_cmd(
-                            response_msg, manager, confirm_func
-                        ):
-                            break
 
                     # Check if there are any runnable tools left
                     last_content = next(
@@ -229,6 +219,8 @@ def step(
         msg = Message("user", inquiry, quiet=True)
         msg = _include_paths(msg, workspace)
         yield msg
+        if msg.content.startswith("/") and msg.role == "user":
+            return
         log = log.append(msg)
 
     # generate response and run tools
