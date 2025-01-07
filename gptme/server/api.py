@@ -24,7 +24,7 @@ from ..llm import _stream
 from ..llm.models import get_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..tools import ToolUse, execute_msg
+from ..tools import ToolUse, execute_msg, init_tools
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ def api_conversations():
 @api.route("/api/conversations/<path:logfile>")
 def api_conversation(logfile: str):
     """Get a conversation."""
+    init_tools(None)  # FIXME: this is not thread-safe
     log = LogManager.load(logfile)
     return flask.jsonify(log.to_dict(branches=True))
 
@@ -77,6 +78,8 @@ def api_conversation_post(logfile: str):
     """Post a message to the conversation."""
     req_json = flask.request.json
     branch = (req_json or {}).get("branch", "main")
+    tool_allowlist = (req_json or {}).get("tools", None)
+    init_tools(tool_allowlist)  # FIXME: this is not thread-safe
     log = LogManager.load(logfile, branch=branch)
     assert req_json
     assert "role" in req_json
