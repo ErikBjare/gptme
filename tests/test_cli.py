@@ -299,20 +299,41 @@ def test_chain(args: list[str], runner: CliRunner):
 
 
 # TODO: move elsewhere
+@pytest.fixture
+def tmux_session():
+    session_id = [None]  # Use list to allow modification in closure
+
+    def set_session(sid):
+        session_id[0] = sid
+
+    yield set_session
+    if session_id[0]:
+        from gptme.tools.tmux import kill_session
+
+        kill_session(session_id[0])
+
+
 @pytest.mark.slow
-def test_tmux(args: list[str], runner: CliRunner):
-    """
-    $ gptme '/impersonate lets find out the current load
-    ```tmux
-    new_session top
-    ```'
-    """
-    args.append(
-        "/impersonate lets find out the current load\n```tmux\nnew_session top\n```"
-    )
+def test_tmux(args: list[str], runner: CliRunner, tmux_session):
+    args.extend(["--tools", "tmux"])
+    args.append("/tmux new_session top")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
-    assert "%CPU" in result.output
+    print(f"Output:\n{result.output}")
+    if result.stderr_bytes:
+        print(f"Stderr:\n{result.stderr_bytes.decode()}")
+    if result.exception:
+        print(f"Exception:\n{result.exception}")
+
+    # Extract session ID from output
+    import re
+
+    if m := re.search(r"Running .* in session (gptme_\d+)", result.output):
+        tmux_session(m.group(1))
+
+    assert any(
+        header in result.output for header in ["%CPU", "PID", "COMMAND"]
+    ), "Expected process information not found in output"
     assert result.exit_code == 0
 
 
