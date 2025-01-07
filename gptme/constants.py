@@ -26,3 +26,6 @@ PROMPT_USER = f"[bold {ROLE_COLOR['user']}]User[/bold {ROLE_COLOR['user']}]"
 PROMPT_ASSISTANT = (
     f"[bold {ROLE_COLOR['assistant']}]Assistant[/bold {ROLE_COLOR['assistant']}]"
 )
+
+
+INTERRUPT_CONTENT = "Interrupted by user"

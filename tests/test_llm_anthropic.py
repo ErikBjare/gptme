@@ -97,6 +97,7 @@ def test_message_conversion_with_tools():
             content='<thinking>\nSomething\n</thinking>\n@save(tool_call_id): {"path": "path.txt", "content": "file_content"}',
         ),
         Message(role="system", content="Saved to toto.txt", call_id="tool_call_id"),
+        Message(role="system", content="(Modified by user)", call_id="tool_call_id"),
     ]
 
     tool_save = get_tool("save")
@@ -152,7 +153,12 @@ def test_message_conversion_with_tools():
             "content": [
                 {
                     "type": "tool_result",
-                    "content": [{"type": "text", "text": "Saved to toto.txt"}],
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Saved to toto.txt\n\n(Modified by user)",
+                        }
+                    ],
                     "tool_use_id": "tool_call_id",
                     "cache_control": {"type": "ephemeral"},
                 }

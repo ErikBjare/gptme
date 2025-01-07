@@ -287,10 +287,9 @@ class ToolUse:
                     confirm,
                 )
                 if isinstance(ex, Generator):
-                    for msg in ex:
-                        yield msg.replace(call_id=self.call_id)
+                    yield from ex
                 else:
-                    yield ex.replace(call_id=self.call_id)
+                    yield ex
             except Exception as e:
                 # if we are testing, raise the exception
                 logger.exception(e)
