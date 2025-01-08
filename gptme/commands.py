@@ -173,6 +173,7 @@ def handle_cmd(
                     manager.write()
                     help()
                 else:
+                    manager.undo(1, quiet=True)
                     print("Unknown command")
 
 
