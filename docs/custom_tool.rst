@@ -64,8 +64,6 @@ The ``ToolSpec`` class requires these parameters:
 Examples
 --------
 
-Script-based Tools
-~~~~~~~~~~~~~~~~~~
 For examples of script-based tools, see:
 
 **gptme-contrib**
@@ -79,8 +77,6 @@ For examples of script-based tools, see:
 
     - `gptme-rag <https://github.com/ErikBjare/gptme-rag/>`_: Document indexing and retrieval
 
-Custom Tools
-~~~~~~~~~~~~
 For examples of custom tools, see:
 
 - `Screenshot tool <https://github.com/ErikBjare/gptme/blob/master/gptme/tools/screenshot.py>`_: Takes screenshots
