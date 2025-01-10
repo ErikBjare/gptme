@@ -1,8 +1,10 @@
 # Environment files
 .env*
-*venv
 .clean
 gptme.toml
+
+venv
+.venv
 
 # Logs
 *.log

@@ -1,6 +1,8 @@
 .env*
-*venv
 .clean
+
+venv
+.venv
 
 projects
 demos
