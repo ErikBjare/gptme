@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Creating a Custom Tool for gptme &#8212; gptme</title>
+    <title>Custom Tools &#8212; gptme</title>
   
   
   
@@ -171,7 +171,7 @@
 <li class="toctree-l1"><a class="reference internal" href="evals.html">Evals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bot.html">GitHub Bot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="finetuning.html">Finetuning</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Creating a Custom Tool for gptme</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Custom Tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="arewetiny.html">Are we tiny?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="timeline.html">Timeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="alternatives.html">Alternatives</a></li>
@@ -365,7 +365,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Creating a Custom Tool for gptme</h1>
+    <h1>Custom Tools</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -376,8 +376,15 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#script-based-tools">Script-based Tools</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-custom-tool">Creating a Custom Tool</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-custom-tool-example">Basic Custom Tool Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-an-approach">Choosing an Approach</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#registering-the-tool">Registering the Tool</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#community-tools">Community Tools</a></li>
 </ul>
             </nav>
         </div>
@@ -389,18 +396,64 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="creating-a-custom-tool-for-gptme">
-<h1>Creating a Custom Tool for gptme<a class="headerlink" href="#creating-a-custom-tool-for-gptme" title="Link to this heading">#</a></h1>
+  <section id="custom-tools">
+<h1>Custom Tools<a class="headerlink" href="#custom-tools" title="Link to this heading">#</a></h1>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
-<p>In gptme, a custom tool allows you to extend the functionality of the assistant by
-defining new tools that can be executed.
-This guide will walk you through the process of creating and registering a custom tool.</p>
+<p>There are two main approaches to extending gptme’s functionality:</p>
+<ol class="arabic simple">
+<li><p><strong>Custom Tools</strong>: Native gptme tools that integrate deeply with the assistant.</p></li>
+<li><p><strong>Script Tools</strong>: Standalone scripts that can be called via the shell tool.</p></li>
+</ol>
+<p>This guide covers both approaches and when to use each.</p>
+</section>
+<section id="script-based-tools">
+<h2>Script-based Tools<a class="headerlink" href="#script-based-tools" title="Link to this heading">#</a></h2>
+<p>The simplest way to extend gptme is by writing standalone scripts. These can be:</p>
+<ul class="simple">
+<li><p>Written in any language</p></li>
+<li><p>Run independently of gptme</p></li>
+<li><p>Called via the shell tool</p></li>
+<li><p>Easily tested and maintained</p></li>
+</ul>
+<dl class="simple">
+<dt>Benefits of script-based tools:</dt><dd><ul class="simple">
+<li><p>Simple to create and maintain</p></li>
+<li><p>Can be run and tested independently</p></li>
+<li><p>No gptme dependency</p></li>
+<li><p>Flexible language choice</p></li>
+<li><p>Isolated dependencies</p></li>
+</ul>
+</dd>
+<dt>Limitations:</dt><dd><ul class="simple">
+<li><p>Requires shell tool access</p></li>
+<li><p>Can’t attach files/images to messages</p></li>
+<li><p>Not listed in tools section</p></li>
+<li><p>No built-in argument validation</p></li>
+</ul>
+</dd>
+</dl>
+<p>For script-based tools, no registration is needed. Simply include them in the gptme context to make the agent aware of them.</p>
+<ol class="arabic simple">
+<li><p>Place scripts in a <code class="docutils literal notranslate"><span class="pre">tools/</span></code> directory (or any other location)</p></li>
+<li><p>Make them executable (<code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">+x</span> <span class="pre">tools/script.py</span></code>)</p></li>
+<li><p>Use via the shell tool (<code class="docutils literal notranslate"><span class="pre">gptme</span> <span class="pre">'test</span> <span class="pre">our</span> <span class="pre">new</span> <span class="pre">tool'</span> <span class="pre">tools/script.py</span></code>)</p></li>
+</ol>
 </section>
 <section id="creating-a-custom-tool">
 <h2>Creating a Custom Tool<a class="headerlink" href="#creating-a-custom-tool" title="Link to this heading">#</a></h2>
-<p>To create a custom tool, you need to define a new instance of the <code class="docutils literal notranslate"><span class="pre">ToolSpec</span></code> class.
-This class requires several parameters:</p>
+<p>When you need deeper integration with gptme, you can create a custom tool by defining a new instance of the <code class="docutils literal notranslate"><span class="pre">ToolSpec</span></code> class.</p>
+<dl class="simple">
+<dt>Custom tools are necessary when you need to:</dt><dd><ul class="simple">
+<li><p>Attach files/images to messages</p></li>
+<li><p>Get included in the tools section</p></li>
+<li><p>Use without shell tool access</p></li>
+<li><p>Validate arguments</p></li>
+<li><p>Handle complex interactions</p></li>
+</ul>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">ToolSpec</span></code> class requires these parameters:</p>
 <ul class="simple">
 <li><p><strong>name</strong>: The name of the tool.</p></li>
 <li><p><strong>desc</strong>: A description of what the tool does.</p></li>
@@ -410,51 +463,82 @@ This class requires several parameters:</p>
 <li><p><strong>block_types</strong>: The block types to detects.</p></li>
 <li><p><strong>parameters</strong>: A list of parameters that the tool accepts.</p></li>
 </ul>
-<p>Here is a basic example of defining a custom tool:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">from</span> <span class="nn">gptme.tools</span> <span class="kn">import</span> <span class="n">ToolSpec</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">ToolUse</span>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
+<p>For examples of script-based tools, see:</p>
+<dl class="simple">
+<dt><strong>gptme-contrib</strong></dt><dd><p>A collection of community-contributed tools and scripts:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme-contrib/blob/master/scripts/twitter.py">Twitter CLI</a>: Twitter client with OAuth support</p></li>
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme-contrib/blob/master/scripts/perplexity.py">Perplexity CLI</a>: Perplexity search tool</p></li>
+</ul>
+</dd>
+<dt><strong>Standalone Tools</strong></dt><dd><p>Independent tool repositories:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme-rag/">gptme-rag</a>: Document indexing and retrieval</p></li>
+</ul>
+</dd>
+</dl>
+<p>For examples of custom tools, see:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme/blob/master/gptme/tools/screenshot.py">Screenshot tool</a>: Takes screenshots</p></li>
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme/blob/master/gptme/tools/browser.py">Browser tool</a>: Web browsing and screenshots</p></li>
+<li><p><a class="reference external" href="https://github.com/ErikBjare/gptme/blob/master/gptme/tools/vision.py">Vision tool</a>: Image viewing and analysis</p></li>
+</ul>
+<section id="basic-custom-tool-example">
+<h3>Basic Custom Tool Example<a class="headerlink" href="#basic-custom-tool-example" title="Link to this heading">#</a></h3>
+<p>Here’s a minimal example of a custom tool:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gptme.tools</span> <span class="kn">import</span> <span class="n">ToolSpec</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">ToolUse</span>
 <span class="kn">from</span> <span class="nn">gptme.message</span> <span class="kn">import</span> <span class="n">Message</span>
 
 <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">confirm</span><span class="p">):</span>
-
-    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">code</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;side_count&#39;</span><span class="p">)</span>
-
-    <span class="k">yield</span> <span class="n">Message</span><span class="p">(</span><span class="s1">&#39;system&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Result: </span><span class="si">{</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">code</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">examples</span><span class="p">(</span><span class="n">tool_format</span><span class="p">):</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">&gt; User: Throw a dice and give me the result.</span>
-<span class="s2">&gt; Assistant:</span>
-<span class="si">{</span><span class="n">ToolUse</span><span class="p">(</span><span class="s2">&quot;dice&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="s2">&quot;6&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_output</span><span class="p">(</span><span class="n">tool_format</span><span class="p">)</span><span class="si">}</span>
-<span class="s2">&gt; System: 3</span>
-<span class="s2">&gt; assistant: The result is 3</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;World&#39;</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">Message</span><span class="p">(</span><span class="s1">&#39;system&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Hello, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
 
 <span class="n">tool</span> <span class="o">=</span> <span class="n">ToolSpec</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dice&quot;</span><span class="p">,</span>
-    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A dice simulator.&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;This tool generate a random integer value like a dice.&quot;</span><span class="p">,</span>
-    <span class="n">examples</span><span class="o">=</span><span class="n">examples</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;A simple greeting tool&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Greets the user by name&quot;</span><span class="p">,</span>
     <span class="n">execute</span><span class="o">=</span><span class="n">execute</span><span class="p">,</span>
-    <span class="n">block_types</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dice&quot;</span><span class="p">],</span>
+    <span class="n">block_types</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;hello&quot;</span><span class="p">],</span>
     <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
         <span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;side_count&quot;</span><span class="p">,</span>
-            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;integer&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of faces of the dice to throw.&quot;</span><span class="p">,</span>
-            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Name to greet&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">],</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="choosing-an-approach">
+<h2>Choosing an Approach<a class="headerlink" href="#choosing-an-approach" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>Use <strong>script-based tools</strong> when you need:</dt><dd><ul class="simple">
+<li><p>Standalone functionality</p></li>
+<li><p>Independent testing/development</p></li>
+<li><p>Language/framework flexibility</p></li>
+<li><p>Isolated dependencies</p></li>
+</ul>
+</dd>
+<dt>Use <strong>custom tools</strong> when you need:</dt><dd><ul class="simple">
+<li><p>File/image attachments</p></li>
+<li><p>Tool listing in system prompt</p></li>
+<li><p>Complex argument validation</p></li>
+<li><p>Operation without shell access</p></li>
+</ul>
+</dd>
+</dl>
+</section>
 <section id="registering-the-tool">
 <h2>Registering the Tool<a class="headerlink" href="#registering-the-tool" title="Link to this heading">#</a></h2>
 <p>To ensure your tool is available for use, you can specify the module in the <code class="docutils literal notranslate"><span class="pre">TOOL_MODULES</span></code> env variable or
 setting in your <a class="reference internal" href="config.html"><span class="doc">project configuration file</span></a>, which will automatically load your custom tools.</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">TOOL_MODULES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gptme.tools,path.to.your.custom_tool_module&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">TOOL_MODULES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;gptme.tools,yourpackage.your_custom_tool_module&quot;</span>
 </pre></div>
 </div>
 <p>Don’t remove the <code class="docutils literal notranslate"><span class="pre">gptme.tools</span></code> package unless you know exactly what you are doing.</p>
@@ -465,6 +549,23 @@ or by temporarily modifying the <cite>PYTHONPATH</cite> environment variable. Fo
 </pre></div>
 </div>
 <p>This lets Python locate your module during development and testing without requiring installation.</p>
+</section>
+<section id="community-tools">
+<h2>Community Tools<a class="headerlink" href="#community-tools" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://github.com/ErikBjare/gptme-contrib">gptme-contrib</a> repository provides a collection of community-contributed tools and scripts.
+This makes it easier to:</p>
+<ul class="simple">
+<li><p>Share tools between agents</p></li>
+<li><p>Maintain consistent quality</p></li>
+<li><p>Learn from examples</p></li>
+<li><p>Contribute your own tools</p></li>
+</ul>
+<p>To use these tools, you can either:</p>
+<ol class="arabic simple">
+<li><p>Clone the repository and use the scripts directly</p></li>
+<li><p>Copy specific scripts to your local workspace</p></li>
+<li><p>Fork the repository to create your own collection</p></li>
+</ol>
 </section>
 </section>
 
@@ -515,8 +616,15 @@ or by temporarily modifying the <cite>PYTHONPATH</cite> environment variable. Fo
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#script-based-tools">Script-based Tools</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-custom-tool">Creating a Custom Tool</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-custom-tool-example">Basic Custom Tool Example</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-an-approach">Choosing an Approach</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#registering-the-tool">Registering the Tool</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#community-tools">Community Tools</a></li>
 </ul>
   </nav></div>
 
