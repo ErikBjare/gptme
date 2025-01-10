@@ -32,7 +32,10 @@ def get_data_dir() -> Path:
 
 def get_logs_dir() -> Path:
     """Get the path for **conversation logs** (not to be confused with the logger file)"""
-    path = get_data_dir() / "logs"
+    if "GPTME_LOGS_HOME" in os.environ:
+        path = Path(os.environ["GPTME_LOGS_HOME"])
+    else:
+        path = get_data_dir() / "logs"
     path.mkdir(parents=True, exist_ok=True)
     return path
 
