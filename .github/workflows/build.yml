@@ -62,7 +62,7 @@ jobs:
         command: make test SLOW=true
 
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       env:
         MODEL: ${{ matrix.model }}
       with:
