@@ -10,8 +10,8 @@ license = "MIT"
 packages = [
     { include = "gptme" },
 ]
-
 include = ["gptme/server/static/**/*", "media/logo.png"]
+dynamic = ["dependencies"]  # "version"
 
 [project.urls]
 Homepage = "https://gptme.org/"
@@ -162,15 +162,6 @@ exclude_also = [
     "if TYPE_CHECKING:",
 ]
 
-
-# TODO: migrate to PEP 621 once supported by poetry
-#[project]
-#name = "gptme"
-#dynamic = ["version"]
-#
-#[tool.setuptools.dynamic]
-#version = {attr = "mymodule.__version__"}
-
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
