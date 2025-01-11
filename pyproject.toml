@@ -1,8 +1,10 @@
-[tool.poetry]
+[project]
 name = "gptme"
 version = "0.25.0"
 description = "Personal AI assistant in your terminal that can use the shell, run code, edit files, browse the web, and use vision. An unconstrained local alternative to ChatGPT's Code Interpreter."
-authors = ["Erik Bjäreholt <erik@bjareho.lt>"]
+authors = [
+    { name = "Erik Bjäreholt", email = "erik@bjareho.lt" },
+]
 readme = "README.md"
 license = "MIT"
 packages = [
@@ -11,32 +13,13 @@ packages = [
 
 include = ["gptme/server/static/**/*", "media/logo.png"]
 
-#[project]
-#name = "gptme"
-#dependencies = [
-#    "python = \"^3.10\"",
-#    "click = \"^8.0\"",
-#    "python-dotenv = \"^1.0.0\"",
-#    "rich = \"^13.5.2\"",
-#    "tabulate = \"*\"",
-#    "pick = \"^2.2.0\"",
-#    "tiktoken = \">=0.7\"",
-#    "tomlkit = \"*\"",
-#    "typing-extensions = \"*\"",
-#    "platformdirs = \"^4.3\"",
-#    "lxml = \"*\"",
-#    "ipython = \"^8.17.2\"",
-#    "bashlex = \"^0.18\"",
-#]
-#
-#[project.scripts]
-#gptme = "gptme.cli:main"
-#gptme-server = "gptme.server.cli:main"
-#gptme-eval = "gptme.eval.main:main"
-#gptme-util = "gptme.util.cli:main"
-#gptme-nc = "gptme.ncurses:main"
+[project.urls]
+Homepage = "https://gptme.org/"
+Repository = "https://github.com/ErikBjare/gptme"
+Documentation = "https://gptme.org/docs/"
+Issues = "https://github.com/ErikBjare/gptme/issues"
 
-[tool.poetry.scripts]
+[project.scripts]
 gptme = "gptme.cli:main"
 gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
