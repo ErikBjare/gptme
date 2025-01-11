@@ -3,7 +3,7 @@ name = "gptme"
 version = "0.25.0"
 description = "Personal AI assistant in your terminal that can use the shell, run code, edit files, browse the web, and use vision. An unconstrained local alternative to ChatGPT's Code Interpreter."
 authors = [
-    { name = "Erik Bjäreholt", email = "erik@bjareho.lt>" },
+    { name = "Erik Bjäreholt", email = "erik@bjareho.lt" },
 ]
 readme = "README.md"
 license = "MIT"
