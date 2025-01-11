@@ -26,7 +26,7 @@ jobs:
         extras: ['-E all']
         model: ['openai/gpt-4o-mini', 'anthropic/claude-3-haiku-20240307']
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install apt dependencies
@@ -51,7 +51,7 @@ jobs:
 
     # old comment: OpenAI sometimes randomly aborts connections
     - name: Run tests
-      uses: nick-fields/retry@v2
+      uses: nick-fields/retry@v3
       env:
         TERM: xterm
         MODEL: ${{ matrix.model }}
@@ -81,7 +81,7 @@ jobs:
     env:
       SHOULD_PUSH: ${{ github.ref == 'refs/tags/v*' || github.ref == 'refs/heads/master' }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
@@ -152,7 +152,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install poetry
       run: pipx install poetry
     - name: Set up Python
@@ -171,7 +171,7 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install poetry
       run: pipx install poetry
     - name: Set up Python
