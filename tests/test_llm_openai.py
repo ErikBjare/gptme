@@ -100,7 +100,6 @@ def test_message_conversion_without_tools():
 
 
 def test_message_conversion_with_tools():
-    # clear_tools()
     init_tools(allowlist=frozenset(["save"]))
 
     messages = [

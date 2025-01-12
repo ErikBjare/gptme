@@ -37,7 +37,7 @@ def test_global_config(tmp_path):
 
     assert config.env == {"MODEL": "openai/gpt-4o-mini", "OPEN_API_KEY": "<key>"}
     with pytest.raises(AttributeError):
-        config.rag
+        _ = config.rag
 
     assert not config.has_project_config()
     assert config.to_dict() == {

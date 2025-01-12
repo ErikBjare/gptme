@@ -26,16 +26,15 @@ logger = logging.getLogger(__name__)
 def get_prompt(
     prompt: PromptType | str = "full",
     interactive: bool = True,
-    tool_format: ToolFormat = "markdown",
 ) -> Message:
     """
     Get the initial system prompt.
     """
     msgs: Iterable
     if prompt == "full":
-        msgs = prompt_full(interactive, tool_format)
+        msgs = prompt_full(interactive)
     elif prompt == "short":
-        msgs = prompt_short(interactive, tool_format)
+        msgs = prompt_short(interactive)
     else:
         msgs = [Message("system", prompt)]
 
@@ -54,12 +53,10 @@ def _join_messages(msgs: list[Message]) -> Message:
     )
 
 
-def prompt_full(
-    interactive: bool, tool_format: ToolFormat
-) -> Generator[Message, None, None]:
+def prompt_full(interactive: bool) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools(tool_format=tool_format)
+    yield from prompt_tools()
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -67,12 +64,10 @@ def prompt_full(
     yield from prompt_timeinfo()
 
 
-def prompt_short(
-    interactive: bool, tool_format: ToolFormat
-) -> Generator[Message, None, None]:
+def prompt_short(interactive: bool) -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools(examples=False, tool_format=tool_format)
+    yield from prompt_tools(examples=False)
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -200,14 +195,13 @@ def prompt_project() -> Generator[Message, None, None]:
         )
 
 
-def prompt_tools(
-    examples: bool = True, tool_format: ToolFormat = "markdown"
-) -> Generator[Message, None, None]:
+def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
     from .tools import get_tools  # fmt: skip
 
     assert get_tools(), "No tools loaded"
 
+    tool_format: ToolFormat = get_config().get_env("TOOL_FORMAT", "markdown")  # type: ignore
     use_tool = tool_format == "tool"
 
     prompt = "# Tools aliases" if use_tool else "# Tools Overview"
@@ -287,7 +281,7 @@ def get_workspace_prompt(workspace: Path) -> str:
 document_prompt_function(interactive=True)(prompt_gptme)
 document_prompt_function()(prompt_user)
 document_prompt_function()(prompt_project)
-document_prompt_function(tool_format="markdown")(prompt_tools)
+document_prompt_function()(prompt_tools)
 # document_prompt_function(tool_format="xml")(prompt_tools)
 # document_prompt_function(tool_format="tool")(prompt_tools)
 document_prompt_function()(prompt_systeminfo)
