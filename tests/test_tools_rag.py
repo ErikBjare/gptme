@@ -40,7 +40,7 @@ def test_enhance_messages_disabled():
     """Test message enhancement when RAG is disabled in config."""
     with (
         patch("subprocess.run", return_value=type("Proc", (), {"returncode": 0})),
-        patch("gptme.tools.rag.get_project_config") as mock_config,
+        patch("gptme.tools.rag.get_config") as mock_config,
     ):
         mock_config.return_value.rag = {"enabled": False}
         messages = [

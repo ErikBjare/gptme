@@ -16,7 +16,6 @@ from .base import (
     Parameter,
     ConfirmFunc,
     get_tool_format,
-    set_tool_format,
 )
 
 import importlib
@@ -35,7 +34,6 @@ __all__ = [
     "ConfirmFunc",
     # functions
     "get_tool_format",
-    "set_tool_format",
 ]
 
 _loaded_tools: list[ToolSpec] = []
@@ -77,7 +75,6 @@ def _discover_tools(module_names: frozenset[str]) -> list[ToolSpec]:
     return tools
 
 
-@lru_cache
 def init_tools(
     allowlist: frozenset[str] | None = None,
 ) -> None:
@@ -90,6 +87,14 @@ def init_tools(
         if env_allowlist:
             allowlist = frozenset(env_allowlist.split(","))
 
+    _init_tools(allowlist)
+
+
+@lru_cache
+def _init_tools(
+    allowlist: frozenset[str] | None = None,
+) -> None:
+    """Runs initialization logic with cache for tools."""
     for tool in get_available_tools():
         if tool in _loaded_tools:
             logger.warning("Tool '%s' already loaded", tool.name)

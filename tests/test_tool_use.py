@@ -1,7 +1,8 @@
 import json_repair
 import pytest
+import os
 from gptme.tools import init_tools
-from gptme.tools.base import ToolUse, extract_json, set_tool_format, toolcall_re
+from gptme.tools.base import ToolUse, extract_json, toolcall_re
 
 
 @pytest.mark.parametrize(
@@ -148,6 +149,6 @@ def test_toolcall_regex(content, expected_tool, expected_json):
 )
 def test_toolcall_regex_invalid(content):
     # No ToolUse should be created for invalid content
-    set_tool_format("tool")
+    os.environ["TOOL_FORMAT"] = "tool"
     tool_uses = list(ToolUse.iter_from_content(content))
     assert len(tool_uses) == 0

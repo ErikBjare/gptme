@@ -4,7 +4,6 @@ import os
 import re
 import sys
 import termios
-from typing import cast
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
@@ -25,7 +24,7 @@ from .tools import (
     get_tools,
     execute_msg,
     ConfirmFunc,
-    set_tool_format,
+    get_tool_format,
 )
 from .tools.browser import read_url
 from .util import console, path_with_tilde, print_bell
@@ -41,15 +40,11 @@ logger = logging.getLogger(__name__)
 def chat(
     prompt_msgs: list[Message],
     initial_msgs: list[Message],
-    logdir: Path,
     model: str | None,
     stream: bool = True,
     no_confirm: bool = False,
     interactive: bool = True,
     show_hidden: bool = False,
-    workspace: Path | None = None,
-    tool_allowlist: list[str] | None = None,
-    tool_format: ToolFormat | None = None,
 ) -> None:
     """
     Run the chat loop.
@@ -60,8 +55,7 @@ def chat(
 
     Callable from other modules.
     """
-    # init
-    init(model, interactive, tool_allowlist)
+    init(model, interactive)
 
     if not get_model().supports_streaming and stream:
         logger.info(
@@ -71,36 +65,21 @@ def chat(
         )
         stream = False
 
+    config = get_config()
+    
+    logdir = config.get_log_dir()
     console.log(f"Using logdir {path_with_tilde(logdir)}")
     manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
 
-    config = get_config()
-    tool_format_with_default: ToolFormat = tool_format or cast(
-        ToolFormat, config.get_env("TOOL_FORMAT", "markdown")
-    )
-
-    # By defining the tool_format at the last moment we ensure we can use the
-    # configuration for subagent
-    set_tool_format(tool_format_with_default)
+    # log_workspace = logdir / "workspace"
+    workspace = config.get_workspace_dir()
 
     # change to workspace directory
-    # use if exists, create if @log, or use given path
-    # TODO: move this into LogManager? then just os.chdir(manager.workspace)
-    log_workspace = logdir / "workspace"
-    if log_workspace.exists():
-        assert not workspace or (
-            workspace == log_workspace
-        ), f"Workspace already exists in {log_workspace}, wont override."
-        workspace = log_workspace.resolve()
-    else:
-        if not workspace:
-            workspace = Path.cwd()
-            log_workspace.symlink_to(workspace, target_is_directory=True)
-        assert workspace.exists(), f"Workspace path {workspace} does not exist"
     console.log(f"Using workspace at {path_with_tilde(workspace)}")
     os.chdir(workspace)
 
     workspace_prompt = get_workspace_prompt(workspace)
+
     # FIXME: this is hacky
     # NOTE: needs to run after the workspace is set
     # check if message is already in log, such as upon resume
@@ -142,7 +121,7 @@ def chat(
                                 manager.log,
                                 stream,
                                 confirm_func,
-                                tool_format=tool_format_with_default,
+                                tool_format=get_tool_format(),
                                 workspace=workspace,
                             )
                         )
@@ -194,7 +173,7 @@ def chat(
             manager.log,
             stream,
             confirm_func,
-            tool_format=tool_format_with_default,
+            tool_format=get_tool_format(),
             workspace=workspace,
         ):  # pragma: no cover
             manager.append(msg)

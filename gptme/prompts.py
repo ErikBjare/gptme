@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Literal
 
 from .__version__ import __version__
-from .config import get_config, get_project_config
+from .config import get_config
 from .message import Message
 from .tools import ToolFormat
-from .util import document_prompt_function, get_project_dir
+from .util import document_prompt_function
 
 PromptType = Literal["full", "short"]
 
@@ -26,16 +26,15 @@ logger = logging.getLogger(__name__)
 def get_prompt(
     prompt: PromptType | str = "full",
     interactive: bool = True,
-    tool_format: ToolFormat = "markdown",
 ) -> Message:
     """
     Get the initial system prompt.
     """
     msgs: Iterable
     if prompt == "full":
-        msgs = prompt_full(interactive, tool_format)
+        msgs = prompt_full(interactive)
     elif prompt == "short":
-        msgs = prompt_short(interactive, tool_format)
+        msgs = prompt_short(interactive)
     else:
         msgs = [Message("system", prompt)]
 
@@ -54,12 +53,10 @@ def _join_messages(msgs: list[Message]) -> Message:
     )
 
 
-def prompt_full(
-    interactive: bool, tool_format: ToolFormat
-) -> Generator[Message, None, None]:
+def prompt_full(interactive: bool) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools(tool_format=tool_format)
+    yield from prompt_tools()
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -67,12 +64,10 @@ def prompt_full(
     yield from prompt_timeinfo()
 
 
-def prompt_short(
-    interactive: bool, tool_format: ToolFormat
-) -> Generator[Message, None, None]:
+def prompt_short(interactive: bool) -> Generator[Message, None, None]:
     """Short prompt to start the conversation."""
     yield from prompt_gptme(interactive)
-    yield from prompt_tools(examples=False, tool_format=tool_format)
+    yield from prompt_tools(examples=False)
     if interactive:
         yield from prompt_user()
     yield from prompt_project()
@@ -178,32 +173,35 @@ def prompt_project() -> Generator[Message, None, None]:
     """
     Generate the project-specific prompt based on the current Git repository.
     """
-    projectdir = get_project_dir()
-    if not projectdir:
+
+    config = get_config()
+    if not config.has_project_config():
         return
 
-    project_config = get_project_config(projectdir)
-    config_prompt = get_config().prompt
+    projectdir = config.get_workspace_dir()
     project = projectdir.name
-    project_info = project_config and project_config.prompt
-    if not project_info:
+
+    config_prompt = config.prompt
+    project_prompt = config.project_prompt
+
+    if not project_prompt:
         # TODO: remove project preferences in global config? use only project config
-        project_info = config_prompt.get("project", {}).get(project)
+        project_prompt = config_prompt.get("project", {}).get(project)
 
-    yield Message(
-        "system",
-        f"## Current Project: {project}\n\n{project_info}",
-    )
+    if project_prompt:
+        yield Message(
+            "system",
+            f"## Current Project: {project}\n\n{project_prompt}",
+        )
 
 
-def prompt_tools(
-    examples: bool = True, tool_format: ToolFormat = "markdown"
-) -> Generator[Message, None, None]:
+def prompt_tools(examples: bool = True) -> Generator[Message, None, None]:
     """Generate the tools overview prompt."""
     from .tools import get_tools  # fmt: skip
 
     assert get_tools(), "No tools loaded"
 
+    tool_format: ToolFormat = get_config().get_env("TOOL_FORMAT", "markdown")  # type: ignore
     use_tool = tool_format == "tool"
 
     prompt = "# Tools aliases" if use_tool else "# Tools Overview"
@@ -253,9 +251,10 @@ def get_workspace_prompt(workspace: Path) -> str:
     # NOTE: needs to run after the workspace is initialized (i.e. initial prompt is constructed)
     # TODO: update this prompt if the files change
     # TODO: include `git status -vv`, and keep it up-to-date
-    if project := get_project_config(workspace):
+    config = get_config()
+    if config.has_project_config():
         files: list[Path] = []
-        for fileglob in project.files:
+        for fileglob in config.files:
             # expand user
             fileglob = str(Path(fileglob).expanduser())
             # expand with glob
@@ -270,17 +269,19 @@ def get_workspace_prompt(workspace: Path) -> str:
         for file in files:
             if file.exists():
                 files_str.append(f"```{file}\n{file.read_text()}\n```")
+
         return (
             "# Workspace Context\n\n"
             "Selected project files, read more with cat:\n\n" + "\n\n".join(files_str)
         )
+
     return ""
 
 
 document_prompt_function(interactive=True)(prompt_gptme)
 document_prompt_function()(prompt_user)
 document_prompt_function()(prompt_project)
-document_prompt_function(tool_format="markdown")(prompt_tools)
+document_prompt_function()(prompt_tools)
 # document_prompt_function(tool_format="xml")(prompt_tools)
 # document_prompt_function(tool_format="tool")(prompt_tools)
 document_prompt_function()(prompt_systeminfo)
