@@ -1,4 +1,5 @@
 import pytest
+import os
 from gptme.prompts import prompt_tools
 from gptme.tools import init_tools
 
@@ -78,7 +79,9 @@ from gptme.tools import init_tools
 def test_prompt_tools(tool_format, example, expected, not_expected):
     init_tools(allowlist=frozenset(("shell", "read")))
 
-    prompt = next(prompt_tools(example, tool_format)).content
+    os.environ["TOOL_FORMAT"] = tool_format
+
+    prompt = next(prompt_tools(example)).content
 
     for expect in expected:
         assert expect in prompt

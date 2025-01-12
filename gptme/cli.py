@@ -11,7 +11,6 @@ from pick import pick
 
 
 from .chat import chat
-from .config import get_config
 from .commands import _gen_help
 from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
@@ -241,30 +240,27 @@ def main(
 
     os.environ["SESSION_NAME"] = name
 
-    config = get_config()
-
-    selected_tool_format: ToolFormat = (
-        tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
-    )
+    if tool_format is not None:
+        os.environ["TOOL_FORMAT"] = tool_format
 
     if tool_allowlist:
         # split comma-separated values
         tool_allowlist = [tool for tools in tool_allowlist for tool in tools.split(",")]
+        os.environ["TOOL_ALLOWLIST"] = ",".join(tool_allowlist)
 
-    # early init tools to generate system prompt
-    init_tools(frozenset(tool_allowlist) if tool_allowlist else None)
+    if workspace:
+        os.environ["WORKSPACE"] = workspace
+
+    # Early init tools to generate system prompt
+    init_tools()
 
     # get initial system prompt
     initial_msgs = [
         get_prompt(
             prompt_system,
             interactive=interactive,
-            tool_format=selected_tool_format,
         )
     ]
-
-    if workspace:  # The user forced the workspace
-        os.environ["WORKSPACE"] = workspace
 
     # register a handler for Ctrl-C
     set_interruptible()  # prepare, user should be able to Ctrl+C until user prompt ready
@@ -279,8 +275,6 @@ def main(
             no_confirm,
             interactive,
             show_hidden,
-            tool_allowlist,
-            selected_tool_format,
         )
     except RuntimeError as e:
         logger.error(e)

@@ -7,7 +7,6 @@ import termios
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
-from typing import cast
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_config
@@ -25,7 +24,7 @@ from .tools import (
     execute_msg,
     get_tools,
     has_tool,
-    set_tool_format,
+    get_tool_format,
 )
 from .tools.browser import read_url
 from .tools.tts import speak
@@ -47,8 +46,6 @@ def chat(
     no_confirm: bool = False,
     interactive: bool = True,
     show_hidden: bool = False,
-    tool_allowlist: list[str] | None = None,
-    tool_format: ToolFormat | None = None,
 ) -> None:
     """
     Run the chat loop.
@@ -59,8 +56,7 @@ def chat(
 
     Callable from other modules.
     """
-    # init
-    init(model, interactive, tool_allowlist)
+    init(model, interactive)
 
     if not get_model().supports_streaming and stream:
         logger.info(
@@ -71,18 +67,10 @@ def chat(
         stream = False
 
     config = get_config()
-    logdir = config.get_log_dir()
 
+    logdir = config.get_log_dir()
     console.log(f"Using logdir {path_with_tilde(logdir)}")
     manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
-
-    tool_format_with_default: ToolFormat = tool_format or cast(
-        ToolFormat, config.get_env("TOOL_FORMAT", "markdown")
-    )
-
-    # By defining the tool_format at the last moment we ensure we can use the
-    # configuration for subagent
-    set_tool_format(tool_format_with_default)
 
     # log_workspace = logdir / "workspace"
     workspace = config.get_workspace_dir()
@@ -134,7 +122,7 @@ def chat(
                                 manager.log,
                                 stream,
                                 confirm_func,
-                                tool_format=tool_format_with_default,
+                                tool_format=get_tool_format(),
                                 workspace=workspace,
                             )
                         )
@@ -187,7 +175,7 @@ def chat(
             manager.log,
             stream,
             confirm_func,
-            tool_format=tool_format_with_default,
+            tool_format=get_tool_format(),
             workspace=workspace,
         ):  # pragma: no cover
             manager.append(msg)

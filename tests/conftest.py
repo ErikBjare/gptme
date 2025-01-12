@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 import pytest
 from gptme.tools.rag import _has_gptme_rag
-from gptme.tools import clear_tools, init_tools
+from gptme.tools import clear_tools, _init_tools
 
 
 def pytest_sessionstart(session):
@@ -33,7 +33,7 @@ def download_model():
 def clear_tools_before():
     # Clear all tools and cache to prevent test conflicts
     clear_tools()
-    init_tools.cache_clear()
+    _init_tools.cache_clear()
 
 
 @pytest.fixture

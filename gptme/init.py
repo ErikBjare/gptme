@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 _init_done = False
 
 
-def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None):
+def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None = None):
     global _init_done
     if _init_done:
         logger.warning("init() called twice, ignoring")

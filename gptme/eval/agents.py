@@ -36,6 +36,7 @@ class GPTMe(Agent):
         name = get_name(f"gptme-evals-{model_fmt}-{_id}")
 
         os.environ["SESSION_NAME"] = name
+        os.environ["TOOL_FORMAT"] = self.tool_format
         os.environ["WORKSPACE"] = "@log"
 
         config = get_config()
@@ -62,7 +63,6 @@ class GPTMe(Agent):
                 model=self.model,
                 no_confirm=True,
                 interactive=False,
-                tool_format=self.tool_format,
             )
         # don't exit on sys.exit()
         except (SystemExit, KeyboardInterrupt):
