@@ -1,4 +1,3 @@
-import importlib.metadata
 import logging
 import os
 import signal
@@ -156,7 +155,9 @@ def main(
     """Main entrypoint for the CLI."""
     if version:
         # print version
-        print(f"gptme {importlib.metadata.version('gptme')}")
+        from . import __version__
+
+        print(f"gptme v{__version__}")
 
         # print dirs
         print(f"Logs dir: {get_logs_dir()}")
