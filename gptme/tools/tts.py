@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 import queue
 import re
 import threading
@@ -77,6 +78,13 @@ def split_text(text, max_words=50):
         """Check if text is a list item."""
         return bool(list_pattern.match(text.strip()))
 
+    def convert_list_item(text):
+        """Convert list item format if needed (e.g. * to -)."""
+        text = text.strip()
+        if text.startswith("*"):
+            return text.replace("*", "-", 1)
+        return text
+
     def protect_decimals(text):
         """Replace decimal points with @ to avoid splitting them."""
         return re.sub(r"(\d+)\.(\d+)", r"\1@\2", text)
@@ -133,7 +141,7 @@ def split_text(text, max_words=50):
                 )
                 if all_items_have_periods:
                     line = line.rstrip(".")
-                result.append(line)
+                result.append(convert_list_item(line))
                 continue
 
             # Handle decimal numbers without other text
@@ -166,21 +174,41 @@ def split_text(text, max_words=50):
 
 def audio_player_thread():
     """Background thread for playing audio."""
+    log.debug("Audio player thread started")
     while True:
         try:
             # Get audio data from queue
+            log.debug("Waiting for audio data...")
             data, sample_rate = audio_queue.get()
             if data is None:  # Sentinel value to stop thread
+                log.debug("Received stop signal")
                 break
 
             # Apply volume
             data = data * current_volume
+            log.debug(
+                f"Playing audio: shape={data.shape}, sr={sample_rate}, vol={current_volume}"
+            )
 
-            # Play audio
-            log.debug("Playing audio...")
-            sd.play(data, sample_rate)
+            # Play audio using explicit device index
+            devices = sd.query_devices()
+            output_device = next(
+                (
+                    i
+                    for i, d in enumerate(devices)
+                    if d["max_output_channels"] > 0 and d["hostapi"] == 2
+                ),
+                None,
+            )
+            if output_device is None:
+                log.error("No suitable output device found")
+                continue
+
+            device_info = sd.query_devices(output_device)
+            log.debug(f"Playing on device: {output_device} ({device_info['name']})")
+            sd.play(data, sample_rate, device=output_device)
             sd.wait()  # Wait until audio is finished playing
-            log.debug("Done playing audio")
+            log.debug("Finished playing audio chunk")
 
             audio_queue.task_done()
         except Exception as e:
@@ -205,9 +233,7 @@ def resample_audio(data, orig_sr, target_sr):
     return signal.resample(data, num_samples)
 
 
-def speak(
-    text, device_name="Fosi Audio BT20A", block=False, verbose=False, interrupt=True
-):
+def speak(text, block=False, verbose=False, interrupt=True):
     """Speak text using Kokoro TTS server.
 
     The TTS system supports:
@@ -219,7 +245,6 @@ def speak(
 
     Args:
         text: Text to speak
-        device_name: Name of audio output device to use
         block: If True, wait for audio to finish playing
         verbose: If True, print detailed progress information
         interrupt: If True, stop current speech and clear queue before speaking
@@ -242,36 +267,49 @@ def speak(
 
     # Split text into chunks if needed
     chunks = split_text(text)
+    chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
     if len(chunks) > 1 and verbose:
         print(f"Split into {len(chunks)} chunks")
 
     try:
-        # Find the device (do this once)
+        # Find the current output device
         devices = sd.query_devices()
-        device_id = None
-        for i, dev in enumerate(devices):
-            if device_name in str(dev["name"]):
-                device_id = i
-                device_info = dev
-                break
+        output_device = next(
+            (
+                i
+                for i, d in enumerate(devices)
+                if d["max_output_channels"] > 0 and d["hostapi"] == 2
+            ),
+            None,
+        )
+        if output_device is None:
+            raise RuntimeError("No suitable output device found")
 
-        if device_id is None:
-            log.warning(f"Device '{device_name}' not found, using default")
-            device_info = sd.query_devices(kind="output")
-        else:
-            sd.default.device = device_id
-
-        # Get device's default sample rate
+        device_info = sd.query_devices(output_device)
         device_sr = int(device_info["default_samplerate"])
+
+        log.debug("Available audio devices:")
+        for i, dev in enumerate(devices):
+            log.debug(
+                f"  [{i}] {dev['name']} (in: {dev['max_input_channels']}, out: {dev['max_output_channels']}, hostapi: {dev['hostapi']})"
+            )
+
+        log.debug(f"Selected output device: {output_device} ({device_info['name']})")
+        log.debug(f"Sample rate: {device_sr}")
 
         # Ensure playback thread is running
         ensure_playback_thread()
 
         # Process each chunk
         for chunk in chunks:
+            if not chunk:
+                continue
+
             # Make request to the TTS server
             url = "http://localhost:8000/tts"
             params = {"text": chunk, "speed": current_speed}
+            if voice := os.getenv("GPTME_TTS_VOICE"):
+                params["voice"] = voice
 
             response = requests.get(url, params=params)
 
@@ -371,11 +409,19 @@ def test_split_text_lists():
         )
     ] == ["1. Test", "2. Test2"]
 
+    # Replace asterisk lists with dashes
+    assert split_text(
+        """
+* Test
+* Test2
+"""
+    ) == ["- Test", "- Test2"]
+
 
 tool = ToolSpec(
     "tts",
     desc="Text-to-speech (TTS) tool for generating audio from text.",
-    instructions="Will output all assistant speech (not codeblocks, tool-uses, or other non-speech text).",
+    instructions="Will output all assistant speech (not codeblocks, tool-uses, or other non-speech text). The assistant cannot hear the output.",
     available=_available,
     functions=[speak, set_speed, set_volume, stop],
 )

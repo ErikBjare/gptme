@@ -8,7 +8,7 @@ SRCDIRS = gptme tests scripts
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
 
 # exclude files
-EXCLUDES = tests/output scripts/build_changelog.py
+EXCLUDES = tests/output scripts/build_changelog.py scripts/tts_server.py
 SRCFILES = $(shell find ${SRCDIRS} -name '*.py' $(foreach EXCLUDE,$(EXCLUDES),-not -path $(EXCLUDE)))
 
 build:

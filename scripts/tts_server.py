@@ -74,21 +74,22 @@ def load_voice(voice_name: str):
     return torch.load(voice_path, weights_only=True).to(DEVICE)
 
 
+def _check_espeak():
+    try:
+        # check that espeak-ng is installed
+        subprocess.run(["espeak-ng", "--version"], capture_output=True, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        raise RuntimeError(
+            "Failed to run `espeak-ng`. Try to install it using 'sudo apt-get install espeak-ng' or equivalent"
+        ) from None
+
+
 def init_model(voice: str | None = None):
     """Initialize the Kokoro TTS model and voicepack."""
     global MODEL, VOICEPACK, DEFAULT_VOICE
 
     try:
-        # Install espeak-ng if not already installed
-        try:
-            subprocess.run(["espeak-ng", "--version"], capture_output=True, check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            log.info("Installing espeak-ng...")
-            subprocess.run(
-                ["sudo", "apt-get", "install", "-y", "espeak-ng"], check=True
-            )
-
-        # Import and initialize
+        _check_espeak()
 
         log.info("Loading model...")
         MODEL = build_model(str(kokoro_path / "kokoro-v0_19.pth"), DEVICE)

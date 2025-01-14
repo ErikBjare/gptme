@@ -138,6 +138,10 @@ disable_error_code = "import-untyped"
 module = "langchain.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "gptme.tools.tts"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
