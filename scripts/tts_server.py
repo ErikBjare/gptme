@@ -101,7 +101,7 @@ async def health():
 
 
 @app.get("/tts")
-async def text_to_speech(text: str):
+async def text_to_speech(text: str, speed: float = 1.0):
     """Convert text to speech and return audio stream."""
     if MODEL is None:
         raise HTTPException(status_code=500, detail="Model not initialized")
@@ -109,8 +109,8 @@ async def text_to_speech(text: str):
         raise HTTPException(status_code=500, detail="Voicepack not initialized")
 
     try:
-        log.info(f"Generating audio for text: {text[:50]}...")
-        audio, phonemes = generate(MODEL, text, VOICEPACK, lang="a")
+        log.info(f"Generating audio for text: {text[:50]}... (speed: {speed}x)")
+        audio, phonemes = generate(MODEL, text, VOICEPACK, lang="a", speed=speed)
         log.info(f"Generated phonemes: {phonemes}")
 
         # Convert to WAV format
