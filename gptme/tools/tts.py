@@ -17,7 +17,8 @@ try:
     import scipy.signal as signal  # fmt: skip
     import sounddevice as sd  # fmt: skip
     _available = True
-except ImportError:
+except (ImportError, OSError):
+    # sounddevice may throw OSError("PortAudio library not found")
     _available = False
 # fmt: on
 
