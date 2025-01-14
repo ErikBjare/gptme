@@ -139,7 +139,19 @@ module = "langchain.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "gptme.tools.tts"
+module = "numpy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sounddevice.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "flask.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
