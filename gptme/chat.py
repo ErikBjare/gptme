@@ -249,11 +249,10 @@ def step(
             log_costs(msgs + [msg_response])
 
         # speak if TTS tool is available
-        # if has_tool("tts"):
-        # Clean and speak the response
-        cleaned_content = _clean_content_for_speech(msg_response.content)
-        if cleaned_content.strip():
-            speak(cleaned_content)
+        if has_tool("tts"):
+            cleaned_content = _clean_content_for_speech(msg_response.content)
+            if cleaned_content.strip():
+                speak(cleaned_content)
 
         # log response and run tools
         if msg_response:
@@ -471,10 +470,10 @@ def _clean_content_for_speech(content: str) -> str:
     Returns the cleaned content suitable for speech.
     """
     # Remove <thinking> tags and their content
-    content = re.sub(r"<thinking>.*?</thinking>", "", content, flags=re.DOTALL)
+    content = re.sub(r"<thinking>.*?(</thinking>|$)", "", content, flags=re.DOTALL)
 
     # Remove tool use blocks
-    content = re.sub(r"```\w+[^`]*```", "", content, flags=re.DOTALL)
+    content = re.sub(r"```\w+[^`]*(```|$)", "", content, flags=re.DOTALL)
 
     return content.strip()
 

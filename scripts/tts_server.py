@@ -22,12 +22,14 @@ API Endpoints:
     GET /health - Check server health
 """
 
+import glob
 import io
 import logging
 import subprocess
 import sys
 from pathlib import Path
 
+import click
 import scipy.io.wavfile as wavfile
 import torch
 import uvicorn
@@ -54,11 +56,27 @@ app = FastAPI(title="TTS Server")
 MODEL = None
 VOICEPACK = None
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEFAULT_VOICE = None
 
 
-def init_model():
+def _list_voices():
+    """List all available voice files."""
+    voice_dir = kokoro_path / "voices"
+    voices = glob.glob(str(voice_dir / "*.pt"))
+    return [Path(v).stem for v in voices]
+
+
+def load_voice(voice_name: str):
+    """Load a specific voice by name."""
+    voice_path = kokoro_path / "voices" / f"{voice_name}.pt"
+    if not voice_path.exists():
+        raise ValueError(f"Voice {voice_name} not found")
+    return torch.load(voice_path, weights_only=True).to(DEVICE)
+
+
+def init_model(voice: str | None = None):
     """Initialize the Kokoro TTS model and voicepack."""
-    global MODEL, VOICEPACK
+    global MODEL, VOICEPACK, DEFAULT_VOICE
 
     try:
         # Install espeak-ng if not already installed
@@ -76,10 +94,20 @@ def init_model():
         MODEL = build_model(str(kokoro_path / "kokoro-v0_19.pth"), DEVICE)
 
         log.info("Loading voicepack...")
-        VOICEPACK = torch.load(
-            kokoro_path / "voices/af_bella.pt", weights_only=True
-        ).to(DEVICE)
-        log.info("Model initialization complete")
+        available_voices = _list_voices()
+        if not available_voices:
+            raise RuntimeError("No voice files found")
+
+        # Use specified voice or default "af"
+        voice_name = voice or "af"
+        if voice_name not in available_voices:
+            raise ValueError(
+                f"Voice {voice_name} not found. Available voices: {available_voices}"
+            )
+
+        DEFAULT_VOICE = voice_name
+        VOICEPACK = load_voice(voice_name)
+        log.info(f"Model initialization complete (using voice: {voice_name})")
 
     except Exception as e:
         log.error(f"Failed to initialize model: {e}")
@@ -89,7 +117,7 @@ def init_model():
 @app.on_event("startup")
 async def startup_event():
     """Initialize model on startup."""
-    init_model()
+    init_model(DEFAULT_VOICE)
 
 
 @app.get("/health")
@@ -99,20 +127,36 @@ async def health():
         "status": "healthy",
         "model_loaded": MODEL is not None,
         "voicepack_loaded": VOICEPACK is not None,
+        "default_voice": DEFAULT_VOICE,
+        "available_voices": _list_voices(),
+        "device": DEVICE,
     }
 
 
 @app.get("/tts")
-async def text_to_speech(text: str, speed: float = 1.0):
+async def text_to_speech(text: str, speed: float = 1.0, voice: str | None = None):
     """Convert text to speech and return audio stream."""
     if MODEL is None:
         raise HTTPException(status_code=500, detail="Model not initialized")
-    if VOICEPACK is None:
+
+    # Handle voice selection
+    try:
+        current_voicepack = VOICEPACK
+        if voice and voice != DEFAULT_VOICE:
+            current_voicepack = load_voice(voice)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if current_voicepack is None:
         raise HTTPException(status_code=500, detail="Voicepack not initialized")
 
     try:
-        log.info(f"Generating audio for text: {text[:50]}... (speed: {speed}x)")
-        audio, phonemes = generate(MODEL, text, VOICEPACK, lang="a", speed=speed)
+        log.info(
+            f"Generating audio for text: {text[:50]}... (speed: {speed}x, voice: {voice or DEFAULT_VOICE})"
+        )
+        audio, phonemes = generate(
+            MODEL, text, current_voicepack, lang="a", speed=speed
+        )
         log.info(f"Generated phonemes: {phonemes}")
 
         # Convert to WAV format
@@ -132,6 +176,28 @@ async def text_to_speech(text: str, speed: float = 1.0):
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@click.command()
+@click.option("--port", default=8000, help="Port to run the server on")
+@click.option("--host", default="0.0.0.0", help="Host to run the server on")
+@click.option("--voice", help="Default voice to use")
+@click.option("--list-voices", is_flag=True, help="List available voices and exit")
+def main(port: int, host: str, voice: str | None, list_voices: bool):
+    """Run the TTS server."""
+    if list_voices:
+        available_voices = _list_voices()
+        print("Available voices:")
+        for v in available_voices:
+            print(f"  - {v}")
+        return
+
+    global DEFAULT_VOICE
+    DEFAULT_VOICE = voice
+
+    log.info(f"Starting TTS server on {host}:{port} (device: {DEVICE})")
+    if voice:
+        log.info(f"Using default voice: {voice}")
+    uvicorn.run(app, host=host, port=port)
+
+
 if __name__ == "__main__":
-    log.info(f"Starting TTS server on port 8000 (device: {DEVICE})")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    main()

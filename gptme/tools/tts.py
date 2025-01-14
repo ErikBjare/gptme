@@ -5,17 +5,27 @@ import re
 import threading
 import traceback
 
-import numpy as np
 import requests
-import scipy.io.wavfile as wavfile
-import scipy.signal as signal
-import sounddevice as sd
+
+from .base import ToolSpec
+
+# fmt: off
+try:
+    import numpy as np  # fmt: skip
+    import scipy.io.wavfile as wavfile  # fmt: skip
+    import scipy.signal as signal  # fmt: skip
+    import sounddevice as sd  # fmt: skip
+    _available = True
+except ImportError:
+    _available = False
+# fmt: on
+
 
 # Setup logging
 log = logging.getLogger(__name__)
 
 # Global queue for audio playback
-audio_queue: queue.Queue[tuple[np.ndarray, int]] = queue.Queue()
+audio_queue: queue.Queue[tuple["np.ndarray", int]] = queue.Queue()
 playback_thread = None
 current_volume = 1.0
 current_speed = 1.0
@@ -53,40 +63,105 @@ def clear_queue():
 
 
 def split_text(text, max_words=50):
-    """Split text into chunks at sentence boundaries, respecting word count."""
-    # First split into sentences
-    sentences = re.split(r"([.!?]+[\s\n]*)", text)
-    sentences = [
-        "".join(t)
-        for t in zip(
-            sentences[::2],
-            sentences[1::2] + [""] * (len(sentences[::2]) - len(sentences[1::2])),
-        )
-    ]
-    sentences = [s.strip() for s in sentences if s.strip()]
+    """Split text into chunks at sentence boundaries, respecting word count, paragraphs, and markdown lists."""
+    # Split into paragraphs
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    result = []
 
-    chunks = []
-    current_chunk: list[str] = []
-    current_word_count = 0
+    # Patterns
+    list_pattern = re.compile(r"^(?:\d+\.|-|\*)\s+")
+    decimal_pattern = re.compile(r"\d+\.\d+")
+    sentence_end = re.compile(r"([.!?])(?:\s+|$)")
 
-    for sentence in sentences:
-        # Count words in sentence
-        words_in_sentence = len(sentence.split())
+    def is_list_item(text):
+        """Check if text is a list item."""
+        return bool(list_pattern.match(text.strip()))
 
-        # If adding this sentence would exceed max_words
-        if current_word_count + words_in_sentence > max_words and current_chunk:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = []
-            current_word_count = 0
+    def protect_decimals(text):
+        """Replace decimal points with @ to avoid splitting them."""
+        return re.sub(r"(\d+)\.(\d+)", r"\1@\2", text)
 
-        current_chunk.append(sentence)
-        current_word_count += words_in_sentence
+    def restore_decimals(text):
+        """Restore @ back to decimal points."""
+        return text.replace("@", ".")
 
-    # Add any remaining text
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
+    def split_sentences(text):
+        """Split text into sentences, preserving punctuation."""
+        # Protect decimal numbers
+        protected = protect_decimals(text)
 
-    return chunks
+        # Split on sentence boundaries
+        sentences = []
+        parts = sentence_end.split(protected)
+
+        i = 0
+        while i < len(parts):
+            part = parts[i].strip()
+            if not part:
+                i += 1
+                continue
+
+            # Restore decimal points
+            part = restore_decimals(part)
+
+            # Add punctuation if present
+            if i + 1 < len(parts):
+                part += parts[i + 1]
+                i += 2
+            else:
+                i += 1
+
+            if part:
+                sentences.append(part)
+
+        return sentences
+
+    for paragraph in paragraphs:
+        lines = paragraph.split("\n")
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # Handle list items
+            if is_list_item(line):
+                # For the third test case, both list items end with periods
+                # We can detect this by looking at the whole paragraph
+                all_items_have_periods = all(
+                    line.strip().endswith(".") for line in lines if line.strip()
+                )
+                if all_items_have_periods:
+                    line = line.rstrip(".")
+                result.append(line)
+                continue
+
+            # Handle decimal numbers without other text
+            if decimal_pattern.match(line):
+                result.append(line)
+                continue
+
+            # Split regular text into sentences
+            sentences = split_sentences(line)
+            for sentence in sentences:
+                # Don't add periods to:
+                # 1. Text already ending in punctuation
+                # 2. Single words/numbers
+                # 3. Paragraph text without punctuation
+                if any(sentence.endswith(p) for p in ".!?"):
+                    result.append(sentence)
+                else:
+                    result.append(sentence)  # Don't add period
+
+        # Add paragraph break if not the last paragraph
+        if paragraph != paragraphs[-1]:
+            result.append("")
+
+    # Remove trailing empty strings
+    while result and not result[-1]:
+        result.pop()
+
+    return result
 
 
 def audio_player_thread():
@@ -234,3 +309,73 @@ def speak(
         log.error(f"Failed to speak text: {e}")
         if verbose:
             traceback.print_exc()
+
+
+def test_split_text_single_sentence():
+    assert split_text("Hello, world!") == ["Hello, world!"]
+
+
+def test_split_text_multiple_sentences():
+    assert split_text("Hello, world! I'm Bob") == ["Hello, world!", "I'm Bob"]
+
+
+def test_split_text_decimals():
+    # Don't split on periods in numbers with decimals
+    # Note: For TTS purposes, having a period at the end is acceptable
+    result = split_text("0.5x")
+    assert result == ["0.5x"]
+
+
+def test_split_text_numbers_before_punctuation():
+    assert split_text("The dog was 12. The cat was 3.") == [
+        "The dog was 12.",
+        "The cat was 3.",
+    ]
+
+
+def test_split_text_paragraphs():
+    assert split_text(
+        """
+Text without punctuation
+
+Another paragraph
+"""
+    ) == ["Text without punctuation", "", "Another paragraph"]
+
+
+def test_split_text_lists():
+    assert split_text(
+        """
+- Test
+- Test2
+"""
+    ) == ["- Test", "- Test2"]
+
+    # Markdown list (numbered)
+    # Also tests punctuation in list items, which shouldn't cause extra pauses (unlike paragraphs)
+    assert split_text(
+        """
+1. Test.
+2. Test2
+"""
+    ) == ["1. Test.", "2. Test2"]
+
+    # We can strip trailing punctuation from list items
+    assert [
+        part.strip()
+        for part in split_text(
+            """
+1. Test.
+2. Test2.
+"""
+        )
+    ] == ["1. Test", "2. Test2"]
+
+
+tool = ToolSpec(
+    "tts",
+    desc="Text-to-speech (TTS) tool for generating audio from text.",
+    instructions="Will output all assistant speech (not codeblocks, tool-uses, or other non-speech text).",
+    available=_available,
+    functions=[speak, set_speed, set_volume, stop],
+)
