@@ -7,6 +7,7 @@ with that content as input, making it easy to get AI assistance with terminal ou
 """
 
 import argparse
+import os
 import subprocess
 import sys
 
@@ -17,15 +18,9 @@ def get_tmux_content(lines: int | None = None):
     Args:
         lines: Number of lines to capture from the end. If None, captures all lines.
     """
-    try:
-        # Check if we're in tmux
-        subprocess.run(
-            ["tmux", "display-message"],
-            capture_output=True,
-            check=True,
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("Error: Not in a tmux session or tmux not installed", file=sys.stderr)
+    # Check if we're in tmux by checking environment variables
+    if not os.environ.get("TMUX") or not os.environ.get("TMUX_PANE"):
+        print("Error: Not in a tmux session", file=sys.stderr)
         sys.exit(1)
 
     # Capture pane content
