@@ -250,9 +250,8 @@ def step(
 
         # speak if TTS tool is available
         if has_tool("tts"):
-            cleaned_content = _clean_content_for_speech(msg_response.content)
-            if cleaned_content.strip():
-                speak(cleaned_content)
+            if speech := _clean_content_for_speech(msg_response.content).strip():
+                speak(speech)
 
         # log response and run tools
         if msg_response:
