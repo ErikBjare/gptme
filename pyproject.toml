@@ -25,6 +25,7 @@ gptme-server = "gptme.server.cli:main"
 gptme-eval = "gptme.eval.main:main"
 gptme-util = "gptme.util.cli:main"
 gptme-nc = "gptme.ncurses:main"
+gptme-wut = "gptme.wut:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
