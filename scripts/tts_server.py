@@ -33,13 +33,15 @@ import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from kokoro import generate
-from models import build_model
+
+script_dir = Path(__file__).parent
 
 # Add Kokoro-82M to Python path
-kokoro_path = Path("Kokoro-82M").absolute()
+kokoro_path = (script_dir / "Kokoro-82M").absolute()
 sys.path.insert(0, str(kokoro_path))
 
+from kokoro import generate  # fmt: skip
+from models import build_model  # fmt: skip
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -74,9 +76,9 @@ def init_model():
         MODEL = build_model(str(kokoro_path / "kokoro-v0_19.pth"), DEVICE)
 
         log.info("Loading voicepack...")
-        VOICEPACK = torch.load(kokoro_path / "voices/af.pt", weights_only=True).to(
-            DEVICE
-        )
+        VOICEPACK = torch.load(
+            kokoro_path / "voices/af_bella.pt", weights_only=True
+        ).to(DEVICE)
         log.info("Model initialization complete")
 
     except Exception as e:
