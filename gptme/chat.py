@@ -4,10 +4,10 @@ import os
 import re
 import sys
 import termios
-from typing import cast
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
+from typing import cast
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_config
@@ -19,15 +19,16 @@ from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
 from .tools import (
+    ConfirmFunc,
     ToolFormat,
     ToolUse,
-    has_tool,
-    get_tools,
     execute_msg,
-    ConfirmFunc,
+    get_tools,
+    has_tool,
     set_tool_format,
 )
 from .tools.browser import read_url
+from .tools.tts import speak
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
 from .util.context import use_fresh_context
@@ -247,6 +248,11 @@ def step(
         if os.environ.get("GPTME_COSTS") in ["1", "true"]:
             log_costs(msgs + [msg_response])
 
+        # speak if TTS tool is available
+        if has_tool("tts"):
+            if speech := _clean_content_for_speech(msg_response.content).strip():
+                speak(speech)
+
         # log response and run tools
         if msg_response:
             yield msg_response.replace(quiet=True)
@@ -452,6 +458,23 @@ def _parse_prompt(prompt: str) -> str | None:
                 logger.warning(f"Failed to read URL {url}: {e}")
 
     return result
+
+
+def _clean_content_for_speech(content: str) -> str:
+    """
+    Clean content for speech by removing:
+    - <thinking> tags and their content
+    - Tool use blocks (```tool ...```)
+
+    Returns the cleaned content suitable for speech.
+    """
+    # Remove <thinking> tags and their content
+    content = re.sub(r"<thinking>.*?(</thinking>|$)", "", content, flags=re.DOTALL)
+
+    # Remove tool use blocks
+    content = re.sub(r"```\w+[^`]*(```|$)", "", content, flags=re.DOTALL)
+
+    return content.strip()
 
 
 def _parse_prompt_files(prompt: str) -> Path | None:

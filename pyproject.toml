@@ -58,7 +58,9 @@ multiprocessing-logging = "^0.3.4"
 matplotlib = {version = "*", optional=true}
 pandas = {version = "*", optional=true}
 numpy = {version = "*", optional=true}
+scipy = {version="*", optional=true}
 pillow = {version = "*", optional=true}
+sounddevice = {version="^0.5.1", optional=true}
 
 # server
 flask = {version = "^3.0", optional=true}
@@ -100,17 +102,20 @@ browser = ["playwright"]
 datascience = ["matplotlib", "pandas", "numpy", "pillow"]
 computer = ["pillow"]
 youtube = ["youtube_transcript_api"]
+tts = ["sounddevice", "scipy", "numpy"]
 all = [
     # server
     "flask", "flask-cors",
     # browser
     "playwright",
     # datascience
-    "matplotlib", "pandas", "numpy", "pillow",
+    "matplotlib", "pandas", "numpy", "scipy", "pillow",
     # computer
     "pillow",
     # youtube transcript tool
     "youtube_transcript_api",
+    # tts
+    "sounddevice", "scipy", "numpy",
 ]
 
 [tool.ruff]
@@ -131,6 +136,22 @@ disable_error_code = "import-untyped"
 
 [[tool.mypy.overrides]]
 module = "langchain.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "numpy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sounddevice.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "flask.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
