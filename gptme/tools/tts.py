@@ -303,7 +303,7 @@ def speak(text, block=False, verbose=False, interrupt=True):
 
         # Process each chunk
         for chunk in chunks:
-            if not chunk:
+            if not chunk.strip():
                 continue
 
             # Make request to the TTS server
