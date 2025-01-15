@@ -250,8 +250,7 @@ def step(
 
         # speak if TTS tool is available
         if has_tool("tts"):
-            if speech := _clean_content_for_speech(msg_response.content).strip():
-                speak(speech)
+            speak(msg_response.content)
 
         # log response and run tools
         if msg_response:
@@ -458,23 +457,6 @@ def _parse_prompt(prompt: str) -> str | None:
                 logger.warning(f"Failed to read URL {url}: {e}")
 
     return result
-
-
-def _clean_content_for_speech(content: str) -> str:
-    """
-    Clean content for speech by removing:
-    - <thinking> tags and their content
-    - Tool use blocks (```tool ...```)
-
-    Returns the cleaned content suitable for speech.
-    """
-    # Remove <thinking> tags and their content
-    content = re.sub(r"<thinking>.*?(</thinking>|$)", "", content, flags=re.DOTALL)
-
-    # Remove tool use blocks
-    content = re.sub(r"```\w+[^`]*(```|$)", "", content, flags=re.DOTALL)
-
-    return content.strip()
 
 
 def _parse_prompt_files(prompt: str) -> Path | None:
