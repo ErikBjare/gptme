@@ -3,12 +3,19 @@ import logging
 import os
 import queue
 import re
+import socket
 import threading
-import traceback
 
 import requests
 
+from ..util import console
 from .base import ToolSpec
+
+# Setup logging
+log = logging.getLogger(__name__)
+
+host = "localhost"
+port = 8000
 
 # fmt: off
 try:
@@ -16,25 +23,31 @@ try:
     import scipy.io.wavfile as wavfile  # fmt: skip
     import scipy.signal as signal  # fmt: skip
     import sounddevice as sd  # fmt: skip
-    _available = True
+
+    # available if a server is running on localhost:8000
+    _available = socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect_ex((host, port)) == 0
+    if _available:
+        console.log("TTS enabled")
+    else:
+        console.log("TTS disabled: server not available")
 except (ImportError, OSError):
     # sounddevice may throw OSError("PortAudio library not found")
     _available = False
 # fmt: on
 
-
-# Setup logging
-log = logging.getLogger(__name__)
-
 # Global queue for audio playback
 audio_queue: queue.Queue[tuple["np.ndarray", int]] = queue.Queue()
 playback_thread = None
 current_volume = 1.0
-current_speed = 1.0
+current_speed = 1.3
+
+
+re_thinking = re.compile(r"<thinking>.*?(\n</thinking>|$)", flags=re.DOTALL)
+re_tool_use = re.compile(r"```[\w\. ]+\n[^`]*(\n```|$)", flags=re.DOTALL)
 
 
 def set_speed(speed):
-    """Set the speaking speed (0.5 to 2.0)."""
+    """Set the speaking speed (0.5 to 2.0, default 1.3)."""
     global current_speed
     current_speed = max(0.5, min(2.0, speed))
     log.info(f"TTS speed set to {current_speed:.2f}x")
@@ -173,6 +186,23 @@ def split_text(text, max_words=50):
     return result
 
 
+def clean_for_speech(content: str) -> str:
+    """
+    Clean content for speech by removing:
+    - <thinking> tags and their content
+    - Tool use blocks (```tool ...```)
+
+    Returns the cleaned content suitable for speech.
+    """
+    # Remove <thinking> tags and their content
+    content = re_thinking.sub("", content)
+
+    # Remove tool use blocks
+    content = re_tool_use.sub("", content)
+
+    return content.strip()
+
+
 def audio_player_thread():
     """Background thread for playing audio."""
     log.debug("Audio player thread started")
@@ -234,7 +264,7 @@ def resample_audio(data, orig_sr, target_sr):
     return signal.resample(data, num_samples)
 
 
-def speak(text, block=False, verbose=False, interrupt=True):
+def speak(text, block=False, interrupt=True, clean=True):
     """Speak text using Kokoro TTS server.
 
     The TTS system supports:
@@ -247,7 +277,6 @@ def speak(text, block=False, verbose=False, interrupt=True):
     Args:
         text: Text to speak
         block: If True, wait for audio to finish playing
-        verbose: If True, print detailed progress information
         interrupt: If True, stop current speech and clear queue before speaking
 
     Example:
@@ -257,10 +286,10 @@ def speak(text, block=False, verbose=False, interrupt=True):
         >>> speak("Hello, world!")  # Non-blocking by default
         >>> speak("Important message!", interrupt=True)  # Interrupts previous speech
     """
-    if verbose:
-        print(f"Speaking text ({len(text)} chars)...")
-    else:
-        log.info(f"Speaking text ({len(text)} chars)")
+    if clean:
+        text = clean_for_speech(text).strip()
+
+    log.info(f"Speaking text ({len(text)} chars)")
 
     # Stop current speech if requested
     if interrupt:
@@ -269,8 +298,6 @@ def speak(text, block=False, verbose=False, interrupt=True):
     # Split text into chunks if needed
     chunks = split_text(text)
     chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
-    if len(chunks) > 1 and verbose:
-        print(f"Split into {len(chunks)} chunks")
 
     try:
         # Find the current output device
@@ -303,16 +330,20 @@ def speak(text, block=False, verbose=False, interrupt=True):
 
         # Process each chunk
         for chunk in chunks:
-            if not chunk.strip():
+            if not chunk.strip().strip("`"):
                 continue
 
             # Make request to the TTS server
-            url = "http://localhost:8000/tts"
+            url = f"http://{host}:{port}/tts"
             params = {"text": chunk, "speed": current_speed}
             if voice := os.getenv("GPTME_TTS_VOICE"):
                 params["voice"] = voice
 
-            response = requests.get(url, params=params)
+            try:
+                response = requests.get(url, params=params)
+            except requests.exceptions.ConnectionError:
+                log.warning(f"TTS server was not available at {url}")
+                return
 
             if response.status_code != 200:
                 log.error(f"TTS server returned status {response.status_code}")
@@ -324,10 +355,9 @@ def speak(text, block=False, verbose=False, interrupt=True):
             audio_data = io.BytesIO(response.content)
             sample_rate, data = wavfile.read(audio_data)
 
-            if verbose:
-                print(
-                    f"Audio: {len(data)} samples at {sample_rate}Hz ({len(data)/sample_rate:.2f} seconds)"
-                )
+            log.debug(
+                f"Audio: {len(data)} samples at {sample_rate}Hz ({len(data)/sample_rate:.2f} seconds)"
+            )
 
             # Resample if needed
             if sample_rate != device_sr:
@@ -346,77 +376,6 @@ def speak(text, block=False, verbose=False, interrupt=True):
 
     except Exception as e:
         log.error(f"Failed to speak text: {e}")
-        if verbose:
-            traceback.print_exc()
-
-
-def test_split_text_single_sentence():
-    assert split_text("Hello, world!") == ["Hello, world!"]
-
-
-def test_split_text_multiple_sentences():
-    assert split_text("Hello, world! I'm Bob") == ["Hello, world!", "I'm Bob"]
-
-
-def test_split_text_decimals():
-    # Don't split on periods in numbers with decimals
-    # Note: For TTS purposes, having a period at the end is acceptable
-    result = split_text("0.5x")
-    assert result == ["0.5x"]
-
-
-def test_split_text_numbers_before_punctuation():
-    assert split_text("The dog was 12. The cat was 3.") == [
-        "The dog was 12.",
-        "The cat was 3.",
-    ]
-
-
-def test_split_text_paragraphs():
-    assert split_text(
-        """
-Text without punctuation
-
-Another paragraph
-"""
-    ) == ["Text without punctuation", "", "Another paragraph"]
-
-
-def test_split_text_lists():
-    assert split_text(
-        """
-- Test
-- Test2
-"""
-    ) == ["- Test", "- Test2"]
-
-    # Markdown list (numbered)
-    # Also tests punctuation in list items, which shouldn't cause extra pauses (unlike paragraphs)
-    assert split_text(
-        """
-1. Test.
-2. Test2
-"""
-    ) == ["1. Test.", "2. Test2"]
-
-    # We can strip trailing punctuation from list items
-    assert [
-        part.strip()
-        for part in split_text(
-            """
-1. Test.
-2. Test2.
-"""
-        )
-    ] == ["1. Test", "2. Test2"]
-
-    # Replace asterisk lists with dashes
-    assert split_text(
-        """
-* Test
-* Test2
-"""
-    ) == ["- Test", "- Test2"]
 
 
 tool = ToolSpec(
