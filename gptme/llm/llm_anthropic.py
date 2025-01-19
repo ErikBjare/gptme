@@ -246,19 +246,24 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
                     # them so we can't have more.
                     assert len(tooluses) == 1
                     tooluse = tooluses[0]
-                    before_tool = text[: tooluse.start]
+                    # We only want to add a tool call if we have a call_id which
+                    # means it is a tool response
+                    if tooluse.call_id:
+                        before_tool = text[: tooluse.start]
 
-                    if before_tool:
-                        content.append({"type": "text", "text": before_tool})
+                        if before_tool:
+                            content.append({"type": "text", "text": before_tool})
 
-                    content.append(
-                        {
-                            "type": "tool_use",
-                            "id": tooluse.call_id or "",
-                            "name": tooluse.tool,
-                            "input": tooluse.kwargs or {},
-                        }
-                    )
+                        content.append(
+                            {
+                                "type": "tool_use",
+                                "id": tooluse.call_id or "",
+                                "name": tooluse.tool,
+                                "input": tooluse.kwargs or {},
+                            }
+                        )
+                    else:
+                        content.append({"type": "text", "text": text})
                     # The text is emptied to start over with the next lines if any.
                     text = ""
 

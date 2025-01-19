@@ -165,3 +165,86 @@ def test_message_conversion_with_tools():
             ],
         },
     ]
+
+
+def test_message_conversion_with_tool_and_non_tool():
+    init_tools(allowlist=frozenset(["save", "shell"]))
+
+    messages = [
+        Message(role="system", content="Initial Message", pinned=True, hide=True),
+        Message(role="system", content="Project prompt", hide=True),
+        Message(
+            role="assistant",
+            content='\n@save(tool_call_id): {"path": "path.txt", "content": "file_content"}',
+        ),
+        Message(role="system", content="Saved to toto.txt", call_id="tool_call_id"),
+        Message(
+            role="assistant",
+            content=(
+                "The script `hello.py` has been created. "
+                "Run it using the command:\n\n```shell\npython hello.py\n```\n"
+            ),
+        ),
+        Message(
+            role="system",
+            content="Ran command: `python hello.py`\n\n `Hello, world!`\n\n",
+        ),
+    ]
+
+    tool_save = get_tool("save")
+    tool_shell = get_tool("shell")
+
+    assert tool_save and tool_shell
+
+    messages_dicts, _, _ = _prepare_messages_for_api(messages, [tool_save, tool_shell])
+
+    print(messages_dicts)
+
+    assert messages_dicts == [
+        {
+            "role": "user",
+            "content": [{"type": "text", "text": "<system>Project prompt</system>"}],
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {"type": "text", "text": "\n"},
+                {
+                    "type": "tool_use",
+                    "id": "tool_call_id",
+                    "name": "save",
+                    "input": {"path": "path.txt", "content": "file_content"},
+                },
+            ],
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "content": [{"type": "text", "text": "Saved to toto.txt"}],
+                    "tool_use_id": "tool_call_id",
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "The script `hello.py` has been created. Run it using the command:\n\n```shell\npython hello.py\n```\n",
+                }
+            ],
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "<system>Ran command: `python hello.py`\n\n `Hello, world!`\n\n</system>",
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+        },
+    ]
