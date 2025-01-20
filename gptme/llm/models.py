@@ -126,11 +126,17 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
     "deepseek": {
         "deepseek-chat": {
             "context": 64_000,
-            "max_output": 4000,
+            "max_output": 8192,
             # 10x better price for cache hits
             "price_input": 0.14,
-            "price_output": 0.28,
-        }
+            "price_output": 1.1,
+        },
+        "deepseek-reasoner": {
+            "context": 64_000,
+            "max_output": 8192,
+            "price_input": 0.55,
+            "price_output": 2.19,
+        },
     },
     # https://groq.com/pricing/
     "groq": {
