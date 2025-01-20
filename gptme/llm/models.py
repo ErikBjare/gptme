@@ -156,6 +156,34 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "supports_vision": True,
         },
     },
+    "openrouter": {
+        "anthropic/claude-3.5-sonnet": {
+            "context": 200_000,
+            "max_output": 8192,
+            "price_input": 3,
+            "price_output": 15,
+            "supports_vision": True,
+        },
+        "meta-llama/llama-3.3-70b-instruct": {
+            "context": 128_000,
+            "max_output": 32_768,
+            "price_input": 0.12,
+            "price_output": 0.3,
+        },
+        "meta-llama/llama-3.1-405b-instruct": {
+            "context": 128_000,
+            "max_output": 32_768,
+            "price_input": 0.8,
+            "price_output": 0.8,
+        },
+        "google/gemini-flash-1.5": {
+            "context": 1_048_576,
+            "max_output": 8192,
+            "price_input": 0.075,
+            "price_output": 0.3,
+            "supports_vision": True,
+        },
+    },
     "local": {},
 }
 
