@@ -19,6 +19,7 @@ import click
 import multiprocessing_logging
 from tabulate import tabulate
 
+from ..config import get_config
 from ..message import len_tokens
 from ..tools import ToolFormat
 from .run import run_evals
@@ -207,15 +208,38 @@ def main(
     # init
     multiprocessing_logging.install_mp_handler()
 
+    config = get_config()
+
     # Generate model+format combinations
-    default_models = [
-        "openai/gpt-4o",
-        "openai/gpt-4o-mini",
-        "anthropic/claude-3-5-sonnet-20241022",
-        "anthropic/claude-3-5-haiku-20241022",
-        "openrouter/meta-llama/llama-3.1-405b-instruct",
-        "gemini/gemini-1.5-flash-latest",
-    ]
+    default_models = []
+    if config.get_env("OPENAI_API_KEY"):
+        default_models.extend(
+            [
+                "openai/gpt-4o@tool",
+                "openai/gpt-4o@markdown",
+                "openai/gpt-4o@xml",
+                "openai/gpt-4o-mini@tool",
+            ]
+        )
+    if config.get_env("ANTHROPIC_API_KEY"):
+        default_models.extend(
+            [
+                "anthropic/claude-3-5-sonnet-20241022@tool",
+                "anthropic/claude-3-5-sonnet-20241022@markdown",
+                "anthropic/claude-3-5-sonnet-20241022@xml",
+                "anthropic/claude-3-5-haiku-20241022@tool",
+                "anthropic/claude-3-5-haiku-20241022@xml",
+            ]
+        )
+    if config.get_env("OPENROUTER_API_KEY"):
+        default_models.extend(
+            [
+                "openrouter/meta-llama/llama-3.1-70b-instruct@xml",
+                # "openrouter/meta-llama/llama-3.1-405b-instruct",
+            ]
+        )
+    if config.get_env("GEMINI_API_KEY"):
+        default_models.extend(["gemini/gemini-1.5-flash-latest"])
 
     def parse_format(fmt: str) -> ToolFormat:
         if fmt not in get_args(ToolFormat):
@@ -231,7 +255,9 @@ def main(
         else:
             # If no format specified for model, use either provided default or test all formats
             formats: list[ToolFormat] = (
-                [cast(ToolFormat, tool_format)] if tool_format else ["markdown", "tool"]
+                [cast(ToolFormat, tool_format)]
+                if tool_format
+                else ["markdown", "xml", "tool"]
             )
             for fmt in formats:
                 model_configs.append((model_spec, fmt))
