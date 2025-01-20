@@ -97,7 +97,6 @@ def test_message_conversion_without_tools():
 
 
 def test_message_conversion_with_tools():
-    # clear_tools()
     init_tools(allowlist=frozenset(["save"]))
 
     messages = [
@@ -196,5 +195,78 @@ def test_message_conversion_with_tools():
                 {"type": "text", "text": "(Modified by user)"},
             ],
             "tool_call_id": "tool_call_id",
+        },
+    ]
+
+
+def test_message_conversion_with_tool_and_non_tool():
+    init_tools(allowlist=frozenset(["save", "shell"]))
+
+    messages = [
+        Message(role="user", content="First user prompt"),
+        Message(
+            role="assistant",
+            content='\n@save(tool_call_id): {"path": "path.txt", "content": "file_content"}',
+        ),
+        Message(role="system", content="Saved to toto.txt", call_id="tool_call_id"),
+        Message(
+            role="assistant",
+            content=(
+                "The script `hello.py` has been created. "
+                "Run it using the command:\n\n```shell\npython hello.py\n```\n"
+            ),
+        ),
+        Message(
+            role="system",
+            content="Ran command: `python hello.py`\n\n `Hello, world!`\n\n",
+        ),
+    ]
+
+    set_default_model("openai/gpt-4o")
+
+    tool_save = get_tool("save")
+    tool_shell = get_tool("shell")
+
+    assert tool_save and tool_shell
+
+    messages_dicts, _ = _prepare_messages_for_api(messages, [tool_save, tool_shell])
+
+    assert messages_dicts == [
+        {"role": "user", "content": [{"type": "text", "text": "First user prompt"}]},
+        {
+            "role": "assistant",
+            "tool_calls": [
+                {
+                    "id": "tool_call_id",
+                    "type": "function",
+                    "function": {
+                        "name": "save",
+                        "arguments": '{"path": "path.txt", "content": "file_content"}',
+                    },
+                }
+            ],
+        },
+        {
+            "role": "tool",
+            "content": [{"type": "text", "text": "Saved to toto.txt"}],
+            "tool_call_id": "tool_call_id",
+        },
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "The script `hello.py` has been created. Run it using the command:\n\n```shell\npython hello.py\n```\n",
+                }
+            ],
+        },
+        {
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Ran command: `python hello.py`\n\n `Hello, world!`\n\n",
+                }
+            ],
         },
     ]
