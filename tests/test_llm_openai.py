@@ -1,7 +1,7 @@
 import pytest
 from gptme.config import get_config
 from gptme.llm.llm_openai import _prepare_messages_for_api
-from gptme.llm.models import get_default_model, set_default_model
+from gptme.llm.models import get_default_model, get_model, set_default_model
 from gptme.message import Message
 from gptme.tools import get_tool, init_tools
 
@@ -21,9 +21,8 @@ def test_message_conversion():
         Message(role="user", content="First user prompt"),
     ]
 
-    set_default_model("openai/gpt-4o")
-
-    messages_dict, tools_dict = _prepare_messages_for_api(messages, None)
+    model = get_model("openai/gpt-4o")
+    messages_dict, tools_dict = _prepare_messages_for_api(messages, model.full, None)
 
     assert tools_dict is None
     assert messages_dict == [
@@ -40,9 +39,8 @@ def test_message_conversion_o1():
         Message(role="user", content="First user prompt"),
     ]
 
-    set_default_model("openai/o1-mini")
-
-    messages_dict, _ = _prepare_messages_for_api(messages, None)
+    model = get_model("openai/o1-mini")
+    messages_dict, _ = _prepare_messages_for_api(messages, model.full, None)
 
     assert messages_dict == [
         {
@@ -75,9 +73,8 @@ def test_message_conversion_without_tools():
         Message(role="system", content="Saved to toto.txt"),
     ]
 
-    set_default_model("openai/gpt-4o")
-
-    messages_dicts, _ = _prepare_messages_for_api(messages, None)
+    model = get_model("openai/gpt-4o")
+    messages_dicts, _ = _prepare_messages_for_api(messages, model.full, None)
 
     assert messages_dicts == [
         {"role": "system", "content": [{"type": "text", "text": "Initial Message"}]},
@@ -119,13 +116,13 @@ def test_message_conversion_with_tools():
         Message(role="system", content="(Modified by user)", call_id="tool_call_id"),
     ]
 
-    set_default_model("openai/gpt-4o")
-
     tool_save = get_tool("save")
-
     assert tool_save
 
-    messages_dicts, tools_dict = _prepare_messages_for_api(messages, [tool_save])
+    model = get_model("openai/gpt-4o")
+    messages_dicts, tools_dict = _prepare_messages_for_api(
+        messages, model.full, [tool_save]
+    )
 
     assert tools_dict == [
         {

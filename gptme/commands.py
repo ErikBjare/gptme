@@ -51,7 +51,7 @@ action_descriptions: dict[Actions, str] = {
     "undo": "Undo the last action",
     "log": "Show the conversation log",
     "tools": "Show available tools",
-    "model": "Set model",
+    "model": "List or switch models",
     "edit": "Edit the conversation in your editor",
     "rename": "Rename the conversation",
     "fork": "Copy the conversation using a new name",
@@ -160,11 +160,25 @@ def handle_cmd(
                 set_default_model(args[0])
                 print(f"Set model to {args[0]}")
             else:
-                print(f"Current model: {get_default_model()}")
+                model = get_default_model()
+                assert model
+                print(f"Current model: {model.full}")
+                print(
+                    f"  price: input ${model.price_input}/Mtok, output ${model.price_output}/Mtok"
+                )
+                print(f"  context: {model.context}, max output: {model.max_output}")
+                print(
+                    f"  (streaming: {model.supports_streaming}, vision: {model.supports_vision})"
+                )
                 # TODO: list known models
                 for provider in MODELS:
-                    for model in MODELS[provider]:
-                        print(f"  {provider}/{model}")
+                    if not MODELS[provider]:
+                        continue
+                    print(f"{provider}/")
+                    for model_name in list(MODELS[provider].keys())[:10]:
+                        print(f"  {model_name}")
+                    if len(MODELS[provider]) > 10:
+                        print(f"  ... ({len(MODELS[provider]) - 10} more)")
         case "export":
             manager.undo(1, quiet=True)
             manager.write()
