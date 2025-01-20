@@ -372,7 +372,7 @@ def llm_suggest(text: str) -> list[str]:
     from ..llm.models import get_model  # fmt: skip
     from ..message import Message  # fmt: skip
 
-    enabled = False
+    enabled = os.environ.get("GPTME_SUGGEST_LLM") in ["1", "true"]
     if enabled:
         content = _chat_complete(
             messages=[
