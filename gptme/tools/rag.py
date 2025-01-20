@@ -31,6 +31,7 @@ Configure RAG in your ``gptme.toml``::
 import logging
 import shutil
 import subprocess
+import time
 from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
@@ -75,11 +76,17 @@ def _has_gptme_rag() -> bool:
 
 def _run_rag_cmd(cmd: list[str]) -> subprocess.CompletedProcess:
     """Run a gptme-rag command and handle errors."""
+    start = time.monotonic()
     try:
         return subprocess.run(cmd, capture_output=True, text=True, check=True)
     except subprocess.CalledProcessError as e:
         logger.error(f"gptme-rag command failed: {e.stderr}")
         raise RuntimeError(f"gptme-rag command failed: {e.stderr}") from e
+    finally:
+        cmd_str = " ".join(cmd)
+        logger.info(
+            f"Ran RAG: `{cmd_str[:100] if len(cmd_str) > 100 else cmd_str}` in {time.monotonic() - start:.2f}s"
+        )
 
 
 def rag_index(*paths: str, glob: str | None = None) -> str:
@@ -158,7 +165,7 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
                 enhanced_messages.append(
                     Message(
                         role="system",
-                        content=f"Relevant context:\n\n{_run_rag_cmd(cmd).stdout}",
+                        content=f"Relevant context retrieved using `gptme-rag search`:\n\n{_run_rag_cmd(cmd).stdout}",
                         hide=True,
                     )
                 )
