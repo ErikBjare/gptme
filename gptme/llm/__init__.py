@@ -31,20 +31,16 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-def init_llm(llm: str):
-    # set up API_KEY (if openai) and API_BASE (if local)
+def init_llm(provider: Provider):
+    """Initialize LLM client for a given provider if not already initialized."""
     config = get_config()
 
-    llm = cast(Provider, llm)
-    if llm in PROVIDERS_OPENAI:
-        init_openai(llm, config)
-        assert get_openai_client()
-    elif llm == "anthropic":
+    if provider in PROVIDERS_OPENAI and not get_openai_client():
+        init_openai(provider, config)
+    elif provider == "anthropic" and not get_anthropic_client():
         init_anthropic(config)
-        assert get_anthropic_client()
     else:
-        console.log(f"Error: Unknown LLM: {llm}")
-        sys.exit(1)
+        logger.debug(f"Provider {provider} already initialized or unknown")
 
 
 def reply(
@@ -63,28 +59,61 @@ def reply(
         return Message("assistant", response)
 
 
+def get_provider_from_model(model: str) -> Provider:
+    """Extract provider from fully qualified model name."""
+    if "/" not in model:
+        raise ValueError(
+            f"Model name must be fully qualified with provider prefix: {model}"
+        )
+    provider = model.split("/")[0]
+    if provider not in MODELS:
+        raise ValueError(f"Unknown provider: {provider}")
+    return cast(Provider, provider)
+
+
+def _get_base_model(model: str) -> str:
+    """Get base model name without provider prefix."""
+    return model.split("/", 1)[1]
+
+
 def _chat_complete(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> str:
-    provider = _client_to_provider()
+    provider = get_provider_from_model(model)
+    base_model = _get_base_model(model)
+
     if provider in PROVIDERS_OPENAI:
-        return chat_openai(messages, model, tools)
+        client = get_openai_client()
+        if not client:
+            init_openai(provider, get_config())
+        return chat_openai(messages, base_model, tools)
     elif provider == "anthropic":
-        return chat_anthropic(messages, model, tools)
+        client = get_anthropic_client()
+        if not client:
+            init_anthropic(get_config())
+        return chat_anthropic(messages, base_model, tools)
     else:
-        raise ValueError("LLM not initialized")
+        raise ValueError(f"Unsupported provider: {provider}")
 
 
 def _stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Iterator[str]:
-    provider = _client_to_provider()
+    provider = get_provider_from_model(model)
+    base_model = _get_base_model(model)
+
     if provider in PROVIDERS_OPENAI:
-        return stream_openai(messages, model, tools)
+        client = get_openai_client()
+        if not client:
+            init_openai(provider, get_config())
+        return stream_openai(messages, base_model, tools)
     elif provider == "anthropic":
-        return stream_anthropic(messages, model, tools)
+        client = get_anthropic_client()
+        if not client:
+            init_anthropic(get_config())
+        return stream_anthropic(messages, base_model, tools)
     else:
-        raise ValueError("LLM not initialized")
+        raise ValueError(f"Unsupported provider: {provider}")
 
 
 def _reply_stream(
@@ -142,23 +171,31 @@ def _reply_stream(
     return Message("assistant", output)
 
 
-def _client_to_provider() -> Provider:
+def get_initialized_providers() -> list[Provider]:
+    """Get list of currently initialized providers."""
+    providers: list[Provider] = []
+
     openai_client = get_openai_client()
-    anthropic_client = get_anthropic_client()
-    assert openai_client or anthropic_client, "No client initialized"
     if openai_client:
         if "openai" in openai_client.base_url.host:
-            return "openai"
+            providers.append("openai")
         elif "openrouter" in openai_client.base_url.host:
-            return "openrouter"
+            providers.append("openrouter")
         elif "gemini" in openai_client.base_url.host:
-            return "gemini"
+            providers.append("gemini")
         else:
-            return "azure"
-    elif anthropic_client:
-        return "anthropic"
-    else:
-        raise ValueError("Unknown client type")
+            providers.append("azure")
+
+    if get_anthropic_client():
+        providers.append("anthropic")
+
+    return providers
+
+
+def ensure_provider_initialized(provider: Provider) -> None:
+    """Ensure a provider is initialized, initializing it if needed."""
+    if provider not in get_initialized_providers():
+        init_llm(provider)
 
 
 def _summarize_str(content: str) -> str:
@@ -176,18 +213,24 @@ def _summarize_str(content: str) -> str:
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
-    provider = _client_to_provider()
-    model = get_summary_model(provider)
-    context_limit = MODELS[provider][model]["context"]
-    if len_tokens(messages, model) > context_limit:
+    # Try to use an already initialized provider, or initialize OpenAI as default
+    providers = get_initialized_providers()
+    provider: Provider = providers[0] if providers else "openai"
+    ensure_provider_initialized(provider)
+
+    model = f"{provider}/{get_summary_model(provider)}"
+    base_model = _get_base_model(model)
+    context_limit = MODELS[provider][base_model]["context"]
+
+    if len_tokens(messages, base_model) > context_limit:
         raise ValueError(
-            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages, model)}"
+            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages, base_model)}"
         )
 
     summary = _chat_complete(messages, model, None)
     assert summary
     logger.debug(
-        f"Summarized long output ({len_tokens(content, model)} -> {len_tokens(summary, model)} tokens): "
+        f"Summarized long output ({len_tokens(content, base_model)} -> {len_tokens(summary, base_model)} tokens): "
         + summary
     )
     return summary
@@ -230,7 +273,13 @@ IMPORTANT: output only the name, no preamble or postamble.
             )
         ]
     )
-    model = get_summary_model(_client_to_provider())
+
+    # Try to use an already initialized provider, or initialize OpenAI as default
+    providers = get_initialized_providers()
+    provider: Provider = providers[0] if providers else "openai"
+    ensure_provider_initialized(provider)
+
+    model = f"{provider}/{get_summary_model(provider)}"
     name = _chat_complete(msgs, model, None).strip()
     return name
 
@@ -268,11 +317,10 @@ def _summarize_helper(s: str, tok_max_start=400, tok_max_end=400) -> str:
     return summary
 
 
-def guess_model_from_config() -> Provider | None:
+def guess_provider_from_config() -> Provider | None:
     """
-    Guess the model to use from the configuration.
+    Guess the provider to use from the configuration.
     """
-
     config = get_config()
 
     if config.get_env("OPENAI_API_KEY"):

@@ -53,6 +53,10 @@ class ModelMeta:
     price_input: float = 0
     price_output: float = 0
 
+    @property
+    def full(self) -> str:
+        return f"{self.provider}/{self.model}"
+
 
 class _ModelDictMeta(TypedDict):
     context: int

@@ -8,6 +8,7 @@ from typing import Literal
 
 from . import llm
 from .constants import INTERRUPT_CONTENT
+from .llm.models import MODELS, get_default_model, set_default_model
 from .logmanager import LogManager, prepare_messages
 from .message import (
     Message,
@@ -30,15 +31,16 @@ from .util.useredit import edit_text_with_editor
 logger = logging.getLogger(__name__)
 
 Actions = Literal[
-    "undo",
     "log",
-    "tools",
+    "undo",
     "edit",
     "rename",
     "fork",
-    "summarize",
+    "tools",
+    "model",
     "replay",
     "impersonate",
+    "summarize",
     "tokens",
     "export",
     "help",
@@ -49,6 +51,7 @@ action_descriptions: dict[Actions, str] = {
     "undo": "Undo the last action",
     "log": "Show the conversation log",
     "tools": "Show available tools",
+    "model": "Set model",
     "edit": "Edit the conversation in your editor",
     "rename": "Rename the conversation",
     "fork": "Copy the conversation using a new name",
@@ -151,6 +154,17 @@ def handle_cmd(
     {tool.desc.rstrip(".")}
     tokens (example): {len_tokens(tool.get_examples(get_tool_format()), "gpt-4")}"""
                 )
+        case "model" | "models":
+            manager.undo(1, quiet=True)
+            if args:
+                set_default_model(args[0])
+                print(f"Set model to {args[0]}")
+            else:
+                print(f"Current model: {get_default_model()}")
+                # TODO: list known models
+                for provider in MODELS:
+                    for model in MODELS[provider]:
+                        print(f"  {provider}/{model}")
         case "export":
             manager.undo(1, quiet=True)
             manager.write()
