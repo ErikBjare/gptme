@@ -222,14 +222,14 @@ def test_message_conversion_with_tool_and_non_tool():
         ),
     ]
 
-    set_default_model("openai/gpt-4o")
-
     tool_save = get_tool("save")
     tool_shell = get_tool("shell")
-
     assert tool_save and tool_shell
 
-    messages_dicts, _ = _prepare_messages_for_api(messages, [tool_save, tool_shell])
+    model = get_model("openai/gpt-4o")
+    messages_dicts, _ = _prepare_messages_for_api(
+        messages, model.full, [tool_save, tool_shell]
+    )
 
     assert messages_dicts == [
         {"role": "user", "content": [{"type": "text", "text": "First user prompt"}]},
