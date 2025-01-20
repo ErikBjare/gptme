@@ -85,7 +85,7 @@ def _chat_complete(
     if provider in PROVIDERS_OPENAI:
         return chat_openai(messages, model, tools)
     elif provider == "anthropic":
-        return chat_anthropic(messages, model, tools)
+        return chat_anthropic(messages, _get_base_model(model), tools)
     else:
         raise ValueError(f"Unsupported provider: {provider}")
 
@@ -94,18 +94,10 @@ def _stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Iterator[str]:
     provider = get_provider_from_model(model)
-    base_model = _get_base_model(model)
-
     if provider in PROVIDERS_OPENAI:
-        client = get_openai_client(provider)
-        if not client:
-            init_openai(provider, get_config())
         return stream_openai(messages, model, tools)
     elif provider == "anthropic":
-        client = get_anthropic_client()
-        if not client:
-            init_anthropic(get_config())
-        return stream_anthropic(messages, base_model, tools)
+        return stream_anthropic(messages, _get_base_model(model), tools)
     else:
         raise ValueError(f"Unsupported provider: {provider}")
 
