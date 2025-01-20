@@ -152,6 +152,8 @@ def _list_results_google(page) -> str:
     # fetch the results (elements with .g class)
     results = page.query_selector_all(".g")
     if not results:
+        logger.error("No search results found")
+        logger.debug(f"{page.inner_text('body')=}")
         return "Error: something went wrong with the search."
 
     # list results
@@ -173,9 +175,12 @@ def _list_results_duckduckgo(page) -> str:
     results = page.query_selector(".react-results--main")
     if not results:
         logger.error("Unable to find selector `.react-results--main` in results")
+        logger.debug(f"{page.inner_text('body')=}")
         return "Error: something went wrong with the search."
     results = results.query_selector_all("article")
     if not results:
+        logger.error("Unable to find selector `article` in results")
+        logger.debug(f"{page.inner_text('body')=}")
         return "Error: something went wrong with the search."
 
     # list results

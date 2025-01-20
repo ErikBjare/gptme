@@ -6,19 +6,19 @@ playwright = pytest.importorskip("playwright")
 # noreorder
 from gptme.tools.browser import read_url, search  # fmt: skip
 
-# FIXME: Broken
-# @pytest.mark.slow
-# def test_search_duckduckgo():
-#     results = search("test", "duckduckgo")
-#     print(results)
-#     assert "```results" in results
 
-
+# FIXME: Broken? Seems to work, for now
 @pytest.mark.slow
-def test_search_google():
-    results = search("test", "google")
-    print(results)
-    assert "1." in results
+def test_search_ddg():
+    results = search("test", "duckduckgo")
+    assert "1." in results, f"{results=}"
+
+
+# FIXME: Broken, sometimes hits CAPTCHA
+# @pytest.mark.slow
+# def test_search_google():
+#     results = search("test", "google")
+#     assert "1." in results, f"{results=}"
 
 
 @pytest.mark.slow
