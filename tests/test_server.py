@@ -74,7 +74,7 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     # Test regular (non-streaming) response
     response = client.post(
         f"/api/conversations/{conv}/generate",
-        json={"model": get_model().model, "stream": False},
+        json={"model": get_model().full, "stream": False},
     )
     assert response.status_code == 200
     data = response.get_data(as_text=True)
