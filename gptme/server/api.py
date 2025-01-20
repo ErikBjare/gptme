@@ -102,7 +102,7 @@ def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
     stream = req_json.get("stream", False)  # Default to no streaming (backward compat)
-    model = req_json.get("model", get_model().model)
+    model = req_json.get("model", get_model().full)
 
     # load conversation
     manager = LogManager.load(logfile, branch=req_json.get("branch", "main"))

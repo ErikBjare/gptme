@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from rich.logging import RichHandler
 
 from .config import config_path, get_config, set_config_value
-from .llm import get_model_from_api_key, guess_model_from_config, init_llm
+from .llm import get_model_from_api_key, guess_provider_from_config, init_llm
 from .llm.models import (
     PROVIDERS,
     Provider,
@@ -43,7 +43,7 @@ def init(model: str | None, interactive: bool, tool_allowlist: list[str] | None)
 
     if not model:  # pragma: no cover
         # auto-detect depending on if OPENAI_API_KEY or ANTHROPIC_API_KEY is set
-        model = guess_model_from_config()
+        model = guess_provider_from_config()
 
     # ask user for API key
     if not model and interactive:

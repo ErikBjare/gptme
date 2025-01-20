@@ -1,23 +1,23 @@
 import base64
 import json
 import logging
-from collections.abc import Iterable
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
-from ..config import Config
+from ..config import Config, get_config
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
 from ..tools import Parameter, ToolSpec, ToolUse
-from .models import ModelMeta, Provider, get_model
+from .models import ModelMeta, Provider
 
 if TYPE_CHECKING:
     # noreorder
     from openai import OpenAI  # fmt: skip
     from openai.types.chat import ChatCompletionToolParam  # fmt: skip
 
-openai: "OpenAI | None" = None
+# Dictionary to store clients for each provider
+clients: dict[Provider, "OpenAI"] = {}
 logger = logging.getLogger(__name__)
 
 
@@ -32,37 +32,43 @@ ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
 def init(provider: Provider, config: Config):
-    global openai
+    """Initialize OpenAI client for a given provider."""
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
     if provider == "openai":
         api_key = config.get_env_required("OPENAI_API_KEY")
-        openai = OpenAI(api_key=api_key)
+        clients[provider] = OpenAI(api_key=api_key)
     elif provider == "azure":
         api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
         azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
-        openai = AzureOpenAI(
+        clients[provider] = AzureOpenAI(
             api_key=api_key,
             api_version="2023-07-01-preview",
             azure_endpoint=azure_endpoint,
         )
     elif provider == "openrouter":
         api_key = config.get_env_required("OPENROUTER_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
+        clients[provider] = OpenAI(
+            api_key=api_key, base_url="https://openrouter.ai/api/v1"
+        )
     elif provider == "gemini":
         api_key = config.get_env_required("GEMINI_API_KEY")
-        openai = OpenAI(
+        clients[provider] = OpenAI(
             api_key=api_key, base_url="https://generativelanguage.googleapis.com/v1beta"
         )
     elif provider == "xai":
         api_key = config.get_env_required("XAI_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+        clients[provider] = OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
     elif provider == "groq":
         api_key = config.get_env_required("GROQ_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+        clients[provider] = OpenAI(
+            api_key=api_key, base_url="https://api.groq.com/openai/v1"
+        )
     elif provider == "deepseek":
         api_key = config.get_env_required("DEEPSEEK_API_KEY")
-        openai = OpenAI(api_key=api_key, base_url="https://api.deepseek.com/v1")
+        clients[provider] = OpenAI(
+            api_key=api_key, base_url="https://api.deepseek.com/v1"
+        )
     elif provider == "local":
         # OPENAI_API_BASE renamed to OPENAI_BASE_URL: https://github.com/openai/openai-python/issues/745
         api_base = config.get_env("OPENAI_API_BASE")
@@ -70,32 +76,18 @@ def init(provider: Provider, config: Config):
         if not api_base:
             raise KeyError("Missing environment variable OPENAI_BASE_URL")
         api_key = config.get_env("OPENAI_API_KEY") or "ollama"
-        openai = OpenAI(api_key=api_key, base_url=api_base)
+        clients[provider] = OpenAI(api_key=api_key, base_url=api_base)
     else:
         raise ValueError(f"Unknown provider: {provider}")
 
-    assert openai, "Provider not initialized"
+    assert clients[provider], f"Provider {provider} not initialized"
 
 
-def get_provider() -> Provider | None:
-    # used when checking for provider-specific capabilities
-    if not openai:
-        return None
-    if "openai.com" in str(openai.base_url):
-        return "openai"
-    if "openrouter.ai" in str(openai.base_url):
-        return "openrouter"
-    if "groq.com" in str(openai.base_url):
-        return "groq"
-    if "x.ai" in str(openai.base_url):
-        return "xai"
-    if "deepseek.com" in str(openai.base_url):
-        return "deepseek"
-    return "local"
-
-
-def get_client() -> "OpenAI | None":
-    return openai
+def get_client(provider: Provider) -> "OpenAI":
+    """Get client for specific provider, initializing if needed."""
+    if provider not in clients:
+        init(provider, get_config())
+    return clients[provider]
 
 
 def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
@@ -112,23 +104,26 @@ def _prep_o1(msgs: list[Message]) -> Generator[Message, None, None]:
 def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> str:
     # This will generate code and such, so we need appropriate temperature and top_p params
     # top_p controls diversity, temperature controls randomness
-    assert openai, "LLM not initialized"
+
+    from . import _get_base_model, get_provider_from_model  # fmt: skip
+
+    provider = get_provider_from_model(model)
+    client = get_client(provider)
+    base_model = _get_base_model(model)
 
     from openai import NOT_GIVEN  # fmt: skip
 
-    is_o1 = model.startswith("o1")
+    is_o1 = base_model.startswith("o1")
 
-    messages_dicts, tools_dict = _prepare_messages_for_api(messages, tools)
+    messages_dicts, tools_dict = _prepare_messages_for_api(messages, model, tools)
 
-    response = openai.chat.completions.create(
-        model=model,
+    response = client.chat.completions.create(
+        model=base_model,
         messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
         tools=tools_dict if tools_dict else NOT_GIVEN,
-        extra_headers=(
-            openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
-        ),
+        extra_headers=(openrouter_headers if provider == "openrouter" else {}),
     )
     choice = response.choices[0]
     result = []
@@ -148,17 +143,21 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
 def stream(
     messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> Generator[str, None, None]:
-    assert openai, "LLM not initialized"
+    from . import _get_base_model, get_provider_from_model  # fmt: skip
+
+    provider = get_provider_from_model(model)
+    client = get_client(provider)
+    base_model = _get_base_model(model)
     stop_reason = None
 
     from openai import NOT_GIVEN  # fmt: skip
 
-    is_o1 = model.startswith("o1")
+    is_o1 = base_model.startswith("o1")
 
-    messages_dicts, tools_dict = _prepare_messages_for_api(messages, tools)
+    messages_dicts, tools_dict = _prepare_messages_for_api(messages, model, tools)
 
-    for chunk_raw in openai.chat.completions.create(
-        model=model,
+    for chunk_raw in client.chat.completions.create(
+        model=base_model,
         messages=messages_dicts,  # type: ignore
         temperature=TEMPERATURE if not is_o1 else NOT_GIVEN,
         top_p=TOP_P if not is_o1 else NOT_GIVEN,
@@ -169,9 +168,7 @@ def stream(
         # max_tokens=(
         #     (1000 if not model.startswith("gpt-") else 4096)
         # ),
-        extra_headers=(
-            openrouter_headers if "openrouter.ai" in str(openai.base_url) else {}
-        ),
+        extra_headers=(openrouter_headers if provider == "openrouter" else {}),
     ):
         from openai.types.chat import ChatCompletionChunk  # fmt: skip
         from openai.types.chat.chat_completion_chunk import (  # fmt: skip
@@ -444,25 +441,29 @@ def _spec2tool(spec: ToolSpec, model: ModelMeta) -> "ChatCompletionToolParam":
 
 
 def _prepare_messages_for_api(
-    messages: list[Message], tools: list[ToolSpec] | None
+    messages: list[Message], model: str, tools: list[ToolSpec] | None
 ) -> tuple[Iterable[dict], Iterable["ChatCompletionToolParam"] | None]:
-    model = get_model()
+    from . import _get_base_model, get_provider_from_model  # fmt: skip
+    from .models import get_model  # fmt: skip
 
-    is_o1 = model.model.startswith("o1")
+    get_provider_from_model(model)
+    model_meta = get_model(model)
+
+    is_o1 = _get_base_model(model).startswith("o1")
     if is_o1:
         messages = list(_prep_o1(messages))
 
     messages_dicts: Iterable[dict] = (
-        _process_file(msg, model) for msg in msgs2dicts(messages)
+        _process_file(msg, model_meta) for msg in msgs2dicts(messages)
     )
 
-    tools_dict = [_spec2tool(tool, model) for tool in tools] if tools else None
+    tools_dict = [_spec2tool(tool, model_meta) for tool in tools] if tools else None
 
     if tools_dict is not None:
         messages_dicts = _merge_tool_results_with_same_call_id(
             _handle_tools(messages_dicts)
         )
 
-    messages_dicts = _transform_msgs_for_special_provider(messages_dicts, model)
+    messages_dicts = _transform_msgs_for_special_provider(messages_dicts, model_meta)
 
     return list(messages_dicts), tools_dict
