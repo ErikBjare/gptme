@@ -78,7 +78,7 @@ def test_command_tokens(args: list[str], runner: CliRunner):
     args.append("/tokens")
     result = runner.invoke(gptme.cli.main, args)
     assert "/tokens" in result.output
-    assert "Cost" in result.output
+    assert "Tokens:" in result.output
     assert result.exit_code == 0
 
 
