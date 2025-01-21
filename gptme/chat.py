@@ -217,20 +217,16 @@ def step(
         log = Log(log)
 
     # Check if we have any recent file modifications, and if so, run lint checks
-    last_content = next(
-        (m.content for m in reversed(log) if m.role == "assistant"),
-        "",
-    )
-    has_runnable = any(
-        tooluse.is_runnable for tooluse in ToolUse.iter_from_content(last_content)
-    )
-    if not has_runnable:
+    if not any(
+        tooluse.is_runnable
+        for tooluse in ToolUse.iter_from_content(
+            next((m.content for m in reversed(log) if m.role == "assistant"), "")
+        )
+    ):
         # Only check for modifications if the last assistant message has no runnable tools
-        logger.info(f"Runnable tools {has_runnable}, checking...")
-        if check_for_modifications(log):
-            if failed_check_message := check_changes():
-                yield Message("system", failed_check_message, quiet=False)
-                return
+        if check_for_modifications(log) and (failed_check_message := check_changes()):
+            yield Message("system", failed_check_message, quiet=False)
+            return
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -386,7 +382,7 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     for word in _find_potential_paths(msg.content):
         logger.debug(f"potential path/url: {word=}")
         # If not using fresh context, include text file contents in the message
-        if not use_fresh_context and (contents := _parse_prompt(word)):
+        if not use_fresh_context() and (contents := _parse_prompt(word)):
             append_msg += "\n\n" + contents
         else:
             # if we found an non-text file, include it in msg.files
@@ -490,16 +486,14 @@ def check_for_modifications(log: Log) -> bool:
         for m in messages_since_user[:3]
         for tu in ToolUse.iter_from_content(m.content)
     )
-    logger.info(
-        f"Found {len(messages_since_user)} messages, has_modifications: {has_modifications}"
+    logger.debug(
+        f"Found {len(messages_since_user)} messages since user ({has_modifications=})"
     )
     return has_modifications
 
 
 def check_changes() -> str | None:
     """Run lint/pre-commit checks after file modifications."""
-    logger.info("File modifications detected, running lint check...")
-    # TODO: Actually run lint/pre-commit checks and provide feedback to the assistant
     return run_precommit_checks()
 
 

@@ -10,15 +10,22 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
+from ..config import get_config
 from ..message import Message
 
 logger = logging.getLogger(__name__)
 
-# Feature flag for fresh context mode
-use_fresh_context = os.getenv("GPTME_FRESH", "").lower() in ("1", "true", "yes")
 
-# Feature flag for lint/pre-commit checks
-use_checks = os.getenv("GPTME_CHECKS", "").lower() in ("1", "true", "yes")
+def use_fresh_context():
+    # Feature flag for fresh context mode
+    flag: str = get_config().get_env("GPTME_FRESH", "")  # type: ignore
+    return flag.lower() in ("1", "true", "yes")
+
+
+def use_checks():
+    # Feature flag for lint/pre-commit checks
+    flag: str = get_config().get_env("GPTME_CHECK", "")  # type: ignore
+    return flag.lower() in ("1", "true", "yes")
 
 
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
@@ -255,7 +262,8 @@ def get_changed_files() -> list[Path]:
 def run_precommit_checks() -> str | None:
     """Run pre-commit checks on modified files and return output if there are issues."""
     # check that env var feature flag is set
-    if not use_checks:
+    if not use_checks():
+        logger.info("Checks not enabled")
         return None
 
     # check if .pre-commit-config.yaml exists in any parent directory
@@ -307,10 +315,10 @@ def enrich_messages_with_context(
     msgs = rag_enhance_messages(msgs)
 
     msgs = [
-        append_file_content(msg, workspace, check_modified=use_fresh_context)
+        append_file_content(msg, workspace, check_modified=use_fresh_context())
         for msg in msgs
     ]
-    if use_fresh_context:
+    if use_fresh_context():
         # insert right before the last user message
         fresh_content_msg = gather_fresh_context(msgs, workspace)
         logger.info(fresh_content_msg.content)
