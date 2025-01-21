@@ -20,7 +20,6 @@ from typing import (
 import json_repair
 from lxml import etree
 
-
 from ..codeblock import Codeblock
 from ..message import Message
 from ..util import clean_example, transform_examples_to_chat_directives
@@ -36,7 +35,7 @@ tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
 # Match tool name and start of JSON
-toolcall_re = re.compile(r"^@(\w+)\((\w+)\):\s*({.*)", re.M | re.S)
+toolcall_re = re.compile(r"^@(\w+)\(([\w_\-]+)\):\s*({.*)", re.M | re.S)
 
 
 def find_json_end(s: str, start: int) -> int | None:
@@ -499,7 +498,7 @@ def get_path(
 # TODO: allow using via specifying .py paths with --tools flag
 def load_from_file(path: Path) -> list[ToolSpec]:
     """Import a tool from a Python file and register the ToolSpec."""
-    from . import get_tools, get_tool
+    from . import get_tool, get_tools
 
     tools_before = set([t.name for t in get_tools()])
 
