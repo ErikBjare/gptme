@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from openai import OpenAI  # fmt: skip
     from openai.types.chat import ChatCompletionToolParam  # fmt: skip
 
+
 # Dictionary to store clients for each provider
 clients: dict[Provider, "OpenAI"] = {}
 logger = logging.getLogger(__name__)
@@ -26,6 +27,10 @@ openrouter_headers = {
     "HTTP-Referer": "https://github.com/ErikBjare/gptme",
     "X-Title": "gptme",
 }
+
+# TODO: improve provider routing for openrouter: https://openrouter.ai/docs/provider-routing
+# TODO: set required-parameters: https://openrouter.ai/docs/provider-routing#required-parameters-_beta_
+# TODO: set quantization: https://openrouter.ai/docs/provider-routing#quantization
 
 
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
