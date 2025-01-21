@@ -232,7 +232,10 @@ def format_msgs(
                     content = block.split("\n", 1)[-1]
                     fmt = "underline blue"
                     block = f"[{fmt}]{lang}\n[/{fmt}]" + rich_to_str(
-                        Syntax(content.rstrip(), lang)
+                        Syntax(
+                            content.rstrip().replace("[", r"\["),
+                            lang,
+                        )
                     )
                 output += f"```{block.rstrip()}\n```"
         outputs.append(f"{userprefix}: {output.rstrip()}")
