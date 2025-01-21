@@ -479,7 +479,7 @@ def _spec2tool(spec: ToolSpec, model: ModelMeta) -> "ChatCompletionToolParam":
         )
         description = description[:1024]
 
-    if model.provider in ["openai", "azure", "openrouter", "local"]:
+    if model.provider in ["openai", "azure", "openrouter", "deepseek", "local"]:
         return {
             "type": "function",
             "function": {
