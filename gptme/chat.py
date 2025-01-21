@@ -175,14 +175,7 @@ def chat(
                         tooluse.is_runnable
                         for tooluse in ToolUse.iter_from_content(last_content)
                     )
-                    logger.info(f"Has runnable tools: {has_runnable}")
                     if not has_runnable:
-                        # Only check for modifications if the last assistant message has no runnable tools
-                        logger.info("No runnable tools, checking for modifications...")
-                        logger.info(f"Last assistant message: {last_content[:100]}...")
-
-                        if check_for_modifications(manager.log):
-                            check_changes()
                         break
 
             # All prompts processed, continue to next iteration
@@ -222,6 +215,22 @@ def step(
     """Runs a single pass of the chat."""
     if isinstance(log, list):
         log = Log(log)
+
+    # Check if we have any recent file modifications, and if so, run lint checks
+    last_content = next(
+        (m.content for m in reversed(log) if m.role == "assistant"),
+        "",
+    )
+    has_runnable = any(
+        tooluse.is_runnable for tooluse in ToolUse.iter_from_content(last_content)
+    )
+    if not has_runnable:
+        # Only check for modifications if the last assistant message has no runnable tools
+        logger.info(f"Runnable tools {has_runnable}, checking...")
+        if check_for_modifications(log):
+            if failed_check_message := check_changes():
+                yield Message("system", failed_check_message, quiet=False)
+                return
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -468,16 +477,17 @@ def _parse_prompt(prompt: str) -> str | None:
 
 
 def check_for_modifications(log: Log) -> bool:
-    """Check if there are any file modifications in messages since last user message."""
+    """Check if there are any file modifications in last 3 messages or since last user message."""
     messages_since_user = []
     for m in reversed(log):
         if m.role == "user":
             break
         messages_since_user.append(m)
 
+    # FIXME: this is hacky and unreliable
     has_modifications = any(
         tu.tool in ["save", "patch", "append"]
-        for m in messages_since_user
+        for m in messages_since_user[:3]
         for tu in ToolUse.iter_from_content(m.content)
     )
     logger.info(
@@ -486,11 +496,11 @@ def check_for_modifications(log: Log) -> bool:
     return has_modifications
 
 
-def check_changes() -> None:
+def check_changes() -> str | None:
     """Run lint/pre-commit checks after file modifications."""
     logger.info("File modifications detected, running lint check...")
     # TODO: Actually run lint/pre-commit checks and provide feedback to the assistant
-    run_precommit_checks()
+    return run_precommit_checks()
 
 
 def _parse_prompt_files(prompt: str) -> Path | None:

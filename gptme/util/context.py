@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from collections import Counter
 from copy import copy
 from dataclasses import replace
@@ -254,11 +255,23 @@ def get_changed_files() -> list[Path]:
 
 def run_precommit_checks() -> str | None:
     """Run pre-commit checks on modified files and return output if there are issues."""
-    cmd = "pre-commit run --files $(git ls-files -m)"
+    # check if .pre-commit-config.yaml exists in any parent directory
+    if not any(
+        parent.joinpath(".pre-commit-config.yaml").exists()
+        for parent in [Path.cwd(), *Path.cwd().parents]
+    ):
+        logger.info("No .pre-commit-config.yaml found in parent directories")
+        return None
+
+    # cmd = "pre-commit run --files $(git ls-files -m)"
+    cmd = "pre-commit run --all-files"
+    start_time = time.monotonic()
+    logger.info(f"Running pre-commit checks: {cmd}")
     try:
         subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
         return None  # No issues found
     except subprocess.CalledProcessError as e:
+        logger.error(f"Pre-commit checks failed: {e}")
         return md_codeblock(
             cmd,
             f"""
@@ -268,6 +281,10 @@ stdout:
 stderr:
 {e.stderr}
 """.strip(),
+        )
+    finally:
+        logger.info(
+            f"Pre-commit checks completed in {time.monotonic() - start_time:.2f}s"
         )
 
 
