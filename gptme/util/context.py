@@ -15,11 +15,10 @@ from ..message import Message
 logger = logging.getLogger(__name__)
 
 # Feature flag for fresh context mode
-use_fresh_context = os.getenv("FRESH_CONTEXT", "").lower() in (
-    "1",
-    "true",
-    "yes",
-)
+use_fresh_context = os.getenv("GPTME_FRESH", "").lower() in ("1", "true", "yes")
+
+# Feature flag for lint/pre-commit checks
+use_checks = os.getenv("GPTME_CHECKS", "").lower() in ("1", "true", "yes")
 
 
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
@@ -255,6 +254,10 @@ def get_changed_files() -> list[Path]:
 
 def run_precommit_checks() -> str | None:
     """Run pre-commit checks on modified files and return output if there are issues."""
+    # check that env var feature flag is set
+    if not use_checks:
+        return None
+
     # check if .pre-commit-config.yaml exists in any parent directory
     if not any(
         parent.joinpath(".pre-commit-config.yaml").exists()
@@ -291,7 +294,7 @@ def enrich_messages_with_context(
     Enrich messages with context.
     Embeds file contents where they occur in the conversation.
 
-    If FRESH_CONTEXT enabled, a context message will be added that includes:
+    If GPTME_FRESH enabled, a context message will be added that includes:
     - git status
     - contents of files modified after their message timestamp
     """
