@@ -258,5 +258,7 @@ def get_summary_model(provider: Provider) -> str:  # pragma: no cover
         return "gemini-1.5-flash-latest"
     elif provider == "anthropic":
         return "claude-3-haiku-20240307"
+    elif provider == "deepseek":
+        return "deepseek-chat"
     else:
         raise ValueError(f"Provider {provider} did not have a summary model")

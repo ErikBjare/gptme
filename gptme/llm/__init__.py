@@ -172,20 +172,21 @@ def _summarize_str(content: str) -> str:
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
+    # get default provider
     provider: Provider = get_model().provider  # type: ignore
-    model = f"{provider}/{get_summary_model(provider)}"
-    base_model = _get_base_model(model)
-    context_limit = MODELS[provider][base_model]["context"]
 
-    if len_tokens(messages, base_model) > context_limit:
+    # get summary model for provider
+    model = get_model(f"{provider}/{get_summary_model(provider)}")
+
+    if len_tokens(messages, model.model) > model.context:
         raise ValueError(
-            f"Cannot summarize more than {context_limit} tokens, got {len_tokens(messages, base_model)}"
+            f"Cannot summarize more than {model.context} tokens, got {len_tokens(messages, model.model)}"
         )
 
-    summary = _chat_complete(messages, model, None)
+    summary = _chat_complete(messages, model.full, None)
     assert summary
     logger.debug(
-        f"Summarized long output ({len_tokens(content, base_model)} -> {len_tokens(summary, base_model)} tokens): "
+        f"Summarized long output ({len_tokens(content, model.model)} -> {len_tokens(summary, model.model)} tokens): "
         + summary
     )
     return summary
