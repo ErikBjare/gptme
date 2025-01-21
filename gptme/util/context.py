@@ -272,16 +272,12 @@ def run_precommit_checks() -> str | None:
         return None  # No issues found
     except subprocess.CalledProcessError as e:
         logger.error(f"Pre-commit checks failed: {e}")
-        return md_codeblock(
-            cmd,
-            f"""
-stdout:
-{e.stdout}
-
-stderr:
-{e.stderr}
-""".strip(),
-        )
+        return (
+            "Pre-commit checks failed\n\n"
+            + (md_codeblock("stdout", e.stdout.rstrip()) if e.stdout.strip() else "")
+            + "\n\n"
+            + (md_codeblock("stderr", e.stderr.rstrip()) if e.stderr.strip() else "")
+        ).strip()
     finally:
         logger.info(
             f"Pre-commit checks completed in {time.monotonic() - start_time:.2f}s"
