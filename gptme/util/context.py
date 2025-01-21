@@ -3,22 +3,29 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from collections import Counter
 from copy import copy
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
+from ..config import get_config
 from ..message import Message
 
 logger = logging.getLogger(__name__)
 
-# Feature flag for fresh context mode
-use_fresh_context = os.getenv("FRESH_CONTEXT", "").lower() in (
-    "1",
-    "true",
-    "yes",
-)
+
+def use_fresh_context():
+    # Feature flag for fresh context mode
+    flag: str = get_config().get_env("GPTME_FRESH", "")  # type: ignore
+    return flag.lower() in ("1", "true", "yes")
+
+
+def use_checks():
+    # Feature flag for lint/pre-commit checks
+    flag: str = get_config().get_env("GPTME_CHECK", "")  # type: ignore
+    return flag.lower() in ("1", "true", "yes")
 
 
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
@@ -254,20 +261,37 @@ def get_changed_files() -> list[Path]:
 
 def run_precommit_checks() -> str | None:
     """Run pre-commit checks on modified files and return output if there are issues."""
-    cmd = "pre-commit run --files $(git ls-files -m)"
+    # check that env var feature flag is set
+    if not use_checks():
+        logger.info("Checks not enabled")
+        return None
+
+    # check if .pre-commit-config.yaml exists in any parent directory
+    if not any(
+        parent.joinpath(".pre-commit-config.yaml").exists()
+        for parent in [Path.cwd(), *Path.cwd().parents]
+    ):
+        logger.info("No .pre-commit-config.yaml found in parent directories")
+        return None
+
+    # cmd = "pre-commit run --files $(git ls-files -m)"
+    cmd = "pre-commit run --all-files"
+    start_time = time.monotonic()
+    logger.info(f"Running pre-commit checks: {cmd}")
     try:
         subprocess.run(cmd, shell=True, capture_output=True, text=True, check=True)
         return None  # No issues found
     except subprocess.CalledProcessError as e:
-        return md_codeblock(
-            cmd,
-            f"""
-stdout:
-{e.stdout}
-
-stderr:
-{e.stderr}
-""".strip(),
+        logger.error(f"Pre-commit checks failed: {e}")
+        return (
+            "Pre-commit checks failed\n\n"
+            + (md_codeblock("stdout", e.stdout.rstrip()) if e.stdout.strip() else "")
+            + "\n\n"
+            + (md_codeblock("stderr", e.stderr.rstrip()) if e.stderr.strip() else "")
+        ).strip()
+    finally:
+        logger.info(
+            f"Pre-commit checks completed in {time.monotonic() - start_time:.2f}s"
         )
 
 
@@ -278,7 +302,7 @@ def enrich_messages_with_context(
     Enrich messages with context.
     Embeds file contents where they occur in the conversation.
 
-    If FRESH_CONTEXT enabled, a context message will be added that includes:
+    If GPTME_FRESH enabled, a context message will be added that includes:
     - git status
     - contents of files modified after their message timestamp
     """
@@ -291,10 +315,10 @@ def enrich_messages_with_context(
     msgs = rag_enhance_messages(msgs)
 
     msgs = [
-        append_file_content(msg, workspace, check_modified=use_fresh_context)
+        append_file_content(msg, workspace, check_modified=use_fresh_context())
         for msg in msgs
     ]
-    if use_fresh_context:
+    if use_fresh_context():
         # insert right before the last user message
         fresh_content_msg = gather_fresh_context(msgs, workspace)
         logger.info(fresh_content_msg.content)

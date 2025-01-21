@@ -31,7 +31,7 @@ from .tools.browser import read_url
 from .tools.tts import speak
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
-from .util.context import use_fresh_context
+from .util.context import run_precommit_checks, use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
 from .util.prompt import add_history, get_input
@@ -171,10 +171,11 @@ def chat(
                         ),
                         "",
                     )
-                    if not any(
+                    has_runnable = any(
                         tooluse.is_runnable
                         for tooluse in ToolUse.iter_from_content(last_content)
-                    ):
+                    )
+                    if not has_runnable:
                         break
 
             # All prompts processed, continue to next iteration
@@ -214,6 +215,18 @@ def step(
     """Runs a single pass of the chat."""
     if isinstance(log, list):
         log = Log(log)
+
+    # Check if we have any recent file modifications, and if so, run lint checks
+    if not any(
+        tooluse.is_runnable
+        for tooluse in ToolUse.iter_from_content(
+            next((m.content for m in reversed(log) if m.role == "assistant"), "")
+        )
+    ):
+        # Only check for modifications if the last assistant message has no runnable tools
+        if check_for_modifications(log) and (failed_check_message := check_changes()):
+            yield Message("system", failed_check_message, quiet=False)
+            return
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -369,7 +382,7 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
     for word in _find_potential_paths(msg.content):
         logger.debug(f"potential path/url: {word=}")
         # If not using fresh context, include text file contents in the message
-        if not use_fresh_context and (contents := _parse_prompt(word)):
+        if not use_fresh_context() and (contents := _parse_prompt(word)):
             append_msg += "\n\n" + contents
         else:
             # if we found an non-text file, include it in msg.files
@@ -457,6 +470,31 @@ def _parse_prompt(prompt: str) -> str | None:
                 logger.warning(f"Failed to read URL {url}: {e}")
 
     return result
+
+
+def check_for_modifications(log: Log) -> bool:
+    """Check if there are any file modifications in last 3 messages or since last user message."""
+    messages_since_user = []
+    for m in reversed(log):
+        if m.role == "user":
+            break
+        messages_since_user.append(m)
+
+    # FIXME: this is hacky and unreliable
+    has_modifications = any(
+        tu.tool in ["save", "patch", "append"]
+        for m in messages_since_user[:3]
+        for tu in ToolUse.iter_from_content(m.content)
+    )
+    logger.debug(
+        f"Found {len(messages_since_user)} messages since user ({has_modifications=})"
+    )
+    return has_modifications
+
+
+def check_changes() -> str | None:
+    """Run lint/pre-commit checks after file modifications."""
+    return run_precommit_checks()
 
 
 def _parse_prompt_files(prompt: str) -> Path | None:
