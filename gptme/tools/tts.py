@@ -43,7 +43,7 @@ current_speed = 1.3
 
 
 re_thinking = re.compile(r"<thinking>.*?(\n</thinking>|$)", flags=re.DOTALL)
-re_tool_use = re.compile(r"```[\w\. ]+\n[^`]*(\n```|$)", flags=re.DOTALL)
+re_tool_use = re.compile(r"```[\w\. ~/\-]+\n(.*?)(\n```|$)", flags=re.DOTALL)
 
 
 def set_speed(speed):

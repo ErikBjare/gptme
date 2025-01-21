@@ -78,8 +78,18 @@ def test_clean_for_speech():
     assert re_tool_use.search("```tool\ncontents\n```")
 
     # with arg
-    assert re_tool_use.search("```save test.txt\ncontents\n```")
+    assert re_tool_use.search("```save ~/path_to/test-file1.txt\ncontents\n```")
+
+    # with `text` contents
+    assert re_tool_use.search("```file.md\ncontents with `code` string\n```")
 
     # incomplete
     assert re_thinking.search("\n<thinking>thinking")
     assert re_tool_use.search("```savefile.txt\ncontents")
+
+    # make sure spoken content is correct
+    assert (
+        re_tool_use.sub("", "Using tool\n```tool\ncontents\n```").strip()
+        == "Using tool"
+    )
+    assert re_tool_use.sub("", "```tool\ncontents\n```\nRan tool").strip() == "Ran tool"
