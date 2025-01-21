@@ -31,7 +31,7 @@ from .tools.browser import read_url
 from .tools.tts import speak
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
-from .util.context import use_fresh_context
+from .util.context import run_precommit_checks, use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
 from .util.prompt import add_history, get_input
@@ -171,10 +171,18 @@ def chat(
                         ),
                         "",
                     )
-                    if not any(
+                    has_runnable = any(
                         tooluse.is_runnable
                         for tooluse in ToolUse.iter_from_content(last_content)
-                    ):
+                    )
+                    logger.info(f"Has runnable tools: {has_runnable}")
+                    if not has_runnable:
+                        # Only check for modifications if the last assistant message has no runnable tools
+                        logger.info("No runnable tools, checking for modifications...")
+                        logger.info(f"Last assistant message: {last_content[:100]}...")
+
+                        if check_for_modifications(manager.log):
+                            check_changes()
                         break
 
             # All prompts processed, continue to next iteration
@@ -457,6 +465,32 @@ def _parse_prompt(prompt: str) -> str | None:
                 logger.warning(f"Failed to read URL {url}: {e}")
 
     return result
+
+
+def check_for_modifications(log: Log) -> bool:
+    """Check if there are any file modifications in messages since last user message."""
+    messages_since_user = []
+    for m in reversed(log):
+        if m.role == "user":
+            break
+        messages_since_user.append(m)
+
+    has_modifications = any(
+        tu.tool in ["save", "patch", "append"]
+        for m in messages_since_user
+        for tu in ToolUse.iter_from_content(m.content)
+    )
+    logger.info(
+        f"Found {len(messages_since_user)} messages, has_modifications: {has_modifications}"
+    )
+    return has_modifications
+
+
+def check_changes() -> None:
+    """Run lint/pre-commit checks after file modifications."""
+    logger.info("File modifications detected, running lint check...")
+    # TODO: Actually run lint/pre-commit checks and provide feedback to the assistant
+    run_precommit_checks()
 
 
 def _parse_prompt_files(prompt: str) -> Path | None:
