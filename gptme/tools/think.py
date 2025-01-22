@@ -46,7 +46,7 @@ def execute(
     if kwargs and (m := kwargs.get("model")):
         model = m
     elif args and len(args) == 1:
-        model = args[0].split("=")[1]
+        model = args[0].split("=", 1)[-1]
     else:
         model = default_model
 
@@ -154,8 +154,8 @@ Note: Always include relevant files, as the tool cannot access files from previo
     parameters=[
         Parameter(
             "model",
-            "Model to use for enhanced reasoning (i.e. o1-preview)",
-            "str",
+            type="string",
+            description="Model to use for enhanced reasoning (i.e. o1-preview)",
             required=False,
         )
     ],
