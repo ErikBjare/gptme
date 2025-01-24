@@ -30,6 +30,7 @@ import sys
 from pathlib import Path
 
 import click
+import numpy as np
 import scipy.io.wavfile as wavfile
 import torch
 import uvicorn
@@ -118,6 +119,35 @@ def init_model(voice: str | None = None):
         raise
 
 
+def strip_silence(
+    audio_data: np.ndarray,
+    threshold: float = 0.01,
+    min_silence_duration: int = 1000,
+) -> np.ndarray:
+    """Strip silence from the beginning and end of audio data.
+
+    Args:
+        audio_data: Audio data as numpy array
+        threshold: Amplitude threshold below which is considered silence
+        min_silence_duration: Minimum silence duration in samples
+    """
+    # Convert to absolute values
+    abs_audio = np.abs(audio_data)
+
+    # Find indices where audio is above threshold
+    mask = abs_audio > threshold
+
+    # Find first and last non-silent points
+    non_silent = np.where(mask)[0]
+    if len(non_silent) == 0:
+        return audio_data
+
+    start = max(0, non_silent[0] - min_silence_duration)
+    end = min(len(audio_data), non_silent[-1] + min_silence_duration)
+
+    return audio_data[start:end]
+
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize model on startup."""
@@ -163,9 +193,11 @@ async def text_to_speech(text: str, speed: float = 1.0, voice: str | None = None
         )
         log.info(f"Generated phonemes: {phonemes}")
 
+        # Strip silence from audio
+        audio = strip_silence(audio)
+
         # Convert to WAV format
         buffer = io.BytesIO()
-
         wavfile.write(buffer, 24000, audio)
         buffer.seek(0)
 
