@@ -36,9 +36,11 @@ except (ImportError, OSError):
     _available = False
 # fmt: on
 
-# Global queue for audio playback
+# Global queues and thread controls
 audio_queue: queue.Queue[tuple["np.ndarray", int]] = queue.Queue()
-playback_thread = None
+tts_request_queue: queue.Queue[str | None] = queue.Queue()
+playback_thread: threading.Thread | None = None
+tts_processor_thread: threading.Thread | None = None
 current_volume = 1.0
 current_speed = 1.3
 
@@ -61,14 +63,27 @@ def set_volume(volume):
     log.info(f"TTS volume set to {current_volume:.2f}")
 
 
-def stop():
-    """Stop audio playback and clear the queue."""
+def stop() -> None:
+    """Stop audio playback and clear queues."""
     sd.stop()
+
+    # Clear both queues silently
     clear_queue()
-    log.info("Stopped TTS playback and cleared queue")
+    with tts_request_queue.mutex:
+        tts_request_queue.queue.clear()
+        tts_request_queue.all_tasks_done.notify_all()
+
+    # Stop processor thread quietly
+    global tts_processor_thread
+    if tts_processor_thread and tts_processor_thread.is_alive():
+        tts_request_queue.put(None)
+        try:
+            tts_processor_thread.join(timeout=1)
+        except RuntimeError:
+            pass
 
 
-def clear_queue():
+def clear_queue() -> None:
     """Clear the audio queue without stopping current playback."""
     while not audio_queue.empty():
         try:
@@ -78,7 +93,7 @@ def clear_queue():
             break
 
 
-def split_text(text, max_words=50):
+def split_text(text: str, max_words=50) -> list[str]:
     """Split text into chunks at sentence boundaries, respecting word count, paragraphs, and markdown lists."""
     # Split into paragraphs
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
@@ -187,11 +202,29 @@ def split_text(text, max_words=50):
     return result
 
 
+emoji_pattern = re.compile(
+    "["
+    "\U0001f600-\U0001f64f"  # emoticons
+    "\U0001f300-\U0001f5ff"  # symbols & pictographs
+    "\U0001f680-\U0001f6ff"  # transport & map symbols
+    "\U0001f1e0-\U0001f1ff"  # flags (iOS)
+    "\U0001f900-\U0001f9ff"  # supplemental symbols, has 🧹
+    "✅"  # these are somehow not included in the above
+    "🤖"
+    "✨"
+    "]+",
+    flags=re.UNICODE,
+)
+
+
 def clean_for_speech(content: str) -> str:
     """
     Clean content for speech by removing:
     - <thinking> tags and their content
     - Tool use blocks (```tool ...```)
+    - **Italic** markup
+    - Additional (details) that may not need to be spoken
+    - Emojis and other non-speech content
 
     Returns the cleaned content suitable for speech.
     """
@@ -201,10 +234,19 @@ def clean_for_speech(content: str) -> str:
     # Remove tool use blocks
     content = re_tool_use.sub("", content)
 
+    # Remove **Italic** markup
+    content = re.sub(r"\*\*(.*?)\*\*", r"\1", content)
+
+    # Remove (details)
+    content = re.sub(r"\(.*?\)", "", content)
+
+    # Remove emojis
+    content = emoji_pattern.sub("", content)
+
     return content.strip()
 
 
-def get_output_device():
+def get_output_device() -> tuple[int, int]:
     """Get the best available output device and its sample rate.
 
     Returns:
@@ -265,7 +307,7 @@ def get_output_device():
     return output_device, device_sr
 
 
-def audio_player_thread():
+def audio_player_thread() -> None:
     """Background thread for playing audio."""
     log.debug("Audio player thread started")
     while True:
@@ -299,12 +341,81 @@ def audio_player_thread():
             log.error(f"Error in audio playback: {e}")
 
 
-def ensure_playback_thread():
-    """Ensure the playback thread is running."""
-    global playback_thread
+def tts_processor_thread_func():
+    """Background thread for processing TTS requests."""
+    log.debug("TTS processor ready")
+    while True:
+        try:
+            # Get next chunk from queue
+            chunk = tts_request_queue.get()
+            if chunk is None:  # Sentinel value to stop thread
+                log.debug("Received stop signal for TTS processor")
+                break
+
+            # Make request to the TTS server
+            url = f"http://{host}:{port}/tts"
+            params = {"text": chunk, "speed": current_speed}
+            if voice := os.getenv("GPTME_TTS_VOICE"):
+                params["voice"] = voice
+
+            try:
+                response = requests.get(url, params=params)
+            except requests.exceptions.ConnectionError:
+                log.warning(f"TTS server unavailable at {url}")
+                tts_request_queue.task_done()
+                continue
+
+            if response.status_code != 200:
+                log.error(f"TTS server returned status {response.status_code}")
+                if response.content:
+                    log.error(f"Error content: {response.content.decode()} for {chunk}")
+                tts_request_queue.task_done()
+                continue
+
+            # Process audio response
+            audio_data = io.BytesIO(response.content)
+            sample_rate, data = wavfile.read(audio_data)
+
+            # Get output device for sample rate
+            try:
+                _, device_sr = get_output_device()
+                # Resample if needed
+                if sample_rate != device_sr:
+                    data = resample_audio(data, sample_rate, device_sr)
+                    sample_rate = device_sr
+            except RuntimeError as e:
+                log.error(f"Device error: {e}")
+                tts_request_queue.task_done()
+                continue
+
+            # Normalize audio
+            if data.dtype != np.float32:
+                data = data.astype(np.float32) / np.iinfo(data.dtype).max
+
+            # Queue for playback
+            audio_queue.put((data, sample_rate))
+            tts_request_queue.task_done()
+
+        except Exception as e:
+            log.error(f"Error in TTS processing: {e}")
+            tts_request_queue.task_done()
+
+
+def ensure_threads():
+    """Ensure both playback and TTS processor threads are running."""
+    global playback_thread, tts_processor_thread
+
+    # Ensure playback thread
     if playback_thread is None or not playback_thread.is_alive():
         playback_thread = threading.Thread(target=audio_player_thread, daemon=True)
         playback_thread.start()
+
+    # Ensure TTS processor thread
+    if tts_processor_thread is None or not tts_processor_thread.is_alive():
+        tts_processor_thread = threading.Thread(
+            target=tts_processor_thread_func, daemon=True
+        )
+        tts_processor_thread.start()
 
 
 def resample_audio(data, orig_sr, target_sr):
@@ -326,11 +437,13 @@ def speak(text, block=False, interrupt=True, clean=True):
     - Automatic chunking of long texts
     - Non-blocking operation with optional blocking mode
     - Interruption of current speech
+    - Background processing of TTS requests
 
     Args:
         text: Text to speak
         block: If True, wait for audio to finish playing
         interrupt: If True, stop current speech and clear queue before speaking
+        clean: If True, clean text for speech (remove markup, emojis, etc.)
 
     Example:
         >>> from gptme.tools.tts import speak, set_speed, set_volume
@@ -346,67 +459,29 @@ def speak(text, block=False, interrupt=True, clean=True):
 
     # Stop current speech if requested
     if interrupt:
-        clear_queue()
-
-    # Split text into chunks if needed
-    chunks = split_text(text)
-    chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
+        stop()
 
     try:
-        # Get output device and sample rate
-        output_device, device_sr = get_output_device()
+        # Split text into chunks
+        chunks = split_text(text)
+        chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
 
-        # Ensure playback thread is running
-        ensure_playback_thread()
+        # Ensure both threads are running
+        ensure_threads()
 
-        # Process each chunk
+        # Queue chunks for processing
         for chunk in chunks:
-            if not chunk.strip().strip("`"):
-                continue
-
-            # Make request to the TTS server
-            url = f"http://{host}:{port}/tts"
-            params = {"text": chunk, "speed": current_speed}
-            if voice := os.getenv("GPTME_TTS_VOICE"):
-                params["voice"] = voice
-
-            try:
-                response = requests.get(url, params=params)
-            except requests.exceptions.ConnectionError:
-                log.warning(f"TTS server was not available at {url}")
-                return
-
-            if response.status_code != 200:
-                log.error(f"TTS server returned status {response.status_code}")
-                if response.content:
-                    log.error(f"Error content: {response.content.decode()}")
-                continue
-
-            # Convert response to audio
-            audio_data = io.BytesIO(response.content)
-            sample_rate, data = wavfile.read(audio_data)
-
-            log.debug(
-                f"Audio: {len(data)} samples at {sample_rate}Hz ({len(data)/sample_rate:.2f} seconds)"
-            )
-
-            # Resample if needed
-            if sample_rate != device_sr:
-                data = resample_audio(data, sample_rate, device_sr)
-                sample_rate = device_sr
-
-            # Normalize audio to float32 in range [-1, 1]
-            if data.dtype != np.float32:
-                data = data.astype(np.float32) / np.iinfo(data.dtype).max
-
-            # Queue audio for playback
-            audio_queue.put((data, sample_rate))
+            if chunk.strip():
+                tts_request_queue.put(chunk)
 
         if block:
-            audio_queue.join()  # Wait for audio to finish playing
+            # Wait for all TTS processing to complete
+            tts_request_queue.join()
+            # Then wait for all audio to finish playing
+            audio_queue.join()
 
     except Exception as e:
-        log.error(f"Failed to speak text: {e}")
+        log.error(f"Failed to queue text for speech: {e}")
 
 
 tool = ToolSpec(
