@@ -52,7 +52,12 @@ def reply(
 ) -> Message:
     init_llm(get_provider_from_model(model))
     if stream:
-        return _reply_stream(messages, model, tools)
+        config = get_config()
+        break_on_tooluse = config.get_env("GPTME_BREAK_ON_TOOLUSE", "true") in [
+            "1",
+            "true",
+        ]
+        return _reply_stream(messages, model, tools, break_on_tooluse)
     else:
         print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
         response = _chat_complete(messages, model, tools)
@@ -103,7 +108,10 @@ def _stream(
 
 
 def _reply_stream(
-    messages: list[Message], model: str, tools: list[ToolSpec] | None
+    messages: list[Message],
+    model: str,
+    tools: list[ToolSpec] | None,
+    break_on_tooluse: bool = True,
 ) -> Message:
     print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
 
@@ -130,7 +138,7 @@ def _reply_stream(
 
             # Trigger the tool detection only if the line is finished.
             # Helps to detect nested start code blocks.
-            if char == "\n":
+            if break_on_tooluse and char == "\n":
                 # TODO: make this more robust/general, maybe with a callback that runs on each char/chunk
                 # pause inference on finished code-block, letting user run the command before continuing
                 tooluses = [
