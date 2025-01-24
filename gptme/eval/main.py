@@ -96,7 +96,11 @@ def print_model_results_table(model_results: dict[str, list[EvalResult]]):
             try:
                 result = next(r for r in results if r.name == test_name)
                 passed = all(case.passed for case in result.results)
-                checkmark = "✅" if result.status == "success" and passed else "❌"
+                checkmark = (
+                    "✅"
+                    if result.status == "success" and passed
+                    else ("🟡" if result.status == "timeout" else "❌")
+                )
                 duration = sum(result.timings.values())
                 gen_tokens = len_tokens(result.gen_stdout, "gpt-4")
                 run_tokens = len_tokens(result.run_stdout, "gpt-4")
