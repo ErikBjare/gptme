@@ -31,6 +31,7 @@ try:
     else:
         console.log("TTS disabled: server not available")
 except (ImportError, OSError):
+    # will happen if tts extras not installed
     # sounddevice may throw OSError("PortAudio library not found")
     _available = False
 # fmt: on
@@ -203,6 +204,67 @@ def clean_for_speech(content: str) -> str:
     return content.strip()
 
 
+def get_output_device():
+    """Get the best available output device and its sample rate.
+
+    Returns:
+        tuple: (device_index, sample_rate)
+
+    Raises:
+        RuntimeError: If no suitable output device is found
+    """
+    devices = sd.query_devices()
+    log.debug("Available audio devices:")
+    for i, dev in enumerate(devices):
+        log.debug(
+            f"  [{i}] {dev['name']} (in: {dev['max_input_channels']}, "
+            f"out: {dev['max_output_channels']}, hostapi: {dev['hostapi']})"
+        )
+
+    # First try: use system default output device
+    try:
+        default_output = sd.default.device[1]
+        if default_output is not None:
+            device_info = sd.query_devices(default_output)
+            if device_info["max_output_channels"] > 0:
+                log.debug(f"Using system default output device: {device_info['name']}")
+                return default_output, int(device_info["default_samplerate"])
+    except Exception as e:
+        log.debug(f"Could not use default device: {e}")
+
+    # Second try: prefer CoreAudio devices
+    output_device = next(
+        (
+            i
+            for i, d in enumerate(devices)
+            if d["max_output_channels"] > 0 and d["hostapi"] == 2
+        ),
+        None,
+    )
+
+    # Third try: any device with output channels
+    if output_device is None:
+        output_device = next(
+            (i for i, d in enumerate(devices) if d["max_output_channels"] > 0),
+            None,
+        )
+
+    if output_device is None:
+        raise RuntimeError(
+            "No suitable audio output device found. "
+            "Available devices:\n"
+            + "\n".join(f"  {i}: {d['name']}" for i, d in enumerate(devices))
+        )
+
+    device_info = sd.query_devices(output_device)
+    device_sr = int(device_info["default_samplerate"])
+
+    log.debug(f"Selected output device: {output_device} ({device_info['name']})")
+    log.debug(f"Sample rate: {device_sr}")
+
+    return output_device, device_sr
+
+
 def audio_player_thread():
     """Background thread for playing audio."""
     log.debug("Audio player thread started")
@@ -221,22 +283,13 @@ def audio_player_thread():
                 f"Playing audio: shape={data.shape}, sr={sample_rate}, vol={current_volume}"
             )
 
-            # Play audio using explicit device index
-            devices = sd.query_devices()
-            output_device = next(
-                (
-                    i
-                    for i, d in enumerate(devices)
-                    if d["max_output_channels"] > 0 and d["hostapi"] == 2
-                ),
-                None,
-            )
-            if output_device is None:
-                log.error("No suitable output device found")
+            # Get output device
+            try:
+                output_device, _ = get_output_device()
+                log.debug(f"Playing on device: {output_device}")
+            except RuntimeError as e:
+                log.error(str(e))
                 continue
-
-            device_info = sd.query_devices(output_device)
-            log.debug(f"Playing on device: {output_device} ({device_info['name']})")
             sd.play(data, sample_rate, device=output_device)
             sd.wait()  # Wait until audio is finished playing
             log.debug("Finished playing audio chunk")
@@ -300,30 +353,8 @@ def speak(text, block=False, interrupt=True, clean=True):
     chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
 
     try:
-        # Find the current output device
-        devices = sd.query_devices()
-        output_device = next(
-            (
-                i
-                for i, d in enumerate(devices)
-                if d["max_output_channels"] > 0 and d["hostapi"] == 2
-            ),
-            None,
-        )
-        if output_device is None:
-            raise RuntimeError("No suitable output device found")
-
-        device_info = sd.query_devices(output_device)
-        device_sr = int(device_info["default_samplerate"])
-
-        log.debug("Available audio devices:")
-        for i, dev in enumerate(devices):
-            log.debug(
-                f"  [{i}] {dev['name']} (in: {dev['max_input_channels']}, out: {dev['max_output_channels']}, hostapi: {dev['hostapi']})"
-            )
-
-        log.debug(f"Selected output device: {output_device} ({device_info['name']})")
-        log.debug(f"Sample rate: {device_sr}")
+        # Get output device and sample rate
+        output_device, device_sr = get_output_device()
 
         # Ensure playback thread is running
         ensure_playback_thread()

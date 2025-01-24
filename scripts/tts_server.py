@@ -25,7 +25,7 @@ API Endpoints:
 import glob
 import io
 import logging
-import subprocess
+import shutil
 import sys
 from pathlib import Path
 
@@ -35,12 +35,18 @@ import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
 
 script_dir = Path(__file__).parent
 
 # Add Kokoro-82M to Python path
 kokoro_path = (script_dir / "Kokoro-82M").absolute()
 sys.path.insert(0, str(kokoro_path))
+
+# on macOS, use workaround for espeak detection
+if sys.platform == "darwin":
+    _ESPEAK_LIBRARY = "/opt/homebrew/Cellar/espeak/1.48.04_1/lib/libespeak.1.1.48.dylib"
+    EspeakWrapper.set_library(_ESPEAK_LIBRARY)
 
 from kokoro import generate  # fmt: skip
 from models import build_model  # fmt: skip
@@ -75,12 +81,9 @@ def load_voice(voice_name: str):
 
 
 def _check_espeak():
-    try:
-        # check that espeak-ng is installed
-        subprocess.run(["espeak-ng", "--version"], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    if not any([shutil.which("espeak"), shutil.which("espeak-ng")]):
         raise RuntimeError(
-            "Failed to run `espeak-ng`. Try to install it using 'sudo apt-get install espeak-ng' or equivalent"
+            "Failed to find `espeak` or `espeak-ng`. Try to install it using 'sudo apt-get install espeak-ng' or equivalent"
         ) from None
 
 
