@@ -283,12 +283,23 @@ def run_precommit_checks() -> str | None:
         return None  # No issues found
     except subprocess.CalledProcessError as e:
         logger.error(f"Pre-commit checks failed: {e}")
-        return (
-            "Pre-commit checks failed\n\n"
-            + (md_codeblock("stdout", e.stdout.rstrip()) if e.stdout.strip() else "")
-            + "\n\n"
-            + (md_codeblock("stderr", e.stderr.rstrip()) if e.stderr.strip() else "")
-        ).strip()
+        output = "Pre-commit checks failed\n\n"
+
+        # Add stdout if present
+        if e.stdout.strip():
+            output += md_codeblock("stdout", e.stdout.rstrip()) + "\n\n"
+
+        # Add stderr if present
+        if e.stderr.strip():
+            output += md_codeblock("stderr", e.stderr.rstrip()) + "\n\n"
+
+        # Add guidance about automated fixes
+        if "files were modified by this hook" in e.stdout:
+            output += "Note: Some issues were automatically fixed by the pre-commit hooks. No manual fixes needed for those changes."
+        else:
+            output += "Note: The above issues require manual fixes as they were not automatically resolved."
+
+        return output.strip()
     finally:
         logger.info(
             f"Pre-commit checks completed in {time.monotonic() - start_time:.2f}s"
