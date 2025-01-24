@@ -46,7 +46,13 @@ sys.path.insert(0, str(kokoro_path))
 
 # on macOS, use workaround for espeak detection
 if sys.platform == "darwin":
-    _ESPEAK_LIBRARY = "/opt/homebrew/Cellar/espeak/1.48.04_1/lib/libespeak.1.1.48.dylib"
+    # Find espeak library using glob
+    espeak_libs = glob.glob("/opt/homebrew/Cellar/espeak/*/lib/libespeak.*.dylib")
+    if not espeak_libs:
+        raise RuntimeError(
+            "Could not find espeak library in Homebrew. Please install it with 'brew install espeak'"
+        )
+    _ESPEAK_LIBRARY = espeak_libs[0]  # Use the first match
     EspeakWrapper.set_library(_ESPEAK_LIBRARY)
 
 from kokoro import generate  # fmt: skip
