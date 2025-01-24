@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import (
     Literal,
     TypedDict,
@@ -53,6 +54,8 @@ class ModelMeta:
     price_input: float = 0
     price_output: float = 0
 
+    knowledge_cutoff: datetime | None = None
+
     @property
     def full(self) -> str:
         return f"{self.provider}/{self.model}"
@@ -67,6 +70,8 @@ class _ModelDictMeta(TypedDict):
     # price in USD per 1M tokens
     price_input: NotRequired[float]
     price_output: NotRequired[float]
+
+    knowledge_cutoff: NotRequired[datetime]
 
 
 # default model
@@ -90,12 +95,14 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_input": 3,
             "price_output": 15,
             "supports_vision": True,
+            "knowledge_cutoff": datetime(2024, 4, 1),
         },
         "claude-3-5-sonnet-20240620": {
             "context": 200_000,
             "max_output": 4096,
             "price_input": 3,
             "price_output": 15,
+            "knowledge_cutoff": datetime(2024, 4, 1),
         },
         "claude-3-5-haiku-20241022": {
             "context": 200_000,
@@ -103,12 +110,14 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_input": 1,
             "price_output": 5,
             "supports_vision": True,
+            "knowledge_cutoff": datetime(2024, 4, 1),
         },
         "claude-3-haiku-20240307": {
             "context": 200_000,
             "max_output": 4096,
             "price_input": 0.25,
             "price_output": 1.25,
+            "knowledge_cutoff": datetime(2024, 4, 1),
         },
     },
     # https://ai.google.dev/gemini-api/docs/models/gemini#gemini-1.5-flash

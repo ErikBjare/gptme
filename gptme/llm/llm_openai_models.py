@@ -1,8 +1,8 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .models import _ModelDictMeta  # fmt: skip
-
 
 OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
     # GPT-4o
@@ -11,16 +11,20 @@ OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
         "price_input": 5,
         "price_output": 15,
         "supports_vision": True,
+        # October 2023
+        "knowledge_cutoff": datetime(2023, 10, 1),
     },
     "gpt-4o-2024-08-06": {
         "context": 128_000,
         "price_input": 2.5,
         "price_output": 10,
+        "knowledge_cutoff": datetime(2023, 10, 1),
     },
     "gpt-4o-2024-05-13": {
         "context": 128_000,
         "price_input": 5,
         "price_output": 15,
+        "knowledge_cutoff": datetime(2023, 10, 1),
     },
     # GPT-4o mini
     "gpt-4o-mini": {
@@ -28,11 +32,13 @@ OPENAI_MODELS: dict[str, "_ModelDictMeta"] = {
         "price_input": 0.15,
         "price_output": 0.6,
         "supports_vision": True,
+        "knowledge_cutoff": datetime(2023, 10, 1),
     },
     "gpt-4o-mini-2024-07-18": {
         "context": 128_000,
         "price_input": 0.15,
         "price_output": 0.6,
+        "knowledge_cutoff": datetime(2023, 10, 1),
     },
     # OpenAI o1-preview
     "o1-preview": {
