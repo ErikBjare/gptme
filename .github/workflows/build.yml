@@ -39,15 +39,15 @@ jobs:
             extras: ''
             model: 'deepseek/deepseek-chat'
           # openrouter
-          - os: ubuntu-latest
-            python_version: '3.10'
-            extras: ''
-            model: 'openrouter/deepseek/deepseek-chat'
+          #- os: ubuntu-latest
+          #  python_version: '3.10'
+          #  extras: ''
+          #  model: 'openrouter/deepseek/deepseek-chat'
           # openrouter (llama)
-          - os: ubuntu-latest
-            python_version: '3.10'
-            extras: ''
-            model: 'openrouter/meta-llama/llama-3.3-70B-instruct'
+          #- os: ubuntu-latest
+          #  python_version: '3.10'
+          #  extras: ''
+          #  model: 'openrouter/meta-llama/llama-3.3-70B-instruct'
 
     steps:
     - uses: actions/checkout@v4
