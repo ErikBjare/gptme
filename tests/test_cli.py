@@ -29,9 +29,16 @@ def runid():
     return random.randint(0, 100000)
 
 
+runid_retries: dict[str, int] = {}
+
+
 @pytest.fixture
 def name(runid, request):
-    return f"test-{runid}-{request.node.name}"
+    attempt = runid_retries.get(request.node.nodeid, 0)
+    runid_retries[request.node.nodeid] = attempt + 1
+    return f"test-{runid}-{request.node.name}" + (
+        f"-retry-{attempt}" if attempt else ""
+    )
 
 
 @pytest.fixture
