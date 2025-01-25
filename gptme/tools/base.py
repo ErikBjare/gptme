@@ -32,7 +32,6 @@ ToolFormat: TypeAlias = Literal["markdown", "xml", "tool"]
 
 # tooluse format
 tool_format: ToolFormat = "markdown"
-exclusive_mode = False
 
 # Match tool name and start of JSON
 toolcall_re = re.compile(r"^@(\w+)\(([\w_\-]+)\):\s*({.*)", re.M | re.S)
@@ -339,10 +338,10 @@ class ToolUse:
         """Returns all ToolUse in a message, markdown or XML, in order."""
         # collect all tool uses
         tool_uses = []
-        if tool_format == "xml" or not exclusive_mode:
+        if tool_format == "xml":
             for tool_use in cls._iter_from_xml(content):
                 tool_uses.append(tool_use)
-        if tool_format == "markdown" or not exclusive_mode:
+        if tool_format == "markdown":
             for tool_use in cls._iter_from_markdown(content):
                 tool_uses.append(tool_use)
 
