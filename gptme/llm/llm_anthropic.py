@@ -251,7 +251,7 @@ def _handle_tools(message_dicts: Iterable[dict]) -> Generator[dict, None, None]:
                     if tooluse.call_id:
                         before_tool = text[: tooluse.start]
 
-                        if before_tool:
+                        if before_tool.strip():
                             content.append({"type": "text", "text": before_tool})
 
                         content.append(
