@@ -20,6 +20,8 @@ from typing import (
 import json_repair
 from lxml import etree
 
+from gptme.config import get_config
+
 from ..codeblock import Codeblock
 from ..message import Message
 from ..util import clean_example, transform_examples_to_chat_directives
@@ -31,7 +33,7 @@ InitFunc: TypeAlias = Callable[[], "ToolSpec"]
 ToolFormat: TypeAlias = Literal["markdown", "xml", "tool"]
 
 # tooluse format
-tool_format: ToolFormat = "markdown"
+# tool_format: ToolFormat = "markdown"
 exclusive_mode = False
 
 # Match tool name and start of JSON
@@ -77,13 +79,8 @@ def extract_json(content: str, match: re.Match) -> str | None:
 ConfirmFunc = Callable[[str], bool]
 
 
-def set_tool_format(new_format: ToolFormat):
-    global tool_format
-    tool_format = new_format
-
-
-def get_tool_format():
-    return tool_format
+def get_tool_format() -> ToolFormat:
+    return cast(ToolFormat, get_config().get_env("TOOL_FORMAT", "markdown"))
 
 
 class ExecuteFuncGen(Protocol):
@@ -339,10 +336,10 @@ class ToolUse:
         """Returns all ToolUse in a message, markdown or XML, in order."""
         # collect all tool uses
         tool_uses = []
-        if tool_format == "xml" or not exclusive_mode:
+        if get_tool_format() == "xml" or not exclusive_mode:
             for tool_use in cls._iter_from_xml(content):
                 tool_uses.append(tool_use)
-        if tool_format == "markdown" or not exclusive_mode:
+        if get_tool_format() == "markdown" or not exclusive_mode:
             for tool_use in cls._iter_from_markdown(content):
                 tool_uses.append(tool_use)
 

@@ -3,6 +3,7 @@ from unittest.mock import patch
 from gptme.tools import (
     _discover_tools,
     init_tools,
+    _init_tools,
     get_tools,
     has_tool,
     get_tool,
@@ -26,7 +27,7 @@ def test_init_tools_allowlist():
     assert get_tools()[0].name == "save"
 
     # let's trigger a tool reloading
-    init_tools.cache_clear()
+    _init_tools.cache_clear()
 
     init_tools(allowlist=frozenset(("save",)))
 
