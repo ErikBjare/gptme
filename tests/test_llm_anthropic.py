@@ -198,8 +198,6 @@ def test_message_conversion_with_tool_and_non_tool():
 
     messages_dicts, _, _ = _prepare_messages_for_api(messages, [tool_save, tool_shell])
 
-    print(messages_dicts)
-
     assert messages_dicts == [
         {
             "role": "user",
@@ -208,13 +206,12 @@ def test_message_conversion_with_tool_and_non_tool():
         {
             "role": "assistant",
             "content": [
-                {"type": "text", "text": "\n"},
                 {
                     "type": "tool_use",
                     "id": "tool_call_id",
                     "name": "save",
                     "input": {"path": "path.txt", "content": "file_content"},
-                },
+                }
             ],
         },
         {
