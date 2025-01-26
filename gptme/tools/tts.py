@@ -93,8 +93,18 @@ def clear_queue() -> None:
             break
 
 
-def split_text(text: str, max_words=50) -> list[str]:
-    """Split text into chunks at sentence boundaries, respecting word count, paragraphs, and markdown lists."""
+def split_text(text: str) -> list[str]:
+    """Split text into sentences, respecting paragraphs, markdown lists, and decimal numbers.
+
+    This function handles:
+    - Paragraph breaks
+    - Markdown list items (-, *, 1.)
+    - Decimal numbers (won't split 3.14)
+    - Sentence boundaries (.!?)
+
+    Returns:
+        List of sentences and paragraph breaks (empty strings)
+    """
     # Split into paragraphs
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
     result = []
@@ -133,7 +143,6 @@ def split_text(text: str, max_words=50) -> list[str]:
         parts = sentence_end.split(protected)
 
         i = 0
-        current_chunk = ""
         while i < len(parts):
             part = parts[i].strip()
             if not part:
@@ -145,27 +154,13 @@ def split_text(text: str, max_words=50) -> list[str]:
 
             # Add punctuation if present
             if i + 1 < len(parts):
-                part += parts[i + 1]
+                sentences.append(part + parts[i + 1])
                 i += 2
             else:
+                sentences.append(part)
                 i += 1
 
-            # Try to combine with previous chunk if under 100 chars
-            if current_chunk:
-                combined = f"{current_chunk} {part}"
-                if len(combined) <= 100:
-                    current_chunk = combined
-                else:
-                    sentences.append(current_chunk)
-                    current_chunk = part
-            else:
-                current_chunk = part
-
-        # Add final chunk
-        if current_chunk:
-            sentences.append(current_chunk)
-
-        return sentences
+        return [s for s in sentences if s.strip()]
 
     for paragraph in paragraphs:
         lines = paragraph.split("\n")
@@ -192,17 +187,8 @@ def split_text(text: str, max_words=50) -> list[str]:
                 result.append(line)
                 continue
 
-            # Split regular text into sentences
-            sentences = split_sentences(line)
-            for sentence in sentences:
-                # Don't add periods to:
-                # 1. Text already ending in punctuation
-                # 2. Single words/numbers
-                # 3. Paragraph text without punctuation
-                if any(sentence.endswith(p) for p in ".!?"):
-                    result.append(sentence)
-                else:
-                    result.append(sentence)  # Don't add period
+            # Split regular text into sentences and add them directly to result
+            result.extend(split_sentences(line))
 
         # Add paragraph break if not the last paragraph
         if paragraph != paragraphs[-1]:
@@ -441,6 +427,45 @@ def resample_audio(data, orig_sr, target_sr):
     return signal.resample(data, num_samples)
 
 
+def join_short_sentences(sentences: list[str], min_length: int = 100) -> list[str]:
+    """Join consecutive sentences that are shorter than min_length.
+
+    Args:
+        sentences: List of sentences to potentially join
+        min_length: Minimum length threshold for joining
+
+    Returns:
+        List of sentences, with short ones combined
+    """
+    result = []
+    current = ""
+
+    for sentence in sentences:
+        if not sentence.strip():
+            if current:
+                result.append(current)
+                current = ""
+            result.append(sentence)  # Preserve empty lines
+            continue
+
+        if not current:
+            current = sentence
+        else:
+            # Join sentences with a single space, even after punctuation
+            # Join sentences with a single space after punctuation
+            combined = f"{current} {sentence.lstrip()}"
+            if len(combined) <= min_length:
+                current = combined
+            else:
+                result.append(current)
+                current = sentence
+
+    if current:
+        result.append(current)
+
+    return result
+
+
 def speak(text, block=False, interrupt=True, clean=True):
     """Speak text using Kokoro TTS server.
 
@@ -476,7 +501,7 @@ def speak(text, block=False, interrupt=True, clean=True):
 
     try:
         # Split text into chunks
-        chunks = split_text(text)
+        chunks = join_short_sentences(split_text(text))
         chunks = [c.replace("gptme", "gpt-me") for c in chunks]  # Fix pronunciation
 
         # Ensure both threads are running
