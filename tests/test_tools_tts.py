@@ -1,4 +1,9 @@
-from gptme.tools.tts import re_thinking, re_tool_use, split_text
+from gptme.tools.tts import (
+    re_thinking,
+    re_tool_use,
+    split_text,
+    join_short_sentences,
+)
 
 
 def test_split_text_single_sentence():
@@ -31,6 +36,32 @@ Text without punctuation
 Another paragraph
 """
     ) == ["Text without punctuation", "", "Another paragraph"]
+
+
+def test_join_short_sentences():
+    # Test basic sentence joining (should preserve original spacing)
+    sentences: list[str] = ["Hello.", "World."]
+    result = join_short_sentences(sentences, min_length=100)
+    assert result == ["Hello. World."]  # No extra space after period
+
+    # Test with min_length to force splits
+    sentences = ["One two", "three four", "five."]
+    result = join_short_sentences(sentences, min_length=10)
+    assert result == ["One two", "three four", "five."]
+
+    # Test with min_length to allow combining
+    result = join_short_sentences(sentences, min_length=100)
+    assert result == ["One two three four five."]
+
+    # Test with empty lines (should preserve paragraph breaks)
+    sentences = ["Hello.", "", "World."]
+    result = join_short_sentences(sentences, min_length=100)
+    assert result == ["Hello.", "", "World."]
+
+    # Test with multiple sentences and punctuation
+    sentences = ["First.", "Second!", "Third?", "Fourth."]
+    result = join_short_sentences(sentences, min_length=100)
+    assert result == ["First. Second! Third? Fourth."]
 
 
 def test_split_text_lists():
