@@ -119,32 +119,57 @@ def _chunks(s: str, chunk_size: int) -> list[str]:
     return [s[i : i + chunk_size] for i in range(0, len(s), chunk_size)]
 
 
+def _get_display_resolution() -> tuple[int, int]:
+    """Get the physical display resolution."""
+    if IS_MACOS:
+        try:
+            output = subprocess.check_output(
+                ["system_profiler", "SPDisplaysDataType"], text=True
+            )
+            for line in output.splitlines():
+                if "Resolution" in line:
+                    # Parse "Resolution: 2560 x 1664 Retina"
+                    parts = line.split(":")[-1].split("x")
+                    width = int(parts[0].strip())
+                    height = int(parts[1].split()[0].strip())
+                    return width, height
+        except (subprocess.CalledProcessError, ValueError, IndexError) as e:
+            print(f"Warning: Failed to get display resolution: {e}")
+    else:
+        try:
+            output = subprocess.check_output(["xrandr"], text=True)
+            for line in output.splitlines():
+                if "*" in line:  # Current resolution has an asterisk
+                    # Parse "2560x1440" from the line
+                    resolution = line.split()[0]
+                    width, height = map(int, resolution.split("x"))
+                    return width, height
+        except (subprocess.CalledProcessError, ValueError, IndexError) as e:
+            print(f"Warning: Failed to get display resolution: {e}")
+
+    # Fallback to default resolution
+    return 1024, 768
+
+
 def _scale_coordinates(
     source: _ScalingSource, x: int, y: int, current_width: int, current_height: int
 ) -> tuple[int, int]:
-    """Scale coordinates to/from recommended resolutions."""
-    ratio = current_width / current_height
-    target_dimension = None
-
-    for dimension in MAX_SCALING_TARGETS.values():
-        if abs(dimension["width"] / dimension["height"] - ratio) < 0.02:
-            if dimension["width"] < current_width:
-                target_dimension = dimension
-                break
-
-    if target_dimension is None:
-        return x, y
-
-    x_scaling_factor = target_dimension["width"] / current_width
-    y_scaling_factor = target_dimension["height"] / current_height
+    """Scale coordinates between API space and actual screen resolution."""
+    # Get the actual physical resolution
+    physical_width, physical_height = _get_display_resolution()
 
     if source == _ScalingSource.API:
         if x > current_width or y > current_height:
             raise ValueError(f"Coordinates {x}, {y} are out of bounds")
-        # Scale up
-        return round(x / x_scaling_factor), round(y / y_scaling_factor)
-    # Scale down
-    return round(x * x_scaling_factor), round(y * y_scaling_factor)
+        # Scale up from API coordinates to physical screen coordinates
+        x_scale = physical_width / current_width
+        y_scale = physical_height / current_height
+        return round(x * x_scale), round(y * y_scale)
+    else:  # _ScalingSource.COMPUTER
+        # Scale down from physical screen coordinates to API coordinates
+        x_scale = current_width / physical_width
+        y_scale = current_height / physical_height
+        return round(x * x_scale), round(y * y_scale)
 
 
 def _run_xdotool(cmd: str, display: str | None = None) -> str:
@@ -410,6 +435,7 @@ def computer(
         print(f"Performed {action}")
         return None
     elif action == "screenshot":
+        # TODO: refactor to share logic with screenshot tool
         output_dir = Path(OUTPUT_DIR)
         output_dir.mkdir(parents=True, exist_ok=True)
         path = output_dir / "screenshot.png"
@@ -423,6 +449,7 @@ def computer(
             path = _screenshot(path)  # Use existing screenshot function
 
         # Scale if needed
+        # TODO: also scale in screenshot tool for these situations
         if path.exists():
             x, y = _scale_coordinates(
                 _ScalingSource.COMPUTER, width, height, width, height
