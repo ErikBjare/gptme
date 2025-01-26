@@ -28,6 +28,7 @@ import logging
 import shutil
 import sys
 from pathlib import Path
+from textwrap import shorten
 
 import click
 import numpy as np
@@ -192,7 +193,7 @@ async def text_to_speech(text: str, speed: float = 1.0, voice: str | None = None
 
     try:
         log.info(
-            f"Generating audio for text: {text[:50]}... (speed: {speed}x, voice: {voice or DEFAULT_VOICE})"
+            f"Generating audio for text: {shorten(text, 50, placeholder='...')} (speed: {speed}x, voice: {voice or DEFAULT_VOICE})"
         )
         audio, phonemes = generate(
             MODEL, text, current_voicepack, lang="a", speed=speed
