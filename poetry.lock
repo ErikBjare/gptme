@@ -2179,10 +2179,10 @@ windows-curses = {version = ">=2.2.0,<3.0.0", markers = "sys_platform == \"win32
 name = "pillow"
 version = "11.0.0"
 description = "Python Imaging Library (Fork)"
-optional = true
+optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "(extra == \"datascience\" or extra == \"all\" or extra == \"computer\") and (python_version <= \"3.11\" or python_version >= \"3.12\")"
+markers = "(extra == \"datascience\" or extra == \"computer\" or extra == \"all\") and (python_version <= \"3.11\" or python_version >= \"3.12\")"
 files = [
     {file = "pillow-11.0.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:6619654954dc4936fcff82db8eb6401d3159ec6be81e33c6000dfd76ae189947"},
     {file = "pillow-11.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b3c5ac4bed7519088103d9450a1107f76308ecf91d6dabc8a33a2fcfb18d0fba"},
@@ -3857,4 +3857,4 @@ youtube = ["youtube_transcript_api"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "80e0540b4896c5791f7d43a4ea6858159c18184bd69b1d54b368bc469de043f9"
+content-hash = "ffb59ceb6f81f102b84e484088d9b2078ed53286477d1057479b7f90055b521d"

@@ -56,11 +56,11 @@ python-xlib = {version = "^0.33", optional=true}  # for X11 interaction
 multiprocessing-logging = "^0.3.4"
 
 # datascience essentials
+pillow = {version = "*"}  # non-optional, needed for image scaling in vision
 matplotlib = {version = "*", optional=true}
 pandas = {version = "*", optional=true}
 numpy = {version = "*", optional=true}
 scipy = {version="*", optional=true}
-pillow = {version = "*", optional=true}
 sounddevice = {version="^0.5.1", optional=true}
 
 # server
