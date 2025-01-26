@@ -21,7 +21,11 @@ On Linux, requires X11 and xdotool::
     # On Arch Linux
     sudo pacman -S xdotool
 
-On macOS, uses native osascript and screencapture, no additional installation required.
+On macOS, uses native ``screencapture`` and external tool `cliclicker`::
+
+    brew install cliclicker
+
+You need to give your terminal both screen recording and accessibility permissions in System Preferences.
 
 .. rubric:: Configuration
 
@@ -30,15 +34,6 @@ The tool uses these environment variables:
 - DISPLAY: X11 display to use (default: ":1", Linux only)
 - WIDTH: Screen width (default: 1024)
 - HEIGHT: Screen height (default: 768)
-
-.. rubric:: Security
-
-On macOS, the tool uses osascript with careful input sanitization to prevent command injection:
-
-- All user input is escaped and sanitized
-- Uses subprocess with list arguments to prevent shell injection
-- Validates input types and ranges
-- Maps keys to known safe values
 
 .. rubric:: Usage
 
@@ -150,54 +145,6 @@ def _scale_coordinates(
         return round(x / x_scaling_factor), round(y / y_scaling_factor)
     # Scale down
     return round(x * x_scaling_factor), round(y * y_scaling_factor)
-
-
-def _sanitize_osascript_input(text: str) -> str:
-    """
-    Sanitize input for use in osascript to prevent command injection.
-
-    Args:
-        text: The text to sanitize
-
-    Returns:
-        Safely escaped text for use in osascript
-
-    Security:
-        - Escapes single quotes to prevent breaking out of string literals
-        - Escapes backslashes to prevent escape sequence injection
-        - Uses shlex.quote as an additional safety measure
-    """
-    # First escape backslashes, then single quotes
-    escaped = text.replace("\\", "\\\\").replace("'", "\\'")
-    # Use shlex.quote as an additional safety measure
-    return shlex.quote(escaped)
-
-
-def _run_osascript(script: str) -> str:
-    """
-    Run an AppleScript command safely.
-
-    Args:
-        script: The AppleScript to execute
-
-    Returns:
-        Command output
-
-    Security:
-        - Input must be sanitized before being passed to this function
-        - Uses list form of subprocess.run to avoid shell injection
-        - Raises error on non-zero exit code
-    """
-    try:
-        result = subprocess.run(
-            ["osascript", "-e", script],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"osascript command failed: {e.stderr}") from e
 
 
 def _run_xdotool(cmd: str, display: str | None = None) -> str:
@@ -363,7 +310,7 @@ def computer(
     action: Action, text: str | None = None, coordinate: tuple[int, int] | None = None
 ) -> Message | None:
     """
-    Perform computer interactions through X11 or macOS native commands.
+    Perform computer interactions in X11 or macOS environments.
 
     Args:
         action: The type of action to perform
@@ -515,7 +462,7 @@ def computer(
 
 instructions = """
 You can interact with the computer through the `computer` Python function.
-Works on both Linux (X11) and macOS (native commands).
+Works on both Linux (X11) and macOS.
 
 Available actions:
 - key: Send key sequence (e.g., "Return", "Control_L+c")
@@ -534,34 +481,34 @@ Common modifiers like Control_L, Alt_L, Super_L work on both platforms.
 def examples(tool_format):
     return f"""
 User: Take a screenshot of the desktop
-Assistant: I'll capture the current screen using the native screenshot tool.
+Assistant: I'll capture the screen using the screenshot tool.
 {ToolUse("ipython", [], 'computer("screenshot")').to_output(tool_format)}
 System: Viewing image...
 
 User: Type "Hello, World!" into the active window
-Assistant: I'll type the text with realistic delays using the native input method.
+Assistant: I'll type the text with realistic delays.
 {ToolUse("ipython", [], 'computer("type", text="Hello, World!")').to_output(tool_format)}
 System: Typed text: Hello, World!
 
 User: Move the mouse to coordinates (100, 200) and click
-Assistant: I'll move the mouse and perform a left click using native mouse control.
+Assistant: I'll move the mouse and perform a left click.
 {ToolUse("ipython", [], 'computer("mouse_move", coordinate=(100, 200))').to_output(tool_format)}
 System: Moved mouse to 100,200
 {ToolUse("ipython", [], 'computer("left_click")').to_output(tool_format)}
 System: Performed left_click
 
 User: Press Ctrl+C
-Assistant: I'll send the Control+C key sequence using platform-appropriate key names.
+Assistant: I'll send the Control+C key sequence.
 {ToolUse("ipython", [], 'computer("key", text="Control_L+c")').to_output(tool_format)}
 System: Sent key sequence: Control_L+c
 
 User: Get the current mouse position
-Assistant: I'll get the cursor position using the native method.
+Assistant: I'll get the cursor position.
 {ToolUse("ipython", [], 'computer("cursor_position")').to_output(tool_format)}
 System: Cursor position: X=512,Y=384
 
 User: Double-click at current position
-Assistant: I'll perform a double-click using the native method.
+Assistant: I'll perform a double-click.
 {ToolUse("ipython", [], 'computer("double_click")').to_output(tool_format)}
 System: Performed double_click
 """
