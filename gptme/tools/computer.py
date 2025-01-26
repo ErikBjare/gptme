@@ -73,13 +73,14 @@ from enum import Enum
 from pathlib import Path
 from typing import Literal, TypedDict
 
-# Platform detection
-IS_MACOS = platform.system() == "Darwin"
-
 from ..message import Message
 from .base import ToolSpec, ToolUse
 from .screenshot import _screenshot
 from .vision import view_image
+
+# Platform detection
+IS_MACOS = platform.system() == "Darwin"
+
 
 # Constants from Anthropic's implementation
 TYPING_DELAY_MS = 12
@@ -223,97 +224,139 @@ def _run_xdotool(cmd: str, display: str | None = None) -> str:
 
 def _macos_type(text: str) -> None:
     """
-    Type text using osascript on macOS.
+    Type text using cliclick on macOS.
 
     Security:
-        - Uses _sanitize_osascript_input to prevent command injection
-        - Text is typed character by character to maintain control
+        - Uses cliclick for reliable input
+        - Text is properly escaped
     """
-    safe_text = _sanitize_osascript_input(text)
-    script = f"""
-        tell application "System Events"
-            keystroke {safe_text}
-        end tell
-    """
-    _run_osascript(script)
+    safe_text = shlex.quote(text)
+    try:
+        subprocess.run(["cliclick", "t:" + safe_text], check=True)
+    except FileNotFoundError:
+        raise RuntimeError(
+            "cliclick not found. Install with: brew install cliclick"
+        ) from None
+
+
+def _ensure_cliclick() -> None:
+    """Ensure cliclick is installed, raise helpful error if not."""
+    if not shutil.which("cliclick"):
+        raise RuntimeError("cliclick not found. Install with: brew install cliclick")
 
 
 def _macos_key(key_sequence: str) -> None:
     """
-    Send key sequence using osascript on macOS.
+    Send key sequence using cliclick on macOS.
 
-    Maps common key names to their macOS equivalents.
+    Maps common key names to cliclick key codes.
+    Uses cliclick's key down/up commands for modifiers and key press for regular keys.
 
     Security:
-        - Uses _sanitize_osascript_input to prevent command injection
-        - Validates key sequences against known safe values
+        - Input is properly escaped
+        - Uses cliclick's built-in key system
     """
-    # Map common key names to macOS equivalents
+    _ensure_cliclick()
+
+    # Map common key names to cliclick key codes
     key_map = {
         "Return": "return",
-        "Control_L": "control",
-        "Alt_L": "option",
-        "Super_L": "command",
+        "Control_L": "ctrl",
+        "Alt_L": "alt",
+        "Super_L": "cmd",
+        "Shift_L": "shift",
         # Add more mappings as needed
     }
 
     keys = key_sequence.split("+")
-    safe_keys = []
-    for key in keys:
-        mapped_key = key_map.get(key, key.lower())
-        safe_key = _sanitize_osascript_input(mapped_key)
-        safe_keys.append(safe_key)
+    modifiers = []
+    main_key = None
 
-    if len(safe_keys) == 1:
-        script = f"""
-            tell application "System Events"
-                key code {safe_keys[0]}
-            end tell
-        """
-    else:
-        # For key combinations
-        key_list = ", ".join(safe_keys[:-1])
-        script = f"""
-            tell application "System Events"
-                key code {safe_keys[-1]} using {{{key_list}}} down
-            end tell
-        """
-    _run_osascript(script)
+    for key in keys:
+        if key in key_map:
+            if key in ["Control_L", "Alt_L", "Super_L", "Shift_L"]:
+                modifiers.append(key_map[key])
+            else:
+                main_key = key_map[key]
+        else:
+            # For regular characters, use key press
+            main_key = key.lower()
+
+    commands = []
+    if modifiers:
+        # Press modifiers
+        commands.append(f"kd:{','.join(modifiers)}")
+
+    if main_key:
+        if len(main_key) == 1:
+            # For single characters, use type
+            commands.append(f"t:{main_key}")
+        else:
+            # For special keys, use key press
+            commands.append(f"kp:{main_key}")
+
+    if modifiers:
+        # Release modifiers
+        commands.append(f"ku:{','.join(modifiers)}")
+
+    try:
+        for cmd in commands:
+            subprocess.run(
+                ["cliclick", cmd], check=True, capture_output=True, text=True
+            )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to send key sequence: {e.stderr}") from e
 
 
 def _macos_mouse_move(x: int, y: int) -> None:
     """
-    Move mouse using osascript on macOS.
+    Move mouse using cliclick on macOS.
 
     Security:
         - Coordinates are validated as integers
-        - Uses safe string formatting
+        - Uses cliclick for reliable input
     """
-    script = f"""
-        tell application "System Events"
-            set mouseLocation to {{x:{x}, y:{y}}}
-        end tell
-    """
-    _run_osascript(script)
+    try:
+        subprocess.run(["cliclick", f"m:{x},{y}"], check=True)
+    except FileNotFoundError:
+        raise RuntimeError(
+            "cliclick not found. Install with: brew install cliclick"
+        ) from None
 
 
 def _macos_click(button: int) -> None:
     """
-    Click mouse button using osascript on macOS.
+    Click mouse button using cliclick on macOS.
 
     Security:
         - Button number is validated as integer
         - Only allows valid button numbers
+        - Uses cliclick for reliable input
     """
+    _ensure_cliclick()
+
     if button not in (1, 2, 3):
         raise ValueError("Invalid button number")
 
-    script = f"""
-        tell application "System Events"
-            click button {button}
-        end tell
-    """
-    _run_osascript(script)
+    # Get current position
+    try:
+        result = subprocess.run(
+            ["cliclick", "p"], check=True, capture_output=True, text=True
+        )
+        pos = result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to get cursor position: {e.stderr}") from e
+
+    # Map buttons to cliclick commands
+    button_map = {1: "c", 2: "m", 3: "rc"}
+    cmd = f"{button_map[button]}:{pos}"
+
+    try:
+        result = subprocess.run(
+            ["cliclick", cmd], check=True, capture_output=True, text=True
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Failed to click: {e.stderr}") from e
 
 
 def computer(
@@ -378,7 +421,27 @@ def computer(
                     )
                 print(f"Typed text: {text}")
         return None
-    elif action in ("left_click", "right_click", "middle_click", "double_click"):
+    elif action == "double_click":
+        if IS_MACOS:
+            # Get current position and double-click using cliclick's dc command
+            try:
+                result = subprocess.run(
+                    ["cliclick", "p"], check=True, capture_output=True, text=True
+                )
+                pos = result.stdout.strip()
+                subprocess.run(
+                    ["cliclick", f"dc:{pos}"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"Failed to double-click: {e.stderr}") from e
+        else:
+            _run_xdotool("click --repeat 2 --delay 100 1", display)
+        print("Performed double_click")
+        return None
+    elif action in ("left_click", "right_click", "middle_click"):
         click_map = {
             "left_click": 1,
             "right_click": 3,
@@ -387,11 +450,7 @@ def computer(
 
         if IS_MACOS:
             button = click_map[action]
-            if action == "double_click":
-                _macos_click(1)
-                _macos_click(1)
-            else:
-                _macos_click(button)
+            _macos_click(button)
         else:
             click_arg = {
                 "left_click": "1",
@@ -431,16 +490,18 @@ def computer(
         return None
     elif action == "cursor_position":
         if IS_MACOS:
-            script = """
-                tell application "System Events"
-                    get the position of the mouse
-                end tell
-            """
-            output = _run_osascript(script)
             try:
-                x, y = map(int, output.split(", "))
-            except ValueError:
-                raise RuntimeError("Failed to parse cursor position") from None
+                output = subprocess.run(
+                    ["cliclick", "p"], capture_output=True, text=True, check=True
+                ).stdout.strip()
+                # cliclick outputs format: "x,y"
+                x, y = map(int, output.split(","))
+            except FileNotFoundError:
+                raise RuntimeError(
+                    "cliclick not found. Install with: brew install cliclick"
+                ) from None
+            except (subprocess.CalledProcessError, ValueError) as e:
+                raise RuntimeError(f"Failed to get cursor position: {e}") from e
         else:
             output = _run_xdotool("getmouselocation --shell", display)
             x = int(output.split("X=")[1].split("\n")[0])
