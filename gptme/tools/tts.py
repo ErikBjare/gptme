@@ -133,6 +133,7 @@ def split_text(text: str, max_words=50) -> list[str]:
         parts = sentence_end.split(protected)
 
         i = 0
+        current_chunk = ""
         while i < len(parts):
             part = parts[i].strip()
             if not part:
@@ -149,8 +150,20 @@ def split_text(text: str, max_words=50) -> list[str]:
             else:
                 i += 1
 
-            if part:
-                sentences.append(part)
+            # Try to combine with previous chunk if under 100 chars
+            if current_chunk:
+                combined = f"{current_chunk} {part}"
+                if len(combined) <= 100:
+                    current_chunk = combined
+                else:
+                    sentences.append(current_chunk)
+                    current_chunk = part
+            else:
+                current_chunk = part
+
+        # Add final chunk
+        if current_chunk:
+            sentences.append(current_chunk)
 
         return sentences
 
@@ -263,7 +276,7 @@ def get_output_device() -> tuple[int, int]:
             f"out: {dev['max_output_channels']}, hostapi: {dev['hostapi']})"
         )
 
-    # First try: use system default output device
+    # Try using system default output device
     try:
         default_output = sd.default.device[1]
         if default_output is not None:
