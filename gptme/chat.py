@@ -28,7 +28,12 @@ from .tools import (
     set_tool_format,
 )
 from .tools.browser import read_url
-from .tools.tts import speak
+from .tools.tts import (
+    audio_queue,
+    speak,
+    stop,
+    tts_request_queue,
+)
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
 from .util.context import run_precommit_checks, use_fresh_context
@@ -187,7 +192,25 @@ def chat(
         #  - no executable block in last assistant message
         # then exit
         elif not interactive:
-            logger.debug("Non-interactive and exhausted prompts, exiting")
+            logger.debug("Non-interactive and exhausted prompts")
+            if has_tool("tts") and os.environ.get("GPTME_VOICE_FINISH", "").lower() in [
+                "1",
+                "true",
+            ]:
+                logger.info("Waiting for TTS to finish...")
+
+                set_interruptible()
+                try:
+                    # Wait for all TTS processing to complete
+                    tts_request_queue.join()
+                    logger.info("tts request queue joined")
+                    # Then wait for all audio to finish playing
+                    audio_queue.join()
+                    logger.info("audio queue joined")
+                except KeyboardInterrupt:
+                    logger.info("Interrupted while waiting for TTS")
+
+                    stop()
             break
 
         # ask for input if no prompt, generate reply, and run tools
