@@ -923,7 +923,7 @@ Available commands:
 
 <span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
+view_image(image_path: Union[Path, str]) -&gt; Message: View an image. Large images (&gt;1MB) will be automatically scaled down.
 
 <span class="gu">## ipython</span>
 
@@ -933,7 +933,7 @@ view_image(image_path: Union[Path, str]) -&gt; Message: View an image.
 It will respond with the output and result of the execution.
 
 Available libraries:
-<span class="k">-</span><span class="w"> </span>no common libraries found
+<span class="k">-</span><span class="w"> </span>PIL
 
 Available functions:
 <span class="k">-</span><span class="w"> </span>read_url(url: str) -&gt; str
@@ -978,7 +978,7 @@ Available functions:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3131</p>
+<p>Tokens: 3140</p>
 </dd></dl>
 
 <dl class="py function">
