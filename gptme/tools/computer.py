@@ -1,5 +1,5 @@
 """
-Tool for computer interaction through X11 or macOS native commands, including screen capture, keyboard, and mouse control.
+Tool for computer interaction for X11 or macOS environments, including screen capture, keyboard, and mouse control.
 
 The computer tool provides direct interaction with the desktop environment.
 Similar to Anthropic's computer use demo, but integrated with gptme's architecture.
