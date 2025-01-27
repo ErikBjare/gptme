@@ -59,6 +59,7 @@ The tool automatically handles screen resolution scaling to ensure optimal perfo
 with LLM vision capabilities.
 """
 
+import logging
 import os
 import platform
 import shlex
@@ -72,6 +73,9 @@ from ..message import Message
 from .base import ToolSpec, ToolUse
 from .screenshot import _screenshot
 from .vision import view_image
+
+logger = logging.getLogger(__name__)
+
 
 # Platform detection
 IS_MACOS = platform.system() == "Darwin"
@@ -121,8 +125,8 @@ def _chunks(s: str, chunk_size: int) -> list[str]:
 
 def _get_display_resolution() -> tuple[int, int]:
     """Get the physical display resolution."""
-    if IS_MACOS:
-        try:
+    try:
+        if IS_MACOS:
             output = subprocess.check_output(
                 ["system_profiler", "SPDisplaysDataType"], text=True
             )
@@ -133,10 +137,7 @@ def _get_display_resolution() -> tuple[int, int]:
                     width = int(parts[0].strip())
                     height = int(parts[1].split()[0].strip())
                     return width, height
-        except (subprocess.CalledProcessError, ValueError, IndexError) as e:
-            print(f"Warning: Failed to get display resolution: {e}")
-    else:
-        try:
+        else:
             output = subprocess.check_output(["xrandr"], text=True)
             for line in output.splitlines():
                 if "*" in line:  # Current resolution has an asterisk
@@ -144,31 +145,47 @@ def _get_display_resolution() -> tuple[int, int]:
                     resolution = line.split()[0]
                     width, height = map(int, resolution.split("x"))
                     return width, height
-        except (subprocess.CalledProcessError, ValueError, IndexError) as e:
-            print(f"Warning: Failed to get display resolution: {e}")
-
-    # Fallback to default resolution
-    return 1024, 768
+    except (subprocess.CalledProcessError, ValueError, IndexError) as e:
+        raise RuntimeError(f"Failed to get display resolution: {e}") from e
+    raise RuntimeError("Failed to get display resolution")
 
 
 def _scale_coordinates(
-    source: _ScalingSource, x: int, y: int, current_width: int, current_height: int
+    source: _ScalingSource, x: int, y: int, api_width: int, api_height: int
 ) -> tuple[int, int]:
     """Scale coordinates between API space and actual screen resolution."""
     # Get the actual physical resolution
     physical_width, physical_height = _get_display_resolution()
 
+    # Account for macOS display scaling factor
+    if IS_MACOS:
+        # macOS display scaling factor
+        # TODO: retrieve somehow? we could move mouse to the bottom right and then get the position
+        # (but it's hacky and confusing to users)
+        display_scale = 2560 / 1709
+
+        physical_width = int(physical_width / display_scale)
+        physical_height = int(physical_height / display_scale)
+        logger.info(
+            f"Adjusted physical resolution: {physical_width}x{physical_height} (scale: {display_scale})"
+        )
+
     if source == _ScalingSource.API:
-        if x > current_width or y > current_height:
+        if x > api_width or y > api_height:
             raise ValueError(f"Coordinates {x}, {y} are out of bounds")
+
         # Scale up from API coordinates to physical screen coordinates
-        x_scale = physical_width / current_width
-        y_scale = physical_height / current_height
-        return round(x * x_scale), round(y * y_scale)
+        x_scale = physical_width / api_width
+        y_scale = physical_height / api_height
+        scaled_x = round(x * x_scale)
+        scaled_y = round(y * y_scale)
+        logger.info(f"Scaling from API ({x},{y}) to physical ({scaled_x},{scaled_y})")
+        logger.info(f"Scale factors: x={x_scale:.3f}, y={y_scale:.3f}")
+        return scaled_x, scaled_y
     else:  # _ScalingSource.COMPUTER
         # Scale down from physical screen coordinates to API coordinates
-        x_scale = current_width / physical_width
-        y_scale = current_height / physical_height
+        x_scale = api_width / physical_width
+        y_scale = api_height / physical_height
         return round(x * x_scale), round(y * y_scale)
 
 
@@ -289,6 +306,7 @@ def _macos_mouse_move(x: int, y: int) -> None:
         - Uses cliclick for reliable input
     """
     try:
+        logger.info(f"Moving mouse to {x},{y}")
         subprocess.run(["cliclick", f"m:{x},{y}"], check=True)
     except FileNotFoundError:
         raise RuntimeError(
@@ -343,8 +361,36 @@ def computer(
         coordinate: X,Y coordinates for mouse actions
     """
     display = os.getenv("DISPLAY", ":1")
-    width = int(os.getenv("WIDTH", "1024"))
-    height = int(os.getenv("HEIGHT", "768"))
+    # Default API space resolution
+    # Get actual display resolution and calculate aspect ratio
+    display_width, display_height = _get_display_resolution()
+    display_ratio = display_width / display_height
+    logger.info(
+        f"Physical display resolution: {display_width}x{display_height} (ratio: {display_ratio:.3f})"
+    )
+
+    # Choose default resolution based on display ratio
+    default_resolution = None
+    closest_ratio_diff = float("inf")
+    for name, res in MAX_SCALING_TARGETS.items():
+        ratio = res["width"] / res["height"]
+        ratio_diff = abs(ratio - display_ratio)
+        if ratio_diff < closest_ratio_diff:
+            closest_ratio_diff = ratio_diff
+            default_resolution = res
+            logger.info(
+                f"Selected {name} as closest match: {res['width']}x{res['height']} (ratio diff: {ratio_diff:.3f})"
+            )
+
+    # Use environment variables if set, otherwise use chosen defaults
+    # Fallback to XGA (4:3) if no resolution matched (shouldn't happen)
+    if default_resolution is None:
+        default_resolution = MAX_SCALING_TARGETS["XGA"]
+        logger.info("Fallback to XGA resolution")
+
+    width = int(os.getenv("WIDTH", str(default_resolution["width"])))
+    height = int(os.getenv("HEIGHT", str(default_resolution["height"])))
+    logger.info(f"Using API space resolution: {width}x{height}")
 
     if action in ("mouse_move", "left_click_drag"):
         if not coordinate:
@@ -367,7 +413,8 @@ def computer(
             else:  # left_click_drag
                 _run_xdotool(f"mousedown 1 mousemove --sync {x} {y} mouseup 1", display)
 
-        print(f"Moved mouse to {x},{y}")
+        # Show the API space coordinates in the output, not the physical ones
+        print(f"Moved mouse to {coordinate[0]},{coordinate[1]}")
         return None
     elif action in ("key", "type"):
         if not text:
