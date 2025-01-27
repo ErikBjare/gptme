@@ -1468,8 +1468,8 @@ If False, uses a simple strategy showing snippets of the first and last messages
 <p>The computer use interface is experimental and has serious security implications.
 Please use with caution and see Anthropic’s documentation on <a class="reference external" href="https://docs.anthropic.com/en/docs/build-with-claude/computer-use">computer use</a> for additional guidance.</p>
 </div>
-<p>Tool for computer interaction through X11, including screen capture, keyboard, and mouse control.</p>
-<p>The computer tool provides direct interaction with the desktop environment through X11.
+<p>Tool for computer interaction for X11 or macOS environments, including screen capture, keyboard, and mouse control.</p>
+<p>The computer tool provides direct interaction with the desktop environment.
 Similar to Anthropic’s computer use demo, but integrated with gptme’s architecture.</p>
 <p class="rubric">Features</p>
 <ul class="simple">
@@ -1479,7 +1479,7 @@ Similar to Anthropic’s computer use demo, but integrated with gptme’s archit
 <li><p>Cursor position tracking</p></li>
 </ul>
 <p class="rubric">Installation</p>
-<p>Requires X11 and xdotool:</p>
+<p>On Linux, requires X11 and xdotool:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># On Debian/Ubuntu</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">xdotool</span>
 
@@ -1487,10 +1487,15 @@ Similar to Anthropic’s computer use demo, but integrated with gptme’s archit
 <span class="n">sudo</span> <span class="n">pacman</span> <span class="o">-</span><span class="n">S</span> <span class="n">xdotool</span>
 </pre></div>
 </div>
+<p>On macOS, uses native <code class="docutils literal notranslate"><span class="pre">screencapture</span></code> and external tool <cite>cliclicker</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">brew</span> <span class="n">install</span> <span class="n">cliclicker</span>
+</pre></div>
+</div>
+<p>You need to give your terminal both screen recording and accessibility permissions in System Preferences.</p>
 <p class="rubric">Configuration</p>
 <p>The tool uses these environment variables:</p>
 <ul class="simple">
-<li><p>DISPLAY: X11 display to use (default: “:1”)</p></li>
+<li><p>DISPLAY: X11 display to use (default: “:1”, Linux only)</p></li>
 <li><p>WIDTH: Screen width (default: 1024)</p></li>
 <li><p>HEIGHT: Screen height (default: 768)</p></li>
 </ul>
@@ -1520,7 +1525,9 @@ Similar to Anthropic’s computer use demo, but integrated with gptme’s archit
 <p>The tool automatically handles screen resolution scaling to ensure optimal performance
 with LLM vision capabilities.</p>
 <p class="rubric">Instructions</p>
-<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>You can interact with the computer through X11 with the <span class="sb">`computer`</span> Python function.
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>You can interact with the computer through the <span class="sb">`computer`</span> Python function.
+Works on both Linux (X11) and macOS.
+
 Available actions:
 <span class="k">-</span><span class="w"> </span>key: Send key sequence (e.g., &quot;Return&quot;, &quot;Control_L+c&quot;)
 <span class="k">-</span><span class="w"> </span>type: Type text with realistic delays
@@ -1529,6 +1536,9 @@ Available actions:
 <span class="k">-</span><span class="w"> </span>left_click_drag: Click and drag to coordinates
 <span class="k">-</span><span class="w"> </span>screenshot: Take and view a screenshot
 <span class="k">-</span><span class="w"> </span>cursor_position: Get current mouse position
+
+Note: Key names are automatically mapped between platforms.
+Common modifiers like Control_L, Alt_L, Super_L work on both platforms.
 </pre></div>
 </div>
 <p class="rubric">Examples</p>
@@ -1543,7 +1553,7 @@ Available actions:
 <tr>
   <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
   <td>
-    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll capture the current screen.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll capture the screen using the screenshot tool.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
 <pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("screenshot")
 </pre></div></pre>
   </td>
@@ -1628,10 +1638,54 @@ Available actions:
     <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Sent key sequence: Control_L+c</pre>
   </td>
 </tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Get the current mouse position</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll get the cursor position.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("cursor_position")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Cursor position: X=512,Y=384</pre>
+  </td>
+</tr>
+</table><table style="width: 100%; margin-bottom: 1em">
+  
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #5555cc;">User</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Double-click at current position</pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #44cc44">Assistant</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">I'll perform a double-click.<div style="opacity: 0.8;"><div style="display: inline-block; margin-bottom: -.5px; margin-top: 1em; border: 0 #888 solid; border-width: 1px 1px 0 1px; border-radius: 3px 3px 0 0; padding: 0.3em 0.6em; font-size: 0.7em; background-color: #000; color: #FFF">ipython</div>
+<pre style="background-color: #000; color: #ccc; margin-right: 1em; margin-top: 0; padding: 5px; margin-bottom: 0.5em; overflow: scroll;">computer("double_click")
+</pre></div></pre>
+  </td>
+</tr>
+<tr>
+  <td style="text-align: right; padding: 0 1em 0 1em; width: 0.1%; font-weight: bold; color: #AAAAAA">System</td>
+  <td>
+    <pre style="margin-right: 1em; padding: 5px; margin-bottom: 0.5em; white-space: pre-wrap;">Performed double_click</pre>
+  </td>
+</tr>
 </table><dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">gptme.tools.computer.</span></span><span class="sig-name descname"><span class="pre">computer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'key'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'type'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'mouse_move'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left_click_drag'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'right_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'middle_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'double_click'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'screenshot'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cursor_position'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="api.html#gptme.message.Message" title="gptme.message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span></dt>
-<dd><p>Perform computer interactions through X11.</p>
+<dd><p>Perform computer interactions in X11 or macOS environments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
