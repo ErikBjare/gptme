@@ -509,9 +509,9 @@ def check_for_modifications(log: Log) -> bool:
         for m in messages_since_user[:3]
         for tu in ToolUse.iter_from_content(m.content)
     )
-    logger.debug(
-        f"Found {len(messages_since_user)} messages since user ({has_modifications=})"
-    )
+    # logger.debug(
+    #     f"Found {len(messages_since_user)} messages since user ({has_modifications=})"
+    # )
     return has_modifications
 
 

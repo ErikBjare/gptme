@@ -25,22 +25,8 @@ from rich.console import Console
 
 from ..dirs import get_pt_history_file
 
-
-def rich_to_str(text: str | Any, **kwargs) -> str:
-    """Convert rich text to ANSI string.
-
-    Args:
-        text: The text to convert, can be any type that rich can print
-        **kwargs: Additional arguments passed to Console
-
-    Returns:
-        str: The text converted to ANSI escape sequences
-    """
-    # kwargs.setdefault("color_system", "256")
-    # kwargs.setdefault("force_terminal", True)  # Ensure ANSI codes are generated
-    console = Console(file=io.StringIO(), **kwargs)
-    console.print(text, end="")
-    return console.file.getvalue()  # type: ignore
+# Make cache management functions available at module level
+__all__ = ["clear_path_cache", "check_cwd", "is_valid_path", "PathLexer"]
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +43,7 @@ def _get_pwd_files() -> set[str]:
     global _pwd_files
     if _pwd_files is None:
         _pwd_files = {f.name for f in Path.cwd().glob("*")}
-        logger.debug(f"Updated pwd files cache: {_pwd_files}")
+        # logger.debug(f"Updated pwd files cache: {_pwd_files}")
     return _pwd_files
 
 
@@ -74,7 +60,7 @@ def clear_path_cache() -> None:
     _last_cwd = None
     _last_check = 0
     _pwd_files = None
-    logger.debug("Path validation cache cleared")
+    # logger.debug("Path validation cache cleared")
 
 
 def check_cwd() -> None:
@@ -97,10 +83,6 @@ def check_cwd() -> None:
             logger.debug(f"Working directory changed from {_last_cwd} to {current}")
             clear_path_cache()
             _last_cwd = current
-
-
-# Make cache management functions available at module level
-__all__ = ["clear_path_cache", "check_cwd", "is_valid_path", "PathLexer"]
 
 
 # TODO: this should prob have a cache, but breaks tests which mutate files, so maybe not
@@ -423,8 +405,6 @@ def get_input(prompt: str) -> str:
 
     session = get_prompt_session()
     try:
-        logger.debug(f"Original prompt: {repr(prompt)}")
-
         with patch_stdout(raw=True):
             result = session.prompt(
                 to_formatted_text(
@@ -450,3 +430,20 @@ def add_history(line: str) -> None:
     """Add a line to the prompt_toolkit history."""
     session = get_prompt_session()
     session.history.append_string(line)
+
+
+def rich_to_str(text: str | Any, **kwargs) -> str:
+    """Convert rich text to ANSI string.
+
+    Args:
+        text: The text to convert, can be any type that rich can print
+        **kwargs: Additional arguments passed to Console
+
+    Returns:
+        str: The text converted to ANSI escape sequences
+    """
+    # kwargs.setdefault("color_system", "256")
+    # kwargs.setdefault("force_terminal", True)  # Ensure ANSI codes are generated
+    console = Console(file=io.StringIO(), **kwargs)
+    console.print(text, end="")
+    return console.file.getvalue()  # type: ignore

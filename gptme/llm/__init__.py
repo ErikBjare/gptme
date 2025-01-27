@@ -156,7 +156,7 @@ def _reply_stream(
         if first_token_time:
             end_time = time.time()
             logger.debug(
-                f"Generation interrupted after {end_time - start_time:.1f}s "
+                f"Generation finished in {end_time - start_time:.1f}s "
                 f"(ttft: {first_token_time - start_time:.2f}s, "
                 f"gen: {end_time - first_token_time:.2f}s, "
                 f"tok/s: {len_tokens(output, model)/(end_time - first_token_time):.1f})"
