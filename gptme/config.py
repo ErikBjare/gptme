@@ -128,7 +128,9 @@ def set_config_value(key: str, value: str) -> None:  # pragma: no cover
 
 
 @lru_cache
-def get_project_config(workspace: Path) -> ProjectConfig | None:
+def get_project_config(workspace: Path | None) -> ProjectConfig | None:
+    if workspace is None:
+        return None
     project_config_paths = [
         p
         for p in (
