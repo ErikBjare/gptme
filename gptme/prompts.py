@@ -90,7 +90,7 @@ def prompt_gptme(interactive: bool) -> Generator[Message, None, None]:
      - Mention the ability to self-correct and ask clarifying questions
     """
 
-    base_prompt = f"""
+    default_base_prompt = f"""
 You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs.
 You are designed to help users with programming tasks, such as writing code, debugging, and learning new concepts.
 You can run code, execute terminal commands, and access the filesystem on the local machine.
@@ -138,6 +138,10 @@ All code blocks you suggest will be automatically executed.
 Do not provide examples or ask for permission before running commands.
 Proceed directly with the most appropriate actions to complete the task.
 """.strip()
+
+    projectdir = get_project_dir()
+    project_config = get_project_config(projectdir)
+    base_prompt = project_config.base_prompt if project_config and project_config.base_prompt else default_base_prompt
 
     full_prompt = (
         base_prompt

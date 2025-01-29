@@ -35,3 +35,9 @@ __pycache__
 *.png
 .aider*
 .env
+
+# MacOS
+.DS_Store
+
+# VSCode
+.vscode

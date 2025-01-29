@@ -63,8 +63,24 @@ The project configuration file is intended to let the user configure how gptme w
 
 gptme will look for a ``gptme.toml`` file in the workspace root (this is the working directory if not overridden by the ``--workspace`` option). This file contains project-specific configuration options.
 
-This file currently supports a single option, ``files``, which is a list of paths that gptme will always include in the context:
+This file currently supports a few options:
+
+- ``files``, which is a list of paths that gptme will always include in the context:
 
 .. code-block:: toml
 
     files = ["README.md", "Makefile"]
+
+- ``base_prompt``, which is a string that will be used as the base prompt for the project. This will override the global base prompt ("You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs. [...]"):
+
+.. code-block:: toml
+
+    base_prompt = "You are an AI agent that can help me with my programming tasks."
+
+- ``prompt``, which is a string that will be used as the prompt for the project. This will be added to the system prompt with a ``# Current Project`` header:
+
+.. code-block:: toml
+
+    prompt = "This is gptme."
+
+- ``rag``, which is a dictionary to configure the RAG tool. See :ref:`RAG Tool <rag-tool>` for more information.
