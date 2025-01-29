@@ -41,6 +41,7 @@ class Config:
 class ProjectConfig:
     """Project-level configuration, such as which files to include in the context by default."""
 
+    base_prompt: str | None = None
     prompt: str | None = None
     files: list[str] = field(default_factory=list)
     rag: dict = field(default_factory=dict)
