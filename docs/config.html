@@ -440,10 +440,28 @@
 <p>The project configuration file is a very early feature and is likely to change/break in the future.</p>
 </div>
 <p>gptme will look for a <code class="docutils literal notranslate"><span class="pre">gptme.toml</span></code> file in the workspace root (this is the working directory if not overridden by the <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> option). This file contains project-specific configuration options.</p>
-<p>This file currently supports a single option, <code class="docutils literal notranslate"><span class="pre">files</span></code>, which is a list of paths that gptme will always include in the context:</p>
+<p>This file currently supports a few options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">files</span></code>, which is a list of paths that gptme will always include in the context:</p></li>
+</ul>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;README.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Makefile&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">base_prompt</span></code>, which is a string that will be used as the base prompt for the project. This will override the global base prompt (“You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs. […]”):</p></li>
+</ul>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">base_prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;You are an AI agent that can help me with my programming tasks.&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code>, which is a string that will be used as the prompt for the project. This will be added to the system prompt with a <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">Current</span> <span class="pre">Project</span></code> header:</p></li>
+</ul>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;This is gptme.&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rag</span></code>, which is a dictionary to configure the RAG tool. See <a class="reference internal" href="tools.html#rag-tool"><span class="std std-ref">RAG Tool</span></a> for more information.</p></li>
+</ul>
 </section>
 </section>
 
