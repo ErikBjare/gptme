@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from openai import OpenAI  # fmt: skip
     from openai.types.chat import ChatCompletionToolParam  # fmt: skip
 
-
 # Dictionary to store clients for each provider
 clients: dict[Provider, "OpenAI"] = {}
 logger = logging.getLogger(__name__)
@@ -178,6 +177,8 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
                 f"@{tool_call.function.name}({tool_call.id}): {tool_call.function.arguments}"
             )
     else:
+        if reasoning_content := getattr(choice.message, "reasoning_content", None):
+            logger.info("Reasoning content: %s", reasoning_content)
         if choice.message.content:
             result.append(choice.message.content)
 
@@ -202,6 +203,7 @@ def stream(
     is_reasoner = is_o1 or is_deepseek_reasoner
 
     messages_dicts, tools_dict = _prepare_messages_for_api(messages, model, tools)
+    reasoning = ""
 
     for chunk_raw in client.chat.completions.create(
         model=base_model,
@@ -234,9 +236,11 @@ def stream(
         stop_reason = choice.finish_reason
         delta = choice.delta
 
-        # DeepSeek reasoning content (maybe also for Gemini Flash Thinking)
-        # if hasattr(delta, "reasoning_content") and delta.reasoning_content:
-        #     yield delta.reasoning_content
+        if reasoning_content := getattr(delta, "reasoning_content", None):
+            reasoning += reasoning_content
+        elif reasoning:
+            logger.info(f"Reasoning content: {reasoning}")
+            reasoning = ""
 
         if delta.content is not None:
             yield delta.content
