@@ -1094,6 +1094,14 @@ If the current directory changes, the path will be relative to the new directory
 <section id="patch">
 <h2>Patch<a class="headerlink" href="#patch" title="Link to this heading">#</a></h2>
 <p>Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.</p>
+<dl class="simple">
+<dt>Environment Variables:</dt><dd><dl class="simple">
+<dt>GPTME_PATCH_RECOVERY: If set to “true” or “1”, returns the file content in error messages</dt><dd><p>when patches don’t match. This helps the assistant recover faster
+by seeing the actual file contents.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <p class="rubric">Instructions</p>
 <div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>To patch/modify files, we use an adapted version of git conflict markers.
 

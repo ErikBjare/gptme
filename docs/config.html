@@ -376,6 +376,12 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-flags">Feature Flags</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tool-configuration">Tool Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#paths">Paths</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
 </ul>
             </nav>
@@ -431,6 +437,35 @@
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">prompt</span></code> section contains options for the prompt.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">env</span></code> section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting the default model and API keys for <a class="reference internal" href="providers.html"><span class="doc">Providers</span></a>.</p>
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading">#</a></h2>
+<p>Besides the configuration files, gptme supports several environment variables to control its behavior:</p>
+<section id="feature-flags">
+<h3>Feature Flags<a class="headerlink" href="#feature-flags" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_CHECK</span></code> - Enable precommit checks (default: false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_COSTS</span></code> - Enable cost reporting for API calls (default: false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_FRESH</span></code> - Enable fresh context mode (default: false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_BREAK_ON_TOOLUSE</span></code> - Don’t stop generation when tool use occurs in stream (default: true)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_PATCH_RECOVERY</span></code> - Return file content in error for non-matching patches (default: false)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_SUGGEST_LLM</span></code> - Enable suggestions for LLM model changes (default: false)</p></li>
+</ul>
+</section>
+<section id="tool-configuration">
+<h3>Tool Configuration<a class="headerlink" href="#tool-configuration" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_TTS_VOICE</span></code> - Set the voice to use for TTS</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_VOICE_FINISH</span></code> - Wait for TTS speech to finish before exiting (default: false)</p></li>
+</ul>
+</section>
+<section id="paths">
+<h3>Paths<a class="headerlink" href="#paths" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GPTME_LOGS_HOME</span></code> - Override the default logs folder location</p></li>
+</ul>
+<p>All boolean flags accept “1”, “true” (case-insensitive) as truthy values.</p>
+</section>
 </section>
 <section id="project-config">
 <h2>Project config<a class="headerlink" href="#project-config" title="Link to this heading">#</a></h2>
@@ -512,6 +547,12 @@
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#global-config">Global config</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment Variables</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-flags">Feature Flags</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tool-configuration">Tool Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#paths">Paths</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#project-config">Project config</a></li>
 </ul>
   </nav></div>

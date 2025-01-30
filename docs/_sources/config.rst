@@ -51,6 +51,34 @@ The ``prompt`` section contains options for the prompt.
 
 The ``env`` section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting the default model and API keys for :doc:`providers`.
 
+Environment Variables
+------------------------
+
+Besides the configuration files, gptme supports several environment variables to control its behavior:
+
+Feature Flags
+~~~~~~~~~~~~~
+
+- ``GPTME_CHECK`` - Enable precommit checks (default: false)
+- ``GPTME_COSTS`` - Enable cost reporting for API calls (default: false)
+- ``GPTME_FRESH`` - Enable fresh context mode (default: false)
+- ``GPTME_BREAK_ON_TOOLUSE`` - Don't stop generation when tool use occurs in stream (default: true)
+- ``GPTME_PATCH_RECOVERY`` - Return file content in error for non-matching patches (default: false)
+- ``GPTME_SUGGEST_LLM`` - Enable suggestions for LLM model changes (default: false)
+
+Tool Configuration
+~~~~~~~~~~~~~~~~~~
+
+- ``GPTME_TTS_VOICE`` - Set the voice to use for TTS
+- ``GPTME_VOICE_FINISH`` - Wait for TTS speech to finish before exiting (default: false)
+
+Paths
+~~~~~
+
+- ``GPTME_LOGS_HOME`` - Override the default logs folder location
+
+All boolean flags accept "1", "true" (case-insensitive) as truthy values.
+
 
 Project config
 --------------
