@@ -8,6 +8,7 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..config import get_config
 from ..message import Message
 from ..util.ask_execute import execute_with_confirmation
 from .base import (
@@ -83,7 +84,13 @@ class Patch:
 
     def apply(self, content: str) -> str:
         if self.original not in content:
-            raise ValueError("original chunk not found in file")
+            # if original chunk not in file, we want to include the current file contents in the error message so it can recover fast
+            file_contents = (
+                f"Here are the actual file contents:\n```original\n{content}\n```"
+                if get_config().get_env("GPTME_PATCH_RECOVERY") in ["true", "1"]
+                else ""
+            )
+            raise ValueError(f"original chunk not found in file\n{file_contents}")
         if content.count(self.original) > 1:
             raise ValueError("original chunk not unique")
         new_content = content.replace(self.original, self.updated, 1)
