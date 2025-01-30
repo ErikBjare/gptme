@@ -141,7 +141,11 @@ Proceed directly with the most appropriate actions to complete the task.
 
     projectdir = get_project_dir()
     project_config = get_project_config(projectdir)
-    base_prompt = project_config.base_prompt if project_config and project_config.base_prompt else default_base_prompt
+    base_prompt = (
+        project_config.base_prompt
+        if project_config and project_config.base_prompt
+        else default_base_prompt
+    )
 
     full_prompt = (
         base_prompt
