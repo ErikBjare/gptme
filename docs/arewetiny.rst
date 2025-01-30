@@ -77,3 +77,22 @@ LoC Total
 
 .. command-output:: make cloc-total
    :cwd: ..
+
+Code Metrics
+------------
+
+.. command-output:: make metrics
+   :cwd: ..
+
+The metrics above show:
+
+- **Project Overview**: Basic stats about the codebase size and complexity
+- **Complex Functions**: Functions rated D+ (high complexity, should be refactored)
+- **Large Files**: Files over 300 SLOC (should be split into smaller modules)
+
+We should aim to:
+
+- Keep average complexity below 4.0
+- Have no E-rated functions (extremely complex)
+- Have few D-rated functions (very complex)
+- Keep files under 300 SLOC where possible
