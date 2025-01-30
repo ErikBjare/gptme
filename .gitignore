@@ -36,7 +36,7 @@ __pycache__
 .aider*
 .env
 
-# in case you choose to keep you ~/.config/gptme/config.toml in the repo
+# if you choose to keep ~/.config/gptme/config.toml in the repo
 config.toml
 
 # MacOS
