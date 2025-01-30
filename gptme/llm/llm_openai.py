@@ -234,6 +234,10 @@ def stream(
         stop_reason = choice.finish_reason
         delta = choice.delta
 
+        # DeepSeek reasoning content (maybe also for Gemini Flash Thinking)
+        # if hasattr(delta, "reasoning_content") and delta.reasoning_content:
+        #     yield delta.reasoning_content
+
         if delta.content is not None:
             yield delta.content
 
