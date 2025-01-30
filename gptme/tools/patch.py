@@ -235,7 +235,7 @@ def execute_patch_impl(
         warnings_str = "\n".join(warnings)
         yield Message(
             "system",
-            f"Patch successfully applied to {path} {warnings_str}".strip(),
+            f"Patch successfully applied to {path}\n{warnings_str}".strip(),
         )
 
     except FileNotFoundError:
