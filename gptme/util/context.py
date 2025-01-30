@@ -16,14 +16,32 @@ from ..message import Message
 logger = logging.getLogger(__name__)
 
 
-def use_fresh_context():
-    # Feature flag for fresh context mode
+def use_fresh_context() -> bool:
+    """Check if fresh context mode is enabled.
+
+    Fresh context mode (GPTME_FRESH=true) ensures that file contents shown in the context
+    are always up to date by:
+    - Adding a context message before each user message
+    - Including current git status
+    - Including contents of recently modified files
+    - Marking outdated file contents in the conversation history
+    """
     flag: str = get_config().get_env("GPTME_FRESH", "")  # type: ignore
     return flag.lower() in ("1", "true", "yes")
 
 
-def use_checks():
-    # Feature flag for lint/pre-commit checks
+def use_checks() -> bool:
+    """Check if pre-commit checks are enabled.
+
+    When enabled (GPTME_CHECK=true), runs pre-commit checks when:
+    1. Files have been modified since the last user message
+    2. The last assistant message had no tool uses (indicating it was done making changes)
+
+    Any issues found are included in the context, helping catch and fix code quality
+    issues before the user continues the conversation.
+
+    Requires a .pre-commit-config.yaml file in the project.
+    """
     flag: str = get_config().get_env("GPTME_CHECK", "")  # type: ignore
     return flag.lower() in ("1", "true", "yes")
 

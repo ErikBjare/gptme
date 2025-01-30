@@ -177,6 +177,12 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
     - Tab completion and highlighting for commands and paths
   - 📝 Automatic naming of conversations
   - 💬 Optional basic [Web UI and REST API][docs-server]
+  - 🎯 Feature flags for advanced usage:
+    - Fresh context mode (GPTME_FRESH) to always show latest file contents
+    - Pre-commit checks (GPTME_CHECK) to catch code quality issues
+    - See [configuration docs][docs-config] for more
+
+[docs-config]: https://gptme.org/docs/config.html
 
 ### 🛠 Use Cases
 

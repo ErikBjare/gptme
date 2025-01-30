@@ -1,5 +1,10 @@
 """
 Gives the LLM agent the ability to patch text files, by using a adapted version git conflict markers.
+
+Environment Variables:
+    GPTME_PATCH_RECOVERY: If set to "true" or "1", returns the file content in error messages
+                         when patches don't match. This helps the assistant recover faster
+                         by seeing the actual file contents.
 """
 
 import difflib
