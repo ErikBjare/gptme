@@ -220,8 +220,11 @@ def execute_patch_impl(
             f.write(patched_content)
 
         # Return success message with any warnings
-        warnings_str = ("\n".join(warnings) + "\n") if warnings else ""
-        yield Message("system", f"{warnings_str}Patch successfully applied to {path}")
+        warnings_str = "\n".join(warnings)
+        yield Message(
+            "system",
+            f"Patch successfully applied to {path} {warnings_str}".strip(),
+        )
 
     except FileNotFoundError:
         raise ValueError(
