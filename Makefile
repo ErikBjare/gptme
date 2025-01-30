@@ -5,11 +5,14 @@ SHELL := $(shell which bash)
 
 # src dirs and files
 SRCDIRS = gptme tests scripts
-SRCFILES = $(shell find ${SRCDIRS} -name '*.py')
+SRCFILES_RAW = $(shell find gptme tests -name '*.py' && find scripts -name '*.py' -not -path "scripts/Kokoro-82M/*" -not -path "*/Kokoro-82M/*")
 
 # exclude files
 EXCLUDES = tests/output scripts/build_changelog.py scripts/tts_server.py
-SRCFILES = $(shell find ${SRCDIRS} -name '*.py' $(foreach EXCLUDE,$(EXCLUDES),-not -path $(EXCLUDE)))
+SRCFILES = $(shell echo "${SRCFILES_RAW}" | tr ' ' '\n' | grep -v -f <(echo "${EXCLUDES}" | tr ' ' '\n') | tr '\n' ' ')
+
+# radon args
+RADON_ARGS = --exclude "scripts/Kokoro-82M/*" --exclude "*/Kokoro-82M/*"
 
 build:
 	poetry install
@@ -158,6 +161,23 @@ cloc-eval:
 
 cloc-total:
 	cloc ${SRCFILES} --by-file
+
+# Code metrics
+.PHONY: metrics
+
+metrics:
+	@echo "=== Code Metrics Summary ==="
+	@echo
+	@echo "Project Overview:"
+	@echo "  Files: $$(find ${SRCDIRS} -name '*.py' | wc -l)"
+	@echo "  Total blocks: $$(poetry run radon cc ${SRCFILES} --total-average | grep "blocks" | cut -d' ' -f1 | tr -d '\n')"
+	@echo "  Average complexity: $$(poetry run radon cc ${SRCFILES} --average --total-average | grep "Average complexity" | cut -d'(' -f2 | cut -d')' -f1)"
+	@echo
+	@echo "Most Complex Functions (D+):"
+	@poetry run radon cc ${SRCFILES} --min D | grep -v "^$$" | grep -E "^[^ ]|    [FCM].*[DE]" | sed 's/^/  /'
+	@echo
+	@echo "Largest Files (>300 SLOC):"
+	@poetry run radon raw ${SRCFILES} | awk '/^[^ ]/ {file=$$0} /SLOC:/ {if ($$2 > 300) printf "  %4d %s\n", $$2, file}' | sort -nr
 
 bench-importtime:
 	time poetry run python -X importtime -m gptme --model openai --non-interactive 2>&1 | grep "import time" | cut -d'|' -f 2- | sort -n
