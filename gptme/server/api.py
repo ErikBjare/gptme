@@ -47,7 +47,7 @@ def api_conversations():
 def api_conversation(logfile: str):
     """Get a conversation."""
     init_tools(None)  # FIXME: this is not thread-safe
-    log = LogManager.load(logfile)
+    log = LogManager.load(logfile, lock=False)
     return flask.jsonify(log.to_dict(branches=True))
 
 
@@ -88,6 +88,7 @@ def api_conversation_post(logfile: str):
         req_json["role"], req_json["content"], files=req_json.get("files", [])
     )
     log.append(msg)
+    del log  # close the file
     return {"status": "ok"}
 
 
@@ -105,7 +106,13 @@ def api_conversation_generate(logfile: str):
     model = req_json.get("model", get_model().full)
 
     # load conversation
-    manager = LogManager.load(logfile, branch=req_json.get("branch", "main"))
+    # NOTE: we load without lock since otherwise we have issues with
+    # re-entering for follow-up generate requests which may still keep the manager.
+    manager = LogManager.load(
+        logfile,
+        branch=req_json.get("branch", "main"),
+        lock=False,
+    )
 
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)
@@ -193,12 +200,47 @@ def api_conversation_generate(logfile: str):
             yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True})}\n\n"
 
             # Execute any tools and stream their output
-            for reply_msg in execute_msg(msg, confirm_func):
+            tool_replies = list(execute_msg(msg, confirm_func))
+            for reply_msg in tool_replies:
                 logger.debug(
                     f"Tool output: {reply_msg.role} - {reply_msg.content[:100]}..."
                 )
                 manager.append(reply_msg)
                 yield f"data: {flask.json.dumps({'role': reply_msg.role, 'content': reply_msg.content, 'stored': True})}\n\n"
+
+            # Check if we need to continue generating
+            if tool_replies and any(
+                tooluse.is_runnable
+                for tooluse in ToolUse.iter_from_content(msg.content)
+            ):
+                # Generate new response after tool execution
+                output = ""
+                for char in (
+                    char
+                    for chunk in _stream(
+                        prepare_messages(manager.log.messages), model, tools=None
+                    )
+                    for char in chunk
+                ):
+                    output += char
+                    yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
+
+                    # Check for complete tool uses
+                    tooluses = list(ToolUse.iter_from_content(output))
+                    if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
+                        break
+
+                # Store the complete message
+                msg = Message("assistant", output)
+                msg = msg.replace(quiet=True)
+                manager.append(msg)
+                yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True})}\n\n"
+
+                # Recursively handle any new tool uses
+                if any(
+                    tooluse.is_runnable for tooluse in ToolUse.iter_from_content(output)
+                ):
+                    yield from generate()
 
         except GeneratorExit:
             logger.info("Client disconnected during generation, interrupting")
