@@ -252,10 +252,14 @@ class ToolSpec:
     def get_functions_description(self) -> str:
         # return a prompt with a brief description of the available functions
         if self.functions:
-            description = "The following Python functions are available using the `ipython` tool:\n\n"
-            return description + "\n".join(
-                f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
-                for func in self.functions
+            description = "The following Python functions are available using the `ipython` tool:\n\n```txt\n"
+            return (
+                description
+                + "\n".join(
+                    f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
+                    for func in self.functions
+                )
+                + "\n```"
             )
         else:
             return "None"
