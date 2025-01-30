@@ -33,17 +33,28 @@ def use_fresh_context() -> bool:
 def use_checks() -> bool:
     """Check if pre-commit checks are enabled.
 
-    When enabled (GPTME_CHECK=true), runs pre-commit checks when:
-    1. Files have been modified since the last user message
-    2. The last assistant message had no tool uses (indicating it was done making changes)
+    Pre-commit checks are enabled when either:
+    1. GPTME_CHECK=true is set explicitly, or
+    2. A .pre-commit-config.yaml file exists in any parent directory
 
     Any issues found are included in the context, helping catch and fix code quality
     issues before the user continues the conversation.
-
-    Requires a .pre-commit-config.yaml file in the project.
     """
     flag: str = get_config().get_env("GPTME_CHECK", "")  # type: ignore
-    return flag.lower() in ("1", "true", "yes")
+    explicit_enabled = flag.lower() in ("1", "true", "yes")
+
+    # Check for .pre-commit-config.yaml in any parent directory
+    has_config = any(
+        parent.joinpath(".pre-commit-config.yaml").exists()
+        for parent in [Path.cwd(), *Path.cwd().parents]
+    )
+
+    if explicit_enabled and not has_config:
+        logger.warning(
+            "GPTME_CHECK is enabled but no .pre-commit-config.yaml found in any parent directory"
+        )
+
+    return explicit_enabled or has_config
 
 
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
@@ -278,18 +289,14 @@ def get_changed_files() -> list[Path]:
 
 
 def run_precommit_checks() -> str | None:
-    """Run pre-commit checks on modified files and return output if there are issues."""
-    # check that env var feature flag is set
-    if not use_checks():
-        logger.info("Checks not enabled")
-        return None
+    """Run pre-commit checks on modified files and return output if there are issues.
 
-    # check if .pre-commit-config.yaml exists in any parent directory
-    if not any(
-        parent.joinpath(".pre-commit-config.yaml").exists()
-        for parent in [Path.cwd(), *Path.cwd().parents]
-    ):
-        logger.info("No .pre-commit-config.yaml found in parent directories")
+    Pre-commit checks will run if either:
+    1. GPTME_CHECK=true is set explicitly, or
+    2. A .pre-commit-config.yaml file exists in any parent directory
+    """
+    if not use_checks():
+        logger.debug("Pre-commit checks not enabled")
         return None
 
     # cmd = "pre-commit run --files $(git ls-files -m)"
