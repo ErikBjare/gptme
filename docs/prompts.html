@@ -539,9 +539,11 @@ to append the code block content to the file at the given path.
 
 <span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-read_url(url: str) -&gt; str: Read a webpage in a text format.
-search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.
-screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.
+<span class="sb">```txt</span>
+<span class="s">read_url(url: str) -&gt; str: Read a webpage in a text format.</span>
+<span class="s">search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str: Search for a query on a search engine.</span>
+<span class="s">screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a screenshot of a webpage.</span>
+<span class="sb">```</span>
 
 <span class="gu">### Examples</span>
 
@@ -604,31 +606,33 @@ screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path: Take a sc
 
 <span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-list_chats(max_results: int, include_summary: bool):
-    List recent chat conversations and optionally summarize them using an LLM.
+<span class="sb">```txt</span>
+<span class="s">list_chats(max_results: int, include_summary: bool):</span>
+<span class="s">    List recent chat conversations and optionally summarize them using an LLM.</span>
 
-    Args:
-        max_results (int): Maximum number of conversations to display.
-        include_summary (bool): Whether to include a summary of each conversation.
-            If True, uses an LLM to generate a comprehensive summary.
-            If False, uses a simple strategy showing snippets of the first and last messages.
+<span class="s">    Args:</span>
+<span class="s">        max_results (int): Maximum number of conversations to display.</span>
+<span class="s">        include_summary (bool): Whether to include a summary of each conversation.</span>
+<span class="s">            If True, uses an LLM to generate a comprehensive summary.</span>
+<span class="s">            If False, uses a simple strategy showing snippets of the first and last messages.</span>
 
-search_chats(query: str, max_results: int):
-    Search past conversation logs for the given query and print a summary of the results.
+<span class="s">search_chats(query: str, max_results: int):</span>
+<span class="s">    Search past conversation logs for the given query and print a summary of the results.</span>
 
-    Args:
-        query (str): The search query.
-        max_results (int): Maximum number of conversations to display.
-        system (bool): Whether to include system messages in the search.
+<span class="s">    Args:</span>
+<span class="s">        query (str): The search query.</span>
+<span class="s">        max_results (int): Maximum number of conversations to display.</span>
+<span class="s">        system (bool): Whether to include system messages in the search.</span>
 
-read_chat(conversation: str, max_results: int):
-    Read a specific conversation log.
+<span class="s">read_chat(conversation: str, max_results: int):</span>
+<span class="s">    Read a specific conversation log.</span>
 
-    Args:
-        conversation (str): The name of the conversation to read.
-        max_results (int): Maximum number of messages to display.
-        incl_system (bool): Whether to include system messages.
+<span class="s">    Args:</span>
+<span class="s">        conversation (str): The name of the conversation to read.</span>
+<span class="s">        max_results (int): Maximum number of messages to display.</span>
+<span class="s">        incl_system (bool): Whether to include system messages.</span>
 
+<span class="sb">```</span>
 
 <span class="gu">### Examples</span>
 
@@ -765,9 +769,11 @@ To write to a file, use a code block with the language tag: <span class="sb">`sa
 
 <span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-screenshot(path: Union[Path, NoneType]) -&gt; Path:
-    Take a screenshot and save it to a file.
+<span class="sb">```txt</span>
+<span class="s">screenshot(path: Union[Path, NoneType]) -&gt; Path:</span>
+<span class="s">    Take a screenshot and save it to a file.</span>
 
+<span class="sb">```</span>
 
 <span class="gu">## shell</span>
 
@@ -923,7 +929,9 @@ Available commands:
 
 <span class="gs">**Instructions:**</span> The following Python functions are available using the <span class="sb">`ipython`</span> tool:
 
-view_image(image_path: Union[Path, str]) -&gt; Message: View an image. Large images (&gt;1MB) will be automatically scaled down.
+<span class="sb">```txt</span>
+<span class="s">view_image(image_path: Union[Path, str]) -&gt; Message: View an image. Large images (&gt;1MB) will be automatically scaled down.</span>
+<span class="sb">```</span>
 
 <span class="gu">## ipython</span>
 
@@ -978,7 +986,7 @@ Available functions:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3140</p>
+<p>Tokens: 3168</p>
 </dd></dl>
 
 <dl class="py function">
