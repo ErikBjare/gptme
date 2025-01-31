@@ -396,15 +396,8 @@
 <p class="admonition-title">Note</p>
 <p>This document is a work in progress. PRs are welcome.</p>
 </div>
-<nav class="contents local" id="contents">
-<ul class="simple">
-<li><p><a class="reference internal" href="#install" id="id1">Install</a></p></li>
-<li><p><a class="reference internal" href="#tests" id="id2">Tests</a></p></li>
-<li><p><a class="reference internal" href="#release" id="id3">Release</a></p></li>
-</ul>
-</nav>
 <section id="install">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">Install</a><a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># checkout the code and navigate to the root of the project</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ErikBjare/gptme.git
 <span class="nb">cd</span><span class="w"> </span>gptme
@@ -423,22 +416,15 @@ make<span class="w"> </span>build
 <p>You can also install it in editable mode with <code class="docutils literal notranslate"><span class="pre">pipx</span></code> using <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> which will let you use your development version of gptme regardless of venv.</p>
 </section>
 <section id="tests">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Tests</a><a class="headerlink" href="#tests" title="Link to this heading">#</a></h2>
-<p>Run tests with <cite>make test</cite>.</p>
-<p>Some tests make LLM calls, which might take a while and so are not run by default. You can run them with <cite>make test SLOW=true</cite>.</p>
-<p>Tests are currently covering:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>tools like shell and Python</p></li>
-<li><p>integration tests that make LLM calls, run the generated code, and checks the output
-- this could be used as a LLM eval harness</p></li>
-</ul>
-</div></blockquote>
-<p>There are also some integration tests in <cite>./tests/test-integration.sh</cite> which are used to manually test more complex tasks.</p>
+<h2>Tests<a class="headerlink" href="#tests" title="Link to this heading">#</a></h2>
+<p>Run tests with <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test</span></code>.</p>
+<p>Some tests make LLM calls, which might take a while and so are not run by default. You can run them with <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test</span> <span class="pre">SLOW=true</span></code>.</p>
+<p>There are also some integration tests in <code class="docutils literal notranslate"><span class="pre">./tests/test-integration.sh</span></code> which are used to manually test more complex tasks.</p>
+<p>There is also the <a class="reference internal" href="evals.html"><span class="doc">Evals</span></a>.</p>
 </section>
 <section id="release">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">Release</a><a class="headerlink" href="#release" title="Link to this heading">#</a></h2>
-<p>To make a release, simply run <cite>make release</cite> and follow the instructions.</p>
+<h2>Release<a class="headerlink" href="#release" title="Link to this heading">#</a></h2>
+<p>To make a release, simply run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">release</span></code> and follow the instructions.</p>
 </section>
 </section>
 

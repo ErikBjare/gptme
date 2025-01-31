@@ -388,6 +388,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rag">RAG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tts">TTS</a></li>
 </ul>
             </nav>
         </div>
@@ -1834,6 +1835,147 @@ Functions are documented using docstrings...</pre>
 </dd></dl>
 
 </section>
+<section id="tts">
+<h2>TTS<a class="headerlink" href="#tts" title="Link to this heading">#</a></h2>
+<p>Text-to-speech (TTS) tool for generating audio from text.</p>
+<p>Uses Kokoro for local TTS generation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To use this tool, you also need run the Kokoro TTS server: <code class="docutils literal notranslate"><span class="pre">./scripts/tts_server.py</span></code></p>
+</div>
+<dl class="simple">
+<dt>Environment Variables:</dt><dd><p>GPTME_TTS_VOICE: Set the voice to use for TTS. Available voices depend on the TTS server.
+GPTME_VOICE_FINISH: If set to “true” or “1”, waits for speech to finish before exiting. This is useful when you want to ensure the full message is spoken.</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">clean_for_speech</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span></dt>
+<dd><p>Clean content for speech by removing:</p>
+<ul class="simple">
+<li><p>&lt;thinking&gt; tags and their content</p></li>
+<li><p>Tool use blocks (<code class="docutils literal notranslate"><span class="pre">`tool</span> <span class="pre">...`</span></code>)</p></li>
+<li><p><strong>Italic</strong> markup</p></li>
+<li><p>Additional (details) that may not need to be spoken</p></li>
+<li><p>Emojis and other non-speech content</p></li>
+</ul>
+<p>Returns the cleaned content suitable for speech.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">clear_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Clear the audio queue without stopping current playback.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">ensure_threads</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Ensure both playback and TTS processor threads are running.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">get_output_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Get the best available output device and its sample rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(device_index, sample_rate)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – If no suitable output device is found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">join_short_sentences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sentences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Join consecutive sentences that are shorter than min_length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sentences</strong> – List of sentences to potentially join</p></li>
+<li><p><strong>min_length</strong> – Minimum length threshold for joining</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of sentences, with short ones combined</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">set_speed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">speed</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the speaking speed (0.5 to 2.0, default 1.3).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">set_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the volume for TTS playback (0.0 to 1.0).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">speak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interrupt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Speak text using Kokoro TTS server.</p>
+<p>The TTS system supports:</p>
+<ul class="simple">
+<li><p>Speed control via set_speed(0.5 to 2.0)</p></li>
+<li><p>Volume control via set_volume(0.0 to 1.0)</p></li>
+<li><p>Automatic chunking of long texts</p></li>
+<li><p>Non-blocking operation with optional blocking mode</p></li>
+<li><p>Interruption of current speech</p></li>
+<li><p>Background processing of TTS requests</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – Text to speak</p></li>
+<li><p><strong>block</strong> – If True, wait for audio to finish playing</p></li>
+<li><p><strong>interrupt</strong> – If True, stop current speech and clear queue before speaking</p></li>
+<li><p><strong>clean</strong> – If True, clean text for speech (remove markup, emojis, etc.)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">gptme.tools.tts</span> <span class="kn">import</span> <span class="n">speak</span><span class="p">,</span> <span class="n">set_speed</span><span class="p">,</span> <span class="n">set_volume</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>  <span class="c1"># Set comfortable volume</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_speed</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>   <span class="c1"># Slightly faster speech</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">speak</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>  <span class="c1"># Non-blocking by default</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">speak</span><span class="p">(</span><span class="s2">&quot;Important message!&quot;</span><span class="p">,</span> <span class="n">interrupt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Interrupts previous speech</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">split_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Split text into sentences, respecting paragraphs, markdown lists, and decimal numbers.</p>
+<p>This function handles:
+- Paragraph breaks
+- Markdown list items (<code class="docutils literal notranslate"><span class="pre">-</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, <code class="docutils literal notranslate"><span class="pre">1.</span></code>)
+- Decimal numbers (won’t split 3.14)
+- Sentence boundaries (.!?)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of sentences and paragraph breaks (empty strings)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">gptme.tools.tts.</span></span><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><p>Stop audio playback and clear queues.</p>
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -1895,6 +2037,7 @@ Functions are documented using docstrings...</pre>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chats">Chats</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computer">Computer</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rag">RAG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tts">TTS</a></li>
 </ul>
   </nav></div>
 

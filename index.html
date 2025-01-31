@@ -250,6 +250,45 @@ alt="superuserlabs-ceo" /></a></p>
   </details>
   </td>
   </tr>
+
+  <tr>
+    <th>Terminal UI</th>
+    <th>Web UI</th>
+  </tr>
+  <tr>
+  <td width="50%">
+
+<!--[![terminal-ui](https://github.com/ErikBjare/gptme/assets/1405370/terminal-ui-demo)](https://asciinema.org/a/terminal-demo)-->
+
+  <details>
+  <summary>Features</summary>
+  <ul>
+    <li> Powerful terminal interface
+    <li> Convenient CLI commands
+    <li> Diff & Syntax highlighting
+    <li> Tab completion
+    <li> Command history
+  </ul>
+  </details>
+
+  </td>
+  <td width="50%">
+
+<!--[![web-ui](https://github.com/ErikBjare/gptme/assets/1405370/web-ui-demo)](https://chat.gptme.org)-->
+
+  <details>
+  <summary>Features</summary>
+  <ul>
+    <li> Chat with gptme from your browser
+    <li> Access to all tools and features
+    <li> Modern, responsive interface
+    <li> Self-hostable
+    <li> Available at <a href="https://chat.gptme.org">chat.gptme.org</a>
+  </ul>
+  </details>
+
+  </td>
+  </tr>
 </table>
 
 <p>You can find more <a
@@ -290,11 +329,14 @@ href="https://gptme.org/docs/providers.html">providers</a>
 <li>Use OpenAI, Anthropic, OpenRouter, or serve locally with
 <code>llama.cpp</code></li>
 </ul></li>
-<li>💬 Web UI frontend and REST API (optional, see docs for <a
-href="https://gptme.org/docs/server.html">server</a>)
+<li>🌐 Web UI and REST API
 <ul>
-<li>Interact with the assistant from a web interface or via REST
-API.</li>
+<li>Modern web interface at <a
+href="https://chat.gptme.org">chat.gptme.org</a> (<a
+href="https://github.com/ErikBjare/gptme-webui">gptme-webui</a>)</li>
+<li>Simple built-in web UI included in the Python package</li>
+<li><a href="https://gptme.org/docs/server.html">Server</a> with REST
+API</li>
 </ul></li>
 <li>💻 <a href="https://gptme.org/docs/tools.html#computer">Computer
 use</a> tool, as hyped by <a
@@ -323,16 +365,13 @@ as context.</li>
 <li>Tab completion and highlighting for commands and paths</li>
 </ul></li>
 <li>📝 Automatic naming of conversations</li>
-<li>💬 Optional basic <a href="https://gptme.org/docs/server.html">Web
-UI and REST API</a></li>
-<li>🎯 Feature flags for advanced usage:
-<ul>
-<li>Fresh context mode (GPTME_FRESH) to always show latest file
-contents</li>
-<li>Pre-commit checks (GPTME_CHECK) to catch code quality issues</li>
-<li>See <a href="https://gptme.org/docs/config.html">configuration
-docs</a> for more</li>
-</ul></li>
+<li>✅ Detects and integrates <a
+href="https://github.com/pre-commit/pre-commit">pre-commit</a></li>
+<li>🗣️ <a
+href="https://gptme.org/docs/tools.html#tts">Text-to-Speech</a> support,
+locally generated using Kokoro</li>
+<li>🎯 Feature flags for advanced usage, see <a
+href="https://gptme.org/docs/config.html">configuration docs</a></li>
 </ul></li>
 </ul>
 <h3 id="-use-cases">🛠 Use Cases</h3>
