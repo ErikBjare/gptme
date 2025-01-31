@@ -8,8 +8,7 @@ Note:
 
 Environment Variables:
     GPTME_TTS_VOICE: Set the voice to use for TTS. Available voices depend on the TTS server.
-    GPTME_VOICE_FINISH: If set to "true" or "1", waits for speech to finish before exiting.
-                       This is useful when you want to ensure the full message is spoken.
+    GPTME_VOICE_FINISH: If set to "true" or "1", waits for speech to finish before exiting. This is useful when you want to ensure the full message is spoken.
 """
 
 import io
@@ -112,7 +111,7 @@ def split_text(text: str) -> list[str]:
 
     This function handles:
     - Paragraph breaks
-    - Markdown list items (-, *, 1.)
+    - Markdown list items (``-``, ``*``, ``1.``)
     - Decimal numbers (won't split 3.14)
     - Sentence boundaries (.!?)
 
@@ -233,6 +232,7 @@ emoji_pattern = re.compile(
 def clean_for_speech(content: str) -> str:
     """
     Clean content for speech by removing:
+
     - <thinking> tags and their content
     - Tool use blocks (```tool ...```)
     - **Italic** markup
@@ -320,7 +320,7 @@ def get_output_device() -> tuple[int, int]:
     return output_device, device_sr
 
 
-def audio_player_thread() -> None:
+def _audio_player_thread_fn() -> None:
     """Background thread for playing audio."""
     log.debug("Audio player thread started")
     while True:
@@ -354,7 +354,7 @@ def audio_player_thread() -> None:
             log.error(f"Error in audio playback: {e}")
 
 
-def tts_processor_thread_func():
+def _tts_processor_thread_fn():
     """Background thread for processing TTS requests."""
     log.debug("TTS processor ready")
     while True:
@@ -394,7 +394,7 @@ def tts_processor_thread_func():
                 _, device_sr = get_output_device()
                 # Resample if needed
                 if sample_rate != device_sr:
-                    data = resample_audio(data, sample_rate, device_sr)
+                    data = _resample_audio(data, sample_rate, device_sr)
                     sample_rate = device_sr
             except RuntimeError as e:
                 log.error(f"Device error: {e}")
@@ -420,18 +420,18 @@ def ensure_threads():
 
     # Ensure playback thread
     if playback_thread is None or not playback_thread.is_alive():
-        playback_thread = threading.Thread(target=audio_player_thread, daemon=True)
+        playback_thread = threading.Thread(target=_audio_player_thread_fn, daemon=True)
         playback_thread.start()
 
     # Ensure TTS processor thread
     if tts_processor_thread is None or not tts_processor_thread.is_alive():
         tts_processor_thread = threading.Thread(
-            target=tts_processor_thread_func, daemon=True
+            target=_tts_processor_thread_fn, daemon=True
         )
         tts_processor_thread.start()
 
 
-def resample_audio(data, orig_sr, target_sr):
+def _resample_audio(data, orig_sr, target_sr):
     """Resample audio data to target sample rate."""
     if orig_sr == target_sr:
         return data
@@ -484,6 +484,7 @@ def speak(text, block=False, interrupt=True, clean=True):
     """Speak text using Kokoro TTS server.
 
     The TTS system supports:
+
     - Speed control via set_speed(0.5 to 2.0)
     - Volume control via set_volume(0.0 to 1.0)
     - Automatic chunking of long texts
