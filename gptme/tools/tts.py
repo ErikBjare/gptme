@@ -1,11 +1,10 @@
 """
 Text-to-speech (TTS) tool for generating audio from text.
 
+Uses Kokoro for local TTS generation.
+
 Note:
-    To use this tool, you need to start the TTS server first:
-    ```bash
-    ./scripts/tts_server.py
-    ```
+    To use this tool, you also need run the Kokoro TTS server: ``./scripts/tts_server.py``
 
 Environment Variables:
     GPTME_TTS_VOICE: Set the voice to use for TTS. Available voices depend on the TTS server.

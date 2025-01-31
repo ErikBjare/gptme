@@ -146,6 +146,45 @@ An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limi
   </details>
   </td>
   </tr>
+
+  <tr>
+    <th>Terminal UI</th>
+    <th>Web UI</th>
+  </tr>
+  <tr>
+  <td width="50%">
+
+<!--[![terminal-ui](https://github.com/ErikBjare/gptme/assets/1405370/terminal-ui-demo)](https://asciinema.org/a/terminal-demo)-->
+
+  <details>
+  <summary>Features</summary>
+  <ul>
+    <li> Powerful terminal interface
+    <li> Convenient CLI commands
+    <li> Diff & Syntax highlighting
+    <li> Tab completion
+    <li> Command history
+  </ul>
+  </details>
+
+  </td>
+  <td width="50%">
+
+<!--[![web-ui](https://github.com/ErikBjare/gptme/assets/1405370/web-ui-demo)](https://chat.gptme.org)-->
+
+  <details>
+  <summary>Features</summary>
+  <ul>
+    <li> Chat with gptme from your browser
+    <li> Access to all tools and features
+    <li> Modern, responsive interface
+    <li> Self-hostable
+    <li> Available at <a href="https://chat.gptme.org">chat.gptme.org</a>
+  </ul>
+  </details>
+
+  </td>
+  </tr>
 </table>
 
 You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [documentation][docs].
@@ -164,8 +203,10 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM [providers][docs-providers]
   - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
-- 💬 Web UI frontend and REST API (optional, see docs for [server][docs-server])
-  - Interact with the assistant from a web interface or via REST API.
+- 🌐 Web UI and REST API
+  - Modern web interface at [chat.gptme.org](https://chat.gptme.org) ([gptme-webui])
+  - Simple built-in web UI included in the Python package
+  - [Server][docs-server] with REST API
 - 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
   - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
 - 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
@@ -176,13 +217,9 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - → Smart completion and highlighting:
     - Tab completion and highlighting for commands and paths
   - 📝 Automatic naming of conversations
-  - 💬 Optional basic [Web UI and REST API][docs-server]
-  - 🎯 Feature flags for advanced usage:
-    - Fresh context mode (GPTME_FRESH) to always show latest file contents
-    - Pre-commit checks (GPTME_CHECK) to catch code quality issues
-    - See [configuration docs][docs-config] for more
-
-[docs-config]: https://gptme.org/docs/config.html
+  - ✅ Detects and integrates [pre-commit](https://github.com/pre-commit/pre-commit)
+  - 🗣️ [Text-to-Speech][docs-tools-tts] support, locally generated using Kokoro
+  - 🎯 Feature flags for advanced usage, see [configuration docs][docs-config]
 
 ### 🛠 Use Cases
 
@@ -322,6 +359,7 @@ Options:
 [discord]: https://discord.gg/NMaCmmkxWv
 [github]: https://github.com/ErikBjare/gptme
 [gptme.vim]: https://github.com/ErikBjare/gptme.vim
+[gptme-webui]: https://github.com/ErikBjare/gptme-webui
 [agent-template]: https://github.com/ErikBjare/gptme-agent-template
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html
@@ -334,8 +372,10 @@ Options:
 [docs-tools-patch]: https://gptme.org/docs/tools.html#patch
 [docs-tools-browser]: https://gptme.org/docs/tools.html#browser
 [docs-tools-computer]: https://gptme.org/docs/tools.html#computer
+[docs-tools-tts]: https://gptme.org/docs/tools.html#tts
 [docs-bot]: https://gptme.org/docs/bot.html
 [docs-server]: https://gptme.org/docs/server.html
 [docs-evals]: https://gptme.org/docs/evals.html
 [docs-server]: https://gptme.org/docs/server.html
+[docs-config]: https://gptme.org/docs/config.html
 [anthropic-computer-use]: https://www.anthropic.com/news/3-5-models-and-computer-use
