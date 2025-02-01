@@ -203,7 +203,7 @@ def stream(
 
     from openai import NOT_GIVEN  # fmt: skip
 
-    is_o1 = base_model.startswith("o1")
+    is_o1 = base_model.startswith("o1") or base_model.startswith("o3")
     is_deepseek_reasoner = base_model == "deepseek-reasoner"
     is_reasoner = is_o1 or is_deepseek_reasoner
 
