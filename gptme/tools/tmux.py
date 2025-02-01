@@ -223,7 +223,7 @@ def execute_tmux(
             continue
 
         if len(parts) < 2:
-            yield Message("system", f"Missing arguments for command: {command}")
+            yield Message("system", f"Error: Missing arguments for command: {command}")
             continue
 
         _args = parts[1]
@@ -237,7 +237,7 @@ def execute_tmux(
         elif command == "kill_session":
             yield kill_session(_args)
         else:
-            yield Message("system", f"Unknown command: {command}")
+            yield Message("system", f"Error: Unknown command: {command}")
 
 
 instructions = """
