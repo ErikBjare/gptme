@@ -257,7 +257,7 @@ def execute_patch(
         code = kwargs.get("patch", code)
 
     if not code:
-        yield Message("system", "No patch provided by the assistant")
+        yield Message("system", "Error: No patch provided by the assistant")
         return
 
     yield from execute_with_confirmation(
