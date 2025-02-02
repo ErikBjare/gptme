@@ -26,6 +26,7 @@ import glob
 import io
 import logging
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from textwrap import shorten
@@ -39,10 +40,40 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
 script_dir = Path(__file__).parent
 
+
+def ensure_kokoro():
+    """Ensure Kokoro-82M repo is present and at the correct commit."""
+    kokoro_path = (script_dir / "Kokoro-82M").absolute()
+
+    # TODO: update to support latest commit
+    kokoro_commit = "e78b910980f63ec856f07ba02a24752a5ab7af5b"
+
+    if not (kokoro_path / "kokoro.py").exists():
+        print("Kokoro-82M not found, cloning...")
+
+        subprocess.run(
+            ["git", "clone", "https://huggingface.co/hexgrad/Kokoro-82M"],
+            cwd=script_dir,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", kokoro_commit],
+            cwd=kokoro_path,
+            check=True,
+        )
+        log.info("Kokoro-82M cloned successfully")
+
+    return kokoro_path
+
+
 # Add Kokoro-82M to Python path
-kokoro_path = (script_dir / "Kokoro-82M").absolute()
+kokoro_path = ensure_kokoro()
 sys.path.insert(0, str(kokoro_path))
 
 # on macOS, use workaround for espeak detection
@@ -58,10 +89,6 @@ if sys.platform == "darwin":
 
 from kokoro import generate  # fmt: skip
 from models import build_model  # fmt: skip
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(title="TTS Server")
