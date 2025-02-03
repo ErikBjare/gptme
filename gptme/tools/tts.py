@@ -55,7 +55,7 @@ tts_request_queue: queue.Queue[str | None] = queue.Queue()
 playback_thread: threading.Thread | None = None
 tts_processor_thread: threading.Thread | None = None
 current_volume = 1.0
-current_speed = 1.3
+current_speed = 1.0
 
 
 re_thinking = re.compile(r"<thinking>.*?(\n</thinking>|$)", flags=re.DOTALL)
