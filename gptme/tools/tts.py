@@ -295,21 +295,12 @@ def get_output_device() -> tuple[int, int]:
     except Exception as e:
         log.debug(f"Could not use default device: {e}")
 
-    # Second try: platform-specific defaults
-    # - On macOS: prefer CoreAudio (hostapi == 2)
-    # - On Linux: prefer PulseAudio/PipeWire virtual devices
+    # on macOS, prefer CoreAudio (hostapi == 2)
     output_device = next(
         (
             i
             for i, d in enumerate(devices)
-            if d["max_output_channels"] > 0
-            and (
-                # macOS: CoreAudio devices
-                (d["hostapi"] == 2)
-                or
-                # Linux: PulseAudio/PipeWire virtual devices
-                d["name"].lower() in ["pulse", "pipewire"]
-            )
+            if d["max_output_channels"] > 0 and (d["hostapi"] == 2)
         ),
         None,
     )

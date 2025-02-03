@@ -47,15 +47,94 @@ DEFAULT_VOICE = "af_heart"  # Default voice
 DEFAULT_LANG = "a"  # Default language (American English)
 pipeline = None
 
+# Language codes and their descriptions
+LANGUAGE_CODES = {
+    "a": "American English",
+    "b": "British English",
+    "j": "Japanese",
+    "z": "Mandarin Chinese",
+    "e": "Spanish",
+    "f": "French",
+    "h": "Hindi",
+    "i": "Italian",
+    "p": "Brazilian Portuguese",
+}
+
 
 def _list_voices():
-    """List all available voices."""
-    # Return list of available voices (this is a placeholder, actual implementation may vary)
-    # These are the known voices for American English
+    """
+    List all available voices for the current language.
+
+    Source: https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md
+    """
+    # American English voices (most complete set)
     if DEFAULT_LANG == "a":
-        return ["af_heart", "af_soft", "af_warm"]
-    # Add more language-specific voices as needed
-    return ["af_heart"]  # Default fallback
+        return [
+            "af_heart",
+            "af_alloy",
+            "af_aoede",
+            "af_bella",
+            "af_jessica",
+            "af_kore",
+            "af_nicole",
+            "af_nova",
+            "af_river",
+            "af_sarah",
+            "af_sky",
+            "am_adam",
+            "am_echo",
+            "am_eric",
+            "am_fenrir",
+            "am_liam",
+            "am_michael",
+            "am_onyx",
+            "am_puck",
+            "am_santa",
+        ]
+    # British English voices
+    elif DEFAULT_LANG == "b":
+        return [
+            "bf_alice",
+            "bf_emma",
+            "bf_isabella",
+            "bf_lily",
+            "bm_daniel",
+            "bm_fable",
+            "bm_george",
+            "bm_lewis",
+        ]
+    # Japanese voices
+    elif DEFAULT_LANG == "j":
+        return ["jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo"]
+    # Mandarin Chinese voices
+    elif DEFAULT_LANG == "z":
+        return [
+            "zf_xiaobei",
+            "zf_xiaoni",
+            "zf_xiaoxiao",
+            "zf_xiaoyi",
+            "zm_yunjian",
+            "zm_yunxi",
+            "zm_yunxia",
+            "zm_yunyang",
+        ]
+    # Spanish voices
+    elif DEFAULT_LANG == "e":
+        return ["ef_dora", "em_alex", "em_santa"]
+    # French voices
+    elif DEFAULT_LANG == "f":
+        return ["ff_siwis"]
+    # Hindi voices
+    elif DEFAULT_LANG == "h":
+        return ["hf_alpha", "hf_beta", "hm_omega", "hm_psi"]
+    # Italian voices
+    elif DEFAULT_LANG == "i":
+        return ["if_sara", "im_nicola"]
+    # Brazilian Portuguese voices
+    elif DEFAULT_LANG == "p":
+        return ["pf_dora", "pm_alex", "pm_santa"]
+
+    return ["af_heart"]  # Default fallback to best quality voice
 
 
 def _check_espeak():
@@ -136,15 +215,27 @@ async def root():
 
 @app.get("/health")
 async def health():
-    """Health check endpoint."""
+    """Health check endpoint.
+
+    Returns information about:
+    - Server status
+    - Default and available voices
+    - Supported languages
+    - Version information
+    """
     return {
         "status": "healthy",
-        "default_voice": DEFAULT_VOICE,
-        "default_language": DEFAULT_LANG,
-        "available_voices": _list_voices(),
+        "voice": {
+            "default": DEFAULT_VOICE,
+            "available": _list_voices(),
+        },
+        "language": {
+            "default": DEFAULT_LANG,
+            "name": LANGUAGE_CODES[DEFAULT_LANG],
+            "supported": LANGUAGE_CODES,
+        },
         "version": {
             "kokoro": kokoro.__version__,
-            "server": "0.2.0",  # Update this when making significant changes
         },
     }
 
