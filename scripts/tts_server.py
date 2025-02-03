@@ -2,13 +2,12 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
+#   "pip",
 #   "fastapi>=0.109.0",
 #   "uvicorn>=0.27.0",
-#   "torch>=2.1.0",
-#   "transformers>=4.36.0",
+#   "kokoro>=0.3.4",
 #   "scipy>=1.11.0",
-#   "munch>=4.0.0",
-#   "phonemizer>=3.2.0",
+#   "soundfile>=0.12.1",
 # ]
 # ///
 """
@@ -22,100 +21,45 @@ API Endpoints:
     GET /health - Check server health
 """
 
-import glob
 import io
 import logging
 import shutil
-import subprocess
-import sys
-from pathlib import Path
 from textwrap import shorten
 
 import click
+import kokoro
 import numpy as np
 import scipy.io.wavfile as wavfile
-import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
-from phonemizer.backend.espeak.wrapper import EspeakWrapper
+from kokoro import KPipeline
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-script_dir = Path(__file__).parent
-
-
-def ensure_kokoro():
-    """Ensure Kokoro-82M repo is present and at the correct commit."""
-    kokoro_path = (script_dir / "Kokoro-82M").absolute()
-
-    # TODO: update to support latest commit
-    kokoro_commit = "e78b910980f63ec856f07ba02a24752a5ab7af5b"
-
-    if not (kokoro_path / "kokoro.py").exists():
-        print("Kokoro-82M not found, cloning...")
-
-        subprocess.run(
-            ["git", "clone", "https://huggingface.co/hexgrad/Kokoro-82M"],
-            cwd=script_dir,
-            check=True,
-        )
-        subprocess.run(
-            ["git", "checkout", kokoro_commit],
-            cwd=kokoro_path,
-            check=True,
-        )
-        log.info("Kokoro-82M cloned successfully")
-
-    return kokoro_path
-
-
-# Add Kokoro-82M to Python path
-kokoro_path = ensure_kokoro()
-sys.path.insert(0, str(kokoro_path))
-
-# on macOS, use workaround for espeak detection
-if sys.platform == "darwin":
-    # Find espeak library using glob
-    espeak_libs = glob.glob("/opt/homebrew/Cellar/espeak/*/lib/libespeak.*.dylib")
-    if not espeak_libs:
-        raise RuntimeError(
-            "Could not find espeak library in Homebrew. Please install it with 'brew install espeak'"
-        )
-    _ESPEAK_LIBRARY = espeak_libs[0]  # Use the first match
-    EspeakWrapper.set_library(_ESPEAK_LIBRARY)
-
-from kokoro import generate  # fmt: skip
-from models import build_model  # fmt: skip
-
 # Initialize FastAPI app
 app = FastAPI(title="TTS Server")
 
-# Global variables for model and voicepack
-MODEL = None
-VOICEPACK = None
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DEFAULT_VOICE = None
+# Global variables
+DEFAULT_VOICE = "af_heart"  # Default voice
+DEFAULT_LANG = "a"  # Default language (American English)
+pipeline = None
 
 
 def _list_voices():
-    """List all available voice files."""
-    voice_dir = kokoro_path / "voices"
-    voices = glob.glob(str(voice_dir / "*.pt"))
-    return [Path(v).stem for v in voices]
-
-
-def load_voice(voice_name: str):
-    """Load a specific voice by name."""
-    voice_path = kokoro_path / "voices" / f"{voice_name}.pt"
-    if not voice_path.exists():
-        raise ValueError(f"Voice {voice_name} not found")
-    return torch.load(voice_path, weights_only=True).to(DEVICE)
+    """List all available voices."""
+    # Return list of available voices (this is a placeholder, actual implementation may vary)
+    # These are the known voices for American English
+    if DEFAULT_LANG == "a":
+        return ["af_heart", "af_soft", "af_warm"]
+    # Add more language-specific voices as needed
+    return ["af_heart"]  # Default fallback
 
 
 def _check_espeak():
+    """Check if espeak/espeak-ng is installed."""
     if not any([shutil.which("espeak"), shutil.which("espeak-ng")]):
         raise RuntimeError(
             "Failed to find `espeak` or `espeak-ng`. Try to install it using 'sudo apt-get install espeak-ng' or equivalent"
@@ -123,33 +67,30 @@ def _check_espeak():
 
 
 def init_model(voice: str | None = None):
-    """Initialize the Kokoro TTS model and voicepack."""
-    global MODEL, VOICEPACK, DEFAULT_VOICE
+    """Initialize the Kokoro TTS pipeline."""
+    global pipeline, DEFAULT_VOICE
 
     try:
         _check_espeak()
 
-        log.info("Loading model...")
-        MODEL = build_model(str(kokoro_path / "kokoro-v0_19.pth"), DEVICE)
+        # Use specified voice or default
+        voice_name = voice or DEFAULT_VOICE
 
-        log.info("Loading voicepack...")
+        # Initialize the pipeline with default language
+        pipeline = KPipeline(lang_code=DEFAULT_LANG)
+
+        # Verify voice exists (this is a placeholder check)
         available_voices = _list_voices()
-        if not available_voices:
-            raise RuntimeError("No voice files found")
-
-        # Use specified voice or default "af"
-        voice_name = voice or "af"
         if voice_name not in available_voices:
             raise ValueError(
                 f"Voice {voice_name} not found. Available voices: {available_voices}"
             )
 
         DEFAULT_VOICE = voice_name
-        VOICEPACK = load_voice(voice_name)
-        log.info(f"Model initialization complete (using voice: {voice_name})")
+        log.info(f"Pipeline initialization complete (using voice: {voice_name})")
 
     except Exception as e:
-        log.error(f"Failed to initialize model: {e}")
+        log.error(f"Failed to initialize pipeline: {e}")
         raise
 
 
@@ -188,58 +129,69 @@ async def startup_event():
     init_model(DEFAULT_VOICE)
 
 
+@app.get("/")
+async def root():
+    return {"message": "Hello World, I am a TTS server based on Kokoro TTS"}
+
+
 @app.get("/health")
 async def health():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "model_loaded": MODEL is not None,
-        "voicepack_loaded": VOICEPACK is not None,
         "default_voice": DEFAULT_VOICE,
+        "default_language": DEFAULT_LANG,
         "available_voices": _list_voices(),
-        "device": DEVICE,
+        "version": {
+            "kokoro": kokoro.__version__,
+            "server": "0.2.0",  # Update this when making significant changes
+        },
     }
 
 
 @app.get("/tts")
 async def text_to_speech(text: str, speed: float = 1.0, voice: str | None = None):
     """Convert text to speech and return audio stream."""
-    if MODEL is None:
-        raise HTTPException(status_code=500, detail="Model not initialized")
-
+    assert pipeline
     # Handle voice selection
     try:
-        current_voicepack = VOICEPACK
-        if voice and voice != DEFAULT_VOICE:
-            current_voicepack = load_voice(voice)
+        current_voice = voice or DEFAULT_VOICE
+        if current_voice not in _list_voices():
+            raise ValueError(f"Voice {current_voice} not found")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
-    if current_voicepack is None:
-        raise HTTPException(status_code=500, detail="Voicepack not initialized")
-
     try:
         log.info(
-            f"Generating audio for text: {shorten(text, 50, placeholder='...')} (speed: {speed}x, voice: {voice or DEFAULT_VOICE})"
+            f"Generating audio for text: {shorten(text, 50, placeholder='...')} (speed: {speed}x, voice: {current_voice})"
         )
-        audio, phonemes = generate(
-            MODEL, text, current_voicepack, lang="a", speed=speed
-        )
-        log.info(f"Generated phonemes: {phonemes}")
 
-        # Strip silence from audio
-        audio = strip_silence(audio)
+        # Generate audio using KPipeline
+        # Note: KPipeline returns a generator of (graphemes, phonemes, audio) tuples
+        # We'll concatenate all audio segments
+        audio_segments = []
+        for _, _, audio in pipeline(text, voice=current_voice, speed=speed):
+            audio_segments.append(audio)
 
-        # Convert to WAV format
-        buffer = io.BytesIO()
-        wavfile.write(buffer, 24000, audio)
-        buffer.seek(0)
+        # Concatenate all audio segments
+        if audio_segments:
+            audio = np.concatenate(audio_segments)
 
-        return StreamingResponse(
-            buffer,
-            media_type="audio/wav",
-            headers={"Content-Disposition": 'attachment; filename="speech.wav"'},
-        )
+            # Strip silence from audio
+            audio = strip_silence(audio)
+
+            # Convert to WAV format
+            buffer = io.BytesIO()
+            wavfile.write(buffer, 24000, audio)
+            buffer.seek(0)
+
+            return StreamingResponse(
+                buffer,
+                media_type="audio/wav",
+                headers={"Content-Disposition": 'attachment; filename="speech.wav"'},
+            )
+        else:
+            raise ValueError("No audio generated")
 
     except Exception as e:
         log.error(f"Failed to generate speech: {e}")
@@ -250,20 +202,31 @@ async def text_to_speech(text: str, speed: float = 1.0, voice: str | None = None
 @click.option("--port", default=8000, help="Port to run the server on")
 @click.option("--host", default="0.0.0.0", help="Host to run the server on")
 @click.option("--voice", help="Default voice to use")
+@click.option(
+    "--lang",
+    default="a",
+    help="Language code (a=American English, b=British English, etc)",
+)
 @click.option("--list-voices", is_flag=True, help="List available voices and exit")
-def main(port: int, host: str, voice: str | None, list_voices: bool):
+def main(port: int, host: str, voice: str | None, lang: str, list_voices: bool):
     """Run the TTS server."""
+    global pipeline, DEFAULT_VOICE, DEFAULT_LANG
     if list_voices:
+        # Initialize pipeline with specified language
+        DEFAULT_LANG = lang
+        pipeline = KPipeline(lang_code=lang)
         available_voices = _list_voices()
         print("Available voices:")
         for v in available_voices:
             print(f"  - {v}")
         return
 
-    global DEFAULT_VOICE
-    DEFAULT_VOICE = voice
+    if voice:
+        DEFAULT_VOICE = voice
+    DEFAULT_LANG = lang
 
-    log.info(f"Starting TTS server on {host}:{port} (device: {DEVICE})")
+    log.info(f"Starting TTS server on {host}:{port}")
+    log.info(f"Using language: {DEFAULT_LANG}")
     if voice:
         log.info(f"Using default voice: {voice}")
     uvicorn.run(app, host=host, port=port)
