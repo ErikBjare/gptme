@@ -3,8 +3,10 @@ List, search, and summarize past conversation logs.
 """
 
 import logging
+import re
 import textwrap
 from pathlib import Path
+from typing import Literal
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
@@ -12,11 +14,13 @@ from .base import ToolSpec, ToolUse
 logger = logging.getLogger(__name__)
 
 
-def _get_matching_messages(log_manager, query: str, system=False) -> list[Message]:
+def _get_matching_messages(
+    log_manager, query: str, system=False
+) -> list[tuple[int, Message]]:
     """Get messages matching the query."""
     return [
-        msg
-        for msg in log_manager.log
+        (i, msg)
+        for i, msg in enumerate(log_manager.log)
         if query.lower() in msg.content.lower()
         if msg.role != "system" or system
     ]
@@ -60,7 +64,12 @@ def list_chats(
             print()
 
 
-def search_chats(query: str, max_results: int = 5, system=False) -> None:
+def search_chats(
+    query: str,
+    max_results: int = 5,
+    system=False,
+    sort: Literal["date", "count"] = "date",
+) -> None:
     """
     Search past conversation logs for the given query and print a summary of the results.
 
@@ -72,9 +81,9 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
     from ..logmanager import LogManager, list_conversations  # fmt: skip
 
     results: list[dict] = []
-    for conv in list_conversations(max_results):
+    for conv in list_conversations(10 * max_results):
         log_path = Path(conv.path)
-        log_manager = LogManager.load(log_path)
+        log_manager = LogManager.load(log_path, lock=False)
 
         matching_messages = _get_matching_messages(log_manager, query, system)
 
@@ -92,24 +101,90 @@ def search_chats(query: str, max_results: int = 5, system=False) -> None:
         return
 
     # Sort results by the number of matching messages, in descending order
-    results.sort(key=lambda x: len(x["matching_messages"]), reverse=True)
+    if sort == "count":
+        print("Sorting by number of matching messages")
+        results.sort(key=lambda x: len(x["matching_messages"]), reverse=True)
 
-    print(f"Search results for query: '{query}'")
-    print(f"Found matches in {len(results)} conversation(s):")
-
-    for i, result in enumerate(results, 1):
+    print(
+        f"Search results for '{query}' ({len(results)} conversations, showing {min(max_results, len(results))}):"
+    )
+    for i, result in enumerate(results[:max_results], 1):
         conversation = result["conversation"]
-        print(f"\n{i}. {conversation.format()}")
-        print(f"   Number of matching messages: {len(result['matching_messages'])}")
+        matches = result["matching_messages"][:1]
+        match_strs = [
+            _format_message_with_context(msg.content, query) for _, msg in matches
+        ]
+        print(
+            f"{i}. {conversation.name} ({len(result['matching_messages'])}): {match_strs[0]}"
+        )
 
-        # Show sample matches
-        print("   Sample matches:")
-        for j, msg in enumerate(result["matching_messages"][:3], 1):
-            print(f"     {j}. {msg.format(max_length=100)}")
-        if len(result["matching_messages"]) > 3:
-            print(
-                f"     ... and {len(result['matching_messages']) - 3} more matching message(s)"
-            )
+
+def _format_message_with_context(
+    content: str, query: str, context_size: int = 50, max_matches: int = 1
+) -> str:
+    """Format a message with context around matching query parts.
+
+    Args:
+        content: The message content to search in
+        query: The search query
+        context_size: Number of characters to show before and after match
+        max_matches: Maximum number of matches to show
+
+    Returns:
+        Formatted string with highlighted matches and context
+    """
+    content_lower = content.lower()
+    query_lower = query.lower()
+
+    # Find all occurrences of the query
+    matches = []
+    start = 0
+    while True:
+        idx = content_lower.find(query_lower, start)
+        if idx == -1:
+            break
+        matches.append(idx)
+        start = idx + len(query_lower)
+
+    if not matches:
+        return content[:100] + "..." if len(content) > 100 else content
+
+    # Format matches with context
+    formatted_matches = []
+    for match_idx in matches[:max_matches]:
+        # Extract context window
+        context_start = max(0, match_idx - context_size)
+        context_end = min(len(content), match_idx + len(query) + context_size)
+        context = content[context_start:context_end]
+
+        # Add ellipsis if truncated
+        prefix = "..." if context_start > 0 else ""
+        suffix = "..." if context_end < len(content) else ""
+
+        # Highlight the match
+        match_start = match_idx - context_start
+        match_end = match_start + len(query)
+
+        # Only show line context
+        context_prefix = context[:match_start].rsplit("\n", 1)[-1]
+        context_suffix = context[match_end:].split("\n", 1)[0]
+        context = f"{context_prefix}{context[match_start:match_end]}{context_suffix}"
+
+        # highlighted = f"{prefix}{context_prefix}\033[1m{context[match_start:match_end]}\033[0m{context_suffix}{suffix}"
+        highlighted = f"{prefix}{context}{suffix}"
+        highlighted = re.sub(
+            query,
+            lambda m: f"\033[1;31m{m.group(0)}\033[0m",
+            highlighted,
+            flags=re.DOTALL,
+        )
+        formatted_matches.append(highlighted)
+
+    result = " ".join(formatted_matches)
+    if len(matches) > max_matches:
+        result += f" (+{len(matches) - max_matches})"
+
+    return result
 
 
 def read_chat(conversation: str, max_results: int = 5, incl_system=False) -> None:
