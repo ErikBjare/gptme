@@ -382,6 +382,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats">chats</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-ls">ls</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-read">read</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-search">search</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context">context</a><ul class="nav section-nav flex-column">
@@ -689,6 +690,33 @@ Pass eval or suite names to run, or result files to print.</p>
 </dd></dl>
 
 </section>
+<section id="gptme-util-chats-search">
+<h4>search<a class="headerlink" href="#gptme-util-chats-search" title="Link to this heading">#</a></h4>
+<p>Search conversation logs.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gptme-util<span class="w"> </span>chats<span class="w"> </span>search<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>QUERY
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-search-n">
+<span id="cmdoption-gptme-util-chats-search-limit"></span><span class="sig-name descname"><span class="pre">-n</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--limit</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;limit&gt;</span></span><a class="headerlink" href="#cmdoption-gptme-util-chats-search-n" title="Link to this definition">#</a></dt>
+<dd><p>Maximum number of chats to show.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-search-summarize">
+<span class="sig-name descname"><span class="pre">--summarize</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-chats-search-summarize" title="Link to this definition">#</a></dt>
+<dd><p>Generate LLM-based summaries for chats</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-gptme-util-chats-search-arg-QUERY">
+<span class="sig-name descname"><span class="pre">QUERY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-gptme-util-chats-search-arg-QUERY" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
 </section>
 <section id="gptme-util-context">
 <h3>context<a class="headerlink" href="#gptme-util-context" title="Link to this heading">#</a></h3>
@@ -869,6 +897,7 @@ Pass eval or suite names to run, or result files to print.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats">chats</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-ls">ls</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-read">read</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-chats-search">search</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme-util-context">context</a><ul class="nav section-nav flex-column">

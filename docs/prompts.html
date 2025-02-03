@@ -616,7 +616,7 @@ to append the code block content to the file at the given path.
 <span class="s">            If True, uses an LLM to generate a comprehensive summary.</span>
 <span class="s">            If False, uses a simple strategy showing snippets of the first and last messages.</span>
 
-<span class="s">search_chats(query: str, max_results: int):</span>
+<span class="s">search_chats(query: str, max_results: int, sort: Literal[&quot;date&quot;, &quot;count&quot;]):</span>
 <span class="s">    Search past conversation logs for the given query and print a summary of the results.</span>
 
 <span class="s">    Args:</span>
@@ -948,7 +948,7 @@ Available functions:
 <span class="k">-</span><span class="w"> </span>search(query: str, engine: Literal[&quot;google&quot;, &quot;duckduckgo&quot;]) -&gt; str
 <span class="k">-</span><span class="w"> </span>screenshot_url(url: str, path: Union[Path, str, NoneType]) -&gt; Path
 <span class="k">-</span><span class="w"> </span>list_chats(max_results: int, include_summary: bool)
-<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int)
+<span class="k">-</span><span class="w"> </span>search_chats(query: str, max_results: int, sort: Literal[&quot;date&quot;, &quot;count&quot;])
 <span class="k">-</span><span class="w"> </span>read_chat(conversation: str, max_results: int)
 <span class="k">-</span><span class="w"> </span>screenshot(path: Union[Path, NoneType]) -&gt; Path
 <span class="k">-</span><span class="w"> </span>view_image(image_path: Union[Path, str]) -&gt; Message
@@ -986,7 +986,7 @@ Available functions:
 <span class="ge">*End of Tools List.*</span>
 </pre></div>
 </div>
-<p>Tokens: 3168</p>
+<p>Tokens: 3187</p>
 </dd></dl>
 
 <dl class="py function">
