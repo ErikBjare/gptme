@@ -11,7 +11,8 @@ import click
 from ..dirs import get_logs_dir
 from ..logmanager import LogManager
 from ..message import Message
-from ..tools.chats import list_chats
+from ..tools import get_tools, init_tools
+from ..tools.chats import list_chats, search_chats
 
 
 @click.group()
@@ -26,7 +27,9 @@ def main(verbose: bool = False):
 @main.group()
 def chats():
     """Commands for managing chat logs."""
-    pass
+    # needed since get_prompt() requires tools to be loaded
+    if not get_tools():
+        init_tools()
 
 
 @chats.command("ls")
@@ -42,6 +45,22 @@ def chats_list(limit: int, summarize: bool):
         # This isn't the best way to initialize the model for summarization, but it works for now
         init("openai/gpt-4o", interactive=False, tool_allowlist=[])
     list_chats(max_results=limit, include_summary=summarize)
+
+
+@chats.command("search")
+@click.argument("query")
+@click.option("-n", "--limit", default=20, help="Maximum number of chats to show.")
+@click.option(
+    "--summarize", is_flag=True, help="Generate LLM-based summaries for chats"
+)
+def chats_search(query: str, limit: int, summarize: bool):
+    """Search conversation logs."""
+    if summarize:
+        from gptme.init import init  # fmt: skip
+
+        # This isn't the best way to initialize the model for summarization, but it works for now
+        init("openai/gpt-4o", interactive=False, tool_allowlist=[])
+    search_chats(query, max_results=limit)
 
 
 @chats.command("read")
@@ -134,7 +153,7 @@ def tools():
 def tools_list(available: bool, langtags: bool):
     """List available tools."""
     from ..commands import _gen_help  # fmt: skip
-    from ..tools import init_tools, get_tools  # fmt: skip
+    from ..tools import get_tools, init_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
@@ -164,7 +183,7 @@ def tools_list(available: bool, langtags: bool):
 @click.argument("tool_name")
 def tools_info(tool_name: str):
     """Show detailed information about a tool."""
-    from ..tools import get_tool, init_tools, get_tools  # fmt: skip
+    from ..tools import get_tool, get_tools, init_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
@@ -197,7 +216,7 @@ def tools_info(tool_name: str):
 )
 def tools_call(tool_name: str, function_name: str, arg: list[str]):
     """Call a tool with the given arguments."""
-    from ..tools import get_tool, init_tools, get_tools  # fmt: skip
+    from ..tools import get_tool, get_tools, init_tools  # fmt: skip
 
     # Initialize tools
     init_tools()
