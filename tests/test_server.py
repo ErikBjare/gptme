@@ -63,6 +63,7 @@ def test_api_conversation_post(conv, client: FlaskClient):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 def test_api_conversation_generate(conv: str, client: FlaskClient):
     # Ask the assistant to generate a test response
     response = client.post(

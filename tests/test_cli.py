@@ -104,6 +104,7 @@ def test_command_tools(args: list[str], runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 def test_command_summarize(args: list[str], runner: CliRunner):
     # tests the /summarize command
     args.append("/summarize")
@@ -122,8 +123,6 @@ def test_command_fork(args: list[str], runner: CliRunner, name: str):
 
 
 def test_command_rename(args: list[str], runner: CliRunner, name: str):
-    args_orig = args.copy()
-
     # tests the /rename command
     name += "-rename"
     args.append(f"/rename {name}")
@@ -131,8 +130,10 @@ def test_command_rename(args: list[str], runner: CliRunner, name: str):
     result = runner.invoke(gptme.cli.main, args)
     assert result.exit_code == 0
 
+
+@pytest.mark.requires_api
+def test_command_rename_auto(args: list[str], runner: CliRunner, name: str):
     # test with "auto" name
-    args = args_orig.copy()
     args.append("/rename auto")
     print(f"running: gptme {' '.join(args)}")
     result = runner.invoke(gptme.cli.main, args)
@@ -252,6 +253,7 @@ def test_block(args: list[str], lang: str, runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 @pytest.mark.skipif(
     os.environ.get("MODEL") == "openai/gpt-4o-mini", reason="unreliable for gpt-4o-mini"
 )
@@ -273,6 +275,7 @@ def test_stdin(args: list[str], runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 def test_chain(args: list[str], runner: CliRunner):
     """tests that the "-" argument works to chain commands, executing after the agent has exhausted the previous command"""
     # first command needs to be something requiring two tools, so we can check both are ran before the next chained command
@@ -307,6 +310,7 @@ def test_chain(args: list[str], runner: CliRunner):
 
 # TODO: move elsewhere
 @pytest.mark.slow
+@pytest.mark.requires_api
 def test_tmux(args: list[str], runner: CliRunner):
     """
     $ gptme '/impersonate lets find out the current load
@@ -325,6 +329,7 @@ def test_tmux(args: list[str], runner: CliRunner):
 
 # TODO: move elsewhere
 @pytest.mark.slow
+@pytest.mark.requires_api
 @pytest.mark.flaky(retries=2, delay=5)
 @pytest.mark.skipif(
     os.environ.get("MODEL") == "openai/gpt-4o-mini", reason="unreliable for gpt-4o-mini"
@@ -356,6 +361,7 @@ def test_subagent(args: list[str], runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 @pytest.mark.skipif(
     gptme.tools.browser.browser is None,
     reason="no browser tool available",
@@ -368,6 +374,7 @@ def test_url(args: list[str], runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 def test_vision(args: list[str], runner: CliRunner):
     args.append(f"can you see the image at {logo}? answer with yes or no")
     result = runner.invoke(gptme.cli.main, args)
@@ -378,6 +385,7 @@ def test_vision(args: list[str], runner: CliRunner):
 
 
 @pytest.mark.slow
+@pytest.mark.requires_api
 @pytest.mark.parametrize(
     "tool_format, expected, not_expected",
     [
