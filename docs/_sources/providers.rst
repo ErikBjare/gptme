@@ -20,7 +20,7 @@ On first startup, if ``--model`` is not set, and no API keys are set in the conf
 
 You can list the models known to gptme using ``gptme '/models' - '/exit'``
 
-Use the ``[env]`` section in the ``gptme.toml`` :doc:`config` file to store API keys using the same format as the environment variables:
+Use the ``[env]`` section in the :ref:`global-config` file to store API keys using the same format as the environment variables:
 
 - ``OPENAI_API_KEY="your-api-key"``
 - ``ANTHROPIC_API_KEY="your-api-key"``

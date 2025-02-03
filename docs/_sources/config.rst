@@ -10,6 +10,7 @@ It also supports environment variables for configuration, which take precedence 
 
 The CLI also supports a variety of options that can be used to override both configuration values and environment variables.
 
+.. _global-config:
 
 Global config
 -------------
@@ -52,12 +53,11 @@ The ``prompt`` section contains options for the prompt.
 The ``env`` section contains environment variables that gptme will fall back to if they are not set in the shell environment. This is useful for setting the default model and API keys for :doc:`providers`.
 
 Environment Variables
-------------------------
+~~~~~~~~~~~~~~~~~~~~~
 
 Besides the configuration files, gptme supports several environment variables to control its behavior:
 
-Feature Flags
-~~~~~~~~~~~~~
+.. rubric:: Feature Flags
 
 - ``GPTME_CHECK`` - Enable precommit checks (default: true if ``.pre-commit-config.yaml`` present)
 - ``GPTME_COSTS`` - Enable cost reporting for API calls (default: false)
@@ -66,14 +66,12 @@ Feature Flags
 - ``GPTME_PATCH_RECOVERY`` - Return file content in error for non-matching patches (default: false)
 - ``GPTME_SUGGEST_LLM`` - Enable LLM-powered prompt completion (default: false)
 
-Tool Configuration
-~~~~~~~~~~~~~~~~~~
+.. rubric:: Tool Configuration
 
 - ``GPTME_TTS_VOICE`` - Set the voice to use for TTS
 - ``GPTME_VOICE_FINISH`` - Wait for TTS speech to finish before exiting (default: false)
 
-Paths
-~~~~~
+.. rubric:: Paths
 
 - ``GPTME_LOGS_HOME`` - Override the default logs folder location
 
