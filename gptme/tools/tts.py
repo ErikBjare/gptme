@@ -276,23 +276,31 @@ def get_output_device() -> tuple[int, int]:
             f"out: {dev['max_output_channels']}, hostapi: {dev['hostapi']})"
         )
 
-    # Try using system default output device
+    # Try using system default output device, preferring virtual devices
     try:
         default_output = sd.default.device[1]
         if default_output is not None:
             device_info = sd.query_devices(default_output)
-            if device_info["max_output_channels"] > 0:
-                log.debug(f"Using system default output device: {device_info['name']}")
+            device_name = device_info["name"].lower()
+
+            # Check if it's a virtual device (PulseAudio/PipeWire)
+            if device_info["max_output_channels"] > 0 and device_name in [
+                "pulse",
+                "pipewire",
+            ]:
+                log.debug(f"Using virtual audio device: {device_info['name']}")
                 return default_output, int(device_info["default_samplerate"])
+            else:
+                log.debug(f"Skipping non-virtual default device: {device_info['name']}")
     except Exception as e:
         log.debug(f"Could not use default device: {e}")
 
-    # Second try: prefer CoreAudio devices
+    # on macOS, prefer CoreAudio (hostapi == 2)
     output_device = next(
         (
             i
             for i, d in enumerate(devices)
-            if d["max_output_channels"] > 0 and d["hostapi"] == 2
+            if d["max_output_channels"] > 0 and (d["hostapi"] == 2)
         ),
         None,
     )
