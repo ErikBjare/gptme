@@ -211,15 +211,7 @@ def format_msgs(
         if highlight:
             color = ROLE_COLOR[msg.role]
             userprefix = f"[bold {color}]{userprefix}[/bold {color}]"
-        if msg.role == "system":
-            first_line = msg.content.split("\n", 1)[0].lower()
-            isSuccess = first_line.startswith(("saved", "appended", "patch successfully", "ran"))
-            isError = first_line.startswith(("error", "failed"))
-            if isSuccess:
-                userprefix = f"{userprefix} ✅"
-            elif isError:
-                userprefix = f"{userprefix} ❌"
-                
+
         # get terminal width
         max_len = shutil.get_terminal_size().columns - len(userprefix)
         output = ""
@@ -247,7 +239,20 @@ def format_msgs(
                         )
                     )
                 output += f"```{block.rstrip()}\n```"
-        outputs.append(f"{userprefix}: {output.rstrip()}")
+
+        status_emoji = ""
+        if msg.role == "system":
+            first_line = msg.content.split("\n", 1)[0].lower()
+            isSuccess = first_line.startswith(
+                ("saved", "appended", "patch successfully")
+            )
+            isError = first_line.startswith(("error", "failed"))
+            if isSuccess:
+                status_emoji = "✅ "
+            elif isError:
+                status_emoji = "❌ "
+
+        outputs.append(f"{userprefix}: {status_emoji}{output.rstrip()}")
     return outputs
 
 
