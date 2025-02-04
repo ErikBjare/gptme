@@ -75,6 +75,8 @@ class RagConfig:
     post_process: bool = True
     post_process_model: str | None = None
     post_process_prompt: str = default_post_process_prompt
+    workspace_only: bool = True
+    paths: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -18,6 +18,8 @@ Configure RAG in your ``gptme.toml``::
     post_process = false # Whether to post-process the context with an LLM to extract the most relevant information
     post_process_model = "openai/gpt-4-turbo" # Which model to use for post-processing
     post_process_prompt = "" # Optional prompt to use for post-processing (overrides default prompt)
+    workspace_only = true # Whether to only search in the workspace directory, or the whole RAG index
+    paths = [] # List of paths to include in the RAG index. Has no effect if workspace_only is true.
 
 .. rubric:: Features
 
@@ -144,7 +146,9 @@ def init() -> ToolSpec:
     return tool
 
 
-def rag_enhance_messages(messages: list[Message]) -> list[Message]:
+def rag_enhance_messages(
+    messages: list[Message], workspace: Path | None = None
+) -> list[Message]:
     """Enhance messages with context from RAG."""
     if not _has_gptme_rag():
         return messages
@@ -168,10 +172,15 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
                 "gptme-rag",
                 "search",
                 last_msg.content,
-                "--format",
-                "full",
-                "--print-relevance" if not should_post_process else "",
             ]
+            if workspace and rag_config.workspace_only:
+                cmd.append(workspace.as_posix())
+            elif rag_config.paths:
+                cmd.extend(rag_config.paths)
+            if not should_post_process:
+                cmd.append("--print-relevance")
+            cmd.extend(["--format", "full"])
+
             if rag_config.max_tokens:
                 cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
             if rag_config.min_relevance:
