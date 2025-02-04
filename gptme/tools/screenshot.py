@@ -1,5 +1,5 @@
 """
-A simple screenshot tool, using `screencapture` on macOS and `scrot` on Linux.
+A simple screenshot tool, using `screencapture` on macOS and `scrot` or `gnome-screenshot` on Linux.
 """
 
 import os
@@ -19,8 +19,10 @@ def _screenshot(path: Path) -> Path:
             subprocess.run(["screencapture", str(path)], check=True)
         else:  # Linux
             # TODO: add support for specifying window/fullscreen?
-            # TODO: support other screenshot tools
-            subprocess.run(["scrot", "--overwrite", str(path)], check=True)  # --focused
+            if os.environ.get("XDG_SESSION_TYPE") == 'wayland':
+                subprocess.run(["gnome-screenshot", "-f", str(path)], check=True)
+            else:
+                subprocess.run(["scrot", "--overwrite", str(path)], check=True)  # --focused
     else:
         raise NotImplementedError(
             "Screenshot functionality is only available on macOS and Linux."
