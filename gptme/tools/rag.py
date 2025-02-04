@@ -106,7 +106,7 @@ def rag_search(query: str, return_full: bool = False) -> str:
     cmd = ["gptme-rag", "search", query]
     if return_full:
         # shows full context of the search results
-        cmd.append("--show-context")
+        cmd.append("--format full")
 
     result = _run_rag_cmd(cmd)
     return result.stdout.strip()
@@ -157,7 +157,7 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
         if msg.role == "user":
             try:
                 # Get context using gptme-rag CLI
-                cmd = ["gptme-rag", "search", msg.content, "--show-context"]
+                cmd = ["gptme-rag", "search", msg.content, "--format", "full"]
                 if max_tokens := rag_config.get("max_tokens"):
                     cmd.extend(["--max-tokens", str(max_tokens)])
                 if min_relevance := rag_config.get("min_relevance"):
