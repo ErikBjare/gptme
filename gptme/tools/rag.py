@@ -15,6 +15,9 @@ Configure RAG in your ``gptme.toml``::
 
     [rag]
     enabled = true
+    post_process = false # Whether to post-process the context with an LLM to extract the most relevant information
+    post_process_model = "openai/gpt-4-turbo" # Which model to use for post-processing
+    post_process_prompt = "" # Optional prompt to use for post-processing (overrides default prompt)
 
 .. rubric:: Features
 
@@ -39,6 +42,7 @@ from pathlib import Path
 from ..config import RagConfig, get_project_config
 from ..message import Message
 from ..util import get_project_dir
+from ..llm import _chat_complete
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -161,10 +165,30 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
                 cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
             if rag_config.min_relevance:
                 cmd.extend(["--min-relevance", str(rag_config.min_relevance)])
-            result = _run_rag_cmd(cmd)
+            rag_result = _run_rag_cmd(cmd).stdout
+
+            # Post-process the context with an LLM (if enabled)
+            if rag_config.post_process and rag_config.post_process_model is not None:
+                post_process_msgs = [
+                    Message(role="system", content=rag_config.post_process_prompt),
+                    Message(role="system", content=rag_result),
+                    Message(
+                        role="user",
+                        content=f"<user_query>\n{last_msg.content}\n</user_query>",
+                    ),
+                ]
+                start = time.monotonic()
+                rag_result = _chat_complete(
+                    messages=post_process_msgs,
+                    model=rag_config.post_process_model,
+                    tools=[],
+                )
+                logger.info(f"Ran RAG post-process in {time.monotonic() - start:.2f}s")
+
+            # Create the context message
             msg = Message(
                 role="system",
-                content=f"Relevant context retrieved using `gptme-rag search`:\n\n{result.stdout}",
+                content=f"Relevant context retrieved using `gptme-rag search`:\n\n{rag_result}",
                 hide=True,
             )
             # Append context message right before the last user message

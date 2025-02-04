@@ -37,11 +37,44 @@ class Config:
         }
 
 
+default_post_process_prompt = """
+You are an intelligent knowledge retrieval assistant designed to analyze context chunks and extract relevant information based on user queries. Your primary goal is to provide accurate and helpful information while adhering to specific guidelines.
+
+You will be provided with a user query inside <user_query> tags and a list of potentially relevantcontext chunks inside <chunks> tags.
+
+When a user submits a query, follow these steps:
+
+1. Analyze the user's query carefully to identify key concepts and requirements.
+
+2. Search through the provided context chunks for relevant information.
+
+3. If you find relevant information:
+   a. Extract the most pertinent parts.
+   b. Summarize the relevant context inside <context_summary> tags.
+   c. Output the exact relevant context chunks, including the complete <chunks path="...">...</chunks> tags.
+
+4. If you cannot find any relevant information, respond with exactly: "No relevant context found".
+
+Important guidelines:
+- Do not make assumptions beyond the available data.
+- Maintain objectivity in source selection.
+- When returning context chunks, include the entire content of the <chunks> tag. Do not modify or truncate it in any way.
+- Ensure that you're providing complete information from the chunks, not partial or summarized versions within the tags.
+- When no relevant context is found, do not return anything other than exactly "No relevant context found".
+- Do not output anything else than the <context_summary> and <chunks> tags.
+
+Please provide your response, starting with the summary and followed by the relevant chunks (if any).
+"""
+
+
 @dataclass
 class RagConfig:
     enabled: bool = False
     max_tokens: int | None = None
     min_relevance: float | None = None
+    post_process: bool = True
+    post_process_model: str | None = None
+    post_process_prompt: str = default_post_process_prompt
 
 
 @dataclass
