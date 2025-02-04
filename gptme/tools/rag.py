@@ -159,8 +159,19 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
     last_msg = messages[-1] if messages else None
     if last_msg and last_msg.role == "user":
         try:
+            should_post_process = (
+                rag_config.post_process and rag_config.post_process_model is not None
+            )
+
             # Get context using gptme-rag CLI
-            cmd = ["gptme-rag", "search", last_msg.content, "--format", "full"]
+            cmd = [
+                "gptme-rag",
+                "search",
+                last_msg.content,
+                "--format",
+                "full",
+                "--print-relevance" if not should_post_process else "",
+            ]
             if rag_config.max_tokens:
                 cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
             if rag_config.min_relevance:
@@ -168,7 +179,7 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
             rag_result = _run_rag_cmd(cmd).stdout
 
             # Post-process the context with an LLM (if enabled)
-            if rag_config.post_process and rag_config.post_process_model is not None:
+            if should_post_process:
                 post_process_msgs = [
                     Message(role="system", content=rag_config.post_process_prompt),
                     Message(role="system", content=rag_result),
@@ -180,7 +191,7 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
                 start = time.monotonic()
                 rag_result = _chat_complete(
                     messages=post_process_msgs,
-                    model=rag_config.post_process_model,
+                    model=rag_config.post_process_model,  # type: ignore
                     tools=[],
                 )
                 logger.info(f"Ran RAG post-process in {time.monotonic() - start:.2f}s")
