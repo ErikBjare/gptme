@@ -36,7 +36,7 @@ from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import get_project_config
+from ..config import RagConfig, get_project_config
 from ..message import Message
 from ..util import get_project_dir
 from .base import ToolSpec, ToolUse
@@ -129,7 +129,7 @@ def init() -> ToolSpec:
     # Check project configuration
     project_dir = get_project_dir()
     if project_dir and (config := get_project_config(project_dir)):
-        enabled = config.rag.get("enabled", False)
+        enabled = config.rag.enabled
         if not enabled:
             logger.debug("RAG not enabled in the project configuration")
             return replace(tool, available=False)
@@ -147,9 +147,9 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
 
     # Load config
     config = get_project_config(Path.cwd())
-    rag_config = config.rag if config and config.rag else {}
+    rag_config = config.rag if config and config.rag else RagConfig()
 
-    if not rag_config.get("enabled", False):
+    if not rag_config.enabled:
         return messages
 
     last_msg = messages[-1] if messages else None
@@ -157,10 +157,10 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
         try:
             # Get context using gptme-rag CLI
             cmd = ["gptme-rag", "search", last_msg.content, "--format", "full"]
-            if max_tokens := rag_config.get("max_tokens"):
-                cmd.extend(["--max-tokens", str(max_tokens)])
-            if min_relevance := rag_config.get("min_relevance"):
-                cmd.extend(["--min-relevance", str(min_relevance)])
+            if rag_config.max_tokens:
+                cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
+            if rag_config.min_relevance:
+                cmd.extend(["--min-relevance", str(rag_config.min_relevance)])
             result = _run_rag_cmd(cmd)
             msg = Message(
                 role="system",

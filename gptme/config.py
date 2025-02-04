@@ -38,13 +38,25 @@ class Config:
 
 
 @dataclass
+class RagConfig:
+    enabled: bool = False
+    max_tokens: int | None = None
+    min_relevance: float | None = None
+
+
+@dataclass
 class ProjectConfig:
     """Project-level configuration, such as which files to include in the context by default."""
 
     base_prompt: str | None = None
     prompt: str | None = None
     files: list[str] = field(default_factory=list)
-    rag: dict = field(default_factory=dict)
+    rag: RagConfig = field(default_factory=RagConfig)
+
+    def __post_init__(self):
+        # Convert the rag dict/Table to RagConfig if needed
+        if isinstance(self.rag, dict | Container):
+            self.rag = RagConfig(**self.rag)  # type: ignore
 
 
 ABOUT_ACTIVITYWATCH = """ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices."""
