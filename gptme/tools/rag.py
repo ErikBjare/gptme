@@ -152,29 +152,27 @@ def rag_enhance_messages(messages: list[Message]) -> list[Message]:
     if not rag_config.get("enabled", False):
         return messages
 
-    enhanced_messages = []
-    for msg in messages:
-        if msg.role == "user":
-            try:
-                # Get context using gptme-rag CLI
-                cmd = ["gptme-rag", "search", msg.content, "--format", "full"]
-                if max_tokens := rag_config.get("max_tokens"):
-                    cmd.extend(["--max-tokens", str(max_tokens)])
-                if min_relevance := rag_config.get("min_relevance"):
-                    cmd.extend(["--min-relevance", str(min_relevance)])
-                enhanced_messages.append(
-                    Message(
-                        role="system",
-                        content=f"Relevant context retrieved using `gptme-rag search`:\n\n{_run_rag_cmd(cmd).stdout}",
-                        hide=True,
-                    )
-                )
-            except Exception as e:
-                logger.warning(f"Error getting context: {e}")
+    last_msg = messages[-1] if messages else None
+    if last_msg and last_msg.role == "user":
+        try:
+            # Get context using gptme-rag CLI
+            cmd = ["gptme-rag", "search", last_msg.content, "--format", "full"]
+            if max_tokens := rag_config.get("max_tokens"):
+                cmd.extend(["--max-tokens", str(max_tokens)])
+            if min_relevance := rag_config.get("min_relevance"):
+                cmd.extend(["--min-relevance", str(min_relevance)])
+            result = _run_rag_cmd(cmd)
+            msg = Message(
+                role="system",
+                content=f"Relevant context retrieved using `gptme-rag search`:\n\n{result.stdout}",
+                hide=True,
+            )
+            # Append context message right before the last user message
+            messages.insert(-1, msg)
+        except Exception as e:
+            logger.warning(f"Error getting context: {e}")
 
-        enhanced_messages.append(msg)
-
-    return enhanced_messages
+    return messages
 
 
 tool = ToolSpec(
