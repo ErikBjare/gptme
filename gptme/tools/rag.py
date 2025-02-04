@@ -110,7 +110,7 @@ def rag_search(query: str, return_full: bool = False) -> str:
     cmd = ["gptme-rag", "search", query]
     if return_full:
         # shows full context of the search results
-        cmd.append("--format full")
+        cmd.append("--format full --print-relevance")
 
     result = _run_rag_cmd(cmd)
     return result.stdout.strip()
