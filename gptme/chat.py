@@ -62,7 +62,7 @@ def chat(
 
     prompt_msgs: list of messages to execute in sequence.
     initial_msgs: list of history messages.
-    workspace: path to workspace directory, or @log to create one in the log directory.
+    workspace: path to workspace directory.
 
     Callable from other modules.
     """
@@ -89,20 +89,8 @@ def chat(
     # configuration for subagent
     set_tool_format(tool_format_with_default)
 
-    # change to workspace directory
-    # use if exists, create if @log, or use given path
-    # TODO: move this into LogManager? then just os.chdir(manager.workspace)
-    log_workspace = logdir / "workspace"
-    if log_workspace.exists():
-        assert not workspace or (
-            workspace == log_workspace
-        ), f"Workspace already exists in {log_workspace}, wont override."
-        workspace = log_workspace.resolve()
-    else:
-        if not workspace:
-            workspace = Path.cwd()
-            log_workspace.symlink_to(workspace, target_is_directory=True)
-        assert workspace.exists(), f"Workspace path {workspace} does not exist"
+    # Initialize workspace
+    workspace = _init_workspace(workspace, logdir)
     console.log(f"Using workspace at {path_with_tilde(workspace)}")
     os.chdir(workspace)
 
@@ -552,3 +540,26 @@ def _parse_prompt_files(prompt: str) -> Path | None:
         if oserr.errno != errno.ENAMETOOLONG:
             return None
         raise
+
+
+def _init_workspace(workspace: Path | None, logdir: Path | None = None) -> Path:
+    """Initialize workspace and return the workspace path.
+
+    If workspace is None, use current directory.
+    If logdir is provided, use logdir/workspace as workspace if it exists, else create a symlink to workspace.
+    """
+    if not workspace:
+        workspace = Path.cwd()
+
+    if logdir:
+        log_workspace = logdir / "workspace"
+        if log_workspace.exists():
+            assert not workspace or (
+                workspace == log_workspace.resolve()
+            ), f"Workspace already exists in {log_workspace}, wont override."
+            workspace = log_workspace.resolve()
+        else:
+            assert workspace.exists(), f"Workspace path {workspace} does not exist"
+            log_workspace.symlink_to(workspace, target_is_directory=True)
+
+    return workspace
