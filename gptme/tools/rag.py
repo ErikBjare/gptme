@@ -146,6 +146,63 @@ def init() -> ToolSpec:
     return tool
 
 
+def get_rag_context(
+    query: str,
+    rag_config: RagConfig,
+    workspace: Path | None = None,
+) -> Message:
+    """Get relevant context chunks from RAG for the user query."""
+
+    should_post_process = (
+        rag_config.post_process and rag_config.post_process_model is not None
+    )
+
+    cmd = [
+        "gptme-rag",
+        "search",
+        query,
+    ]
+    if workspace and rag_config.workspace_only:
+        cmd.append(workspace.as_posix())
+    elif rag_config.paths:
+        cmd.extend(rag_config.paths)
+    if not should_post_process:
+        cmd.append("--print-relevance")
+    cmd.extend(["--format", "full"])
+
+    if rag_config.max_tokens:
+        cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
+    if rag_config.min_relevance:
+        cmd.extend(["--min-relevance", str(rag_config.min_relevance)])
+    rag_result = _run_rag_cmd(cmd).stdout
+
+    # Post-process the context with an LLM (if enabled)
+    if should_post_process:
+        post_process_msgs = [
+            Message(role="system", content=rag_config.post_process_prompt),
+            Message(role="system", content=rag_result),
+            Message(
+                role="user",
+                content=f"<user_query>\n{query}\n</user_query>",
+            ),
+        ]
+        start = time.monotonic()
+        rag_result = _chat_complete(
+            messages=post_process_msgs,
+            model=rag_config.post_process_model,  # type: ignore
+            tools=[],
+        )
+        logger.info(f"Ran RAG post-process in {time.monotonic() - start:.2f}s")
+
+    # Create the context message
+    msg = Message(
+        role="system",
+        content=f"Relevant context retrieved using `gptme-rag search`:\n\n{rag_result}",
+        hide=True,
+    )
+    return msg
+
+
 def rag_enhance_messages(
     messages: list[Message], workspace: Path | None = None
 ) -> list[Message]:
@@ -163,54 +220,9 @@ def rag_enhance_messages(
     last_msg = messages[-1] if messages else None
     if last_msg and last_msg.role == "user":
         try:
-            should_post_process = (
-                rag_config.post_process and rag_config.post_process_model is not None
-            )
-
             # Get context using gptme-rag CLI
-            cmd = [
-                "gptme-rag",
-                "search",
-                last_msg.content,
-            ]
-            if workspace and rag_config.workspace_only:
-                cmd.append(workspace.as_posix())
-            elif rag_config.paths:
-                cmd.extend(rag_config.paths)
-            if not should_post_process:
-                cmd.append("--print-relevance")
-            cmd.extend(["--format", "full"])
+            msg = get_rag_context(last_msg.content, rag_config, workspace)
 
-            if rag_config.max_tokens:
-                cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
-            if rag_config.min_relevance:
-                cmd.extend(["--min-relevance", str(rag_config.min_relevance)])
-            rag_result = _run_rag_cmd(cmd).stdout
-
-            # Post-process the context with an LLM (if enabled)
-            if should_post_process:
-                post_process_msgs = [
-                    Message(role="system", content=rag_config.post_process_prompt),
-                    Message(role="system", content=rag_result),
-                    Message(
-                        role="user",
-                        content=f"<user_query>\n{last_msg.content}\n</user_query>",
-                    ),
-                ]
-                start = time.monotonic()
-                rag_result = _chat_complete(
-                    messages=post_process_msgs,
-                    model=rag_config.post_process_model,  # type: ignore
-                    tools=[],
-                )
-                logger.info(f"Ran RAG post-process in {time.monotonic() - start:.2f}s")
-
-            # Create the context message
-            msg = Message(
-                role="system",
-                content=f"Relevant context retrieved using `gptme-rag search`:\n\n{rag_result}",
-                hide=True,
-            )
             # Append context message right before the last user message
             messages.insert(-1, msg)
         except Exception as e:
