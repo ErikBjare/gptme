@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+from gptme.config import RagConfig
 from gptme.message import Message
 from gptme.tools.rag import _has_gptme_rag, rag_enhance_messages
 
@@ -42,7 +43,7 @@ def test_enhance_messages_disabled():
         patch("subprocess.run", return_value=type("Proc", (), {"returncode": 0})),
         patch("gptme.tools.rag.get_project_config") as mock_config,
     ):
-        mock_config.return_value.rag = {"enabled": False}
+        mock_config.return_value.rag = RagConfig(enabled=False)
         messages = [
             Message("user", "Tell me about Python"),
             Message("assistant", "Python is a programming language"),
