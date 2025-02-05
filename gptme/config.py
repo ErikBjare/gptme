@@ -40,7 +40,7 @@ class Config:
 default_post_process_prompt = """
 You are an intelligent knowledge retrieval assistant designed to analyze context chunks and extract relevant information based on user queries. Your primary goal is to provide accurate and helpful information while adhering to specific guidelines.
 
-You will be provided with a user query inside <user_query> tags and a list of potentially relevantcontext chunks inside <chunks> tags.
+You will be provided with a user query inside <user_query> tags and a list of potentially relevant context chunks inside <chunks> tags.
 
 When a user submits a query, follow these steps:
 
@@ -87,11 +87,6 @@ class ProjectConfig:
     prompt: str | None = None
     files: list[str] = field(default_factory=list)
     rag: RagConfig = field(default_factory=RagConfig)
-
-    def __post_init__(self):
-        # Convert the rag dict/Table to RagConfig if needed
-        if isinstance(self.rag, dict | Container):
-            self.rag = RagConfig(**self.rag)  # type: ignore
 
 
 ABOUT_ACTIVITYWATCH = """ActivityWatch is a free and open-source automated time-tracker that helps you track how you spend your time on your devices."""
@@ -193,8 +188,13 @@ def get_project_config(workspace: Path | None) -> ProjectConfig | None:
         )
         # load project config
         with open(project_config_path) as f:
-            project_config = tomlkit.load(f)
-        return ProjectConfig(**project_config)  # type: ignore
+            config_data = dict(tomlkit.load(f))
+
+        # Handle RAG config conversion before creating ProjectConfig
+        if "rag" in config_data:
+            config_data["rag"] = RagConfig(**config_data["rag"])  # type: ignore
+
+        return ProjectConfig(**config_data)  # type: ignore
     return None
 
 

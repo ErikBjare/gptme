@@ -16,7 +16,7 @@ Configure RAG in your ``gptme.toml``::
     [rag]
     enabled = true
     post_process = false # Whether to post-process the context with an LLM to extract the most relevant information
-    post_process_model = "openai/gpt-4-turbo" # Which model to use for post-processing
+    post_process_model = "openai/gpt-4o-mini" # Which model to use for post-processing
     post_process_prompt = "" # Optional prompt to use for post-processing (overrides default prompt)
     workspace_only = true # Whether to only search in the workspace directory, or the whole RAG index
     paths = [] # List of paths to include in the RAG index. Has no effect if workspace_only is true.
@@ -112,7 +112,7 @@ def rag_search(query: str, return_full: bool = False) -> str:
     cmd = ["gptme-rag", "search", query]
     if return_full:
         # shows full context of the search results
-        cmd.append("--format full --print-relevance")
+        cmd.extend(["--format", "full", "--print-relevance"])
 
     result = _run_rag_cmd(cmd)
     return result.stdout.strip()
