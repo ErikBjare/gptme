@@ -42,6 +42,9 @@ def use_checks() -> bool:
     """
     flag: str = get_config().get_env("GPTME_CHECK", "")  # type: ignore
     explicit_enabled = flag.lower() in ("1", "true", "yes")
+    explicit_disabled = flag.lower() in ("0", "false", "no")
+    if explicit_disabled:
+        return False
 
     # Check for .pre-commit-config.yaml in any parent directory
     has_config = any(
