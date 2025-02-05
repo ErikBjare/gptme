@@ -15,6 +15,11 @@ Configure RAG in your ``gptme.toml``::
 
     [rag]
     enabled = true
+    post_process = false # Whether to post-process the context with an LLM to extract the most relevant information
+    post_process_model = "openai/gpt-4o-mini" # Which model to use for post-processing
+    post_process_prompt = "" # Optional prompt to use for post-processing (overrides default prompt)
+    workspace_only = true # Whether to only search in the workspace directory, or the whole RAG index
+    paths = [] # List of paths to include in the RAG index. Has no effect if workspace_only is true.
 
 .. rubric:: Features
 
@@ -36,9 +41,10 @@ from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
 
-from ..config import get_project_config
+from ..config import RagConfig, get_project_config
 from ..message import Message
 from ..util import get_project_dir
+from ..llm import _chat_complete
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -106,7 +112,7 @@ def rag_search(query: str, return_full: bool = False) -> str:
     cmd = ["gptme-rag", "search", query]
     if return_full:
         # shows full context of the search results
-        cmd.append("--show-context")
+        cmd.extend(["--format", "full", "--score"])
 
     result = _run_rag_cmd(cmd)
     return result.stdout.strip()
@@ -129,7 +135,7 @@ def init() -> ToolSpec:
     # Check project configuration
     project_dir = get_project_dir()
     if project_dir and (config := get_project_config(project_dir)):
-        enabled = config.rag.get("enabled", False)
+        enabled = config.rag.enabled
         if not enabled:
             logger.debug("RAG not enabled in the project configuration")
             return replace(tool, available=False)
@@ -140,41 +146,89 @@ def init() -> ToolSpec:
     return tool
 
 
-def rag_enhance_messages(messages: list[Message]) -> list[Message]:
+def get_rag_context(
+    query: str,
+    rag_config: RagConfig,
+    workspace: Path | None = None,
+) -> Message:
+    """Get relevant context chunks from RAG for the user query."""
+
+    should_post_process = (
+        rag_config.post_process and rag_config.post_process_model is not None
+    )
+
+    cmd = [
+        "gptme-rag",
+        "search",
+        query,
+    ]
+    if workspace and rag_config.workspace_only:
+        cmd.append(workspace.as_posix())
+    elif rag_config.paths:
+        cmd.extend(rag_config.paths)
+    if not should_post_process:
+        cmd.append("--score")
+    cmd.extend(["--format", "full"])
+
+    if rag_config.max_tokens:
+        cmd.extend(["--max-tokens", str(rag_config.max_tokens)])
+    if rag_config.min_relevance:
+        cmd.extend(["--min-relevance", str(rag_config.min_relevance)])
+    rag_result = _run_rag_cmd(cmd).stdout
+
+    # Post-process the context with an LLM (if enabled)
+    if should_post_process:
+        post_process_msgs = [
+            Message(role="system", content=rag_config.post_process_prompt),
+            Message(role="system", content=rag_result),
+            Message(
+                role="user",
+                content=f"<user_query>\n{query}\n</user_query>",
+            ),
+        ]
+        start = time.monotonic()
+        rag_result = _chat_complete(
+            messages=post_process_msgs,
+            model=rag_config.post_process_model,  # type: ignore
+            tools=[],
+        )
+        logger.info(f"Ran RAG post-process in {time.monotonic() - start:.2f}s")
+
+    # Create the context message
+    msg = Message(
+        role="system",
+        content=f"Relevant context retrieved using `gptme-rag search`:\n\n{rag_result}",
+        hide=True,
+    )
+    return msg
+
+
+def rag_enhance_messages(
+    messages: list[Message], workspace: Path | None = None
+) -> list[Message]:
     """Enhance messages with context from RAG."""
     if not _has_gptme_rag():
         return messages
 
     # Load config
     config = get_project_config(Path.cwd())
-    rag_config = config.rag if config and config.rag else {}
+    rag_config = config.rag if config and config.rag else RagConfig()
 
-    if not rag_config.get("enabled", False):
+    if not rag_config.enabled:
         return messages
 
-    enhanced_messages = []
-    for msg in messages:
-        if msg.role == "user":
-            try:
-                # Get context using gptme-rag CLI
-                cmd = ["gptme-rag", "search", msg.content, "--show-context"]
-                if max_tokens := rag_config.get("max_tokens"):
-                    cmd.extend(["--max-tokens", str(max_tokens)])
-                if min_relevance := rag_config.get("min_relevance"):
-                    cmd.extend(["--min-relevance", str(min_relevance)])
-                enhanced_messages.append(
-                    Message(
-                        role="system",
-                        content=f"Relevant context retrieved using `gptme-rag search`:\n\n{_run_rag_cmd(cmd).stdout}",
-                        hide=True,
-                    )
-                )
-            except Exception as e:
-                logger.warning(f"Error getting context: {e}")
+    last_msg = messages[-1] if messages else None
+    if last_msg and last_msg.role == "user":
+        try:
+            # Get context using gptme-rag CLI
+            msg = get_rag_context(last_msg.content, rag_config, workspace)
 
-        enhanced_messages.append(msg)
+            # Append context message right before the last user message
+            messages.insert(-1, msg)
+        except Exception as e:
+            logger.warning(f"Error getting context: {e}")
 
-    return enhanced_messages
+    return messages
 
 
 tool = ToolSpec(

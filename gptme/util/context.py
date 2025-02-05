@@ -351,7 +351,7 @@ def enrich_messages_with_context(
     msgs = copy(msgs)
 
     # First enhance messages with context, if gptme-rag is available
-    msgs = rag_enhance_messages(msgs)
+    msgs = rag_enhance_messages(msgs, workspace)
 
     msgs = [
         append_file_content(msg, workspace, check_modified=use_fresh_context())
