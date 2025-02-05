@@ -112,7 +112,7 @@ def rag_search(query: str, return_full: bool = False) -> str:
     cmd = ["gptme-rag", "search", query]
     if return_full:
         # shows full context of the search results
-        cmd.extend(["--format", "full", "--print-relevance"])
+        cmd.extend(["--format", "full", "--score"])
 
     result = _run_rag_cmd(cmd)
     return result.stdout.strip()
@@ -167,7 +167,7 @@ def get_rag_context(
     elif rag_config.paths:
         cmd.extend(rag_config.paths)
     if not should_post_process:
-        cmd.append("--print-relevance")
+        cmd.append("--score")
     cmd.extend(["--format", "full"])
 
     if rag_config.max_tokens:
