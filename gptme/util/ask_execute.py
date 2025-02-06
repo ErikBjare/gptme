@@ -17,9 +17,11 @@ from ..tools import ConfirmFunc
 from . import print_bell
 from .clipboard import copy, set_copytext
 from .prompt import get_prompt_session
+from .terminal import terminal_state_title
 from .useredit import edit_text_with_editor
 
 console = Console(log_path=False)
+
 
 # Global state
 override_auto = False
@@ -110,14 +112,15 @@ def ask_execute(question="Execute code?", default=True) -> bool:
     choicestr += "/?"
     choicestr += "]"
 
-    session = get_prompt_session()
-    answer = (
-        session.prompt(
-            [("bold fg:ansiyellow bg:red", f" {question} {choicestr} "), ("", " ")],
+    with terminal_state_title("❓ waiting for confirmation"):
+        session = get_prompt_session()
+        answer = (
+            session.prompt(
+                [("bold fg:ansiyellow bg:red", f" {question} {choicestr} "), ("", " ")],
+            )
+            .lower()
+            .strip()
         )
-        .lower()
-        .strip()
-    )
 
     if not override_auto:
         if copiable and answer == "c":
