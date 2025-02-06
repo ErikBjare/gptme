@@ -40,6 +40,7 @@ from .util.context import run_precommit_checks, use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
 from .util.prompt import add_history, get_input
+from .util.terminal import set_current_conv_name, terminal_state_title
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,10 @@ def chat(
 
     Callable from other modules.
     """
+    # Set initial terminal title with conversation name
+    conv_name = logdir.name
+    set_current_conv_name(conv_name)
+
     # init
     init(model, interactive, tool_allowlist)
 
@@ -268,9 +273,10 @@ def step(
             tools = [t for t in get_tools() if t.is_runnable()]
 
         # generate response
-        msg_response = reply(msgs, get_model().full, stream, tools)
-        if os.environ.get("GPTME_COSTS") in ["1", "true"]:
-            log_costs(msgs + [msg_response])
+        with terminal_state_title("🤔 generating"):
+            msg_response = reply(msgs, get_model().full, stream, tools)
+            if os.environ.get("GPTME_COSTS") in ["1", "true"]:
+                log_costs(msgs + [msg_response])
 
         # speak if TTS tool is available
         if has_tool("tts"):
@@ -289,17 +295,18 @@ def prompt_user(value=None) -> str:  # pragma: no cover
     # Flush stdin to clear any buffered input before prompting
     termios.tcflush(sys.stdin, termios.TCIFLUSH)
     response = ""
-    while not response:
-        try:
-            set_interruptible()
-            response = prompt_input(PROMPT_USER, value)
-            if response:
-                add_history(response)
-        except KeyboardInterrupt:
-            print("\nInterrupted. Press Ctrl-D to exit.")
-        except EOFError:
-            print("\nGoodbye!")
-            sys.exit(0)
+    with terminal_state_title("⌨️ waiting for input"):
+        while not response:
+            try:
+                set_interruptible()
+                response = prompt_input(PROMPT_USER, value)
+                if response:
+                    add_history(response)
+            except KeyboardInterrupt:
+                print("\nInterrupted. Press Ctrl-D to exit.")
+            except EOFError:
+                print("\nGoodbye!")
+                sys.exit(0)
     clear_interruptible()
     return response
 

@@ -1,27 +1,25 @@
+import importlib
+import inspect
 import logging
-from functools import lru_cache
+import pkgutil
 from collections.abc import Generator
+from functools import lru_cache
 
 from gptme.config import get_config
-
 from gptme.constants import INTERRUPT_CONTENT
 
-from ..util.interrupt import clear_interruptible
-
 from ..message import Message
+from ..util.interrupt import clear_interruptible
+from ..util.terminal import terminal_state_title
 from .base import (
+    ConfirmFunc,
+    Parameter,
     ToolFormat,
     ToolSpec,
     ToolUse,
-    Parameter,
-    ConfirmFunc,
     get_tool_format,
     set_tool_format,
 )
-
-import importlib
-import pkgutil
-import inspect
 
 logger = logging.getLogger(__name__)
 
@@ -117,17 +115,18 @@ def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, 
 
     for tooluse in ToolUse.iter_from_content(msg.content):
         if tooluse.is_runnable:
-            try:
-                for tool_response in tooluse.execute(confirm):
-                    yield tool_response.replace(call_id=tooluse.call_id)
-            except KeyboardInterrupt:
-                clear_interruptible()
-                yield Message(
-                    "system",
-                    INTERRUPT_CONTENT,
-                    call_id=tooluse.call_id,
-                )
-                break
+            with terminal_state_title("🛠️ running {tooluse.tool}"):
+                try:
+                    for tool_response in tooluse.execute(confirm):
+                        yield tool_response.replace(call_id=tooluse.call_id)
+                except KeyboardInterrupt:
+                    clear_interruptible()
+                    yield Message(
+                        "system",
+                        INTERRUPT_CONTENT,
+                        call_id=tooluse.call_id,
+                    )
+                    break
 
 
 # Called often when checking streaming output for executable blocks,
