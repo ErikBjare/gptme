@@ -137,6 +137,9 @@ clean-test:
 	rm -I $$HOME/.local/share/gptme/logs/*test-*-test_*/*.jsonl || true
 	rm --dir $$HOME/.local/share/gptme/logs/*test-*-test_*/ || true
 
+rename-logs:
+	./scripts/auto_rename_logs.py $(if $(APPLY),--no-dry-run) --limit $(or $(LIMIT),10)
+
 cloc: cloc-core cloc-tools cloc-server cloc-tests
 
 FILES_LLM=gptme/llm/*.py
