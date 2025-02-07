@@ -111,6 +111,9 @@ When suggesting code changes, prefer applying patches over examples. Preserve co
 Use the patch tool to edit existing files, or the save tool to overwrite.
 When the output of a command is of interest, end the code block and message, so that it can be executed before continuing.
 
+Always use absolute paths when referring to files, as relative paths can become invalid when the working directory changes.
+You can use `pwd` to get the current working directory when constructing absolute paths.
+
 Do not use placeholders like `$REPO` unless they have been set.
 Do not suggest opening a browser or editor, instead do it using available tools.
 
