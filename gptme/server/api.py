@@ -8,11 +8,13 @@ See here for instructions how to serve matplotlib figures:
 import atexit
 import io
 import logging
+import os
 from collections.abc import Generator
 from contextlib import redirect_stdout
 from datetime import datetime
 from importlib import resources
 from itertools import islice
+from pathlib import Path
 
 import flask
 from flask import current_app, request
@@ -43,12 +45,65 @@ def api_conversations():
     return flask.jsonify(conversations)
 
 
-@api.route("/api/conversations/<path:logfile>")
+@api.route("/api/conversations/<string:logfile>")
 def api_conversation(logfile: str):
     """Get a conversation."""
+    if "/" in logfile:
+        raise ValueError(f"Invalid logfile path: {logfile}")
     init_tools(None)  # FIXME: this is not thread-safe
     log = LogManager.load(logfile, lock=False)
-    return flask.jsonify(log.to_dict(branches=True))
+    log_dict = log.to_dict(branches=True)
+    # make all paths absolute or relative to workspace (no "../")
+    for msg in log_dict["log"]:
+        if files := msg.get("files"):
+            msg["files"] = [
+                (
+                    str(path.relative_to(log.workspace))
+                    if (path := Path(f).resolve()).is_relative_to(log.workspace)
+                    else str(path)
+                )
+                for f in files
+            ]
+    return flask.jsonify(log_dict)
+
+
+@api.route("/api/conversations/<string:logfile>/files/<path:filename>")
+def api_conversation_file(logfile: str, filename: str):
+    """
+    Get a file from a conversation, path must be absolute or relative to workspace.
+    Can only access files in the workspace.
+    """
+    if "/" in logfile:
+        raise ValueError(f"Invalid logfile path: {logfile}")
+
+    log = LogManager.load(logfile, lock=False)
+    workspace = Path(log.workspace).resolve()
+
+    # Can be set to override workspace restriction
+    allow_root = os.getenv("GPTME_ALLOW_ROOT_FILES", "").lower() in ["1", "true"]
+
+    # Resolve the full path, ensuring it stays within workspace
+    try:
+        if Path(filename).is_absolute():
+            file_path = Path(filename).resolve()
+        elif filename.startswith("home/") and (path := Path("/") / filename).is_file():
+            file_path = path
+        else:
+            file_path = (workspace / filename).resolve()
+
+        # Check if the resolved path is within the workspace
+        if not allow_root and not str(file_path).startswith(str(workspace)):
+            raise ValueError("Access denied: Path outside workspace")
+
+        if not file_path.is_file():
+            raise ValueError("File not found")
+
+        if allow_root:
+            return flask.send_file(file_path)
+        else:
+            return flask.send_from_directory(log.workspace, filename)
+    except (ValueError, RuntimeError) as e:
+        return flask.jsonify({"error": str(e)}), 403
 
 
 @api.route("/api/conversations/<path:logfile>", methods=["PUT"])
