@@ -42,9 +42,9 @@ from functools import lru_cache
 from pathlib import Path
 
 from ..config import RagConfig, get_project_config
+from ..llm import _chat_complete
 from ..message import Message
 from ..util import get_project_dir
-from ..llm import _chat_complete
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,36 @@ User: Show index status
 Assistant: I'll check the current status of the RAG index.
 {ToolUse("ipython", [], "rag_status()").to_output(tool_format)}
 System: Index contains 42 documents
+"""
+
+
+DEFAULT_POST_PROCESS_PROMPT = """
+You are an intelligent knowledge retrieval assistant designed to analyze context chunks and extract relevant information based on user queries. Your primary goal is to provide accurate and helpful information while adhering to specific guidelines.
+
+You will be provided with a user query inside <user_query> tags and a list of potentially relevant context chunks inside <chunks> tags.
+
+When a user submits a query, follow these steps:
+
+1. Analyze the user's query carefully to identify key concepts and requirements.
+
+2. Search through the provided context chunks for relevant information.
+
+3. If you find relevant information:
+   a. Extract the most pertinent parts.
+   b. Summarize the relevant context inside <context_summary> tags.
+   c. Output the exact relevant context chunks, including the complete <chunks path="...">...</chunks> tags.
+
+4. If you cannot find any relevant information, respond with exactly: "No relevant context found".
+
+Important guidelines:
+- Do not make assumptions beyond the available data.
+- Maintain objectivity in source selection.
+- When returning context chunks, include the entire content of the <chunks> tag. Do not modify or truncate it in any way.
+- Ensure that you're providing complete information from the chunks, not partial or summarized versions within the tags.
+- When no relevant context is found, do not return anything other than exactly "No relevant context found".
+- Do not output anything else than the <context_summary> and <chunks> tags.
+
+Please provide your response, starting with the summary and followed by the relevant chunks (if any).
 """
 
 
@@ -179,7 +209,10 @@ def get_rag_context(
     # Post-process the context with an LLM (if enabled)
     if should_post_process:
         post_process_msgs = [
-            Message(role="system", content=rag_config.post_process_prompt),
+            Message(
+                role="system",
+                content=rag_config.post_process_prompt or DEFAULT_POST_PROCESS_PROMPT,
+            ),
             Message(role="system", content=rag_result),
             Message(
                 role="user",
