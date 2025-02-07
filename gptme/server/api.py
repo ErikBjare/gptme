@@ -48,8 +48,6 @@ def api_conversations():
 @api.route("/api/conversations/<string:logfile>")
 def api_conversation(logfile: str):
     """Get a conversation."""
-    if "/" in logfile:
-        raise ValueError(f"Invalid logfile path: {logfile}")
     init_tools(None)  # FIXME: this is not thread-safe
     log = LogManager.load(logfile, lock=False)
     log_dict = log.to_dict(branches=True)
@@ -73,9 +71,6 @@ def api_conversation_file(logfile: str, filename: str):
     Get a file from a conversation, path must be absolute or relative to workspace.
     Can only access files in the workspace.
     """
-    if "/" in logfile:
-        raise ValueError(f"Invalid logfile path: {logfile}")
-
     log = LogManager.load(logfile, lock=False)
     workspace = Path(log.workspace).resolve()
 
@@ -84,29 +79,20 @@ def api_conversation_file(logfile: str, filename: str):
 
     # Resolve the full path, ensuring it stays within workspace
     try:
-        if Path(filename).is_absolute():
-            file_path = Path(filename).resolve()
-        elif filename.startswith("home/") and (path := Path("/") / filename).is_file():
-            file_path = path
+        if (workspace / filename).resolve().is_file():
+            return flask.send_from_directory(workspace, filename)
+        # NOTE: <path:filename> strips leading slashes, so we need to re-add them
+        elif (path := Path("/") / filename).is_file():
+            if not allow_root:
+                raise ValueError("Access denied: Path outside workspace")
+            return flask.send_file(path)
         else:
-            file_path = (workspace / filename).resolve()
-
-        # Check if the resolved path is within the workspace
-        if not allow_root and not str(file_path).startswith(str(workspace)):
-            raise ValueError("Access denied: Path outside workspace")
-
-        if not file_path.is_file():
-            raise ValueError("File not found")
-
-        if allow_root:
-            return flask.send_file(file_path)
-        else:
-            return flask.send_from_directory(log.workspace, filename)
+            return flask.jsonify({"error": "File not found"}), 404
     except (ValueError, RuntimeError) as e:
         return flask.jsonify({"error": str(e)}), 403
 
 
-@api.route("/api/conversations/<path:logfile>", methods=["PUT"])
+@api.route("/api/conversations/<string:logfile>", methods=["PUT"])
 def api_conversation_put(logfile: str):
     """Create or update a conversation."""
     msgs = []
@@ -126,7 +112,7 @@ def api_conversation_put(logfile: str):
 
 
 @api.route(
-    "/api/conversations/<path:logfile>",
+    "/api/conversations/<string:logfile>",
     methods=["POST"],
 )
 def api_conversation_post(logfile: str):
@@ -153,7 +139,7 @@ def confirm_func(msg: str) -> bool:
 
 
 # generate response
-@api.route("/api/conversations/<path:logfile>/generate", methods=["POST"])
+@api.route("/api/conversations/<string:logfile>/generate", methods=["POST"])
 def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
