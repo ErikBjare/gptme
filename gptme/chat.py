@@ -74,11 +74,12 @@ def chat(
     # init
     init(model, interactive, tool_allowlist)
 
-    if not get_model().supports_streaming and stream:
+    modelmeta = get_model(model)
+    if not modelmeta.supports_streaming and stream:
         logger.info(
             "Disabled streaming for '%s/%s' model (not supported)",
-            get_model().provider,
-            get_model().model,
+            modelmeta.provider,
+            modelmeta.model,
         )
         stream = False
 
@@ -143,6 +144,7 @@ def chat(
                                 confirm_func,
                                 tool_format=tool_format_with_default,
                                 workspace=workspace,
+                                model=model,
                             )
                         )
                     except KeyboardInterrupt:
@@ -227,6 +229,7 @@ def step(
     confirm: ConfirmFunc,
     tool_format: ToolFormat = "markdown",
     workspace: Path | None = None,
+    model: str | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
@@ -274,7 +277,7 @@ def step(
 
         # generate response
         with terminal_state_title("🤔 generating"):
-            msg_response = reply(msgs, get_model().full, stream, tools)
+            msg_response = reply(msgs, get_model(model).full, stream, tools)
             if os.environ.get("GPTME_COSTS") in ["1", "true"]:
                 log_costs(msgs + [msg_response])
 
@@ -553,7 +556,7 @@ def _init_workspace(workspace: Path | None, logdir: Path | None = None) -> Path:
     """Initialize workspace and return the workspace path.
 
     If workspace is None, use current directory.
-    If logdir is provided, use logdir/workspace as workspace if it exists, else create a symlink to workspace.
+    If logdir is provided, use ``$logdir/workspace`` as workspace if it exists, else create a symlink to workspace.
     """
     if not workspace:
         workspace = Path.cwd()
