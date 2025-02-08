@@ -11,12 +11,14 @@ repos:
   - id: ruff
     args: [ --fix ]
   - id: ruff-format
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.12.0
+- repo: local
   hooks:
   - id: mypy
-    additional_dependencies: [types-tabulate, types-docutils]
-    args: [--ignore-missing-imports, --check-untyped-defs]
+    name: mypy
+    entry: make typecheck
+    language: system
+    pass_filenames: false
+    always_run: true
 #- repo: local
 #  hooks:
 #  - id: pytest
