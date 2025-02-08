@@ -42,9 +42,9 @@ from functools import lru_cache
 from pathlib import Path
 
 from ..config import RagConfig, get_project_config
+from ..dirs import get_project_gptme_dir
 from ..llm import _chat_complete
 from ..message import Message
-from ..util import get_project_dir
 from .base import ToolSpec, ToolUse
 
 logger = logging.getLogger(__name__)
@@ -163,7 +163,7 @@ def init() -> ToolSpec:
         return replace(tool, available=False)
 
     # Check project configuration
-    project_dir = get_project_dir()
+    project_dir = get_project_gptme_dir()
     if project_dir and (config := get_project_config(project_dir)):
         enabled = config.rag.enabled
         if not enabled:

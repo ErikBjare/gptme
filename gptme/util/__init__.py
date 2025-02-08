@@ -6,7 +6,6 @@ import functools
 import logging
 import re
 import shutil
-import subprocess
 import sys
 import textwrap
 from datetime import datetime, timedelta
@@ -216,17 +215,3 @@ def get_installed_programs(candidates: tuple[str, ...]) -> set[str]:
         if shutil.which(candidate) is not None:
             installed.add(candidate)
     return installed
-
-
-def get_project_dir() -> Path | None:
-    try:
-        projectdir = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-        return Path(projectdir)
-    except subprocess.CalledProcessError:
-        logger.debug("Unable to determine Git repository root.")
-        return None

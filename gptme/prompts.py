@@ -14,9 +14,10 @@ from typing import Literal
 
 from .__version__ import __version__
 from .config import get_config, get_project_config
+from .dirs import get_project_git_dir
 from .message import Message
 from .tools import ToolFormat
-from .util import document_prompt_function, get_project_dir
+from .util import document_prompt_function
 
 PromptType = Literal["full", "short"]
 
@@ -142,7 +143,7 @@ Do not provide examples or ask for permission before running commands.
 Proceed directly with the most appropriate actions to complete the task.
 """.strip()
 
-    projectdir = get_project_dir()
+    projectdir = get_project_git_dir()
     project_config = get_project_config(projectdir)
     base_prompt = (
         project_config.base_prompt
@@ -189,7 +190,7 @@ def prompt_project() -> Generator[Message, None, None]:
     """
     Generate the project-specific prompt based on the current Git repository.
     """
-    projectdir = get_project_dir()
+    projectdir = get_project_git_dir()
     if not projectdir:
         return
 
