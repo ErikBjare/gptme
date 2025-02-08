@@ -12,4 +12,4 @@ def test_chats(capsys):
         assert "1." in captured.out
         search_chats("python", system=True)
         captured = capsys.readouterr()
-        assert "Found matches" in captured.out
+        assert "Search results" in captured.out
