@@ -101,6 +101,8 @@ Key features:
 - Extensible tool system
 - Highly customizable, aims to be simple to modify
 
+First commit: Mar 24, 2023.
+
 Aider
 ^^^^^
 
@@ -120,6 +122,8 @@ Differences to gptme:
 - gptme is more general-purpose?
 - gptme has wider array of tools?
 
+First commit: Apr 4, 2023.
+
 Moatless Tools
 ^^^^^^^^^^^^^^
 
@@ -135,13 +139,14 @@ Key features:
 Lovable.dev
 ^^^^^^^^^^^
 
-`lovable.dev <https://lovable.dev>`_ (previously `GPT Engineer`) lets you build webapps fast by just prompting.
+`lovable.dev <https://lovable.dev>`_ (previously `GPT Engineer.app <https://gptengineer.app>`_) lets you build webapps fast using natural language.
 
 Key features:
 
 - Builds frontends with ease, just by prompting
 - LLM-powered no-code editor for frontends
 - Git/GitHub integration, ability to import projects
+- Supabase integration for backend support
 
 Differences to gptme:
 
@@ -151,7 +156,7 @@ Differences to gptme:
 - gptme is far from as good at building frontends
 - gptme is not no-code, you still need to select your context yourself
 
-Disclaimer: gptme author has worked on this project too.
+Disclaimer: gptme author Erik was an early hire at Lovable.
 
 Cursor
 ^^^^^^
@@ -162,22 +167,50 @@ Differences to gptme:
 
 - gptme is in-terminal instead of in-vscode-fork
 - gptme is extensible with tools, more general-purpose
+  - Less true now that Cursor supports MCP
 
-Claude Desktop
-^^^^^^^^^^^^^^
+Claude
+^^^^^^
 
-Claude Desktop is...
+Anthropic's Claude has gotten popular due to its excellent coding capabilities. It has also championed MCP as a way to extend its capabilities and solve the n-to-m problem of tool clients (Claude Desktop, Cursor) and servers (browser, shell, python).
 
+.. https://docs.anthropic.com/en/release-notes/claude-apps
 
-Claude Projects
-^^^^^^^^^^^^^^^
+.. rubric:: Projects
 
-Claude projects let users upload their files and chat with them. It requires a Claude subscription.
+Claude Projects lets users upload their files and chat with them. It requires a Claude subscription.
 
+Released Jun 25, 2024.
 
-ChatGPT Code Interpreter
-^^^^^^^^^^^^^^^^^^^^^^^^
+.. rubric:: Artifacts
 
-This was one of the early inspirations for gptme, a local-first alternative to ChatGPT's Code Interpreter, giving the LLM access to your terminal and local files.
+Claude Artifacts allows users to directly preview certain content, like HTML and React components, allowing to build small web apps with Claude.
+
+It is like a mini-version of Lovable.dev.
+
+Released Aug 27, 2024.
+
+.. rubric:: Desktop
+
+Claude Desktop is a desktop client for Claude.
+
+It supports MCP, allowing for a wide array of tools and resources to be used with it. (gptme also intends to support MCP)
+
+Released October 31st, 2024.
+
+ChatGPT
+^^^^^^^
+
+.. rubric:: Code Interpreter
+
+ChatGPT's Code Interpreter was one of the early inspirations for gptme as an open-source and local-first alternative, giving the LLM access to your terminal and local files.
 
 There's not much to compare here anymore, as gptme has evolved a lot since then (while Code Interpreter hasn't), but it's worth mentioning as it was one of the first projects in this space.
+
+Released July 6, 2023.
+
+.. rubric:: Canvas
+
+ChatGPT Canvas was OpenAI's response to Claude Artifacts (released ~1 month before).
+
+Released Oct 3, 2024.
