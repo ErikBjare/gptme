@@ -382,9 +382,8 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-desktop">Claude Desktop</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-projects">Claude Projects</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt-code-interpreter">ChatGPT Code Interpreter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude">Claude</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt">ChatGPT</a></li>
 </ul>
 </li>
 </ul>
@@ -504,6 +503,7 @@
 <li><p>Extensible tool system</p></li>
 <li><p>Highly customizable, aims to be simple to modify</p></li>
 </ul>
+<p>First commit: Mar 24, 2023.</p>
 </section>
 <section id="aider">
 <h3>Aider<a class="headerlink" href="#aider" title="Link to this heading">#</a></h3>
@@ -522,6 +522,7 @@
 <li><p>gptme is more general-purpose?</p></li>
 <li><p>gptme has wider array of tools?</p></li>
 </ul>
+<p>First commit: Apr 4, 2023.</p>
 </section>
 <section id="moatless-tools">
 <h3>Moatless Tools<a class="headerlink" href="#moatless-tools" title="Link to this heading">#</a></h3>
@@ -536,12 +537,13 @@
 </section>
 <section id="lovable-dev">
 <h3>Lovable.dev<a class="headerlink" href="#lovable-dev" title="Link to this heading">#</a></h3>
-<p><a class="reference external" href="https://lovable.dev">lovable.dev</a> (previously <cite>GPT Engineer</cite>) lets you build webapps fast by just prompting.</p>
+<p><a class="reference external" href="https://lovable.dev">lovable.dev</a> (previously <a class="reference external" href="https://gptengineer.app">GPT Engineer.app</a>) lets you build webapps fast using natural language.</p>
 <p>Key features:</p>
 <ul class="simple">
 <li><p>Builds frontends with ease, just by prompting</p></li>
 <li><p>LLM-powered no-code editor for frontends</p></li>
 <li><p>Git/GitHub integration, ability to import projects</p></li>
+<li><p>Supabase integration for backend support</p></li>
 </ul>
 <p>Differences to gptme:</p>
 <ul class="simple">
@@ -551,7 +553,7 @@
 <li><p>gptme is far from as good at building frontends</p></li>
 <li><p>gptme is not no-code, you still need to select your context yourself</p></li>
 </ul>
-<p>Disclaimer: gptme author has worked on this project too.</p>
+<p>Disclaimer: gptme author Erik was an early hire at Lovable.</p>
 </section>
 <section id="cursor">
 <h3>Cursor<a class="headerlink" href="#cursor" title="Link to this heading">#</a></h3>
@@ -559,21 +561,34 @@
 <p>Differences to gptme:</p>
 <ul class="simple">
 <li><p>gptme is in-terminal instead of in-vscode-fork</p></li>
-<li><p>gptme is extensible with tools, more general-purpose</p></li>
+<li><p>gptme is extensible with tools, more general-purpose
+- Less true now that Cursor supports MCP</p></li>
 </ul>
 </section>
-<section id="claude-desktop">
-<h3>Claude Desktop<a class="headerlink" href="#claude-desktop" title="Link to this heading">#</a></h3>
-<p>Claude Desktop is…</p>
+<section id="claude">
+<h3>Claude<a class="headerlink" href="#claude" title="Link to this heading">#</a></h3>
+<p>Anthropic’s Claude has gotten popular due to its excellent coding capabilities. It has also championed MCP as a way to extend its capabilities and solve the n-to-m problem of tool clients (Claude Desktop, Cursor) and servers (browser, shell, python).</p>
+<p class="rubric">Projects</p>
+<p>Claude Projects lets users upload their files and chat with them. It requires a Claude subscription.</p>
+<p>Released Jun 25, 2024.</p>
+<p class="rubric">Artifacts</p>
+<p>Claude Artifacts allows users to directly preview certain content, like HTML and React components, allowing to build small web apps with Claude.</p>
+<p>It is like a mini-version of Lovable.dev.</p>
+<p>Released Aug 27, 2024.</p>
+<p class="rubric">Desktop</p>
+<p>Claude Desktop is a desktop client for Claude.</p>
+<p>It supports MCP, allowing for a wide array of tools and resources to be used with it. (gptme also intends to support MCP)</p>
+<p>Released October 31st, 2024.</p>
 </section>
-<section id="claude-projects">
-<h3>Claude Projects<a class="headerlink" href="#claude-projects" title="Link to this heading">#</a></h3>
-<p>Claude projects let users upload their files and chat with them. It requires a Claude subscription.</p>
-</section>
-<section id="chatgpt-code-interpreter">
-<h3>ChatGPT Code Interpreter<a class="headerlink" href="#chatgpt-code-interpreter" title="Link to this heading">#</a></h3>
-<p>This was one of the early inspirations for gptme, a local-first alternative to ChatGPT’s Code Interpreter, giving the LLM access to your terminal and local files.</p>
+<section id="chatgpt">
+<h3>ChatGPT<a class="headerlink" href="#chatgpt" title="Link to this heading">#</a></h3>
+<p class="rubric">Code Interpreter</p>
+<p>ChatGPT’s Code Interpreter was one of the early inspirations for gptme as an open-source and local-first alternative, giving the LLM access to your terminal and local files.</p>
 <p>There’s not much to compare here anymore, as gptme has evolved a lot since then (while Code Interpreter hasn’t), but it’s worth mentioning as it was one of the first projects in this space.</p>
+<p>Released July 6, 2023.</p>
+<p class="rubric">Canvas</p>
+<p>ChatGPT Canvas was OpenAI’s response to Claude Artifacts (released ~1 month before).</p>
+<p>Released Oct 3, 2024.</p>
 </section>
 </section>
 </section>
@@ -631,9 +646,8 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-desktop">Claude Desktop</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude-projects">Claude Projects</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt-code-interpreter">ChatGPT Code Interpreter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude">Claude</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chatgpt">ChatGPT</a></li>
 </ul>
 </li>
 </ul>
