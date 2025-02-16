@@ -38,11 +38,16 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    bot
    finetuning
    custom_tool
+   api
+
+.. toctree::
+   :maxdepth: 2
+   :caption: About
+
+   alternatives
    arewetiny
    timeline
-   alternatives
    Changelog <https://github.com/ErikBjare/gptme/releases>
-   api
 
 .. toctree::
    :caption: External
