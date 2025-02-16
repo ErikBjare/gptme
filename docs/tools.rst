@@ -7,34 +7,32 @@ The tools can be grouped into the following categories:
 
 - Execution
 
-  - `Shell`_
-  - `Python`_
-  - `Tmux`_
-  - `Subagent`_
+  - `Shell`_ - Run shell commands
+  - `Python`_ - Run Python code interactively
+  - `Tmux`_ - Use tmux to run commands
+  - `Subagent`_ - Delegate task to a subagent
 
 - Files
 
-  - `Read`_
-  - `Save`_
-  - `Patch`_
+  - `Read`_ - Read files
+  - `Save`_ - Save whole files
+  - `Patch`_ - Patch files
 
 - Network
 
-  - `Browser`_
+  - `Browser`_ - Access the web
 
 - Vision
 
-  - `Screenshot`_
-  - `Vision`_
-  - `Computer`_
+  - `Vision`_ - View images
+  - `Screenshot`_ - Take screenshots
+  - `Computer`_ - Control the computer
 
-- Chat management
+- Other
 
-  - `Chats`_
-
-- Context management
-
-  - `RAG`_
+  - `Chats`_ - Search past conversations
+  - `RAG`_ - Retrieve documents and code
+  - `TTS`_ - Speech synthesis for responses
 
 Shell
 -----
@@ -85,6 +83,13 @@ Patch
     :members:
     :noindex:
 
+Vision
+------
+
+.. automodule:: gptme.tools.vision
+    :members:
+    :noindex:
+
 Screenshot
 ----------
 
@@ -96,13 +101,6 @@ Browser
 -------
 
 .. automodule:: gptme.tools.browser
-    :members:
-    :noindex:
-
-Vision
-------
-
-.. automodule:: gptme.tools.vision
     :members:
     :noindex:
 
