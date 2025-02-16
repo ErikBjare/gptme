@@ -10,7 +10,8 @@ eval[_-]results*
 
 # logs
 *.log
-*logs*
+*logs/
+logs*
 
 # fetched by make
 scripts/build_changelog.py
