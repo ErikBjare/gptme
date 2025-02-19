@@ -383,6 +383,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aider">Aider</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openhands">OpenHands</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude">Claude</a></li>
@@ -418,8 +419,8 @@
 <h2>Comparison<a class="headerlink" href="#comparison" title="Link to this heading">#</a></h2>
 <p>While we obviously like gptme, there are other great projects in the AI-assisted development space that provide similar but different capabilities, which be more what you are looking for.</p>
 <p>Here we will briefly introduce some we like, along with their key features.</p>
-<div class="pst-scrollable-table-container"><table class="table" id="id3">
-<caption><span class="caption-text">Comparison</span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<div class="pst-scrollable-table-container"><table class="table" id="id4">
+<caption><span class="caption-text">Comparison</span><a class="headerlink" href="#id4" title="Link to this table">#</a></caption>
 <colgroup>
 <col style="width: 31.2%" />
 <col style="width: 12.5%" />
@@ -460,25 +461,31 @@
 <td><p>Free</p></td>
 <td><p>✅</p></td>
 </tr>
-<tr class="row-even"><td><p>Lovable.dev</p></td>
+<tr class="row-even"><td><p>OpenHands</p></td>
+<td><p>CLI/Web</p></td>
+<td><p>General purpose</p></td>
+<td><p>Free</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lovable.dev</p></td>
 <td><p>Web app</p></td>
 <td><p>Frontend</p></td>
 <td><p>Credits</p></td>
 <td><p>❌</p></td>
 </tr>
-<tr class="row-odd"><td><p>Cursor</p></td>
+<tr class="row-even"><td><p>Cursor</p></td>
 <td><p>IDE fork</p></td>
 <td><p>Coding</p></td>
 <td><p>$20/mo</p></td>
 <td><p>❌</p></td>
 </tr>
-<tr class="row-even"><td><p>Claude Desktop</p></td>
+<tr class="row-odd"><td><p>Claude Desktop</p></td>
 <td><p>Desktop app</p></td>
 <td><p>General purpose</p></td>
 <td><p>$20/mo</p></td>
 <td><p>❌</p></td>
 </tr>
-<tr class="row-odd"><td><p>Claude Projects</p></td>
+<tr class="row-even"><td><p>Claude Projects</p></td>
 <td><p>Web app</p></td>
 <td><p>Chat with files</p></td>
 <td><p>$20/mo</p></td>
@@ -506,7 +513,7 @@
 <li><p>Extensible tool system</p></li>
 <li><p>Highly customizable, aims to be simple to modify</p></li>
 </ul>
-<p>First commit: Mar 24, 2023.</p>
+<p>First commit: March 24, 2023.</p>
 </section>
 <section id="aider">
 <h3>Aider<a class="headerlink" href="#aider" title="Link to this heading">#</a></h3>
@@ -525,7 +532,7 @@
 <li><p>gptme is more general-purpose?</p></li>
 <li><p>gptme has wider array of tools?</p></li>
 </ul>
-<p>First commit: Apr 4, 2023.</p>
+<p>First commit: April 4, 2023.</p>
 </section>
 <section id="moatless-tools">
 <h3>Moatless Tools<a class="headerlink" href="#moatless-tools" title="Link to this heading">#</a></h3>
@@ -537,6 +544,27 @@
 <li><p>Focus on specific development workflows</p></li>
 <li><p>Scores highly on SWE-Bench</p></li>
 </ul>
+</section>
+<section id="openhands">
+<h3>OpenHands<a class="headerlink" href="#openhands" title="Link to this heading">#</a></h3>
+<p><a class="reference external" href="https://github.com/All-Hands-AI/OpenHands">OpenHands</a> (formerly OpenDevin) is a leading open-source platform for software development agents, with impressive performance on benchmarks and a large community.</p>
+<p>Key features:</p>
+<ul class="simple">
+<li><p>Leading performance on SWE-bench (&gt;50% score)</p></li>
+<li><p>Can do anything a human developer can: write code, run commands, browse web</p></li>
+<li><p>Support for multiple LLM providers</p></li>
+<li><p>Both CLI and web interface</p></li>
+<li><p>Docker-based sandboxed execution</p></li>
+<li><p>Active development and large community (46.9k stars)</p></li>
+</ul>
+<p>Differences to gptme:</p>
+<ul class="simple">
+<li><p>More focused on software development</p></li>
+<li><p>Has web UI in addition to CLI</p></li>
+<li><p>Larger community and more active development</p></li>
+<li><p>Docker-based sandboxing vs gptme’s direct execution</p></li>
+</ul>
+<p>First commit: March 13, 2024.</p>
 </section>
 <section id="lovable-dev">
 <h3>Lovable.dev<a class="headerlink" href="#lovable-dev" title="Link to this heading">#</a></h3>
@@ -591,7 +619,7 @@
 <p>Released July 6, 2023.</p>
 <p class="rubric">Canvas</p>
 <p>ChatGPT Canvas was OpenAI’s response to Claude Artifacts (released ~1 month before).</p>
-<p>Released Oct 3, 2024.</p>
+<p>Released October 3, 2024.</p>
 </section>
 </section>
 </section>
@@ -647,6 +675,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gptme">gptme</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aider">Aider</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moatless-tools">Moatless Tools</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openhands">OpenHands</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#lovable-dev">Lovable.dev</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cursor">Cursor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#claude">Claude</a></li>
