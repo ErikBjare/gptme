@@ -2,6 +2,7 @@
 
 import logging
 import re
+import subprocess
 import urllib.parse
 from pathlib import Path
 
@@ -109,8 +110,42 @@ def read_text_file(path: Path) -> str | None:
         return None
 
 
+RE_GITHUB_ISSUE = re.compile(
+    r"^(?:https?://)?github\.com/([^/]+)/([^/]+)/issues/(\d+)$"
+)
+
+RE_GITHUB_PR = re.compile(r"^(?:https?://)?github\.com/([^/]+)/([^/]+)/pull/(\d+)$")
+
+
 def process_url(url: str) -> str:
     """Process a URL and return its contents if available."""
+    # TODO: check if url has special handler, like GitHub issues and other things that can be better retrieved with `gh`
+    if (m := RE_GITHUB_ISSUE.match(url)) and has_tool("gh"):
+        owner, repo, issue = m.groups()
+
+        cmd = f"gh issue view --repo {owner}/{repo} {issue} --comments"
+        try:
+            content = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True, check=True
+            ).stdout
+            return f"\n\n```{cmd}\n{content}```"
+        except subprocess.CalledProcessError as e:
+            logger.warning(f"Failed to read GitHub issue {url}: {e}")
+            return ""
+
+    if (m := RE_GITHUB_PR.match(url)) and has_tool("gh"):
+        owner, repo, pr = m.groups()
+
+        cmd = f"gh pr view --repo {owner}/{repo} {pr} --comments"
+        try:
+            content = subprocess.run(
+                cmd, shell=True, capture_output=True, text=True, check=True
+            ).stdout
+            return f"\n\n```{cmd}\n{content}```"
+        except subprocess.CalledProcessError as e:
+            logger.warning(f"Failed to read GitHub PR {url}: {e}")
+            return ""
+
     if not has_tool("browser"):
         logger.warning("Browser tool not available, skipping URL read")
         return ""
