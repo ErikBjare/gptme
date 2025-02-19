@@ -57,6 +57,11 @@ Here we will briefly introduce some we like, along with their key features.
      - Coding
      - Free
      - ✅
+   * - OpenHands
+     - CLI/Web
+     - General purpose
+     - Free
+     - ✅
    * - Lovable.dev
      - Web app
      - Frontend
@@ -101,7 +106,7 @@ Key features:
 - Extensible tool system
 - Highly customizable, aims to be simple to modify
 
-First commit: Mar 24, 2023.
+First commit: March 24, 2023.
 
 Aider
 ^^^^^
@@ -122,7 +127,7 @@ Differences to gptme:
 - gptme is more general-purpose?
 - gptme has wider array of tools?
 
-First commit: Apr 4, 2023.
+First commit: April 4, 2023.
 
 Moatless Tools
 ^^^^^^^^^^^^^^
@@ -135,6 +140,29 @@ Key features:
 - Integration with popular development environments
 - Focus on specific development workflows
 - Scores highly on SWE-Bench
+
+OpenHands
+^^^^^^^^^
+
+`OpenHands <https://github.com/All-Hands-AI/OpenHands>`_ (formerly OpenDevin) is a leading open-source platform for software development agents, with impressive performance on benchmarks and a large community.
+
+Key features:
+
+- Leading performance on SWE-bench (>50% score)
+- Can do anything a human developer can: write code, run commands, browse web
+- Support for multiple LLM providers
+- Both CLI and web interface
+- Docker-based sandboxed execution
+- Active development and large community (46.9k stars)
+
+Differences to gptme:
+
+- More focused on software development
+- Has web UI in addition to CLI
+- Larger community and more active development
+- Docker-based sandboxing vs gptme's direct execution
+
+First commit: March 13, 2024.
 
 Lovable.dev
 ^^^^^^^^^^^
@@ -213,4 +241,4 @@ Released July 6, 2023.
 
 ChatGPT Canvas was OpenAI's response to Claude Artifacts (released ~1 month before).
 
-Released Oct 3, 2024.
+Released October 3, 2024.
