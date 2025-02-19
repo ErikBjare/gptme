@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from gptme.chat import _find_potential_paths
+from gptme.util.paths import find_potential_paths
 
 
 def test_find_potential_paths(tmp_path):
@@ -33,7 +33,7 @@ def test_find_potential_paths(tmp_path):
         More text with `wrapped/path` and path.with.dots
         """
 
-        paths = _find_potential_paths(content)
+        paths = find_potential_paths(content)
 
         # Check expected paths are found
         assert "/absolute/path" in paths
@@ -57,10 +57,10 @@ def test_find_potential_paths(tmp_path):
 
 def test_find_potential_paths_empty():
     # Test with empty content
-    assert _find_potential_paths("") == []
+    assert find_potential_paths("") == []
 
     # Test with no paths
-    assert _find_potential_paths("just some text") == []
+    assert find_potential_paths("just some text") == []
 
 
 def test_find_potential_paths_punctuation():
@@ -72,7 +72,7 @@ def test_find_potential_paths_punctuation():
     Visit https://example.com,
     """
 
-    paths = _find_potential_paths(content)
+    paths = find_potential_paths(content)
     assert "~/file.txt" in paths
     assert "/path/to/file" in paths
     assert "./local/path" in paths
