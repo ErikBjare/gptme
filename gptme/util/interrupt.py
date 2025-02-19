@@ -7,7 +7,7 @@ import time
 
 from . import console
 
-interruptible = False
+_interruptible_state = False
 last_interrupt_time = 0.0
 
 
@@ -22,7 +22,7 @@ def handle_keyboard_interrupt(signum, frame):  # pragma: no cover
     # if testing with pytest
     testing = bool(os.getenv("PYTEST_CURRENT_TEST"))
 
-    if interruptible or testing:
+    if _interruptible_state or testing:
         raise KeyboardInterrupt
 
     # if current_time - last_interrupt_time <= timeout:
@@ -38,10 +38,24 @@ def handle_keyboard_interrupt(signum, frame):  # pragma: no cover
 
 
 def set_interruptible():
-    global interruptible
-    interruptible = True
+    global _interruptible_state
+    _interruptible_state = True
 
 
 def clear_interruptible():
-    global interruptible
-    interruptible = False
+    global _interruptible_state
+    _interruptible_state = False
+
+
+class Interruptible:
+    """Context manager for handling keyboard interrupts."""
+
+    def __enter__(self):
+        set_interruptible()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        clear_interruptible()
+        if exc_type is KeyboardInterrupt:
+            console.log("Interrupted. Stopping current execution.")
+            return True  # Suppress the exception
