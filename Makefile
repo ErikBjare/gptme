@@ -124,7 +124,11 @@ release: version dist/CHANGELOG.md
 		git push origin master $${VERSION} && \
 		gh release create $${VERSION} -t $${VERSION} -F dist/CHANGELOG.md
 
-clean: clean-docs clean-site clean-test
+clean: clean-docs clean-site clean-test clean-pyc
+
+clean-pyc:
+	find . -name "*.pyc" -delete
+	find . -name "__pycache__" -type d -exec rm -r {} + 2>/dev/null || true
 
 clean-site:
 	rm -rf site/dist
