@@ -63,6 +63,7 @@ def use_checks() -> bool:
 def file_to_display_path(f: Path, workspace: Path | None = None) -> Path:
     """
     Determine how to display the path:
+
     - If file and pwd is in workspace, show path relative to pwd
     - Otherwise, show absolute path
     """
@@ -332,6 +333,17 @@ def run_precommit_checks() -> str | None:
         logger.info(
             f"Pre-commit checks completed in {time.monotonic() - start_time:.2f}s"
         )
+
+
+def autocommit() -> Message:
+    """
+    Auto-commit staged changes.
+    """
+    # TODO: auto-stage files modified by gptme
+    # TODO: add a review step?
+    # TODO: generate commit message from diff + conversation history
+    # TODO: enable with GPTME_AUTOCOMMIT=true
+    return Message("system", "Auto-commit not implemented yet")
 
 
 def enrich_messages_with_context(
