@@ -70,53 +70,18 @@ def chat(
 
     Callable from other modules.
     """
-    # Set initial terminal title with conversation name
-    conv_name = logdir.name
-    set_current_conv_name(conv_name)
-
-    # init
-    init(model, interactive, tool_allowlist)
-
-    modelmeta = get_model(model)
-    if not modelmeta.supports_streaming and stream:
-        logger.info(
-            "Disabled streaming for '%s/%s' model (not supported)",
-            modelmeta.provider,
-            modelmeta.model,
-        )
-        stream = False
-
-    console.log(f"Using logdir {path_with_tilde(logdir)}")
-    manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
-
-    config = get_config()
-    tool_format_with_default: ToolFormat = tool_format or cast(
-        ToolFormat, config.get_env("TOOL_FORMAT", "markdown")
+    # Initialize chat session
+    manager, workspace, tool_format_with_default, stream = _init_chat(
+        logdir=logdir,
+        model=model,
+        interactive=interactive,
+        tool_allowlist=tool_allowlist,
+        initial_msgs=initial_msgs,
+        tool_format=tool_format,
+        workspace=workspace,
+        stream=stream,
+        show_hidden=show_hidden,
     )
-
-    # By defining the tool_format at the last moment we ensure we can use the
-    # configuration for subagent
-    set_tool_format(tool_format_with_default)
-
-    # Initialize workspace
-    workspace = _init_workspace(workspace, logdir)
-    console.log(f"Using workspace at {path_with_tilde(workspace)}")
-    os.chdir(workspace)
-
-    workspace_prompt = get_workspace_prompt(workspace)
-    # FIXME: this is hacky
-    # NOTE: needs to run after the workspace is set
-    # check if message is already in log, such as upon resume
-    if (
-        workspace_prompt
-        and workspace_prompt not in [m.content for m in manager.log]
-        and "user" not in [m.role for m in manager.log]
-    ):
-        manager.append(Message("system", workspace_prompt, hide=True, quiet=True))
-
-    # print log
-    manager.log.print(show_hidden=show_hidden)
-    console.print("--- ^^^ past messages ^^^ ---")
 
     def confirm_func(msg) -> bool:
         return True if no_confirm else ask_execute(msg)
