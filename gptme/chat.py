@@ -44,6 +44,8 @@ from .util.paths import (
 )
 from .util.prompt import add_history, get_input
 from .util.terminal import set_current_conv_name, terminal_state_title
+from scripts.auto_rename_logs import auto_rename_logs
+from gptme.util.generate_name import is_generated_name
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,7 @@ def chat(
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
     tool_format: ToolFormat | None = None,
+    auto_rename: bool | None = None,
 ) -> None:
     """
     Run the chat loop.
@@ -70,6 +73,10 @@ def chat(
 
     Callable from other modules.
     """
+    # Get auto_rename from environment if not set
+    if auto_rename is None:
+        auto_rename = os.environ.get("GPTME_AUTO_RENAME", "").lower() in ["1", "true"]
+
     # Initialize chat session
     manager, workspace, tool_format_with_default, stream = _init_chat(
         logdir=logdir,
@@ -96,6 +103,7 @@ def chat(
             confirm_func,
             tool_format_with_default,
             model,
+            auto_rename=auto_rename,
         )
 
     # Exit if non-interactive
@@ -112,6 +120,7 @@ def chat(
             confirm_func,
             tool_format=tool_format_with_default,
             workspace=workspace,
+            auto_rename=auto_rename,
         ):  # pragma: no cover
             manager.append(msg)
             # run any user-commands, if msg is from user
@@ -239,6 +248,7 @@ def _process_prompt(
     confirm_func: ConfirmFunc,
     tool_format: ToolFormat,
     model: str | None = None,
+    auto_rename: bool = True,
 ) -> None:
     """Process a single prompt message and its responses."""
     # Process and append the initial message
@@ -248,6 +258,15 @@ def _process_prompt(
     # Handle user commands
     if _is_executable_command(msg, manager, confirm_func):
         return
+
+    # Auto-rename after first user message if name is generated
+    if (
+        auto_rename
+        and msg.role == "user"
+        and is_generated_name(manager.name)
+        and any(m.role == "assistant" for m in manager.log)  # Has assistant response
+    ):
+        auto_rename_logs(dry_run=False, limit=1)
 
     # Generate and process responses
     while True:
@@ -334,6 +353,7 @@ def step(
     tool_format: ToolFormat = "markdown",
     workspace: Path | None = None,
     model: str | None = None,
+    auto_rename: bool = True,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
     if isinstance(log, list):
