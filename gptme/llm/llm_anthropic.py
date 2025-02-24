@@ -1,7 +1,7 @@
 import base64
 import logging
 import time
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from functools import wraps
 from pathlib import Path
 from typing import (
@@ -11,7 +11,6 @@ from typing import (
     TypedDict,
     cast,
 )
-from collections.abc import Iterable
 
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
@@ -21,7 +20,6 @@ if TYPE_CHECKING:
     # noreorder
     import anthropic.types  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
-
 
 logger = logging.getLogger(__name__)
 
@@ -109,14 +107,19 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         messages, tools
     )
 
+    use_thinking = True if model in ["claude-3-7-sonnet-20250219"] else False
+
     response = _anthropic.messages.create(
         model=model,
         messages=messages_dicts,
         system=system_messages,
-        temperature=TEMPERATURE,
-        top_p=TOP_P,
+        temperature=TEMPERATURE if not use_thinking else 1,
+        top_p=TOP_P if not use_thinking else NOT_GIVEN,
         max_tokens=4096,
         tools=tools_dict if tools_dict else NOT_GIVEN,
+        thinking={"type": "enabled", "budget_tokens": 16000}
+        if use_thinking
+        else NOT_GIVEN,
     )
     content = response.content
     logger.debug(response.usage)
@@ -125,6 +128,8 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     for block in content:
         if block.type == "text":
             parsed_block.append(block.text)
+        if block.type == "thinking":
+            parsed_block.append(f"<think>\n{block.thinking}\n</think>")
         elif block.type == "tool_use":
             parsed_block.append(f"\n@{block.name}({block.id}): {block.input}")
         else:
@@ -145,14 +150,19 @@ def stream(
         messages, tools
     )
 
+    use_thinking = True if model in ["claude-3-7-sonnet-20250219"] else False
+
     with _anthropic.messages.stream(
         model=model,
         messages=messages_dicts,
         system=system_messages,
-        temperature=TEMPERATURE,
-        top_p=TOP_P,
-        max_tokens=4096,
+        temperature=TEMPERATURE if not use_thinking else 1,
+        top_p=TOP_P if not use_thinking else NOT_GIVEN,
+        max_tokens=20000,  # TODO: set depending on model
         tools=tools_dict if tools_dict else NOT_GIVEN,
+        thinking={"type": "enabled", "budget_tokens": 16000}
+        if use_thinking
+        else NOT_GIVEN,
     ) as stream:
         for chunk in stream:
             match chunk.type:
@@ -162,6 +172,8 @@ def stream(
                     if isinstance(block, anthropic.types.ToolUseBlock):
                         tool_use = block
                         yield f"\n@{tool_use.name}({tool_use.id}): "
+                    elif isinstance(block, anthropic.types.ThinkingDelta):
+                        yield "<think>\n"
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -172,12 +184,16 @@ def stream(
                     delta = chunk.delta
                     if isinstance(delta, anthropic.types.TextDelta):
                         yield delta.text
+                    elif isinstance(delta, anthropic.types.ThinkingDelta):
+                        yield delta.thinking
                     elif isinstance(delta, anthropic.types.InputJSONDelta):
                         yield delta.partial_json
                     else:
                         logger.warning("Unknown delta type: %s", delta)
                 case "content_block_stop":
-                    pass
+                    stop_chunk = cast(anthropic.types.RawContentBlockStopEvent, chunk)
+                    if isinstance(stop_chunk, anthropic.types.ThinkingBlock):
+                        yield "\n</think>"
                 case "text":
                     # full text message
                     pass
