@@ -226,7 +226,13 @@ def set_default_model(model: str | ModelMeta) -> None:
     DEFAULT_MODEL = modelmeta
 
 
-warnings = set()
+_logged_warnings = set()
+
+
+def log_warn_once(msg: str):
+    if msg not in _logged_warnings:
+        logger.warning(msg)
+        _logged_warnings.add(msg)
 
 
 def get_model(model: str | None = None) -> ModelMeta:
@@ -244,12 +250,9 @@ def get_model(model: str | None = None) -> ModelMeta:
         provider, model = cast(tuple[Provider, str], model.split("/", 1))
         if provider not in MODELS or model not in MODELS[provider]:
             if provider not in ["openrouter", "local"]:
-                warning = (
+                log_warn_once(
                     f"Unknown model: using fallback metadata for {provider}/{model}"
                 )
-                if warning not in warnings:
-                    logger.warning(warning)
-                    warnings.add(warning)
             return ModelMeta(provider, model, context=128_000)
     else:
         # try to find model in all providers
