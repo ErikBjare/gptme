@@ -223,6 +223,14 @@ def get_default_model() -> ModelMeta | None:
     return DEFAULT_MODEL
 
 
+def get_default_model_summary() -> ModelMeta | None:
+    if not DEFAULT_MODEL:
+        return None
+    provider = DEFAULT_MODEL.provider
+    assert provider != "unknown"
+    return get_model(f"{provider}/{get_summary_model(provider)}")
+
+
 def set_default_model(model: str | ModelMeta) -> None:
     modelmeta = model if isinstance(model, ModelMeta) else get_model(model)
     assert modelmeta

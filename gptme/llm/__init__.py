@@ -25,8 +25,7 @@ from .models import (
     MODELS,
     PROVIDERS_OPENAI,
     Provider,
-    get_model,
-    get_summary_model,
+    get_default_model_summary,
 )
 
 logger = logging.getLogger(__name__)
@@ -213,11 +212,8 @@ def _summarize_str(content: str) -> str:
         Message("user", content=f"Summarize this:\n{content}"),
     ]
 
-    # get default provider
-    provider: Provider = get_model().provider  # type: ignore
-
-    # get summary model for provider
-    model = get_model(f"{provider}/{get_summary_model(provider)}")
+    model = get_default_model_summary()
+    assert model, "No default model set"
 
     if len_tokens(messages, model.model) > model.context:
         raise ValueError(
@@ -271,9 +267,9 @@ IMPORTANT: output only the name, no preamble or postamble.
         ]
     )
 
-    provider: Provider = get_model().provider  # type: ignore
-    model = f"{provider}/{get_summary_model(provider)}"
-    name = _chat_complete(msgs, model, None).strip()
+    model = get_default_model_summary()
+    assert model, "No default model set"
+    name = _chat_complete(msgs, model.full, None).strip()
     return name
 
 
