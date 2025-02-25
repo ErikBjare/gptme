@@ -378,7 +378,9 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-model">Recommended Model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-evals">Available Evals</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>
@@ -395,31 +397,52 @@
   <section id="evals">
 <h1>Evals<a class="headerlink" href="#evals" title="Link to this heading">#</a></h1>
 <p>gptme provides LLMs with a wide variety of tools, but how well do models make use of them? Which tasks can they complete, and which ones do they struggle with? How far can they get on their own, without any human intervention?</p>
-<p>To answer these questions, we have created a evaluation suite that tests the capabilities of LLMs on a wide variety of tasks.</p>
+<p>To answer these questions, we have created an evaluation suite that tests the capabilities of LLMs on a wide variety of tasks.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The evaluation suite is still under development, but the eval harness is mostly complete.</p>
+<p>The evaluation suite is still tiny and under development, but the eval harness is fully functional.</p>
 </div>
+<section id="recommended-model">
+<h2>Recommended Model<a class="headerlink" href="#recommended-model" title="Link to this heading">#</a></h2>
+<p>The recommended model is <strong>Claude 3.7 Sonnet</strong> (<code class="docutils literal notranslate"><span class="pre">anthropic/claude-3-7-sonnet-20250219</span></code>) for its:</p>
+<ul class="simple">
+<li><p>Strong coder capabilities</p></li>
+<li><p>Strong performance across all tool types</p></li>
+<li><p>Reasoning capabilities</p></li>
+<li><p>Vision &amp; computer use capabilities</p></li>
+</ul>
+<p>Decent alternatives include:</p>
+<ul class="simple">
+<li><p>GPT-4o (<code class="docutils literal notranslate"><span class="pre">openai/gpt-4o</span></code>)</p></li>
+<li><p>Llama 3.1 405B (<code class="docutils literal notranslate"><span class="pre">openrouter/meta-llama/llama-3.1-405b-instruct</span></code>)</p></li>
+<li><p>DeepSeek V3 (<code class="docutils literal notranslate"><span class="pre">deepseek/deepseek-chat</span></code>)</p></li>
+<li><p>DeepSeek R1 (<code class="docutils literal notranslate"><span class="pre">deepseek/deepseek-reasoner</span></code>)</p></li>
+</ul>
+</section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
-<p>You can run the simple <code class="docutils literal notranslate"><span class="pre">hello</span></code> eval with gpt-4o like this:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o
+<p>You can run the simple <code class="docutils literal notranslate"><span class="pre">hello</span></code> eval with Claude 3.7 Sonnet like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>anthropic/claude-3-7-sonnet-20250219
 </pre></div>
 </div>
 <p>However, we recommend running it in Docker to improve isolation and reproducibility:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>build-docker
 docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-e<span class="w"> </span><span class="s2">&quot;OPENAI_API_KEY=&lt;your api key&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-e<span class="w"> </span><span class="s2">&quot;ANTHROPIC_API_KEY=&lt;your api key&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/eval_results:/app/eval_results<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o
+<span class="w">    </span>gptme-eval<span class="w"> </span>hello<span class="w"> </span>--model<span class="w"> </span>anthropic/claude-3-7-sonnet-20250219
 </pre></div>
 </div>
+</section>
+<section id="available-evals">
+<h2>Available Evals<a class="headerlink" href="#available-evals" title="Link to this heading">#</a></h2>
+<p>The current evaluations test basic tool use in gptme, such as the ability to: read, write, patch files; run code in ipython, commands in the shell; use git and create new projects with npm and cargo. It also has basic tests for web browsing and data extraction.</p>
 </section>
 <section id="results">
 <h2>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h2>
 <p>Here are the results of the evals we have run so far:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ gptme-eval eval_results/*/eval_results.csv
-[20:00:38] Browser tool available (using playwright)                            
+[20:10:01] Browser tool available (using playwright)                            
 Model                                          hello           hello-patch     hello-ask       prime100        init-git         init-rust      whois-superuserlabs-ceo
 ---------------------------------------------  --------------  --------------  --------------  --------------  ---------------  -------------  -------------------------
 anthropic/claude-3-5-haiku-20241022            ✅ 55/57 473tk  ✅ 56/57 386tk  ✅ 56/57 468tk  ✅ 56/57 912tk  ✅ 54/56 922tk   ❓ N/A         ✅ 1/1 2619tk
@@ -517,7 +540,9 @@ nousresearch/hermes-3-llama-3.1-70b            ❌ 0/2 173tk    ❌ 0/2 187tk   
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-model">Recommended Model</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-evals">Available Evals</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-evals">Other evals</a></li>
 </ul>

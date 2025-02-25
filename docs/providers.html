@@ -382,7 +382,8 @@
                   
   <section id="providers">
 <h1>Providers<a class="headerlink" href="#providers" title="Link to this heading">#</a></h1>
-<p>We support several LLM providers, including OpenAI, Anthropic, OpenRouter, Deepseek, Azure, and any OpenAI-compatible server (e.g. <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, <code class="docutils literal notranslate"><span class="pre">llama-cpp-python</span></code>).</p>
+<p>We support LLMs from several providers, including OpenAI, Anthropic, OpenRouter, Deepseek, Azure, and any OpenAI-compatible server (e.g. <code class="docutils literal notranslate"><span class="pre">ollama</span></code>, <code class="docutils literal notranslate"><span class="pre">llama-cpp-python</span></code>).</p>
+<p>You can find our model recommendations on the <a class="reference internal" href="evals.html"><span class="doc">Evals</span></a> page.</p>
 <p>To select a provider and model, run <code class="docutils literal notranslate"><span class="pre">gptme</span></code> with the <code class="docutils literal notranslate"><span class="pre">-m</span></code>/<code class="docutils literal notranslate"><span class="pre">--model</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;/&lt;model&gt;</span></code>, for example:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>gptme<span class="w"> </span>--model<span class="w"> </span>openai/gpt-4o<span class="w"> </span><span class="s2">&quot;hello&quot;</span>
 gptme<span class="w"> </span>--model<span class="w"> </span>anthropic<span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="w">  </span><span class="c1"># if model part unspecified, will fall back to the provider default</span>
