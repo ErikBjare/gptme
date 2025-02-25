@@ -354,6 +354,9 @@ def llm_suggest(text: str) -> list[str]:
     from ..llm import _chat_complete  # fmt: skip
     from ..message import Message  # fmt: skip
 
+    model = get_default_model()
+    assert model, "No model loaded"
+
     enabled = os.environ.get("GPTME_SUGGEST_LLM") in ["1", "true"]
     if enabled:
         content = _chat_complete(
@@ -367,7 +370,7 @@ Only 10 lines.""",
                 ),
                 Message("user", text),
             ],
-            model=get_default_model().full,
+            model=model.full,
             tools=[],
         )
         return content.split("\n")

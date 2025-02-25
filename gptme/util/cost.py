@@ -6,6 +6,7 @@ def _tokens_inout(msgs: list[Message]) -> tuple[int, int]:
     from ..llm.models import get_default_model  # fmt: skip
 
     model = get_default_model()
+    assert model is not None, "No model loaded"
     tokens_in, tokens_out = len_tokens(msgs[:-1], model.model), 0
     if msgs[-1].role == "assistant":
         tokens_out = len_tokens(msgs[-1], model.model)

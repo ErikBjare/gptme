@@ -194,7 +194,8 @@ call_id = "{self.call_id}"
         """Get the input cost of the message in USD."""
         from .llm.models import get_model  # noreorder
 
-        m = get_model(model or get_default_model().full)
+        m = get_model(model) if model else get_default_model()
+        assert m, "No model specified or loaded"
         tok = len_tokens(self, f"{m.provider}/{m.model}")
         price = (m.price_output if output else m.price_input) / 1_000_000
         return tok * price

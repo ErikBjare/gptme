@@ -107,6 +107,7 @@ def limit_log(log: list[Message]) -> list[Message]:
     Will always pick the first few system messages.
     """
     model = get_default_model()
+    assert model, "No model loaded"
 
     # Always pick the first system messages
     initial_system_msgs = []
