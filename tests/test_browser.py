@@ -4,21 +4,23 @@ import pytest
 playwright = pytest.importorskip("playwright")
 
 # noreorder
-from gptme.tools.browser import read_url  # fmt: skip
+from gptme.tools.browser import read_url, search  # fmt: skip
 
 
 # FIXME: Broken? ~~Seems to work, for now~~ edit: not anymore
-# @pytest.mark.slow
-# def test_search_ddg():
-#     results = search("test", "duckduckgo")
-#     assert "1." in results, f"{results=}"
+@pytest.mark.skip
+@pytest.mark.slow
+def test_search_ddg():
+    results = search("test", "duckduckgo")
+    assert "1." in results, f"{results=}"
 
 
 # FIXME: Broken, sometimes hits CAPTCHA
-# @pytest.mark.slow
-# def test_search_google():
-#     results = search("test", "google")
-#     assert "1." in results, f"{results=}"
+@pytest.mark.skip
+@pytest.mark.slow
+def test_search_google():
+    results = search("test", "google")
+    assert "1." in results, f"{results=}"
 
 
 @pytest.mark.slow
