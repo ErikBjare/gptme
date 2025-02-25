@@ -94,12 +94,10 @@ def prompt_gptme(
      - Not mention tools which may not be loaded (browser, vision)
      - Mention the ability to self-correct and ask clarifying questions
     """
-    from .llm.models import get_default_model  # fmt: skip
-
-    model_meta = get_model(model) if model else get_default_model()
+    model_meta = get_model(model) if model else None
 
     # use <thinking> tags as a fallback if the model doesn't natively support reasoning
-    use_thinking_tags = not model_meta.supports_reasoning
+    use_thinking_tags = not model_meta or not model_meta.supports_reasoning
 
     default_base_prompt = f"""
 You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs. {('Currently using model: ' + model_meta.full) if model_meta else ''}
