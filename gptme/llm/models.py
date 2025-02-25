@@ -85,11 +85,14 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
     "openai": OPENAI_MODELS,
     # https://docs.anthropic.com/en/docs/about-claude/models
     "anthropic": {
-        "claude-3-opus-20240229": {
+        "claude-3-7-sonnet-20250219": {
             "context": 200_000,
-            "max_output": 4096,
-            "price_input": 15,
-            "price_output": 75,
+            # TODO: supports beta header `output-128k-2025-02-19` for 128k output option
+            "max_output": 8192,
+            "price_input": 3,
+            "price_output": 15,
+            "supports_vision": True,
+            "knowledge_cutoff": datetime(2024, 10, 1),
         },
         "claude-3-5-sonnet-20241022": {
             "context": 200_000,
@@ -120,6 +123,12 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_input": 0.25,
             "price_output": 1.25,
             "knowledge_cutoff": datetime(2024, 4, 1),
+        },
+        "claude-3-opus-20240229": {
+            "context": 200_000,
+            "max_output": 4096,
+            "price_input": 15,
+            "price_output": 75,
         },
     },
     # https://ai.google.dev/gemini-api/docs/models/gemini#gemini-1.5-flash
