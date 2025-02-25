@@ -219,7 +219,9 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
 }
 
 
-def get_default_model() -> ModelMeta | None:
+def get_default_model() -> ModelMeta:
+    if not DEFAULT_MODEL:
+        raise ValueError("Default model not set, use set_default_model")
     return DEFAULT_MODEL
 
 
@@ -239,11 +241,7 @@ def log_warn_once(msg: str):
         _logged_warnings.add(msg)
 
 
-def get_model(model: str | None = None) -> ModelMeta:
-    if model is None:
-        assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
-        return DEFAULT_MODEL
-
+def get_model(model: str) -> ModelMeta:
     # if only provider is given, get recommended model
     if model in PROVIDERS:
         provider = cast(Provider, model)

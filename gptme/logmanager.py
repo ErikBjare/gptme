@@ -356,7 +356,8 @@ def prepare_messages(
     - Enhances it with context such as file contents
     - Transforms it to the format expected by LLM providers
     """
-    from .llm.models import get_model  # fmt: skip
+
+    from gptme.llm.models import get_default_model  # fmt: skip
 
     # Enrich with enabled context enhancements (RAG, fresh context)
     msgs = enrich_messages_with_context(msgs, workspace)
@@ -364,7 +365,7 @@ def prepare_messages(
     # Then reduce and limit as before
     msgs_reduced = list(reduce_log(msgs))
 
-    model = get_model()
+    model = get_default_model()
     if (len_from := len_tokens(msgs, model.model)) != (
         len_to := len_tokens(msgs_reduced, model.model)
     ):

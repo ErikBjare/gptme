@@ -94,7 +94,9 @@ def prompt_gptme(
      - Not mention tools which may not be loaded (browser, vision)
      - Mention the ability to self-correct and ask clarifying questions
     """
-    model_meta = get_model(model)
+    from .llm.models import get_default_model  # fmt: skip
+
+    model_meta = get_model(model) if model else get_default_model()
 
     # use <thinking> tags as a fallback if the model doesn't natively support reasoning
     use_thinking_tags = not model_meta.supports_reasoning

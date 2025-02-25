@@ -106,7 +106,7 @@ def limit_log(log: list[Message]) -> list[Message]:
     then removes the last message to get below the limit.
     Will always pick the first few system messages.
     """
-    model = get_model()
+    model = get_default_model()
 
     # Always pick the first system messages
     initial_system_msgs = []

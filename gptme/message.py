@@ -14,6 +14,8 @@ from rich.syntax import Syntax
 from tomlkit._utils import escape_string
 from typing_extensions import Self
 
+from gptme.llm.models import get_default_model
+
 from .codeblock import Codeblock
 from .constants import ROLE_COLOR
 from .util import console, get_tokenizer
@@ -192,7 +194,7 @@ call_id = "{self.call_id}"
         """Get the input cost of the message in USD."""
         from .llm.models import get_model  # noreorder
 
-        m = get_model(model)
+        m = get_model(model or get_default_model().full)
         tok = len_tokens(self, f"{m.provider}/{m.model}")
         price = (m.price_output if output else m.price_input) / 1_000_000
         return tok * price
