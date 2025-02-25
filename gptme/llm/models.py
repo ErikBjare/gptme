@@ -226,6 +226,9 @@ def set_default_model(model: str | ModelMeta) -> None:
     DEFAULT_MODEL = modelmeta
 
 
+warnings = set()
+
+
 def get_model(model: str | None = None) -> ModelMeta:
     if model is None:
         assert DEFAULT_MODEL, "Default model not set, set it with set_default_model()"
@@ -241,9 +244,12 @@ def get_model(model: str | None = None) -> ModelMeta:
         provider, model = cast(tuple[Provider, str], model.split("/", 1))
         if provider not in MODELS or model not in MODELS[provider]:
             if provider not in ["openrouter", "local"]:
-                logger.info(
-                    f"Using fallback metadata for unknown model {model} from {provider}"
+                warning = (
+                    f"Unknown model: using fallback metadata for {provider}/{model}"
                 )
+                if warning not in warnings:
+                    logger.warning(warning)
+                    warnings.add(warning)
             return ModelMeta(provider, model, context=128_000)
     else:
         # try to find model in all providers
