@@ -50,6 +50,7 @@ class ModelMeta:
     max_output: int | None = None
     supports_streaming: bool = True
     supports_vision: bool = False
+    supports_reasoning: bool = False  # models which support reasoning do not need prompting to use <thinking> tags
 
     # price in USD per 1M tokens
     # if price is not set, it is assumed to be 0
@@ -66,12 +67,14 @@ class ModelMeta:
 class _ModelDictMeta(TypedDict):
     context: int
     max_output: NotRequired[int]
-    supports_streaming: NotRequired[bool]
-    supports_vision: NotRequired[bool]
 
     # price in USD per 1M tokens
     price_input: NotRequired[float]
     price_output: NotRequired[float]
+
+    supports_streaming: NotRequired[bool]
+    supports_vision: NotRequired[bool]
+    supports_reasoning: NotRequired[bool]
 
     knowledge_cutoff: NotRequired[datetime]
 
@@ -92,6 +95,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_input": 3,
             "price_output": 15,
             "supports_vision": True,
+            "supports_reasoning": True,
             "knowledge_cutoff": datetime(2024, 10, 1),
         },
         "claude-3-5-sonnet-20241022": {

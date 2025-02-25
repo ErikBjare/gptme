@@ -130,7 +130,7 @@ def _reply_stream(
             if not output:  # first character
                 first_token_time = time.time()
                 print_clear()
-                rprint(f"{PROMPT_ASSISTANT}: ", end="")
+                rprint(f"{PROMPT_ASSISTANT}: \n", end="")
 
             # Check for thinking tags before printing a newline
             if char == "\n" or not output:

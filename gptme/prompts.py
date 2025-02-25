@@ -15,6 +15,7 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config, get_project_config
 from .dirs import get_project_git_dir
+from .llm.models import get_model
 from .message import Message
 from .tools import ToolFormat
 from .util import document_prompt_function
@@ -28,13 +29,14 @@ def get_prompt(
     prompt: PromptType | str = "full",
     interactive: bool = True,
     tool_format: ToolFormat = "markdown",
+    model: str | None = None,
 ) -> Message:
     """
     Get the initial system prompt.
     """
     msgs: Iterable
     if prompt == "full":
-        msgs = prompt_full(interactive, tool_format)
+        msgs = prompt_full(interactive, tool_format, model)
     elif prompt == "short":
         msgs = prompt_short(interactive, tool_format)
     else:
@@ -56,10 +58,10 @@ def _join_messages(msgs: list[Message]) -> Message:
 
 
 def prompt_full(
-    interactive: bool, tool_format: ToolFormat
+    interactive: bool, tool_format: ToolFormat, model: str | None
 ) -> Generator[Message, None, None]:
     """Full prompt to start the conversation."""
-    yield from prompt_gptme(interactive)
+    yield from prompt_gptme(interactive, model)
     yield from prompt_tools(tool_format=tool_format)
     if interactive:
         yield from prompt_user()
@@ -79,7 +81,9 @@ def prompt_short(
     yield from prompt_project()
 
 
-def prompt_gptme(interactive: bool) -> Generator[Message, None, None]:
+def prompt_gptme(
+    interactive: bool, model: str | None = None
+) -> Generator[Message, None, None]:
     """
     Base system prompt for gptme.
 
@@ -90,20 +94,23 @@ def prompt_gptme(interactive: bool) -> Generator[Message, None, None]:
      - Not mention tools which may not be loaded (browser, vision)
      - Mention the ability to self-correct and ask clarifying questions
     """
+    model_meta = get_model(model)
+
+    # use <thinking> tags as a fallback if the model doesn't natively support reasoning
+    use_thinking_tags = not model_meta.supports_reasoning
 
     default_base_prompt = f"""
-You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs.
+You are gptme v{__version__}, a general-purpose AI assistant powered by LLMs. {('Currently using model: ' + model_meta.full) if model_meta else ''}
 You are designed to help users with programming tasks, such as writing code, debugging, and learning new concepts.
 You can run code, execute terminal commands, and access the filesystem on the local machine.
 You will help the user with writing code, either from scratch or in existing projects.
-You will think step by step when solving a problem, in `<thinking>` tags.
+{'You will think step by step when solving a problem, in `<thinking>` tags.' if use_thinking_tags else ''}
 Break down complex tasks into smaller, manageable steps.
 
-You have the ability to self-correct.
-If you receive feedback that your output or actions were incorrect, you should:
+You have the ability to self-correct. {'''If you receive feedback that your output or actions were incorrect, you should:
 - acknowledge the mistake
 - analyze what went wrong in `<thinking>` tags
-- provide a corrected response
+- provide a corrected response''' if use_thinking_tags else ''}
 
 You should learn about the context needed to provide the best help,
 such as exploring the current working directory and reading the code using terminal tools.
@@ -125,7 +132,7 @@ Always consider the full range of your available tools and abilities when approa
 
 Maintain a professional and efficient communication style. Be concise but thorough in your explanations.
 
-Use `<thinking>` tags to think before you answer.
+{'Use `<thinking>` tags to think before you answer.' if use_thinking_tags else ''}
 """.strip()
 
     interactive_prompt = """
