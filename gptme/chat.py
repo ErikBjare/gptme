@@ -74,7 +74,9 @@ def chat(
     # init
     init(model, interactive, tool_allowlist)
 
-    modelmeta = get_model(model or get_default_model().full)
+    default_model = get_default_model()
+    assert default_model is not None, "No model loaded and no model specified"
+    modelmeta = get_model(model or default_model.full)
     if not modelmeta.supports_streaming and stream:
         logger.info(
             "Disabled streaming for '%s/%s' model (not supported)",
@@ -232,7 +234,9 @@ def step(
     model: str | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
-    model = model or get_default_model().full
+    default_model = get_default_model()
+    assert default_model is not None, "No model loaded and no model specified"
+    model = model or default_model.full
     if isinstance(log, list):
         log = Log(log)
 

@@ -144,7 +144,11 @@ def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
     stream = req_json.get("stream", False)  # Default to no streaming (backward compat)
-    model = req_json.get("model", get_default_model().full)
+    default_model = get_default_model()
+    assert (
+        default_model is not None
+    ), "No model loaded and no model specified in request"
+    model = req_json.get("model", default_model.full)
 
     # load conversation
     # NOTE: we load without lock since otherwise we have issues with

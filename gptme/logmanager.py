@@ -366,6 +366,7 @@ def prepare_messages(
     msgs_reduced = list(reduce_log(msgs))
 
     model = get_default_model()
+    assert model is not None, "No model loaded"
     if (len_from := len_tokens(msgs, model.model)) != (
         len_to := len_tokens(msgs_reduced, model.model)
     ):

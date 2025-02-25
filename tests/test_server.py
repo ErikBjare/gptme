@@ -9,7 +9,7 @@ flask = pytest.importorskip(
 # noreorder
 from flask.testing import FlaskClient  # fmt: skip
 from gptme.init import init  # fmt: skip
-from gptme.llm.models import get_default_model  # fmt: skip
+from gptme.llm.models import get_default_model, get_recommended_model  # fmt: skip
 from gptme.server.api import create_app  # fmt: skip
 
 
@@ -72,10 +72,12 @@ def test_api_conversation_generate(conv: str, client: FlaskClient):
     )
     assert response.status_code == 200
 
+    model = m.full if (m := get_default_model()) else get_recommended_model("anthropic")
+
     # Test regular (non-streaming) response
     response = client.post(
         f"/api/conversations/{conv}/generate",
-        json={"model": get_default_model().full, "stream": False},
+        json={"model": model},
     )
     assert response.status_code == 200
     data = response.get_data(as_text=True)
@@ -98,10 +100,15 @@ def test_api_conversation_generate_stream(conv: str, client: FlaskClient):
     )
     assert response.status_code == 200
 
+    model = m.full if (m := get_default_model()) else get_recommended_model("anthropic")
+
     # Test streaming response
     response = client.post(
         f"/api/conversations/{conv}/generate",
-        json={"model": get_default_model().full, "stream": True},
+        json={
+            "model": model,
+            "stream": True,
+        },
         headers={"Accept": "text/event-stream"},
     )
     assert response.status_code == 200

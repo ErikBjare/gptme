@@ -219,9 +219,7 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
 }
 
 
-def get_default_model() -> ModelMeta:
-    if not DEFAULT_MODEL:
-        raise ValueError("Default model not set, use set_default_model")
+def get_default_model() -> ModelMeta | None:
     return DEFAULT_MODEL
 
 
