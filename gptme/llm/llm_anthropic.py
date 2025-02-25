@@ -118,6 +118,10 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
 
     model_meta = get_model(f"anthropic/{model}")
     use_thinking = _should_use_thinking(model, tools)
+    thinking_budget = 16000
+    max_tokens = (model_meta.max_output or 4096) + (
+        thinking_budget if use_thinking else 0
+    )
 
     response = _anthropic.messages.create(
         model=model,
@@ -125,10 +129,12 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         system=system_messages,
         temperature=TEMPERATURE if not use_thinking else 1,
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
-        max_tokens=model_meta.max_output or 4096,
+        max_tokens=max_tokens,
         tools=tools_dict if tools_dict else NOT_GIVEN,
         thinking=(
-            {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
+            {"type": "enabled", "budget_tokens": thinking_budget}
+            if use_thinking
+            else NOT_GIVEN
         ),
     )
     content = response.content
@@ -162,6 +168,10 @@ def stream(
 
     model_meta = get_model(f"anthropic/{model}")
     use_thinking = _should_use_thinking(model, tools)
+    thinking_budget = 16000
+    max_tokens = (model_meta.max_output or 4096) + (
+        thinking_budget if use_thinking else 0
+    )
 
     with _anthropic.messages.stream(
         model=model,
@@ -169,10 +179,12 @@ def stream(
         system=system_messages,
         temperature=TEMPERATURE if not use_thinking else 1,
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
-        max_tokens=model_meta.max_output or 4096,
+        max_tokens=max_tokens,
         tools=tools_dict if tools_dict else NOT_GIVEN,
         thinking=(
-            {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
+            {"type": "enabled", "budget_tokens": thinking_budget}
+            if use_thinking
+            else NOT_GIVEN
         ),
     ) as stream:
         for chunk in stream:
@@ -184,9 +196,9 @@ def stream(
                         tool_use = block
                         yield f"\n@{tool_use.name}({tool_use.id}): "
                     elif isinstance(block, anthropic.types.ThinkingBlock):
-                        yield "\n<think>\n"
+                        yield "<think>\n"
                     elif isinstance(block, anthropic.types.RedactedThinkingBlock):
-                        yield "\n<think redacted>\n"
+                        yield "<think redacted>\n"
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)

@@ -181,6 +181,7 @@ def main(
 
     config = get_config()
 
+    model = model or config.get_env("MODEL")
     selected_tool_format: ToolFormat = (
         tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
     )
@@ -194,6 +195,7 @@ def main(
             prompt_system,
             interactive=interactive,
             tool_format=selected_tool_format,
+            model=model,
         )
     ]
 
