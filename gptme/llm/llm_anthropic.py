@@ -15,7 +15,7 @@ from typing import (
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
 from ..tools.base import Parameter, ToolSpec, ToolUse
-from .models import get_model
+from .models import ModelMeta, get_model
 
 if TYPE_CHECKING:
     # noreorder
@@ -29,11 +29,15 @@ _anthropic: "Anthropic | None" = None
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
-def _should_use_thinking(model: str, tools: list[ToolSpec] | None) -> bool:
-    """Determine if thinking should be enabled based on model and tool format."""
+def _should_use_thinking(model_meta: ModelMeta, tools: list[ToolSpec] | None) -> bool:
     # Only enable thinking for supported models and when not using `tool` format
-    # FIXME: support this by adhering to anthropic's signature restrictions
-    return model in ["claude-3-7-sonnet-20250219"] and not tools
+    if not model_meta.supports_reasoning:
+        return False
+    if tools:
+        # FIXME: support this by adhering to anthropic's signature restrictions
+        logger.warning("Tool format `tool` is not supported with reasoning yet.")
+        return False
+    return True
 
 
 def _handle_anthropic_overloaded(e, attempt, max_retries, base_delay):
@@ -117,7 +121,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     )
 
     model_meta = get_model(f"anthropic/{model}")
-    use_thinking = _should_use_thinking(model, tools)
+    use_thinking = _should_use_thinking(model_meta, tools)
     thinking_budget = 16000
     max_tokens = (model_meta.max_output or 4096) + (
         thinking_budget if use_thinking else 0
@@ -167,7 +171,7 @@ def stream(
     )
 
     model_meta = get_model(f"anthropic/{model}")
-    use_thinking = _should_use_thinking(model, tools)
+    use_thinking = _should_use_thinking(model_meta, tools)
     thinking_budget = 16000
     max_tokens = (model_meta.max_output or 4096) + (
         thinking_budget if use_thinking else 0
