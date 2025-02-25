@@ -6,7 +6,7 @@ gptme provides LLMs with a wide variety of tools, but how well do models make us
 To answer these questions, we have created an evaluation suite that tests the capabilities of LLMs on a wide variety of tasks.
 
 .. note::
-    The evaluation suite is still tiny and under development, but the eval harness fully functional.
+    The evaluation suite is still tiny and under development, but the eval harness is fully functional.
 
 Recommended Model
 -----------------
