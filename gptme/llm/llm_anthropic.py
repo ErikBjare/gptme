@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     import anthropic.types  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
 
+
 logger = logging.getLogger(__name__)
 
 _anthropic: "Anthropic | None" = None
@@ -117,9 +118,9 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
         max_tokens=4096,
         tools=tools_dict if tools_dict else NOT_GIVEN,
-        thinking={"type": "enabled", "budget_tokens": 16000}
-        if use_thinking
-        else NOT_GIVEN,
+        thinking=(
+            {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
+        ),
     )
     content = response.content
     logger.debug(response.usage)
@@ -160,9 +161,9 @@ def stream(
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
         max_tokens=20000,  # TODO: set depending on model
         tools=tools_dict if tools_dict else NOT_GIVEN,
-        thinking={"type": "enabled", "budget_tokens": 16000}
-        if use_thinking
-        else NOT_GIVEN,
+        thinking=(
+            {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
+        ),
     ) as stream:
         for chunk in stream:
             match chunk.type:
@@ -172,8 +173,8 @@ def stream(
                     if isinstance(block, anthropic.types.ToolUseBlock):
                         tool_use = block
                         yield f"\n@{tool_use.name}({tool_use.id}): "
-                    elif isinstance(block, anthropic.types.ThinkingDelta):
-                        yield "<think>\n"
+                    elif isinstance(block, anthropic.types.ThinkingBlock):
+                        yield "\n<think>\n"
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -188,12 +189,22 @@ def stream(
                         yield delta.thinking
                     elif isinstance(delta, anthropic.types.InputJSONDelta):
                         yield delta.partial_json
+                    elif isinstance(delta, anthropic.types.SignatureDelta):
+                        # delta.signature
+                        pass
                     else:
                         logger.warning("Unknown delta type: %s", delta)
                 case "content_block_stop":
-                    stop_chunk = cast(anthropic.types.RawContentBlockStopEvent, chunk)
-                    if isinstance(stop_chunk, anthropic.types.ThinkingBlock):
-                        yield "\n</think>"
+                    stop_chunk = cast(anthropic.types.ContentBlockStopEvent, chunk)
+                    stop_block = stop_chunk.content_block  # type: ignore
+                    if isinstance(stop_block, anthropic.types.TextBlock):
+                        pass
+                    elif isinstance(stop_block, anthropic.types.ToolUseBlock):
+                        pass
+                    elif isinstance(stop_block, anthropic.types.ThinkingBlock):
+                        yield "\n</think>\n\n"
+                    else:
+                        logger.warning("Unknown stop block: %s", stop_block)
                 case "text":
                     # full text message
                     pass

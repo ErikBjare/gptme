@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from functools import lru_cache
 from typing import cast
 
-from rich import print
+from rich import print as rprint
 
 from ..config import get_config
 from ..constants import PROMPT_ASSISTANT
@@ -59,10 +59,10 @@ def reply(
         ]
         return _reply_stream(messages, model, tools, break_on_tooluse)
     else:
-        print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
+        rprint(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
         response = _chat_complete(messages, model, tools)
-        print(" " * shutil.get_terminal_size().columns, end="\r")
-        print(f"{PROMPT_ASSISTANT}: {response}")
+        rprint(" " * shutil.get_terminal_size().columns, end="\r")
+        rprint(f"{PROMPT_ASSISTANT}: {response}")
         return Message("assistant", response)
 
 
@@ -113,14 +113,16 @@ def _reply_stream(
     tools: list[ToolSpec] | None,
     break_on_tooluse: bool = True,
 ) -> Message:
-    print(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
+    rprint(f"{PROMPT_ASSISTANT}: Thinking...", end="\r")
 
-    def print_clear():
-        print(" " * shutil.get_terminal_size().columns, end="\r")
+    def print_clear(length: int = 0):
+        length = length or shutil.get_terminal_size().columns
+        rprint("\r" + " " * length, end="\r")
 
     output = ""
     start_time = time.time()
     first_token_time = None
+    are_thinking = False
     try:
         for char in (
             char for chunk in _stream(messages, model, tools) for char in chunk
@@ -128,8 +130,38 @@ def _reply_stream(
             if not output:  # first character
                 first_token_time = time.time()
                 print_clear()
-                print(f"{PROMPT_ASSISTANT}: ", end="")
-            print(char, end="")
+                rprint(f"{PROMPT_ASSISTANT}: ", end="")
+
+            # Check for thinking tags before printing a newline
+            if char == "\n" or not output:
+                last_line = output.rsplit("\n", 1)[-1]
+                if last_line.strip():
+                    # print(f"(check line: {last_line})", end="")
+                    pass
+
+                # Check for opening tag at the end of this line
+                if last_line == "<think>" or last_line == "<thinking>":
+                    # Print spaces to clear the line
+                    print_clear(len(last_line))
+                    # Print styled version
+                    rprint(f"[dim]{last_line}[/dim]", end="")
+                    are_thinking = True
+                # Check for closing tag
+                elif last_line == "</think>" or last_line == "</thinking>":
+                    print_clear(len(last_line))
+                    # Print styled version
+                    rprint(f"[dim]{last_line}[/dim]", end="")
+                    are_thinking = False
+
+                # Now print the newline
+                rprint(char, end="")
+            else:
+                # Print normal characters
+                if are_thinking:
+                    rprint(f"[dim]{char}[/dim]", end="")
+                else:
+                    rprint(char, end="")
+
             assert len(char) == 1
             output += char
 
@@ -149,6 +181,7 @@ def _reply_stream(
                 if tooluses:
                     logger.debug("Found tool use, breaking")
                     break
+
     except KeyboardInterrupt:
         return Message("assistant", output + "... ^C Interrupted")
     finally:
