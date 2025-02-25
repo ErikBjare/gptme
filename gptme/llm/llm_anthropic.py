@@ -29,6 +29,14 @@ _anthropic: "Anthropic | None" = None
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
+def _should_use_thinking(model: str) -> bool:
+    """Determine if thinking should be enabled based on model and tool format."""
+    # Only enable thinking for supported models and when not using tool format
+    from ..tools.base import get_tool_format
+
+    return model in ["claude-3-7-sonnet-20250219"] and get_tool_format() != "tool"
+
+
 def _handle_anthropic_overloaded(e, attempt, max_retries, base_delay):
     """Handle Anthropic API overloaded errors with exponential backoff."""
     from anthropic import APIStatusError  # fmt: skip
@@ -109,7 +117,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         messages, tools
     )
 
-    use_thinking = True if model in ["claude-3-7-sonnet-20250219"] else False
+    use_thinking = _should_use_thinking(model)
 
     response = _anthropic.messages.create(
         model=model,
@@ -152,7 +160,7 @@ def stream(
         messages, tools
     )
 
-    use_thinking = True if model in ["claude-3-7-sonnet-20250219"] else False
+    use_thinking = _should_use_thinking(model)
 
     with _anthropic.messages.stream(
         model=model,
@@ -176,6 +184,8 @@ def stream(
                         yield f"\n@{tool_use.name}({tool_use.id}): "
                     elif isinstance(block, anthropic.types.ThinkingBlock):
                         yield "\n<think>\n"
+                    elif isinstance(block, anthropic.types.RedactedThinkingBlock):
+                        yield "\n<think redacted>\n"
                     elif isinstance(block, anthropic.types.TextBlock):
                         if block.text:
                             logger.warning("unexpected text block: %s", block.text)
@@ -204,6 +214,8 @@ def stream(
                         pass
                     elif isinstance(stop_block, anthropic.types.ThinkingBlock):
                         yield "\n</think>\n\n"
+                    elif isinstance(stop_block, anthropic.types.RedactedThinkingBlock):
+                        yield "\n</think redacted>\n\n"
                     else:
                         logger.warning("Unknown stop block: %s", stop_block)
                 case "text":
