@@ -9,6 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from gptme.llm.models import get_default_model
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
@@ -351,7 +352,6 @@ class GptmeCompleter(Completer):
 def llm_suggest(text: str) -> list[str]:
     # TODO: Improve LLM suggestions
     from ..llm import _chat_complete  # fmt: skip
-    from ..llm.models import get_model  # fmt: skip
     from ..message import Message  # fmt: skip
 
     enabled = os.environ.get("GPTME_SUGGEST_LLM") in ["1", "true"]
@@ -367,7 +367,7 @@ Only 10 lines.""",
                 ),
                 Message("user", text),
             ],
-            model=get_model().model,
+            model=get_default_model().full,
             tools=[],
         )
         return content.split("\n")

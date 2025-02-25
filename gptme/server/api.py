@@ -23,7 +23,7 @@ from flask_cors import CORS
 from ..commands import execute_cmd
 from ..dirs import get_logs_dir
 from ..llm import _stream
-from ..llm.models import get_model
+from ..llm.models import get_default_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
 from ..tools import ToolUse, execute_msg, init_tools
@@ -144,7 +144,7 @@ def api_conversation_generate(logfile: str):
     # get model or use server default
     req_json = flask.request.json or {}
     stream = req_json.get("stream", False)  # Default to no streaming (backward compat)
-    model = req_json.get("model", get_model().full)
+    model = req_json.get("model", get_default_model().full)
 
     # load conversation
     # NOTE: we load without lock since otherwise we have issues with

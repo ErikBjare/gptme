@@ -14,7 +14,7 @@ from .config import get_config
 from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
 from .llm import reply
-from .llm.models import get_model
+from .llm.models import get_default_model, get_model
 from .logmanager import Log, LogManager, prepare_messages
 from .message import Message
 from .prompts import get_workspace_prompt
@@ -74,7 +74,7 @@ def chat(
     # init
     init(model, interactive, tool_allowlist)
 
-    modelmeta = get_model(model)
+    modelmeta = get_model(model or get_default_model().full)
     if not modelmeta.supports_streaming and stream:
         logger.info(
             "Disabled streaming for '%s/%s' model (not supported)",
@@ -232,6 +232,7 @@ def step(
     model: str | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
+    model = model or get_default_model().full
     if isinstance(log, list):
         log = Log(log)
 
