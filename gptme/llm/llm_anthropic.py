@@ -148,7 +148,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
     for block in content:
         if block.type == "text":
             parsed_block.append(block.text)
-        if block.type == "thinking":
+        elif block.type == "thinking":
             parsed_block.append(f"<think>\n{block.thinking}\n</think>")
         elif block.type == "tool_use":
             parsed_block.append(f"\n@{block.name}({block.id}): {block.input}")
