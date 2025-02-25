@@ -15,7 +15,7 @@ from typing import Literal
 from .__version__ import __version__
 from .config import get_config, get_project_config
 from .dirs import get_project_git_dir
-from .llm.models import get_model
+from .llm.models import get_model, get_recommended_model
 from .message import Message
 from .tools import ToolFormat
 from .util import document_prompt_function
@@ -298,7 +298,10 @@ def get_workspace_prompt(workspace: Path) -> str:
     return ""
 
 
-document_prompt_function(interactive=True)(prompt_gptme)
+document_prompt_function(
+    interactive=True,
+    model=get_recommended_model("anthropic"),
+)(prompt_gptme)
 document_prompt_function()(prompt_user)
 document_prompt_function()(prompt_project)
 document_prompt_function(tool_format="markdown")(prompt_tools)
