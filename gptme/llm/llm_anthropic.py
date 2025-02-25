@@ -15,12 +15,12 @@ from typing import (
 from ..constants import TEMPERATURE, TOP_P
 from ..message import Message, msgs2dicts
 from ..tools.base import Parameter, ToolSpec, ToolUse
+from .models import get_model
 
 if TYPE_CHECKING:
     # noreorder
     import anthropic.types  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +29,11 @@ _anthropic: "Anthropic | None" = None
 ALLOWED_FILE_EXTS = ["jpg", "jpeg", "png", "gif"]
 
 
-def _should_use_thinking(model: str) -> bool:
+def _should_use_thinking(model: str, tools: list[ToolSpec] | None) -> bool:
     """Determine if thinking should be enabled based on model and tool format."""
-    # Only enable thinking for supported models and when not using tool format
-    from ..tools.base import get_tool_format
-
-    return model in ["claude-3-7-sonnet-20250219"] and get_tool_format() != "tool"
+    # Only enable thinking for supported models and when not using `tool` format
+    # FIXME: support this by adhering to anthropic's signature restrictions
+    return model in ["claude-3-7-sonnet-20250219"] and not tools
 
 
 def _handle_anthropic_overloaded(e, attempt, max_retries, base_delay):
@@ -117,7 +116,8 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         messages, tools
     )
 
-    use_thinking = _should_use_thinking(model)
+    model_meta = get_model(f"anthropic/{model}")
+    use_thinking = _should_use_thinking(model, tools)
 
     response = _anthropic.messages.create(
         model=model,
@@ -125,7 +125,7 @@ def chat(messages: list[Message], model: str, tools: list[ToolSpec] | None) -> s
         system=system_messages,
         temperature=TEMPERATURE if not use_thinking else 1,
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
-        max_tokens=4096,
+        max_tokens=model_meta.max_output or 4096,
         tools=tools_dict if tools_dict else NOT_GIVEN,
         thinking=(
             {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
@@ -160,7 +160,8 @@ def stream(
         messages, tools
     )
 
-    use_thinking = _should_use_thinking(model)
+    model_meta = get_model(f"anthropic/{model}")
+    use_thinking = _should_use_thinking(model, tools)
 
     with _anthropic.messages.stream(
         model=model,
@@ -168,7 +169,7 @@ def stream(
         system=system_messages,
         temperature=TEMPERATURE if not use_thinking else 1,
         top_p=TOP_P if not use_thinking else NOT_GIVEN,
-        max_tokens=20000,  # TODO: set depending on model
+        max_tokens=model_meta.max_output or 4096,
         tools=tools_dict if tools_dict else NOT_GIVEN,
         thinking=(
             {"type": "enabled", "budget_tokens": 16000} if use_thinking else NOT_GIVEN
