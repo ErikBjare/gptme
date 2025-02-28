@@ -66,12 +66,11 @@ import shlex
 import shutil
 import subprocess
 from enum import Enum
-from pathlib import Path
 from typing import Literal, TypedDict
 
 from ..message import Message
 from .base import ToolSpec, ToolUse
-from .screenshot import _screenshot
+from .screenshot import screenshot
 from .vision import view_image
 
 logger = logging.getLogger(__name__)
@@ -84,7 +83,6 @@ IS_MACOS = platform.system() == "Darwin"
 # Constants from Anthropic's implementation
 TYPING_DELAY_MS = 12
 TYPING_GROUP_SIZE = 50
-OUTPUT_DIR = "/tmp/outputs"
 
 Action = Literal[
     "key",
@@ -482,18 +480,7 @@ def computer(
         print(f"Performed {action}")
         return None
     elif action == "screenshot":
-        # TODO: refactor to share logic with screenshot tool
-        output_dir = Path(OUTPUT_DIR)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        path = output_dir / "screenshot.png"
-
-        if IS_MACOS:
-            # Use native macOS screencapture
-            subprocess.run(["screencapture", "-x", str(path)], check=True)
-        elif shutil.which("gnome-screenshot"):
-            subprocess.run(["gnome-screenshot", "-f", str(path)], check=True)
-        else:
-            path = _screenshot(path)  # Use existing screenshot function
+        path = screenshot()  # Use existing screenshot function
 
         # Scale if needed
         # TODO: also scale in screenshot tool for these situations
