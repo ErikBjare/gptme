@@ -501,8 +501,8 @@ def _resource_to_codeblock(prompt: str) -> str | None:
             return f"```{prompt}\n{f.read_text()}\n```"
     except OSError as oserr:
         # some prompts are too long to be a path, so we can't read them
-        if oserr.errno != errno.ENAMETOOLONG:
-            pass
+        if oserr.errno == errno.ENAMETOOLONG:
+            return None
         raise
     except UnicodeDecodeError:
         # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
