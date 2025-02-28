@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
-from gptme.chat import _find_potential_paths
+
+from gptme.util.context import _find_potential_paths
 
 
 def test_find_potential_paths(tmp_path):
