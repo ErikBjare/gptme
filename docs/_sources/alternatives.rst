@@ -226,6 +226,16 @@ It supports MCP, allowing for a wide array of tools and resources to be used wit
 
 Released October 31st, 2024.
 
+.. rubric:: Code
+
+Claude Code is a "is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster through natural language commands".
+
+It is pretty much a full-on clone of gptme, with MCP support. Unlike gptme, it is not open-source (and they have `no such plans <https://github.com/anthropics/claude-code/issues/59>`_.
+
+We have not made a thorough comparison yet. While users we asked have said they still prefer gptme, they acknowledge Claude Code has certain advantages which gptme could learn from.
+
+Released February 24, 2025.
+
 ChatGPT
 ^^^^^^^
 
