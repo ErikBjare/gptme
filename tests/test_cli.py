@@ -1,5 +1,6 @@
 import os
 import random
+import tempfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -198,6 +199,23 @@ def test_shell(args: list[str], runner: CliRunner):
     output = result.output.split("System")[-1]
     # check for two 'yes' in output (both command and stdout)
     assert output.count("yes") == 2, result.output
+    assert result.exit_code == 0
+
+
+def test_shell_file(args: list[str], runner: CliRunner):
+    # test running the shell tool with a filename
+    # make sure we don't accidentally expand the filename and include it in the shell command
+    # create new file with contents
+    tmp_path = tempfile.mktemp()
+    with open(tmp_path, "w") as f:
+        f.write("yes")
+    args.append(f"/shell cat {tmp_path}")
+    result = runner.invoke(gptme.cli.main, args)
+    output_pre, output_post = result.output.split("System", 1)
+    # check for no 'yes' in parsed input (only direct command output)
+    assert output_pre.count("yes") == 1, output_pre
+    # check for one 'yes' in system response (only message stdout)
+    assert output_post.count("yes") == 1, output_post
     assert result.exit_code == 0
 
 

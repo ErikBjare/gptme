@@ -9,7 +9,7 @@ from collections.abc import Generator
 from pathlib import Path
 from typing import cast
 
-from .commands import action_descriptions, execute_cmd
+from .commands import execute_cmd, get_user_commands
 from .config import get_config
 from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
@@ -128,8 +128,7 @@ def chat(
         if prompt_msgs:
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
-                if not msg.content.startswith("/") and msg.role == "user":
-                    msg = _include_paths(msg, workspace)
+                msg = _include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
                 if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
@@ -399,7 +398,15 @@ def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
         workspace: If provided, paths will be stored relative to this directory
     """
     # TODO: add support for directories?
-    assert msg.role == "user"
+
+    # Skip processing for non-user messages
+    if msg.role != "user":
+        return msg
+
+    # Skip path processing for user commands
+    # (as commands might take paths as arguments, which we don't want to expand as part of the command)
+    if any(msg.content.startswith(command) for command in get_user_commands()):
+        return msg
 
     append_msg = ""
     files = []
@@ -435,12 +442,6 @@ def _parse_prompt(prompt: str) -> str | None:
     Takes a string that might be a path or URL,
     and if so, returns the contents of that file wrapped in a codeblock.
     """
-    # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
-        return None
 
     try:
         # check if prompt is a path, if so, replace it with the contents of that file
@@ -528,14 +529,6 @@ def _parse_prompt_files(prompt: str) -> Path | None:
     Takes a string that might be a supported file path (image, text, PDF) and returns the path.
     Files added here will either be included inline (legacy mode) or in fresh context (fresh context mode).
     """
-
-    # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
-        return None
-
     try:
         p = Path(prompt).expanduser()
         if not (p.exists() and p.is_file()):
