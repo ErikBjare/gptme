@@ -14,7 +14,6 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-from ..commands import get_user_commands
 from ..config import get_config
 from ..message import Message
 from ..tools import has_tool
@@ -399,6 +398,9 @@ def include_paths(msg: Message, workspace: Path | None = None) -> Message:
     # Skip processing for non-user messages
     if msg.role != "user":
         return msg
+
+    # circular import
+    from ..commands import get_user_commands  # fmt: skip
 
     # Skip path processing for user commands
     # (as commands might take paths as arguments, which we don't want to expand as part of the command)
