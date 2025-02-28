@@ -2201,7 +2201,7 @@ description = "Python Imaging Library (Fork)"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "(extra == \"datascience\" or extra == \"computer\" or extra == \"all\") and (python_version <= \"3.11\" or python_version >= \"3.12\")"
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "pillow-11.0.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:6619654954dc4936fcff82db8eb6401d3159ec6be81e33c6000dfd76ae189947"},
     {file = "pillow-11.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:b3c5ac4bed7519088103d9450a1107f76308ecf91d6dabc8a33a2fcfb18d0fba"},
@@ -3885,10 +3885,10 @@ files = [
 requests = "*"
 
 [extras]
-all = ["flask", "flask-cors", "matplotlib", "numpy", "numpy", "pandas", "pillow", "pillow", "playwright", "scipy", "scipy", "sounddevice", "youtube_transcript_api"]
+all = ["flask", "flask-cors", "matplotlib", "numpy", "numpy", "pandas", "playwright", "scipy", "scipy", "sounddevice", "youtube_transcript_api"]
 browser = ["playwright"]
-computer = ["pillow"]
-datascience = ["matplotlib", "numpy", "pandas", "pillow"]
+computer = []
+datascience = ["matplotlib", "numpy", "pandas"]
 server = ["flask", "flask-cors"]
 tts = ["numpy", "scipy", "sounddevice"]
 youtube = ["youtube_transcript_api"]
@@ -3896,4 +3896,4 @@ youtube = ["youtube_transcript_api"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "6997ec293baf534605fd5bef1cb8dde4a3434021e8edb2f982b05f25c860913b"
+content-hash = "d1d095e917f85fa33933036eedb507939f197f20c2783a9b5e9e5b89dc5a15e9"
