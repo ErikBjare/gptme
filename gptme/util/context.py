@@ -384,7 +384,7 @@ def include_paths(msg: Message, workspace: Path | None = None) -> Message:
      - In legacy mode (default):
        - includes the contents of text files as codeblocks
        - includes images as msg.files
-     - In fresh context mode (GPTME_FRESH_CONTEXT=1):
+     - In fresh context mode (GPTME_FRESH=1):
        - breaks the append-only nature of the log, but ensures we include fresh file contents
        - includes all files in msg.files
        - contents are applied right before sending to LLM (only paths stored in the log)
