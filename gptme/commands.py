@@ -267,3 +267,14 @@ def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
 def help():
     for line in _gen_help():
         print(line)
+
+
+def get_user_commands() -> list[str]:
+    """Returns a list of all user commands"""
+    commands = [f"/{cmd}" for cmd in action_descriptions.keys()]
+
+    # check if command is valid tooluse
+    # TODO: check for registered tools instead of hardcoding
+    commands.extend(["/python", "/shell"])
+
+    return commands
