@@ -56,12 +56,17 @@ def _discover_tools(module_names: frozenset[str]) -> list[ToolSpec]:
         if hasattr(module, "__path__"):  # It's a package
             # Iterate over modules in the package
             for _, submodule_name, _ in pkgutil.iter_modules(module.__path__):
+                # Skip private modules
+                if submodule_name.startswith("_"):
+                    continue
                 full_submodule_name = f"{module_name}.{submodule_name}"
                 try:
                     modules.append(importlib.import_module(full_submodule_name))
-                except ModuleNotFoundError:
+                except ModuleNotFoundError as e:
                     logger.warning(
-                        "Missing dependency for module %s", full_submodule_name
+                        "Missing dependency '%s' for module %s",
+                        e.name,
+                        full_submodule_name,
                     )
                     continue
         else:  # It's a single module
