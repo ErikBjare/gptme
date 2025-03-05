@@ -210,7 +210,7 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 - 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
   - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
 - 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
-  - Create your own agent with persistence using [gptme-agent-template][agent-template], like [Bob]().
+  - Create your own agent with persistence using [gptme-agent-template][agent-template], like [Bob][bob].
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
     - Passing a filename as an argument will read the file and include it as context.
