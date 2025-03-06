@@ -8,7 +8,7 @@ data:
   startup.sh: |
     #!/bin/bash
 
-    echo "running startup script, injecting secret API key"
+    echo "running startup script, injecting secret API key ${ENV_ANTHROPIC_API_KEY}"
 
     # Create config directory if it doesn't exist
     mkdir -p ~/.config/gptme
@@ -23,6 +23,8 @@ data:
     # Using the injected secret
     ANTHROPIC_API_KEY = "${ENV_ANTHROPIC_API_KEY}"
     EOF
+
+    cat ~/.config/gptme/config.toml
 
     # Execute the original command
     exec "$@"

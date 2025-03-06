@@ -6,7 +6,6 @@ FROM $BASE as build
 # Install server dependencies
 USER root
 WORKDIR /app
-#COPY --from=build /tmp/requirements-server.txt /tmp/
 RUN pip install -r /tmp/requirements-server.txt && rm /tmp/requirements-server.txt
 
 # Switch back to non-root user

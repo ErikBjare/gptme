@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-NAMESPACE=${1:-gptme}
-ENV_FILE=${2:-../../.env}
+NAMESPACE=${1:-gptmingdom}
+ENV_FILE=${2:-.env}
 
 echo "Setting up namespace: $NAMESPACE"
 
@@ -27,14 +27,19 @@ fi
 echo "Loading environment variables from $ENV_FILE"
 export $(grep -v '^#' $ENV_FILE | xargs)
 
+# Debug output
+echo "DEBUG: ENV_FILE_ANTHROPIC_API_KEY is: ${ENV_FILE_ANTHROPIC_API_KEY:0:10}... (truncated for security)"
+echo "DEBUG: ENV_FILE path: $(realpath $ENV_FILE)"
+echo "DEBUG: ENV_FILE content: $(cat $ENV_FILE | sed 's/=.*$/=REDACTED/')"
+
 # Create or update the secret
 echo "Creating/updating secret: gptme-secrets"
 kubectl create secret generic gptme-secrets \
-  --from-literal=ENV_ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  --from-literal=ENV_ANTHROPIC_API_KEY="$ENV_FILE_ANTHROPIC_API_KEY" \
   --namespace=$NAMESPACE \
   --dry-run=client -o yaml | kubectl apply -f -
 
 echo ""
 echo "Namespace and secrets have been set up successfully!"
-echo "To deploy gptme, run:"
+echo "To deploy gptmingdom, run:"
 echo "  skaffold dev -f k8s/local/skaffold.full.yaml --profile=dev -n $NAMESPACE"

@@ -33,7 +33,7 @@ To run gptme locally with Kubernetes:
 3. Run the setup script to create the namespace and secrets:
    ```bash
    cd /path/to/gptme
-   ./k8s/local/setup-namespace.sh gptme
+   ./k8s/local/setup-namespace.sh gptmingdom
    ```
 
 4. Deploy with Skaffold:

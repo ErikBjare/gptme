@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta1
 kind: Config
 metadata:
-  name: gptme
+  name: gptmingdom
 build:
   artifacts:
     - image: gptme-base
@@ -20,9 +20,22 @@ manifests:
     - k8s/local/gptme/deployment.yaml
     - k8s/local/gptme/service.yaml
     - k8s/local/gptme/configmap.yaml
-    - k8s/local/gptme/secret.yaml
     - k8s/local/gptme/ingress.yaml
     - k8s/local/gptme/startup-script-configmap.yaml
+  helm:
+    releases:
+      - name: ingress-nginx
+        remoteChart: ingress-nginx
+        repo: https://kubernetes.github.io/ingress-nginx
+        namespace: gptmingdom
+        #createNamespace: false
+        #recreatePods: false
+        #skipBuildDependencies: false
+        useHelmSecrets: false
+        #wait: false
+        setValues:
+          controller.replicaCount: 1
+          defaultBackend.enabled: false
 deploy:
   kubectl: {}
 profiles:
@@ -35,6 +48,6 @@ profiles:
     portForward:
       - resourceType: service
         resourceName: gptme
-        namespace: gptme
+        namespace: gptmingdom
         port: 8080
         localPort: 8080
