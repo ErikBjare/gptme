@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gptme-config
+  labels:
+    app: gptme
+data:
+  # Server configuration
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: "5000"
+  CORS_ORIGIN: "*"
+  
+  # Additional configuration can be added here
+  # MODEL: ""
+  # TOOLS: ""

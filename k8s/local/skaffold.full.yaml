@@ -1,0 +1,40 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: gptme
+build:
+  artifacts:
+    - image: gptme-base
+      context: .
+      docker:
+        dockerfile: scripts/Dockerfile
+    - image: gptme-server
+      context: .
+      docker:
+        dockerfile: scripts/Dockerfile.server
+      requires:
+        - image: gptme-base
+          alias: BASE
+manifests:
+  rawYaml:
+    - k8s/local/gptme/deployment.yaml
+    - k8s/local/gptme/service.yaml
+    - k8s/local/gptme/configmap.yaml
+    - k8s/local/gptme/secret.yaml
+    - k8s/local/gptme/ingress.yaml
+    - k8s/local/gptme/startup-script-configmap.yaml
+deploy:
+  kubectl: {}
+profiles:
+  - name: dev
+    activation:
+      - kubeContext: minikube
+    build:
+      local:
+        push: false
+    portForward:
+      - resourceType: service
+        resourceName: gptme
+        namespace: gptme
+        port: 8080
+        localPort: 8080

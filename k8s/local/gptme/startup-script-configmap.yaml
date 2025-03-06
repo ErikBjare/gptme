@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gptme-startup-script
+  labels:
+    app: gptme
+data:
+  startup.sh: |
+    #!/bin/bash
+
+    echo "running startup script, injecting secret API key"
+
+    # Create config directory if it doesn't exist
+    mkdir -p ~/.config/gptme
+
+    # Create config.toml with the secret injected
+    cat > ~/.config/gptme/config.toml << EOF
+    [prompt]
+    about_user = "I am a curious human programmer."
+    response_preference = "Don't explain basic concepts"
+
+    [env]
+    # Using the injected secret
+    ANTHROPIC_API_KEY = "${ENV_ANTHROPIC_API_KEY}"
+    EOF
+
+    # Execute the original command
+    exec "$@"

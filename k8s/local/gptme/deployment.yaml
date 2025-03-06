@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gptme
+  labels:
+    app: gptme
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gptme
+  template:
+    metadata:
+      labels:
+        app: gptme
+    spec:
+      containers:
+      - name: gptme
+        image: gptme-server:latest
+        ports:
+        - containerPort: 5000
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        envFrom:
+        - configMapRef:
+            name: gptme-config
+        - secretRef:
+            name: gptme-secrets
+        command: ["/scripts/startup.sh"]
+        args: ["gptme-server", "--cors-origin=$(CORS_ORIGIN)", "--host=$(SERVER_HOST)", "--port=$(SERVER_PORT)"]
+        volumeMounts:
+        - name: startup-script
+          mountPath: /scripts
+          readOnly: true
+      volumes:
+      - name: startup-script
+        configMap:
+          name: gptme-startup-script
+          defaultMode: 0755
