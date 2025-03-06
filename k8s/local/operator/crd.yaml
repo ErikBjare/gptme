@@ -1,0 +1,81 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clientpods.gptme.ai
+spec:
+  group: gptme.ai
+  names:
+    kind: ClientPod
+    listKind: ClientPodList
+    plural: clientpods
+    singular: clientpod
+    shortNames:
+      - cpod
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                clientId:
+                  type: string
+                  description: "Unique identifier for the client"
+                model:
+                  type: string
+                  description: "AI model to be used for this client"
+                  default: "default"
+                resources:
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                      default: "100m"
+                    memory:
+                      type: string
+                      default: "256Mi"
+                  default:
+                    cpu: "100m"
+                    memory: "256Mi"
+                timeout:
+                  type: integer
+                  description: "Timeout in seconds for pod lifecycle"
+                  default: 3600
+              required:
+                - clientId
+            status:
+              type: object
+              properties:
+                podName:
+                  type: string
+                  description: "Name of the created pod"
+                phase:
+                  type: string
+                  description: "Current phase of the client pod"
+                lastActivity:
+                  type: string
+                  format: date-time
+                  description: "Last time this pod was accessed"
+      additionalPrinterColumns:
+        - name: ClientID
+          type: string
+          jsonPath: .spec.clientId
+        - name: Model
+          type: string
+          jsonPath: .spec.model
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Pod
+          type: string
+          jsonPath: .status.podName
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      subresources:
+        status: {}

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fleet-operator
+  namespace: gptmingdom
+  labels:
+    app: fleet-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fleet-operator
+  template:
+    metadata:
+      labels:
+        app: fleet-operator
+    spec:
+      serviceAccountName: fleet-operator
+      containers:
+        - name: operator
+          # This will be built separately as we'll develop it using TypeScript
+          # For now, use a placeholder image
+          image: fleet-operator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9443
+              name: webhook
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: "info"
+            - name: POD_TEMPLATE
+              value: "gptme-client"
+            - name: TRAEFIK_ENABLED
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10

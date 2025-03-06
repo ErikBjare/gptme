@@ -45,3 +45,5 @@ config.toml
 
 # VSCode
 .vscode
+
+node_modules

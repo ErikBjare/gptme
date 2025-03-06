@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fleet-operator
+  namespace: gptmingdom
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fleet-operator-role
+  namespace: gptmingdom
+rules:
+  # Allow operations on our custom resource
+  - apiGroups: ["gptme.ai"]
+    resources: ["clientpods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow operations on clientpods/status
+  - apiGroups: ["gptme.ai"]
+    resources: ["clientpods/status"]
+    verbs: ["get", "update", "patch"]
+  # Allow operations on pods
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow operations on services for pod discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow operations on configmaps for configuration
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Allow events for logging issues
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fleet-operator-rolebinding
+  namespace: gptmingdom
+subjects:
+- kind: ServiceAccount
+  name: fleet-operator
+  namespace: gptmingdom
+roleRef:
+  kind: Role
+  name: fleet-operator-role
+  apiGroup: rbac.authorization.k8s.io
