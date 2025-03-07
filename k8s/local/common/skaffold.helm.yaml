@@ -9,6 +9,7 @@ manifests:
         remoteChart: ingress-nginx
         repo: https://kubernetes.github.io/ingress-nginx
         namespace: gptmingdom
+        version: "4.7.1"  # Use a version compatible with Kubernetes >= v1.20.0
         #createNamespace: false
         #recreatePods: false
         #skipBuildDependencies: false
