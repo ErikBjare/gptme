@@ -42,7 +42,7 @@ spec:
             - name: LOG_LEVEL
               value: "info"
             - name: POD_TEMPLATE
-              value: "gptme-client"
+              value: "gptme-agent"
             - name: TRAEFIK_ENABLED
               value: "true"
           livenessProbe:

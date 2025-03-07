@@ -17,7 +17,7 @@ The Fleet Operator dynamically provisions and manages dedicated GPTME pods for e
 ## Architecture
 
 1. **Client Request Flow**:
-   - Client makes request to `/api/v1/{apiKey}/instance/{instanceId}`
+   - Client makes request to `/api/v1/{apiKey}/instances/{instanceId}`
    - Traefik extracts the apiKey and adds it as X-API-Key header
    - Request is forwarded to the Fleet Operator
    - Operator creates/finds the ClientPod and returns connection details
@@ -31,7 +31,7 @@ The Fleet Operator dynamically provisions and manages dedicated GPTME pods for e
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - Kubernetes cluster (or minikube/kind for local development)
 - kubectl configured to connect to your cluster
 
@@ -52,23 +52,23 @@ npm run dev
 npm run build
 
 # Build Docker image
-docker build -t gptme-orchestrator:latest .
+docker build -t fleet-operator:latest .
 ```
 
 ## Deployment
 
-The operator is deployed via Kubernetes manifests in the `k8s/local/orchestrator` directory.
+The operator is deployed via Kubernetes manifests in the `k8s/local/fleet-operator` directory.
 
 ```bash
 # Apply the manifests
-kubectl apply -f k8s/local/orchestrator/
+kubectl apply -f k8s/local/fleet-operator/
 ```
 
 ## API Reference
 
 ### Client API
 
-- `GET /instance/:instanceId` - Get or create a client pod
+- `GET /instances/:instanceId` - Get or create a client pod
   - Headers: `X-API-Key` (required)
   - Response: Pod connection details
 

@@ -33,8 +33,8 @@ echo "DEBUG: ENV_FILE path: $(realpath $ENV_FILE)"
 echo "DEBUG: ENV_FILE content: $(cat $ENV_FILE | sed 's/=.*$/=REDACTED/')"
 
 # Create or update the secret
-echo "Creating/updating secret: gptme-secrets"
-kubectl create secret generic gptme-secrets \
+echo "Creating/updating secret: gptme-agent-secrets"
+kubectl create secret generic gptme-agent-secrets \
   --from-literal=ENV_ANTHROPIC_API_KEY="$ENV_FILE_ANTHROPIC_API_KEY" \
   --namespace=$NAMESPACE \
   --dry-run=client -o yaml | kubectl apply -f -

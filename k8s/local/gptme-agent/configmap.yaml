@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gptme-config
+  name: gptme-agent-config
   labels:
-    app: gptme
+    app: gptme-agent-label
 data:
   # Server configuration
   SERVER_HOST: "0.0.0.0"

@@ -52,13 +52,13 @@ This will:
 Once deployed, the application can be accessed:
 
 1. Via port forwarding: http://localhost:8080
-2. Via Ingress: http://gptme.local (requires adding an entry to your hosts file)
+2. Via Ingress: http://gptme.localhost (requires adding an entry to your hosts file)
 
 ## Configuration
 
 Configuration is handled through:
-- Environment variables in `gptme-config` ConfigMap
-- Secrets in `gptme-secrets`
+- Environment variables in `gptme-agent-config` ConfigMap
+- Secrets in `gptme-agent-secrets`
 - A generated config.toml file created by the startup script
 
 The startup script automatically creates the config.toml file with the API key from the secret.

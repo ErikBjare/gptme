@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +18,11 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^22.13.9",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.53.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-typescript": "^0.14.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },

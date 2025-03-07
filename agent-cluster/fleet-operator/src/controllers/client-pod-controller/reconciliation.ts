@@ -1,10 +1,17 @@
-import { ClientPod, ClientPodStatus } from '../../models/types.js';
-import logger from '../../utils/logger.js';
+import { ClientPod, ClientPodStatus } from "../../models/types.js";
+import logger from "../../utils/logger.js";
+import { ClientPodController } from "./index.js";
 
 /**
  * Main reconciliation logic for ClientPod resources
  */
-export async function reconcileClientPod(this: any, clientPod: ClientPod) {
+export async function reconcileClientPod(
+  this: ClientPodController,
+  clientPod: ClientPod,
+) {
+  if (!clientPod) {
+    throw new Error("FATAL: reconcileClientPod called without a ClientPod");
+  }
   const name = clientPod.metadata.name;
   const spec = clientPod.spec;
   const status = clientPod.status || {};
@@ -22,8 +29,8 @@ export async function reconcileClientPod(this: any, clientPod: ClientPod) {
     // Update status
     await this.updateClientPodStatus(name, {
       podName,
-      phase: 'Creating',
-      lastActivity: new Date().toISOString()
+      phase: "Creating",
+      lastActivity: new Date().toISOString(),
     });
   } else {
     // Pod exists, check if it needs updating
@@ -32,8 +39,8 @@ export async function reconcileClientPod(this: any, clientPod: ClientPod) {
     // Update status with current pod phase
     await this.updateClientPodStatus(name, {
       podName,
-      phase: existingPod.status?.phase || 'Unknown',
-      lastActivity: new Date().toISOString()
+      phase: existingPod.status?.phase || "Unknown",
+      lastActivity: new Date().toISOString(),
     });
   }
 }
@@ -41,7 +48,10 @@ export async function reconcileClientPod(this: any, clientPod: ClientPod) {
 /**
  * Clean up resources when a ClientPod is deleted
  */
-export async function cleanupClientPodResources(this: any, clientPod: ClientPod) {
+export async function cleanupClientPodResources(
+  this: ClientPodController,
+  clientPod: ClientPod,
+) {
   const status = clientPod.status;
   if (status?.podName) {
     try {
@@ -56,22 +66,54 @@ export async function cleanupClientPodResources(this: any, clientPod: ClientPod)
 /**
  * Update the status of a ClientPod
  */
-export async function updateClientPodStatus(this: any, name: string, status: Partial<ClientPodStatus>) {
+export async function updateClientPodStatus(
+  this: ClientPodController,
+  name: string,
+  status: Partial<ClientPodStatus>,
+) {
   try {
-    const clientPod = await this.k8sClient.getClientPod(name) as ClientPod;
+    const clientPod = (await this.k8sClient.getClientPod(name)) as ClientPod;
     if (!clientPod) {
       logger.warn(`ClientPod ${name} not found, cannot update status`);
-      return;
+      return null;
+    }
+    const currentStatus = clientPod.status || {};
+    const phaseDiff =
+      status.phase !== currentStatus.phase
+        ? `${clientPod.spec.clientId}: ${currentStatus.phase} -> ${status.phase})`
+        : "";
+    const needsUpdate =
+      phaseDiff ||
+      !currentStatus.lastActivity ||
+      new Date().getTime() - new Date(currentStatus.lastActivity).getTime() >
+        60_000;
+
+    if (!needsUpdate) {
+      return clientPod;
     }
 
-    // Merge the existing status with the new status
-    const newStatus = {
-      ...(clientPod.status || {}),
-      ...status
-    };
+    if (phaseDiff) {
+      logger.info(`Updating status for ClientPod ${name}: ${phaseDiff}`);
+    }
 
-    await this.k8sClient.updateClientPodStatus(name, newStatus);
+    const response =
+      await this.k8sClient.customApi.patchNamespacedCustomObjectStatus({
+        group: "gptme.ai",
+        version: "v1",
+        namespace: this.namespace,
+        plural: "clientpods",
+        name,
+        body: [
+          {
+            op: "replace",
+            path: "/status",
+            value: status,
+          },
+        ],
+      });
+    return response.body;
   } catch (error) {
     logger.error(`Error updating ClientPod status: ${error}`);
+    throw error;
   }
 }

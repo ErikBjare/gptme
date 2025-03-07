@@ -1,8 +1,13 @@
 import * as k8s from "@kubernetes/client-node";
-import { ClientPod, ClientPodStatus } from "../../models/types.js";
-import { KubernetesClient } from "../../utils/k8s-client.js";
+import {
+  ClientPod,
+  ClientPodSpec,
+  ClientPodStatus,
+} from "../../models/types.js";
+import { KubernetesClient } from "../../utils/k8s-client/index.js";
 import { cleanupInactivePods, startCleanupTimer } from "./cleanup.js";
 import { generateClientId, handleClientRequest } from "./client-management.js";
+import { ClientPodControllerContext } from "./controller-types.js";
 import { setupWatchers, stopWatching } from "./event-handlers.js";
 import { createPodManifest } from "./pod-management.js";
 import {
@@ -11,16 +16,16 @@ import {
   updateClientPodStatus,
 } from "./reconciliation.js";
 
-export class ClientPodController {
-  private k8sClient: KubernetesClient;
-  private namespace: string;
-  private podTemplate: string;
-  private informer: k8s.Informer<ClientPod>;
-  private watchEnabled: boolean = false;
+export class ClientPodController implements ClientPodControllerContext {
+  public k8sClient: KubernetesClient;
+  public namespace: string;
+  public podTemplate: string;
+  public informer: k8s.Informer<ClientPod>;
+  public watchEnabled: boolean = false;
 
   constructor() {
     this.namespace = process.env.NAMESPACE || "default";
-    this.podTemplate = process.env.POD_TEMPLATE || "gptme-client";
+    this.podTemplate = process.env.POD_TEMPLATE || "gptme-agent";
     this.k8sClient = new KubernetesClient(this.namespace);
 
     // Initialize the informer to watch ClientPod resources
@@ -38,7 +43,7 @@ export class ClientPodController {
           version: "v1",
           namespace: this.namespace,
           plural: "clientpods",
-        }) as any,
+        }),
     );
   }
 
@@ -65,7 +70,7 @@ export class ClientPodController {
   }
 
   // Pod creation
-  createPodManifest(spec: any, name: string): k8s.V1Pod {
+  createPodManifest(spec: ClientPodSpec, name: string): k8s.V1Pod {
     return createPodManifest.call(this, spec, name);
   }
 

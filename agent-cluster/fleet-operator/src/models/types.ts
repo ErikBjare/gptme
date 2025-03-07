@@ -7,7 +7,7 @@ export interface ClientPod {
   metadata: {
     name: string;
     namespace: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   spec: ClientPodSpec;
   status?: ClientPodStatus;

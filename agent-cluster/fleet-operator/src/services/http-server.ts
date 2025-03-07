@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import { ClientPodController } from "../controllers/client-pod-controller/index.js";
+import { ClientPod } from "../models/types.js";
 import logger from "../utils/logger.js";
 
 export class HttpServer {
@@ -38,10 +39,10 @@ export class HttpServer {
 
     // Client request handler - specify route as string and handler as separate argument
     this.app.get(
-      "/instance/:instanceId",
+      "/api/v1/:apiKey/instances/:instanceId",
       async (req: Request, res: Response) => {
         try {
-          const apiKey = req.header("X-API-Key");
+          const apiKey = req.params.apiKey;
           if (!apiKey) {
             res.status(401).json({ error: "API key is required" });
             return;
@@ -54,8 +55,8 @@ export class HttpServer {
           );
 
           // Return the pod details that the client should connect to
-          const clientPod = result as any;
-          if (!clientPod.status || !clientPod.status.podName) {
+          const clientPod = result as ClientPod;
+          if (!clientPod?.status || !clientPod?.status?.podName) {
             res.status(202).json({
               message: "Pod is being provisioned",
               status: clientPod.status?.phase || "Creating",
@@ -79,21 +80,24 @@ export class HttpServer {
     );
 
     // Admin endpoints for managing client pods
-    this.app.get("/admin/pods", async (req: Request, res: Response) => {
-      try {
-        const k8sClient = this.clientPodController["k8sClient"];
-        const clientPods = await k8sClient.listClientPods();
-        res.json(clientPods);
-        return;
-      } catch (error) {
-        logger.error(`Error listing client pods: ${error}`);
-        res.status(500).json({ error: "Internal server error" });
-        return;
-      }
-    });
+    this.app.get(
+      "/api/v1/:apiKey/admin/pods",
+      async (req: Request, res: Response) => {
+        try {
+          const k8sClient = this.clientPodController["k8sClient"];
+          const clientPods = await k8sClient.listClientPods();
+          res.json(clientPods);
+          return;
+        } catch (error) {
+          logger.error(`Error listing client pods: ${error}`);
+          res.status(500).json({ error: "Internal server error" });
+          return;
+        }
+      },
+    );
 
     this.app.delete(
-      "/admin/pods/:name",
+      "/api/v1/:apiKey/admin/pods/:name",
       async (req: Request, res: Response) => {
         try {
           const k8sClient = this.clientPodController["k8sClient"];

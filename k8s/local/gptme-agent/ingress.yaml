@@ -7,13 +7,13 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: gptme.local
+  - host: gptme.localhost
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: gptme
+            name: gptme-agent-service
             port:
               number: 8080

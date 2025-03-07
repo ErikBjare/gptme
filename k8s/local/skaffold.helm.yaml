@@ -1,0 +1,71 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: gptmingdom-helm-charts
+manifests:
+  helm:
+    releases:
+      - name: ingress-nginx
+        remoteChart: ingress-nginx
+        repo: https://kubernetes.github.io/ingress-nginx
+        namespace: gptmingdom
+        #createNamespace: false
+        #recreatePods: false
+        #skipBuildDependencies: false
+        useHelmSecrets: false
+        #wait: false
+        setValues:
+          controller.replicaCount: 1
+          defaultBackend.enabled: false
+      # Add Traefik CRDs first
+      - name: traefik-crds
+        remoteChart: traefik-crds
+        repo: https://traefik.github.io/charts
+        namespace: gptmingdom
+        useHelmSecrets: false
+      # Add Traefik API Gateway
+      - name: traefik
+        remoteChart: traefik
+        repo: https://traefik.github.io/charts
+        namespace: gptmingdom
+        useHelmSecrets: false
+        setValues:
+          # Basic configuration
+          deployment.replicas: 1
+          # Enable dashboard and API
+          dashboard.enabled: true
+          dashboard.ingressRoute: true
+          # Service configuration
+          service.type: ClusterIP
+          # Enable Kubernetes CRD support
+          providers.kubernetesIngress.enabled: true
+          providers.kubernetesCRD.enabled: true
+          # Add proper resource requests/limits
+          resources.requests.cpu: "100m"
+          resources.requests.memory: "128Mi"
+          resources.limits.cpu: "300m"
+          resources.limits.memory: "256Mi"
+          # Configure ports
+          ports.web.port: 8000
+          ports.websecure.port: 8443
+          # Configure specific middlewares needed for per-client routing
+          additionalArguments:
+            - "--api.insecure=true"
+            - "--api.dashboard=true"
+            - "--log.level=INFO"
+deploy:
+  kubectl: {}
+profiles:
+  - name: dev
+    activation:
+      - kubeContext: minikube
+    build:
+      local:
+        push: false
+    portForward:
+      # Add port forwarding for Traefik dashboard
+      - resourceType: service
+        resourceName: traefik
+        namespace: gptmingdom
+        port: 9000 # Traefik dashboard port
+        localPort: 9000

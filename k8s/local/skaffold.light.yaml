@@ -1,0 +1,43 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: gptmingdom-full
+build:
+  local:
+    push: false
+  artifacts:
+    - image: gptme-base
+      context: .
+      docker:
+        dockerfile: scripts/Dockerfile
+    - image: gptme-server
+      context: .
+      docker:
+        dockerfile: scripts/Dockerfile.server
+      requires:
+        - image: gptme-base
+          alias: BASE
+    - image: fleet-operator
+      context: ./agent-cluster/fleet-operator
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - k8s/local/gptme-agent/deployment.yaml
+    - k8s/local/gptme-agent/service.yaml
+    - k8s/local/gptme-agent/configmap.yaml
+    - k8s/local/gptme-agent/ingress.yaml
+    - k8s/local/gptme-agent/startup-script-configmap.yaml
+    # operator manifests for per-client pods
+    - k8s/local/operator/deployment.yaml
+    - k8s/local/operator/service.yaml
+    - k8s/local/operator/rbac.yaml
+    - k8s/local/operator/crd.yaml
+    - k8s/local/operator/agents-ingress.yaml
+    - k8s/local/operator/simple-route.yaml
+deploy:
+  kubectl: {}
+profiles:
+  - name: dev
+    activation:
+      - kubeContext: minikube

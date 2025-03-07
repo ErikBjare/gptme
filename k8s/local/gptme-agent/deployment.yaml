@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gptme
+  name: gptme-agent
   labels:
-    app: gptme
+    app: gptme-agent-label
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gptme
+      app: gptme-agent-label
   template:
     metadata:
       labels:
-        app: gptme
+        app: gptme-agent-label
     spec:
       containers:
-      - name: gptme
+      - name: gptme-agent
         image: gptme-server:latest
         ports:
         - containerPort: 5000
@@ -41,9 +41,9 @@ spec:
           periodSeconds: 20
         envFrom:
         - configMapRef:
-            name: gptme-config
+            name: gptme-agent-config
         - secretRef:
-            name: gptme-secrets
+            name: gptme-agent-secrets
         command: ["/scripts/startup.sh"]
         args: ["gptme-server", "--cors-origin=$(CORS_ORIGIN)", "--host=$(SERVER_HOST)", "--port=$(SERVER_PORT)"]
         volumeMounts:

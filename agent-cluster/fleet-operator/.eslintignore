@@ -1,0 +1,10 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+
+# lint config *.js
+!.*.js
+!.*.mjs
+!.*.cjs
