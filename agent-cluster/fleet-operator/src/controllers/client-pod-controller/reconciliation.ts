@@ -23,7 +23,7 @@ export async function reconcileClientPod(
   if (!existingPod) {
     // Pod doesn't exist, create it
     logger.info(`Creating pod for ClientPod ${name}`);
-    const pod = this.createPodManifest(spec, podName);
+    const pod = await this.createPodManifest(spec, podName);
     await this.k8sClient.createPod(pod);
 
     // Update status

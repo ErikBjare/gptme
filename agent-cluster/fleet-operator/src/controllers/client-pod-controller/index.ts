@@ -70,7 +70,7 @@ export class ClientPodController implements ClientPodControllerContext {
   }
 
   // Pod creation
-  createPodManifest(spec: ClientPodSpec, name: string): k8s.V1Pod {
+  async createPodManifest(spec: ClientPodSpec, name: string): Promise<k8s.V1Pod> {
     return createPodManifest.call(this, spec, name);
   }
 

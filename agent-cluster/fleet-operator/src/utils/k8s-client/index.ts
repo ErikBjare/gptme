@@ -16,6 +16,8 @@ export class KubernetesClient implements K8sClientContext {
   public createPod: typeof podOperations.createPod;
   public getPod: typeof podOperations.getPod;
   public deletePod: typeof podOperations.deletePod;
+  public listPodsByLabel: typeof podOperations.listPodsByLabel;
+  public getGptmeServerImage: typeof podOperations.getGptmeServerImage;
 
   public createService: typeof serviceOperations.createService;
   public deleteService: typeof serviceOperations.deleteService;
@@ -37,6 +39,8 @@ export class KubernetesClient implements K8sClientContext {
     this.createPod = podOperations.createPod.bind(this);
     this.getPod = podOperations.getPod.bind(this);
     this.deletePod = podOperations.deletePod.bind(this);
+    this.listPodsByLabel = podOperations.listPodsByLabel.bind(this);
+    this.getGptmeServerImage = podOperations.getGptmeServerImage.bind(this);
 
     // Bind service operations
     this.createService = serviceOperations.createService.bind(this);
