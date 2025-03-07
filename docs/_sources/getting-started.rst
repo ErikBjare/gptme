@@ -31,16 +31,19 @@ To start your first chat, simply run:
 
     gptme
 
-It will then start an interactive chat session where you can talk with the AI assistant.
+This will start an interactive chat session with the AI assistant.
 
 If you haven't set a :doc:`LLM provider <providers>` API key in the environment or :doc:`configuration <config>`, you will be prompted for one which will be saved in the configuration file.
 
-For detailed usage instructions and examples, see :doc:`usage`.
+For detailed usage instructions, see :doc:`usage`.
+
+You can also try the :doc:`examples`.
 
 Next Steps
 ----------
 
-- Read the :doc:`usage` guide for detailed usage instructions and examples
+- Read the :doc:`usage` guide
+- Try the :doc:`examples`
 - Learn about available :doc:`tools`
 - Explore different :doc:`providers`
 - Set up the :doc:`server` for web access
