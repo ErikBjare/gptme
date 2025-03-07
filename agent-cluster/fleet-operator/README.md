@@ -1,85 +1,104 @@
-# GPTME Fleet Operator
+# Fleet Operator for GPTME
 
-A Kubernetes operator that manages client-specific GPTME pods for the gptme.ai platform.
-
-## Overview
-
-The Fleet Operator dynamically provisions and manages dedicated GPTME pods for each unique client. It works in conjunction with a Traefik API Gateway to route client requests to their assigned pods.
+A Kubernetes operator that manages client-specific GPTME pods dynamically.
 
 ## Features
 
-- Client identification and pod assignment
-- Dynamic pod provisioning based on client requests
-- Automatic pod lifecycle management with timeout-based cleanup
-- Resource limits and constraints
-- API for client connections and admin operations
+- Dynamic pod provisioning for clients
+- Pod lifecycle management with automatic cleanup
+- Client request routing through Traefik API Gateway
+- Resource limiting for client pods
 
 ## Architecture
 
-1. **Client Request Flow**:
-   - Client makes request to `/api/v1/{apiKey}/instances/{instanceId}`
-   - Traefik extracts the apiKey and adds it as X-API-Key header
-   - Request is forwarded to the Fleet Operator
-   - Operator creates/finds the ClientPod and returns connection details
+### Direct Pod Routing
 
-2. **Components**:
-   - **API Gateway**: Traefik for routing and client identification
-   - **Fleet Operator**: This TypeScript application
-   - **Custom Resources**: ClientPod CRD
+The latest implementation uses Traefik to directly route client requests to their dedicated pods:
 
-## Development
+1. Client makes request to `/api/v1/{apiKey}/instance/{instanceId}`
+2. Traefik middleware forwards request to Fleet Operator's `/api/route` endpoint
+3. Fleet Operator checks if a pod exists for this client:
+   - If yes: Returns routing headers to Traefik
+   - If no: Creates a new pod and returns a status indicating the pod is being created
+4. Based on the returned headers, Traefik routes the request directly to the client pod
+5. Client receives response directly from their pod
+
+This approach eliminates the need for clients to make a separate connection request after pod provisioning.
+
+## Setup
 
 ### Prerequisites
 
-- Node.js 20+
-- Kubernetes cluster (or minikube/kind for local development)
-- kubectl configured to connect to your cluster
+- Kubernetes cluster
+- Traefik installed as ingress controller
+- `kubectl` configured to access your cluster
 
-### Setup
+### Configuration
+
+1. Apply Traefik middleware for routing:
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: fleet-router
+  namespace: gptmingdom
+spec:
+  forwardAuth:
+    address: http://fleet-operator.gptmingdom.svc.cluster.local:8080/api/route
+    authResponseHeaders:
+      - X-Pod-Service
+      - X-Pod-Namespace
+      - X-Pod-Port
+    trustForwardHeader: true
+```
+
+2. Configure IngressRoute with the middleware:
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-routes
+  namespace: gptmingdom
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/api/v1`)
+      kind: Rule
+      middlewares:
+        - name: fleet-router
+      services:
+        - name: fleet-operator
+          port: 8080
+```
+
+## Testing
+
+You can test the direct routing functionality with:
+
+```bash
+npm run test:routing
+```
+
+This will:
+1. Make a request to the `/api/route` endpoint
+2. Check for the proper routing headers
+3. Verify the routing would work correctly
+
+## Development
 
 ```bash
 # Install dependencies
 npm install
 
-# Start in development mode
+# Run in development mode
 npm run dev
-```
 
-### Build
-
-```bash
-# Build TypeScript
+# Build for production
 npm run build
 
-# Build Docker image
-docker build -t fleet-operator:latest .
+# Run linting
+npm run lint
 ```
-
-## Deployment
-
-The operator is deployed via Kubernetes manifests in the `k8s/local/fleet-operator` directory.
-
-```bash
-# Apply the manifests
-kubectl apply -f k8s/local/fleet-operator/
-```
-
-## API Reference
-
-### Client API
-
-- `GET /instances/:instanceId` - Get or create a client pod
-  - Headers: `X-API-Key` (required)
-  - Response: Pod connection details
-
-### Admin API
-
-- `GET /admin/pods` - List all client pods
-- `DELETE /admin/pods/:name` - Delete a client pod
-
-## Environment Variables
-
-- `NAMESPACE` - Kubernetes namespace (default: from service account)
-- `POD_TEMPLATE` - Pod template name (default: 'gptme-client')
-- `LOG_LEVEL` - Logging level (default: 'info')
-- `HTTP_PORT` - HTTP server port (default: 8080)

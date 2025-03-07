@@ -52,7 +52,7 @@ manifests:
           additionalArguments:
             - "--api.insecure=true"
             - "--api.dashboard=true"
-            - "--log.level=INFO"
+            - "--log.level=DEBUG"
 deploy:
   kubectl: {}
 profiles:

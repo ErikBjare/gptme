@@ -80,7 +80,7 @@ export async function updateClientPodStatus(
     const currentStatus = clientPod.status || {};
     const phaseDiff =
       status.phase !== currentStatus.phase
-        ? `${clientPod.spec.clientId}: ${currentStatus.phase} -> ${status.phase})`
+        ? `${clientPod.spec.clientId}: ${currentStatus.phase} -> ${status.phase}`
         : "";
     const needsUpdate =
       phaseDiff ||

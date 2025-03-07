@@ -23,6 +23,7 @@ export async function handleClientRequest(
     if (existingClientPod) {
       // ClientPod exists, update last activity
       await this.updateClientPodStatus(name, {
+        ...existingClientPod.status,
         lastActivity: new Date().toISOString(),
       });
       return existingClientPod;

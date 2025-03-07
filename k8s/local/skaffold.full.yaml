@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta1
 kind: Config
-requires:
-  - path: ./skaffold.helm.yaml
-  - path: ./skaffold.light.yaml
 metadata:
-  name: gptmingdom-full
+  name: standalone-gptmingdom-full
+requires:
+  - path: ./common/skaffold.helm.yaml
+  - path: ./common/skaffold.light.yaml

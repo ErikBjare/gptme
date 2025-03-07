@@ -1,0 +1,43 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: common-gptmingdom-light
+build:
+  local:
+    push: false
+  artifacts:
+    - image: gptme-base
+      context: ../../..
+      docker:
+        dockerfile: scripts/Dockerfile
+    - image: gptme-server
+      context: ../../..
+      docker:
+        dockerfile: scripts/Dockerfile.server
+      requires:
+        - image: gptme-base
+          alias: BASE
+    - image: fleet-operator
+      context: ../../../agent-cluster/fleet-operator
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - ../gptme-agent/deployment.yaml
+    - ../gptme-agent/service.yaml
+    - ../gptme-agent/configmap.yaml
+    - ../gptme-agent/ingress.yaml
+    - ../gptme-agent/startup-script-configmap.yaml
+    - ../operator/deployment.yaml
+    - ../operator/service.yaml
+    - ../operator/rbac.yaml
+    - ../operator/crd.yaml
+    - ../operator/agents-ingress.yaml
+    - ../traefik/api-routes.yaml
+    - ../traefik/fleet-router-middleware.yaml
+deploy:
+  kubectl: {}
+profiles:
+  - name: dev
+    activation:
+      - kubeContext: minikube

@@ -1,0 +1,13 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: fleet-router
+  namespace: gptmingdom
+spec:
+  forwardAuth:
+    address: http://fleet-operator.gptmingdom.svc.cluster.local:8080/api/route
+    authResponseHeaders:
+      - X-Pod-Service
+      - X-Pod-Namespace
+      - X-Pod-Port
+    trustForwardHeader: true
