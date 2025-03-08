@@ -7,6 +7,8 @@ When prompting, it is important to provide clear instructions and avoid any ambi
 
 import logging
 import platform
+import shutil
+import subprocess
 from collections.abc import Generator, Iterable
 from datetime import datetime, timezone
 from pathlib import Path
@@ -268,10 +270,55 @@ def prompt_timeinfo() -> Generator[Message, None, None]:
     yield Message("system", prompt)
 
 
+def get_tree_output(workspace: Path) -> str | None:
+    """Get the output of `tree --gitignore .` if available."""
+    if get_config().get_env("GPTME_CONTEXT_TREE") not in ["1", "true"]:
+        return None
+
+    # Check if tree command is available
+    if shutil.which("tree") is None:
+        logger.warning(
+            "GPTME_CONTEXT_TREE is enabled, but 'tree' command is not available. Install it to use this feature."
+        )
+        return None
+
+    # TODO: check if in a git repository
+    #       use `git ls-files` instead?
+
+    try:
+        # Run tree command with --gitignore option
+        result = subprocess.run(
+            ["tree", "--gitignore", "."],
+            cwd=workspace,
+            capture_output=True,
+            text=True,
+            timeout=5,  # Add timeout to prevent hangs
+        )
+        if result.returncode != 0:
+            logger.warning(f"Failed to run tree command: {result.stderr}")
+            return None
+        # we allocate roughly a ~5000 token budget (~20000 characters)
+        if len(result.stdout) > 20000:
+            logger.warning("Tree output listing files is too long, skipping.")
+            return None
+
+        return result.stdout.strip()
+    except Exception as e:
+        logger.warning(f"Error running tree command: {e}")
+        return None
+
+
 def get_workspace_prompt(workspace: Path) -> str:
     # NOTE: needs to run after the workspace is initialized (i.e. initial prompt is constructed)
     # TODO: update this prompt if the files change
     # TODO: include `git status -vv`, and keep it up-to-date
+
+    # Get tree output if enabled
+    tree_section = ""
+    tree_output = get_tree_output(workspace)
+    if tree_output:
+        tree_section = f"## Project Structure\n\n```\n{tree_output}\n```\n\n"
+
     if project := get_project_config(workspace):
         files: list[Path] = []
         for fileglob in project.files:
@@ -289,10 +336,18 @@ def get_workspace_prompt(workspace: Path) -> str:
         for file in files:
             if file.exists():
                 files_str.append(f"```{file}\n{file.read_text()}\n```")
+
         return (
             "# Workspace Context\n\n"
-            "Selected project files, read more with cat:\n\n" + "\n\n".join(files_str)
+            + tree_section
+            + "Selected project files, read more with cat:\n\n"
+            + "\n\n".join(files_str)
         )
+
+    # If no project config but tree output is available, return just the tree
+    if tree_output:
+        return "# Workspace Context\n\n" + tree_section
+
     return ""
 
 
