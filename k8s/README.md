@@ -20,13 +20,18 @@ This directory contains Kubernetes manifests for deploying gptme.
 
 ## Local Development
 
+Pre-requisites:
+
+```bash
+# macOS
+brew install skaffold kubectl minikube helm k9s
+```
+
 To run gptme locally with Kubernetes:
 
 1. Make sure you have a Kubernetes cluster running (minikube, kind, k3d, etc.)
 2. Create a `.env` file in the repository root with your API key:
-
-```
-   ```
+   ```bash
    ANTHROPIC_API_KEY=your_api_key_here
    ```
 
