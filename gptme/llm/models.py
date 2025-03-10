@@ -145,6 +145,13 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
             "price_output": 0.60,
             "supports_vision": True,
         },
+        "gemini-2.0-flash-thinking-exp-01-21": {
+            "context": 1_048_576,
+            "max_output": 8192,
+            "price_input": 0.15,
+            "price_output": 0.60,
+            "supports_vision": True,
+        },
     },
     # https://api-docs.deepseek.com/quick_start/pricing
     "deepseek": {
