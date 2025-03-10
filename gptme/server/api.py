@@ -319,11 +319,14 @@ def api_conversation_generate(logfile: str):
                 manager.append(msg)
                 yield f"data: {flask.json.dumps({'role': 'assistant', 'content': output, 'stored': True})}\n\n"
 
-                # Recursively handle any new tool uses
-                if any(
-                    tooluse.is_runnable for tooluse in ToolUse.iter_from_content(output)
-                ):
-                    yield from generate()
+                # Execute any remaining tools and stream their output
+                tool_replies = list(execute_msg(msg, confirm_func))
+                for reply_msg in tool_replies:
+                    logger.debug(
+                        f"Tool output: {reply_msg.role} - {reply_msg.content[:100]}..."
+                    )
+                    manager.append(reply_msg)
+                    yield f"data: {flask.json.dumps({'role': reply_msg.role, 'content': reply_msg.content, 'stored': True})}\n\n"
 
         except GeneratorExit:
             logger.info("Client disconnected during generation, interrupting")
