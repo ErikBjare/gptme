@@ -26,7 +26,7 @@ from ..llm import _stream
 from ..llm.models import get_default_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..tools import ToolUse, execute_msg, init_tools
+from ..tools import ToolUse, execute_msg, init_tools, get_tools
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +197,10 @@ def api_conversation_generate(logfile: str):
     init_tools(None, workspace=manager.workspace)  # Initialize tools with workspace path
     print("[DEBUG] api_conversation_generate: Tools initialized")
 
+    # Get available tools
+    tools = [t for t in get_tools() if t.is_runnable()]
+    print(f"[DEBUG] api_conversation_generate: Available tools: {[t.name for t in tools]}")
+
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)
 
@@ -208,7 +212,7 @@ def api_conversation_generate(logfile: str):
         # Non-streaming response
         try:
             # Get complete response
-            output = "".join(_stream(msgs, model, tools=None))
+            output = "".join(_stream(msgs, model, tools=tools))
 
             # Store the message
             msg = Message("assistant", output)
@@ -263,17 +267,11 @@ def api_conversation_generate(logfile: str):
             # Stream tokens from the model
             logger.debug(f"Starting token stream with model {model}")
             for char in (
-                char for chunk in _stream(msgs, model, tools=None) for char in chunk
+                char for chunk in _stream(msgs, model, tools=tools) for char in chunk
             ):
                 output += char
                 # Send each token as a JSON event
                 yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
-
-                # Check for complete tool uses
-                tooluses = list(ToolUse.iter_from_content(output))
-                if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
-                    logger.debug("Found runnable tool use, breaking stream")
-                    break
 
             # Store the complete message
             logger.debug(f"Storing complete message: {output[:100]}...")
@@ -301,17 +299,12 @@ def api_conversation_generate(logfile: str):
                 for char in (
                     char
                     for chunk in _stream(
-                        prepare_messages(manager.log.messages), model, tools=None
+                        prepare_messages(manager.log.messages), model, tools=tools
                     )
                     for char in chunk
                 ):
                     output += char
                     yield f"data: {flask.json.dumps({'role': 'assistant', 'content': char, 'stored': False})}\n\n"
-
-                    # Check for complete tool uses
-                    tooluses = list(ToolUse.iter_from_content(output))
-                    if tooluses and any(tooluse.is_runnable for tooluse in tooluses):
-                        break
 
                 # Store the complete message
                 msg = Message("assistant", output)
