@@ -48,8 +48,12 @@ def api_conversations():
 @api.route("/api/conversations/<string:logfile>")
 def api_conversation(logfile: str):
     """Get a conversation."""
-    init_tools(None)  # FIXME: this is not thread-safe
     log = LogManager.load(logfile, lock=False)
+    # Initialize tools with the workspace path
+    print(f"[DEBUG] api_conversation: Initializing tools with workspace: {log.workspace}")
+    init_tools(None, workspace=log.workspace)  # FIXME: this is not thread-safe
+    print("[DEBUG] api_conversation: Tools initialized")
+    
     log_dict = log.to_dict(branches=True)
     # make all paths absolute or relative to workspace (no "../")
     for msg in log_dict["log"]:
@@ -97,15 +101,37 @@ def api_conversation_put(logfile: str):
     """Create or update a conversation."""
     msgs = []
     req_json = flask.request.json
-    if req_json and "messages" in req_json:
+    if not req_json:
+        return {"error": "No JSON data provided"}, 400
+
+    # Extract workspace path from request
+    workspace_path = req_json.get("workspace")
+    print(f"[DEBUG] Received workspace path in PUT request: {workspace_path}")
+    if not workspace_path:
+        return {"error": "Workspace path is required"}, 400
+
+    # Process messages if provided
+    if "messages" in req_json:
         for msg in req_json["messages"]:
             timestamp: datetime = datetime.fromisoformat(msg["timestamp"])
             msgs.append(Message(msg["role"], msg["content"], timestamp=timestamp))
 
+    # Create conversation directory
     logdir = get_logs_dir() / logfile
     if logdir.exists():
         raise ValueError(f"Conversation already exists: {logdir.name}")
     logdir.mkdir(parents=True)
+
+    # Create workspace symlink
+    workspace_symlink = logdir / "workspace"
+    workspace_path = Path(workspace_path).resolve()
+    if not workspace_symlink.exists():
+        workspace_symlink.symlink_to(workspace_path, target_is_directory=True)
+
+    # Initialize tools with workspace path
+    init_tools(None, workspace=workspace_path)
+
+    # Initialize and write log
     log = LogManager(msgs, logdir=logdir)
     log.write()
     return {"status": "ok"}
@@ -120,8 +146,15 @@ def api_conversation_post(logfile: str):
     req_json = flask.request.json
     branch = (req_json or {}).get("branch", "main")
     tool_allowlist = (req_json or {}).get("tools", None)
-    init_tools(tool_allowlist)  # FIXME: this is not thread-safe
+    
+    # Load log first to get workspace
     log = LogManager.load(logfile, branch=branch)
+    
+    # Initialize tools with workspace
+    print(f"[DEBUG] api_conversation_post: Initializing tools with workspace: {log.workspace}")
+    init_tools(tool_allowlist, workspace=log.workspace)  # FIXME: this is not thread-safe
+    print("[DEBUG] api_conversation_post: Tools initialized")
+    
     assert req_json
     assert "role" in req_json
     assert "content" in req_json
@@ -158,6 +191,11 @@ def api_conversation_generate(logfile: str):
         branch=req_json.get("branch", "main"),
         lock=False,
     )
+
+    # Initialize tools with the workspace path
+    print(f"[DEBUG] api_conversation_generate: Initializing tools with workspace: {manager.workspace}")
+    init_tools(None, workspace=manager.workspace)  # Initialize tools with workspace path
+    print("[DEBUG] api_conversation_generate: Tools initialized")
 
     # performs reduction/context trimming, if necessary
     msgs = prepare_messages(manager.log.messages)

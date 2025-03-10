@@ -124,7 +124,7 @@ class ShellSession:
         # close on exit
         atexit.register(self.close)
 
-    def _init(self):
+    def _init(self, workspace: Path | None = None):
         self.process = subprocess.Popen(
             ["bash"],
             stdin=subprocess.PIPE,
@@ -141,6 +141,10 @@ class ShellSession:
         self.run("export PAGER=")
         self.run("export GH_PAGER=")
         self.run("export GIT_PAGER=cat")
+        
+        # Change to workspace directory if provided
+        if workspace and workspace.exists():
+            self.run(f"cd {workspace}")
 
     def run(self, code: str, output=True) -> tuple[int | None, str, str]:
         """Runs a command in the shell and returns the output."""
@@ -228,11 +232,12 @@ class ShellSession:
 _shell: ShellSession | None = None
 
 
-def get_shell() -> ShellSession:
+def get_shell(workspace: Path | None = None) -> ShellSession:
     global _shell
     if _shell is None:
-        # init shell
+        # init shell with workspace
         _shell = ShellSession()
+        _shell._init(workspace=workspace)
     return _shell
 
 
@@ -240,6 +245,16 @@ def get_shell() -> ShellSession:
 def set_shell(shell: ShellSession) -> None:
     global _shell
     _shell = shell
+
+
+def init_shell(workspace: Path | None = None) -> 'ToolSpec':
+    """Initialize the shell tool with the given workspace."""
+    global tool
+    # Reset the shell session to use new workspace
+    global _shell
+    _shell = None
+    get_shell(workspace)
+    return tool
 
 
 # NOTE: This does not handle control flow words like if, for, while.
@@ -455,5 +470,6 @@ tool = ToolSpec(
             required=True,
         ),
     ],
+    init=init_shell,
 )
 __doc__ = tool.get_doc(__doc__)

@@ -4,6 +4,7 @@ import logging
 import pkgutil
 from collections.abc import Generator
 from functools import lru_cache
+from pathlib import Path
 
 from gptme.config import get_config
 from gptme.constants import INTERRUPT_CONTENT
@@ -80,12 +81,24 @@ def _discover_tools(module_names: frozenset[str]) -> list[ToolSpec]:
     return tools
 
 
-@lru_cache
 def init_tools(
     allowlist: frozenset[str] | None = None,
+    workspace: Path | None = None,
 ) -> None:
-    """Runs initialization logic for tools."""
-
+    """Runs initialization logic for tools.
+    
+    Args:
+        allowlist: Set of tool names to allow
+        workspace: Workspace directory path for tools that need it (e.g. shell)
+    """
+    print(f"[DEBUG] init_tools called with workspace: {workspace}")
+    print(f"[DEBUG] Current loaded tools: {[t.name for t in _loaded_tools]}")
+    
+    # Clear both the cache and loaded tools when workspace changes
+    init_tools.cache_clear()
+    clear_tools()  # This clears _loaded_tools
+    print("[DEBUG] Cache and loaded tools cleared")
+    
     config = get_config()
 
     if allowlist is None:
@@ -95,9 +108,10 @@ def init_tools(
 
     for tool in get_available_tools():
         if tool in _loaded_tools:
-            logger.warning("Tool '%s' already loaded", tool.name)
+            print(f"[DEBUG] Tool '{tool.name}' already loaded, skipping")
             continue
         if allowlist and tool.name not in allowlist:
+            print(f"[DEBUG] Tool '{tool.name}' not in allowlist, skipping")
             continue
         if not tool.available:
             continue
@@ -105,13 +119,22 @@ def init_tools(
             if not allowlist or tool.name not in allowlist:
                 continue
         if tool.init:
-            tool = tool.init()
+            # Pass workspace to shell tool initialization
+            if tool.name == "shell":
+                print(f"[DEBUG] Initializing shell tool with workspace: {workspace}")
+                tool = tool.init(workspace=workspace)
+            else:
+                tool = tool.init()
 
         _loaded_tools.append(tool)
+        print(f"[DEBUG] Tool '{tool.name}' loaded")
 
     for tool_name in allowlist or []:
         if not has_tool(tool_name):
             raise ValueError(f"Tool '{tool_name}' not found")
+
+# Add cache decorator after function definition
+init_tools = lru_cache(init_tools)
 
 
 def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, None]:
