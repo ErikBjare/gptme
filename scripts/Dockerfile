@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.10-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -24,7 +24,7 @@ RUN /opt/poetry/bin/poetry self add poetry-plugin-export && \
     /opt/poetry/bin/poetry build
 
 # Final stage
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y \
