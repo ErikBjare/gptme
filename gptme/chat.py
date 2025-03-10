@@ -1,15 +1,12 @@
-import errno
 import logging
 import os
-import re
 import sys
 import termios
-import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
 from typing import cast
 
-from .commands import action_descriptions, execute_cmd
+from .commands import execute_cmd
 from .config import get_config
 from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
@@ -27,7 +24,6 @@ from .tools import (
     has_tool,
     set_tool_format,
 )
-from .tools.browser import read_url
 from .tools.tts import (
     audio_queue,
     speak,
@@ -36,7 +32,7 @@ from .tools.tts import (
 )
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
-from .util.context import run_precommit_checks, use_fresh_context
+from .util.context import include_paths, run_precommit_checks
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
 from .util.prompt import add_history, get_input
@@ -128,8 +124,7 @@ def chat(
         if prompt_msgs:
             while prompt_msgs:
                 msg = prompt_msgs.pop(0)
-                if not msg.content.startswith("/") and msg.role == "user":
-                    msg = _include_paths(msg, workspace)
+                msg = include_paths(msg, workspace)
                 manager.append(msg)
                 # if prompt is a user-command, execute it
                 if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
@@ -265,7 +260,7 @@ def step(
     ):  # pragma: no cover
         inquiry = prompt_user()
         msg = Message("user", inquiry, quiet=True)
-        msg = _include_paths(msg, workspace)
+        msg = include_paths(msg, workspace)
         yield msg
         log = log.append(msg)
 
@@ -329,175 +324,6 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     return get_input(prompt)
 
 
-def _find_potential_paths(content: str) -> list[str]:
-    """
-    Find potential file paths and URLs in a message content.
-    Excludes content within code blocks.
-
-    Args:
-        content: The message content to search
-
-    Returns:
-        List of potential paths/URLs found in the message
-    """
-    # Remove code blocks to avoid matching paths inside them
-    content_no_codeblocks = re.sub(r"```[\s\S]*?```", "", content)
-
-    # List current directory contents for relative path matching
-    cwd_files = [f.name for f in Path.cwd().iterdir()]
-
-    paths = []
-
-    def is_path_like(word: str) -> bool:
-        """Helper to check if a word looks like a path"""
-        return (
-            # Absolute/home/relative paths
-            any(word.startswith(s) for s in ["/", "~/", "./"])
-            # URLs
-            or word.startswith("http")
-            # Contains slash (for backtick-wrapped paths)
-            or "/" in word
-            # Files in current directory or subdirectories
-            or any(word.split("/", 1)[0] == file for file in cwd_files)
-        )
-
-    # First find backtick-wrapped content
-    for match in re.finditer(r"`([^`]+)`", content_no_codeblocks):
-        word = match.group(1).strip()
-        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
-        if is_path_like(word):
-            paths.append(word)
-
-    # Then find non-backtick-wrapped words
-    # Remove backtick-wrapped content first to avoid double-processing
-    content_no_backticks = re.sub(r"`[^`]+`", "", content_no_codeblocks)
-    for word in re.split(r"\s+", content_no_backticks):
-        word = word.strip()
-        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
-        if not word:
-            continue
-
-        if is_path_like(word):
-            paths.append(word)
-
-    return paths
-
-
-def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
-    """
-    Searches the message for any valid paths and:
-     - In legacy mode (default):
-       - includes the contents of text files as codeblocks
-       - includes images as msg.files
-     - In fresh context mode (GPTME_FRESH_CONTEXT=1):
-       - breaks the append-only nature of the log, but ensures we include fresh file contents
-       - includes all files in msg.files
-       - contents are applied right before sending to LLM (only paths stored in the log)
-
-    Args:
-        msg: Message to process
-        workspace: If provided, paths will be stored relative to this directory
-    """
-    # TODO: add support for directories?
-    assert msg.role == "user"
-
-    append_msg = ""
-    files = []
-
-    # Find potential paths in message
-    for word in _find_potential_paths(msg.content):
-        logger.debug(f"potential path/url: {word=}")
-        # If not using fresh context, include text file contents in the message
-        if not use_fresh_context() and (contents := _parse_prompt(word)):
-            append_msg += "\n\n" + contents
-        else:
-            # if we found an non-text file, include it in msg.files
-            file = _parse_prompt_files(word)
-            if file:
-                # Store path relative to workspace if provided
-                file = file.expanduser()
-                if workspace and not file.is_absolute():
-                    file = file.absolute().relative_to(workspace)
-                files.append(file)
-
-    if files:
-        msg = msg.replace(files=msg.files + files)
-
-    # append the message with the file contents
-    if append_msg:
-        msg = msg.replace(content=msg.content + append_msg)
-
-    return msg
-
-
-def _parse_prompt(prompt: str) -> str | None:
-    """
-    Takes a string that might be a path or URL,
-    and if so, returns the contents of that file wrapped in a codeblock.
-    """
-    # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
-        return None
-
-    try:
-        # check if prompt is a path, if so, replace it with the contents of that file
-        f = Path(prompt).expanduser()
-        if f.exists() and f.is_file():
-            return f"```{prompt}\n{f.read_text()}\n```"
-    except OSError as oserr:
-        # some prompts are too long to be a path, so we can't read them
-        if oserr.errno != errno.ENAMETOOLONG:
-            pass
-        raise
-    except UnicodeDecodeError:
-        # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
-        # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
-        # logger.warning(f"Failed to read file {prompt}: not a text file")
-        return None
-
-    # check if any word in prompt is a path or URL,
-    # if so, append the contents as a code block
-    words = prompt.split()
-    paths = []
-    urls = []
-    for word in words:
-        f = Path(word).expanduser()
-        if f.exists() and f.is_file():
-            paths.append(word)
-            continue
-        try:
-            p = urllib.parse.urlparse(word)
-            if p.scheme and p.netloc:
-                urls.append(word)
-        except ValueError:
-            pass
-
-    result = ""
-    if paths or urls:
-        result += "\n\n"
-        if paths:
-            logger.debug(f"{paths=}")
-        if urls:
-            logger.debug(f"{urls=}")
-    for path in paths:
-        result += _parse_prompt(path) or ""
-
-    if not has_tool("browser"):
-        logger.warning("Browser tool not available, skipping URL read")
-    else:
-        for url in urls:
-            try:
-                content = read_url(url)
-                result += f"```{url}\n{content}\n```"
-            except Exception as e:
-                logger.warning(f"Failed to read URL {url}: {e}")
-
-    return result
-
-
 def check_for_modifications(log: Log) -> bool:
     """Check if there are any file modifications in last 3 messages or since last user message."""
     messages_since_user = []
@@ -521,40 +347,6 @@ def check_for_modifications(log: Log) -> bool:
 def check_changes() -> str | None:
     """Run lint/pre-commit checks after file modifications."""
     return run_precommit_checks()
-
-
-def _parse_prompt_files(prompt: str) -> Path | None:
-    """
-    Takes a string that might be a supported file path (image, text, PDF) and returns the path.
-    Files added here will either be included inline (legacy mode) or in fresh context (fresh context mode).
-    """
-
-    # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
-        return None
-
-    try:
-        p = Path(prompt).expanduser()
-        if not (p.exists() and p.is_file()):
-            return None
-
-        # Try to read as text
-        try:
-            p.read_text()
-            return p
-        except UnicodeDecodeError:
-            # If not text, check if supported binary format
-            if p.suffix[1:].lower() in ["png", "jpg", "jpeg", "gif", "pdf"]:
-                return p
-            return None
-    except OSError as oserr:  # pragma: no cover
-        # some prompts are too long to be a path, so we can't read them
-        if oserr.errno != errno.ENAMETOOLONG:
-            return None
-        raise
 
 
 def _init_workspace(workspace: Path | None, logdir: Path | None = None) -> Path:

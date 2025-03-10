@@ -8,6 +8,10 @@ projects
 demos
 eval[_-]results*
 
+# `tree --gitignore` wont handle the [_-] above
+eval-results*
+eval_results*
+
 # logs
 *.log
 *logs/

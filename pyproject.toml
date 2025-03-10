@@ -101,8 +101,8 @@ types-lxml = "*"
 [tool.poetry.extras]
 server = ["flask", "flask-cors"]
 browser = ["playwright"]
-datascience = ["matplotlib", "pandas", "numpy", "pillow"]
-computer = ["pillow"]
+datascience = ["matplotlib", "pandas", "numpy"]  # pillow (non-opt)
+computer = []  # pillow (non-opt)
 youtube = ["youtube_transcript_api"]
 tts = ["sounddevice", "scipy", "numpy"]
 all = [
@@ -111,9 +111,9 @@ all = [
     # browser
     "playwright",
     # datascience
-    "matplotlib", "pandas", "numpy", "scipy", "pillow",
+    "matplotlib", "pandas", "numpy", "scipy", # "pillow",
     # computer
-    "pillow",
+    # "pillow",
     # youtube transcript tool
     "youtube_transcript_api",
     # tts
