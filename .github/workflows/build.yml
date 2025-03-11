@@ -99,6 +99,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SHOULD_PUSH: ${{ github.ref == 'refs/tags/v*' || github.ref == 'refs/heads/master' }}
+    permissions:
+      packages: write
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Docker Buildx
