@@ -30,4 +30,4 @@ August
 
 March
 
-- `Initial commit <https://github.com/ErikBjare/gptme/commit/d00e9aae68cbd6b89bbc474ed7721d08798f96dc>`_
+- `Initial commit <https://github.com/gptme/gptme/commit/d00e9aae68cbd6b89bbc474ed7721d08798f96dc>`_

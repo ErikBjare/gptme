@@ -19,14 +19,14 @@
 
 <!-- Badges -->
 <p align="center">
-  <a href="https://github.com/ErikBjare/gptme/actions/workflows/build.yml">
-    <img src="https://github.com/ErikBjare/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
+  <a href="https://github.com/gptme/gptme/actions/workflows/build.yml">
+    <img src="https://github.com/gptme/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
   </a>
-  <a href="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml">
-    <img src="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml/badge.svg" alt="Docs Build Status" />
+  <a href="https://github.com/gptme/gptme/actions/workflows/docs.yml">
+    <img src="https://github.com/gptme/gptme/actions/workflows/docs.yml/badge.svg" alt="Docs Build Status" />
   </a>
-  <a href="https://codecov.io/gh/ErikBjare/gptme">
-    <img src="https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
+  <a href="https://codecov.io/gh/gptme/gptme">
+    <img src="https://codecov.io/gh/gptme/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
   </a>
   <br>
   <a href="https://pypi.org/project/gptme/">
@@ -207,9 +207,9 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Modern web interface at [chat.gptme.org](https://chat.gptme.org) ([gptme-webui])
   - Simple built-in web UI included in the Python package
   - [Server][docs-server] with REST API
-- 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
+- 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/gptme/gptme/issues/216))
   - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
-- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
+- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/gptme/gptme/issues/143) and [#259](https://github.com/gptme/gptme/issues/259))
   - Create your own agent with persistence using [gptme-agent-template][agent-template], like [Bob][bob].
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
@@ -235,16 +235,16 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Most functionality is implemented as [tools][docs-tools], making it easy to add new features.
 - 🧪 Extensive testing, high coverage.
 - 🧹 Clean codebase, checked and formatted with `mypy`, `ruff`, and `pyupgrade`.
-- 🤖 [GitHub Bot][docs-bot] to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
-  - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
+- 🤖 [GitHub Bot][docs-bot] to request changes from comments! (see [#16](https://github.com/gptme/gptme/issues/16))
+  - Operates in this repo! (see [#18](https://github.com/gptme/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
 - 📊 [Evaluation suite][docs-evals] for testing capabilities of different models
 - 📝 [gptme.vim][gptme.vim] for easy integration with vim
 
 ### 🚧 In progress
 
-- 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
-- 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
+- 🌳 Tree-based conversation structure (see [#17](https://github.com/gptme/gptme/issues/17))
+- 📜 RAG to automatically include context from local files (see [#59](https://github.com/gptme/gptme/issues/59))
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
@@ -336,7 +336,7 @@ Options:
 
 ### ⭐ Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/ErikBjare/gptme.svg)](https://starchart.cc/ErikBjare/gptme)
+[![Stargazers over time](https://starchart.cc/gptme/gptme.svg)](https://starchart.cc/gptme/gptme)
 
 ### 📈 Download Stats
 
@@ -357,10 +357,10 @@ Options:
 <!-- links -->
 [website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
-[github]: https://github.com/ErikBjare/gptme
-[gptme.vim]: https://github.com/ErikBjare/gptme.vim
-[gptme-webui]: https://github.com/ErikBjare/gptme-webui
-[agent-template]: https://github.com/ErikBjare/gptme-agent-template
+[github]: https://github.com/gptme/gptme
+[gptme.vim]: https://github.com/gptme/gptme.vim
+[gptme-webui]: https://github.com/gptme/gptme-webui
+[agent-template]: https://github.com/gptme/gptme-agent-template
 [bob]: https://github.com/TimeToBuildBob
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html

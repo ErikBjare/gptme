@@ -90,7 +90,7 @@ site: site/dist/index.html site/dist/docs
 .PHONY: site/dist/index.html
 site/dist/index.html: README.md site/dist/style.css site/template.html
 	mkdir -p site/dist
-	sed '1s/Website/GitHub/;1s|https://gptme.org/|https://github.com/ErikBjare/gptme|' README.md | \
+	sed '1s/Website/GitHub/;1s|https://gptme.org/|https://github.com/gptme/gptme|' README.md | \
 	cat README.md \
 		| sed '0,/Website/{s/Website/GitHub/}' - \
 		| sed '0,/gptme.org\/\"/{s/gptme.org\/\"/github.com\/ErikBjare\/gptme\"/}' - \

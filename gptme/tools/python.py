@@ -34,7 +34,7 @@ logger = getLogger(__name__)
 
 # TODO: launch the IPython session in the current venv, if any, instead of the pipx-managed gptme venv (for example) in which gptme itself runs
 #       would let us use libraries installed with `pip install` in the current venv
-#       https://github.com/ErikBjare/gptme/issues/29
+#       https://github.com/gptme/gptme/issues/29
 
 # IPython instance
 _ipython: "InteractiveShell | None" = None

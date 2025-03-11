@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Shows in rankings on openrouter.ai
 openrouter_headers = {
-    "HTTP-Referer": "https://github.com/ErikBjare/gptme",
+    "HTTP-Referer": "https://github.com/gptme/gptme",
     "X-Title": "gptme",
 }
 
