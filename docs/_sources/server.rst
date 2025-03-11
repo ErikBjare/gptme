@@ -33,11 +33,11 @@ Simply start the server to access the interface at http://localhost:5000
 Fancy Web UI
 ------------
 
-A modern, feature-rich web interface for gptme is available as a separate project `gptme-webui <https://github.com/ErikBjare/gptme-webui>`_. It is being built with `gptengineer.app <https://gptengineer.app>`_.
+A modern, feature-rich web interface for gptme is available as a separate project `gptme-webui <https://github.com/gptme/gptme-webui>`_. It is being built with `gptengineer.app <https://gptengineer.app>`_.
 
 You can access it directly at `gptme.gptengineer.run <https://gptme.gptengineer.run>`_.
 
-To serve gptme-webui locally, see the `README <https://github.com/ErikBjare/gptme-webui>`_.
+To serve gptme-webui locally, see the `README <https://github.com/gptme/gptme-webui>`_.
 
 Features:
 
@@ -62,7 +62,7 @@ To run the computer use interface in Docker, follow these steps:
 .. code-block:: bash
 
    # Clone the repository
-   git clone https://github.com/ErikBjare/gptme.git
+   git clone https://github.com/gptme/gptme.git
    cd gptme
    # Build container
    make build-docker-computer

@@ -8,7 +8,7 @@ We will be using shell scripts, cron jobs, and other tools to automate the workf
 
 .. note::
 
-   This is a work in progress. We intend to make gptme more powerful for automations, see `issue #143 <https://github.com/ErikBjare/gptme/issues/143>`_ for more details on this plan.
+   This is a work in progress. We intend to make gptme more powerful for automations, see `issue #143 <https://github.com/gptme/gptme/issues/143>`_ for more details on this plan.
 
 
 

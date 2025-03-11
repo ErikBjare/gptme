@@ -26,10 +26,10 @@ To see example output without running the commands yourself, check out the :doc:
     gptme 'suggest improvements to my vimrc'
 
     # can read URLs (if browser tool is available)
-    gptme 'implement this' https://github.com/ErikBjare/gptme/issues/286
+    gptme 'implement this' https://github.com/gptme/gptme/issues/286
 
     # can use `gh` shell tool to read issues, PRs, etc.
-    gptme 'implement ErikBjare/gptme/issues/286'
+    gptme 'implement gptme/gptme/issues/286'
 
     # create new projects
     gptme 'create a performant n-body simulation in rust'
@@ -41,7 +41,7 @@ To see example output without running the commands yourself, check out the :doc:
     # resume the last conversation
     gptme -r
 
-Do you have a cool example? Share it with us in the `Discussions <https://github.com/ErikBjare/gptme/discussions>`_!
+Do you have a cool example? Share it with us in the `Discussions <https://github.com/gptme/gptme/discussions>`_!
 
 .. toctree::
    :maxdepth: 2

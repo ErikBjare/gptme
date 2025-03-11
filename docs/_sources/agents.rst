@@ -21,7 +21,7 @@ gptme agents are git-based and all their data is stored in a git repository. Thi
 
 They leverage the ``gptme.toml`` :doc:`project configuration file <config>` using a particular set of prompts and directory structure which makes it capable to keep a journal, track tasks, remember things, and more.
 
-You can create your own agent with the `gptme-agent-template <https://github.com/ErikBjare/gptme-agent-template/>`_.
+You can create your own agent with the `gptme-agent-template <https://github.com/gptme/gptme-agent-template/>`_.
 
 Bob
 ---
