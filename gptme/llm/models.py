@@ -222,8 +222,12 @@ MODELS: dict[Provider, dict[str, _ModelDictMeta]] = {
         },
     },
     "nvidia": {},
+    "azure": {},
     "local": {},
 }
+
+# check that all providers have a MODELS entry
+assert set(PROVIDERS) == set(MODELS.keys())
 
 
 def get_default_model() -> ModelMeta | None:
