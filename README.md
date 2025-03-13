@@ -307,6 +307,9 @@ Usage: gptme [OPTIONS] [PROMPTS]...
     /help         Show this help message
     /exit         Exit the program
 
+  Keyboard shortcuts:
+    Ctrl+J        Insert a new line without executing the prompt
+
 Options:
   -n, --name TEXT        Name of conversation. Defaults to generating a random
                          name.

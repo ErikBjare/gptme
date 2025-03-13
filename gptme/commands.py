@@ -245,6 +245,11 @@ def _gen_help(incl_langtags: bool = True) -> Generator[str, None, None]:
     for cmd, desc in action_descriptions.items():
         yield f"  /{cmd.ljust(max_cmdlen)}  {desc}"
 
+    yield ""
+    yield "Keyboard shortcuts:"
+    yield ""
+    yield "  Ctrl+J        Insert a new line without executing the prompt"
+
     if incl_langtags:
         yield ""
         yield "To execute code with supported tools, use the following syntax:"

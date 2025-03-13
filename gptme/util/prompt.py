@@ -11,6 +11,7 @@ from typing import Any
 
 from gptme.llm.models import get_default_model
 from prompt_toolkit import PromptSession
+from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
 from prompt_toolkit.document import Document
@@ -390,6 +391,18 @@ def get_prompt_session() -> PromptSession:
         history = FileHistory(str(history_path))
         completer = GptmeCompleter()
 
+        kb = KeyBindings()
+
+        @kb.add("c-j")  # Add Ctrl+J support for newline
+        def _(event):
+            """Insert newline on Ctrl+J"""
+            event.current_buffer.insert_text("\n")
+
+        @kb.add("enter")
+        def _(event):
+            """Submit on Enter."""
+            event.current_buffer.validate_and_handle()
+
         _prompt_session = PromptSession(
             history=history,
             completer=completer,
@@ -397,6 +410,8 @@ def get_prompt_session() -> PromptSession:
             auto_suggest=AutoSuggestFromHistory(),
             enable_history_search=True,
             complete_style=CompleteStyle.READLINE_LIKE,
+            multiline=True,
+            key_bindings=kb,
         )
     return _prompt_session
 
