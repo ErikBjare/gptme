@@ -393,7 +393,7 @@ def get_prompt_session() -> PromptSession:
 
         kb = KeyBindings()
 
-        @kb.add("c-j")  # Support both Ctrl+J
+        @kb.add("c-j")  # Add Ctrl+J support for newline
         def _(event):
             """Insert newline on Ctrl+J"""
             event.current_buffer.insert_text("\n")
