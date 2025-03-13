@@ -9,7 +9,7 @@ To get an understanding about how it works, the easiest way is to try it out you
 
 It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny :ref:`server:Web UI` with basic functionality.
 
-See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ file for more general information about the project.
+See the `README <https://github.com/gptme/gptme/blob/master/README.md>`_ file for more general information about the project.
 
 .. note::
     This documentation site is still under construction.
@@ -47,13 +47,13 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    alternatives
    arewetiny
    timeline
-   Changelog <https://github.com/ErikBjare/gptme/releases>
+   Changelog <https://github.com/gptme/gptme/releases>
 
 .. toctree::
    :caption: External
    :maxdepth: 2
 
-   GitHub <https://github.com/ErikBjare/gptme>
+   GitHub <https://github.com/gptme/gptme>
    Discord <https://discord.gg/NMaCmmkxWv>
    X <https://x.com/gptmeorg>
 

@@ -152,7 +152,7 @@ runs:
       run: |
         # download shorten_details script
         SCRIPTDIR=$(mktemp -d)
-        curl -s https://raw.githubusercontent.com/ErikBjare/gptme/master/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
+        curl -s https://raw.githubusercontent.com/gptme/gptme/master/scripts/shorten_details.py > $SCRIPTDIR/shorten_details.py
         chmod +x $SCRIPTDIR/shorten_details.py
 
         NUM=${{ github.event.issue.number }}

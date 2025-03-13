@@ -3,12 +3,27 @@ Text-to-speech (TTS) tool for generating audio from text.
 
 Uses Kokoro for local TTS generation.
 
-Note:
-    To use this tool, you also need run the Kokoro TTS server: ``./scripts/tts_server.py``
+.. rubric:: Usage
 
-Environment Variables:
-    GPTME_TTS_VOICE: Set the voice to use for TTS. Available voices depend on the TTS server.
-    GPTME_VOICE_FINISH: If set to "true" or "1", waits for speech to finish before exiting. This is useful when you want to ensure the full message is spoken.
+.. code-block:: bash
+
+    # Install gptme with TTS extras
+    pipx install gptme[tts]
+
+    # Clone gptme repository
+    git clone https://github.com/gptme/gptme.git
+    cd gptme
+
+    # Run the Kokoro TTS server (needs uv installed)
+    ./scripts/tts_server.py
+
+    # Start gptme (should detect the running TTS server)
+    gptme 'hello, testing tts'
+
+.. rubric:: Environment Variables
+
+- ``GPTME_TTS_VOICE``: Set the voice to use for TTS. Available voices depend on the TTS server.
+- ``GPTME_VOICE_FINISH``: If set to "true" or "1", waits for speech to finish before exiting. This is useful when you want to ensure the full message is spoken.
 """
 
 import io
@@ -58,8 +73,10 @@ current_volume = 1.0
 current_speed = 1.0
 
 
-re_thinking = re.compile(r"<thinking>.*?(\n</thinking>|$)", flags=re.DOTALL)
+# Regular expressions for cleaning text
+re_thinking = re.compile(r"<think(ing)?>.*?(\n</think(ing)?>|$)", flags=re.DOTALL)
 re_tool_use = re.compile(r"```[\w\. ~/\-]+\n(.*?)(\n```|$)", flags=re.DOTALL)
+re_markdown_header = re.compile(r"^(#+)\s+(.*?)$", flags=re.MULTILINE)
 
 
 def set_speed(speed):
@@ -238,6 +255,7 @@ def clean_for_speech(content: str) -> str:
     - **Italic** markup
     - Additional (details) that may not need to be spoken
     - Emojis and other non-speech content
+    - Hash symbols from Markdown headers (e.g., "# Header" → "Header")
 
     Returns the cleaned content suitable for speech.
     """
@@ -246,6 +264,9 @@ def clean_for_speech(content: str) -> str:
 
     # Remove tool use blocks
     content = re_tool_use.sub("", content)
+
+    # Replace Markdown headers with just the header text (removing hash symbols)
+    content = re_markdown_header.sub(r"\2", content)
 
     # Remove **Italic** markup
     content = re.sub(r"\*\*(.*?)\*\*", r"\1", content)

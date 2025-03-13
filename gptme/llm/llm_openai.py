@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Shows in rankings on openrouter.ai
 openrouter_headers = {
-    "HTTP-Referer": "https://github.com/ErikBjare/gptme",
+    "HTTP-Referer": "https://github.com/gptme/gptme",
     "X-Title": "gptme",
 }
 
@@ -40,8 +40,13 @@ def init(provider: Provider, config: Config):
     from openai import AzureOpenAI, OpenAI  # fmt: skip
 
     if provider == "openai":
-        api_key = config.get_env_required("OPENAI_API_KEY")
-        clients[provider] = OpenAI(api_key=api_key)
+        proxy_key = config.get_env("LLM_PROXY_API_KEY")
+        proxy_url = config.get_env("LLM_PROXY_URL")
+        api_key = proxy_key or config.get_env_required("OPENAI_API_KEY")
+        clients[provider] = OpenAI(
+            api_key=api_key,
+            base_url=proxy_url or None,
+        )
     elif provider == "azure":
         api_key = config.get_env_required("AZURE_OPENAI_API_KEY")
         azure_endpoint = config.get_env_required("AZURE_OPENAI_ENDPOINT")
