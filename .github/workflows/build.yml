@@ -146,6 +146,17 @@ jobs:
         push: true
 
     # Build and push eval image
+    - name: Build and push Docker image (server)
+      uses: docker/build-push-action@v6
+      with:
+        tags: |
+          ghcr.io/${{ env.OWNER_LC }}/gptme-server:latest
+          ghcr.io/${{ env.OWNER_LC }}/gptme-server:${{ env.SANITIZED_REF_NAME }}
+        file: ./scripts/Dockerfile.server
+        context: .
+        push: ${{ env.SHOULD_PUSH }}
+
+    # Build and push eval image
     - name: Build and push Docker image (eval)
       uses: docker/build-push-action@v6
       with:
