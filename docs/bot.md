@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: run gptme-bot action
-        uses: ErikBjare/gptme/.github/actions/bot@master
+        uses: gptme/gptme/.github/actions/bot@master
         with:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

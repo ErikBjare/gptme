@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     import anthropic.types  # fmt: skip
     from anthropic import Anthropic  # fmt: skip
 
+
 logger = logging.getLogger(__name__)
 
 _anthropic: "Anthropic | None" = None
@@ -94,12 +95,14 @@ def retry_generator_on_overloaded(max_retries: int = 5, base_delay: float = 1.0)
 
 def init(config):
     global _anthropic
-    api_key = config.get_env_required("ANTHROPIC_API_KEY")
+    proxy_key = config.get_env("LLM_PROXY_API_KEY")
+    api_key = proxy_key or config.get_env_required("ANTHROPIC_API_KEY")
     from anthropic import Anthropic  # fmt: skip
 
     _anthropic = Anthropic(
         api_key=api_key,
         max_retries=5,
+        base_url=config.get_env("LLM_PROXY_URL", None),
     )
 
 

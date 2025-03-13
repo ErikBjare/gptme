@@ -98,7 +98,7 @@ templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 extlinks = {
-    "issue": ("https://github.com/ErikBjare/gptme/issues/%s", "issue #"),
+    "issue": ("https://github.com/gptme/gptme/issues/%s", "issue #"),
 }
 
 # Prefix each section label with the name of the document it is in, followed by a colon.
@@ -134,13 +134,13 @@ html_logo = "../media/logo.png"
 html_favicon = "../media/logo.png"
 
 html_theme_options = {
-    "repository_url": "https://github.com/ErikBjare/gptme",
+    "repository_url": "https://github.com/gptme/gptme",
     "path_to_docs": "docs",
     "use_repository_button": True,
     "use_edit_page_button": True,
     # "extra_navbar": """
     # <p>
-    #     Back to <a href="https://github.com/ErikBjare/gptme">GitHub</a>
+    #     Back to <a href="https://github.com/gptme/gptme">GitHub</a>
     # </p>""",
 }
 

@@ -42,7 +42,7 @@ def search(query, engine="duckduckgo"):
 def test_read_url():
     content = read_url("https://gptme.org/")
     assert "Getting Started" in content
-    content = read_url("https://github.com/ErikBjare/gptme/issues/205")
+    content = read_url("https://github.com/gptme/gptme/issues/205")
     assert "lynx-backed browser tool" in content
 
 

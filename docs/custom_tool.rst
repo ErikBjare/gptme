@@ -69,19 +69,19 @@ For examples of script-based tools, see:
 **gptme-contrib**
     A collection of community-contributed tools and scripts:
 
-    - `Twitter CLI <https://github.com/ErikBjare/gptme-contrib/blob/master/scripts/twitter.py>`_: Twitter client with OAuth support
-    - `Perplexity CLI <https://github.com/ErikBjare/gptme-contrib/blob/master/scripts/perplexity.py>`_: Perplexity search tool
+    - `Twitter CLI <https://github.com/gptme/gptme-contrib/blob/master/scripts/twitter.py>`_: Twitter client with OAuth support
+    - `Perplexity CLI <https://github.com/gptme/gptme-contrib/blob/master/scripts/perplexity.py>`_: Perplexity search tool
 
 **Standalone Tools**
     Independent tool repositories:
 
-    - `gptme-rag <https://github.com/ErikBjare/gptme-rag/>`_: Document indexing and retrieval
+    - `gptme-rag <https://github.com/gptme/gptme-rag/>`_: Document indexing and retrieval
 
 For examples of custom tools, see:
 
-- `Screenshot tool <https://github.com/ErikBjare/gptme/blob/master/gptme/tools/screenshot.py>`_: Takes screenshots
-- `Browser tool <https://github.com/ErikBjare/gptme/blob/master/gptme/tools/browser.py>`_: Web browsing and screenshots
-- `Vision tool <https://github.com/ErikBjare/gptme/blob/master/gptme/tools/vision.py>`_: Image viewing and analysis
+- `Screenshot tool <https://github.com/gptme/gptme/blob/master/gptme/tools/screenshot.py>`_: Takes screenshots
+- `Browser tool <https://github.com/gptme/gptme/blob/master/gptme/tools/browser.py>`_: Web browsing and screenshots
+- `Vision tool <https://github.com/gptme/gptme/blob/master/gptme/tools/vision.py>`_: Image viewing and analysis
 
 Basic Custom Tool Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -150,7 +150,7 @@ This lets Python locate your module during development and testing without requi
 
 Community Tools
 ---------------
-The `gptme-contrib <https://github.com/ErikBjare/gptme-contrib>`_ repository provides a collection of community-contributed tools and scripts.
+The `gptme-contrib <https://github.com/gptme/gptme-contrib>`_ repository provides a collection of community-contributed tools and scripts.
 This makes it easier to:
 
 - Share tools between agents

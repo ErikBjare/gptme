@@ -51,4 +51,4 @@ Next Steps
 Support
 -------
 
-For any issues, please visit our `issue tracker <https://github.com/ErikBjare/gptme/issues>`_.
+For any issues, please visit our `issue tracker <https://github.com/gptme/gptme/issues>`_.
