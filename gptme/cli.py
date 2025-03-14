@@ -142,11 +142,13 @@ The interface provides user commands that can be used to interact with the syste
     help="Path to MCP servers configuration file.",
 )
 @click.option(
-    "--mcp-servers",
-    default=None,
-    help="Comma-separated list of MCP server IDs to use.",
+    "--mcp-enable",
+    is_flag=True,
+    help="Enable Model Context Protocol integration.",
 )
+@click.pass_context
 def main(
+    ctx,
     prompts: list[str],
     prompt_system: str,
     name: str,
@@ -162,7 +164,7 @@ def main(
     resume: bool,
     workspace: str | None,
     mcp_config: str | None,
-    mcp_servers: str | None,
+    mcp_enable: bool,
 ):
     """Main entrypoint for the CLI."""
     if version:
@@ -298,7 +300,7 @@ def main(
             tool_allowlist=tool_allowlist,
             tool_format=selected_tool_format,
             mcp_config=mcp_config,
-            mcp_servers=mcp_servers,
+            mcp_enable=mcp_enable,
         )
     except RuntimeError as e:
         logger.error(e)

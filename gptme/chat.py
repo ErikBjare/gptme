@@ -15,7 +15,7 @@ from .config import get_config
 from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
 from .llm import reply
-from .llm.models import get_model
+from .llm.models import get_default_model, get_model
 from .logmanager import Log, LogManager, prepare_messages
 
 # Import MCP module
@@ -57,7 +57,7 @@ def chat(
     tool_allowlist: list[str] | None = None,
     tool_format: ToolFormat | None = None,
     mcp_config: str | None = None,
-    mcp_servers: list[str] | None = None,
+    mcp_enable: bool = False,
 ) -> None:
     """
     Run the chat loop.
@@ -71,11 +71,14 @@ def chat(
     # init
     init(model, interactive, tool_allowlist)
 
-    if not get_model().supports_streaming and stream:
+    # Get the current model from the model parameter
+    current_model = get_model(model) if model else None
+
+    if current_model and not current_model.supports_streaming and stream:
         logger.info(
             "Disabled streaming for '%s/%s' model (not supported)",
-            get_model().provider,
-            get_model().model,
+            current_model.provider,
+            current_model.model,
         )
         stream = False
 
@@ -83,9 +86,7 @@ def chat(
     manager = LogManager.load(logdir, initial_msgs=initial_msgs, create=True)
 
     config = get_config()
-    tool_format_with_default: ToolFormat = tool_format or cast(
-        ToolFormat, config.get_env("TOOL_FORMAT", "markdown")
-    )
+    tool_format_with_default: ToolFormat = tool_format or cast(ToolFormat, config.get_env("TOOL_FORMAT", "markdown"))
 
     # By defining the tool_format at the last moment we ensure we can use the
     # configuration for subagent
@@ -130,25 +131,13 @@ def chat(
 
     # Initialize MCP if enabled
     mcp_manager = None
-    if mcp_config or mcp_servers:
+    if mcp_enable:
+        # Set up more detailed logging for MCP
+        logging.getLogger("gptme.mcp").setLevel(logging.DEBUG)
+
         mcp_manager = MCPSessionManager(mcp_config)
-        
-        # Connect to specified servers
-        if mcp_servers:
-            server_ids = [s.strip() for s in mcp_servers.split(",")]
-            mcp_server_config = mcp_manager.config.get_all_servers()
-            
-            # Filter servers to only use specified ones
-            filtered_servers = {}
-            for server_id in server_ids:
-                if server_id in mcp_server_config:
-                    filtered_servers[server_id] = mcp_server_config[server_id]
-                else:
-                    logger.warning(f"MCP server '{server_id}' not found in configuration")
-            
-            mcp_manager.config.servers = filtered_servers
-                
-        # Initialize MCP
+
+        # Initialize MCP with all configured servers
         try:
             # Create or get event loop
             try:
@@ -156,24 +145,27 @@ def chat(
             except RuntimeError:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                
+
+            logger.info(f"Initializing MCP with config: {mcp_config}")
             # Initialize MCP
             success = loop.run_until_complete(mcp_manager.initialize())
-            
+
             if success:
                 # Register MCP tools with gptme
-                mcp_tools = loop.run_until_complete(mcp_manager.get_tools())
+                mcp_tools = loop.run_until_complete(mcp_manager.tool_registry.register_all_tools())
                 for tool_spec in mcp_tools:
                     # Add the MCP tool to the available tools
                     get_available_tools().append(tool_spec)
-                    
+
                 logger.info(f"Registered {len(mcp_tools)} MCP tools")
             else:
-                logger.warning("Failed to initialize MCP")
-                
+                logger.warning(
+                    "Failed to initialize MCP - check if the server IDs in your config match exactly with what the servers expect"
+                )
+
         except Exception as e:
             logger.error(f"Error initializing MCP: {e}")
-            
+
     try:
         # main loop
         while True:
@@ -211,24 +203,15 @@ def chat(
                         for response_msg in response_msgs:
                             manager.append(response_msg)
                             # run any user-commands, if msg is from user
-                            if response_msg.role == "user" and execute_cmd(
-                                response_msg, manager, confirm_func
-                            ):
+                            if response_msg.role == "user" and execute_cmd(response_msg, manager, confirm_func):
                                 break
 
                         # Check if there are any runnable tools left
                         last_content = next(
-                            (
-                                m.content
-                                for m in reversed(manager.log)
-                                if m.role == "assistant"
-                            ),
+                            (m.content for m in reversed(manager.log) if m.role == "assistant"),
                             "",
                         )
-                        if not any(
-                            tooluse.is_runnable
-                            for tooluse in ToolUse.iter_from_content(last_content)
-                        ):
+                        if not any(tooluse.is_runnable for tooluse in ToolUse.iter_from_content(last_content)):
                             break
 
                 # All prompts processed, continue to next iteration
@@ -269,7 +252,7 @@ def chat(
                 logger.info("MCP sessions cleaned up")
             except Exception as e:
                 logger.error(f"Error shutting down MCP: {e}")
-        
+
         # ... other cleanup code if any ...
 
 
@@ -305,6 +288,11 @@ def step(
     try:
         set_interruptible()
 
+        # Get the current model
+        current_model = get_default_model()
+        if not current_model:
+            raise ValueError("No model selected")
+
         # performs reduction/context trimming, if necessary
         msgs = prepare_messages(log.messages, workspace)
 
@@ -313,7 +301,8 @@ def step(
             tools = [t for t in get_tools() if t.is_runnable()]
 
         # generate response
-        msg_response = reply(msgs, get_model().model, stream, tools)
+        model_name = f"{current_model.provider}/{current_model.model}"
+        msg_response = reply(msgs, model_name, stream, tools)
         if os.environ.get("GPTME_COSTS") in ["1", "true"]:
             log_costs(msgs + [msg_response])
 
@@ -462,10 +451,7 @@ def _parse_prompt(prompt: str) -> str | None:
     and if so, returns the contents of that file wrapped in a codeblock.
     """
     # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
+    if any(prompt.startswith(command) for command in [f"/{cmd}" for cmd in action_descriptions.keys()]):
         return None
 
     try:
@@ -531,10 +517,7 @@ def _parse_prompt_files(prompt: str) -> Path | None:
     """
 
     # if prompt is a command, exit early (as commands might take paths as arguments)
-    if any(
-        prompt.startswith(command)
-        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
-    ):
+    if any(prompt.startswith(command) for command in [f"/{cmd}" for cmd in action_descriptions.keys()]):
         return None
 
     try:
