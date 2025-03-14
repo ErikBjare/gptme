@@ -350,6 +350,11 @@ def create_app(cors_origin: str | None = None) -> flask.Flask:
     app = flask.Flask(__name__, static_folder=static_path)
     app.register_blueprint(api)
 
+    # Register v2 API
+    from .api_v2 import v2_api
+
+    app.register_blueprint(v2_api)
+
     if cors_origin:
         CORS(app, resources={r"/api/*": {"origins": cors_origin}})
 

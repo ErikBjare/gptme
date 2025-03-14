@@ -161,6 +161,8 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "eval: marks tests as evals (deselect with '-m \"not eval\"'), these may fail, and will not run in CI",
     "serial",
+    "timeout: marks tests with timeout value in seconds",
+    "requires_api: marks tests that require API access",
 ]
 
 [tool.coverage.run]
