@@ -19,14 +19,14 @@
 
 <!-- Badges -->
 <p align="center">
-  <a href="https://github.com/gptme/gptme/actions/workflows/build.yml">
-    <img src="https://github.com/gptme/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
+  <a href="https://github.com/ErikBjare/gptme/actions/workflows/build.yml">
+    <img src="https://github.com/ErikBjare/gptme/actions/workflows/build.yml/badge.svg" alt="Build Status" />
   </a>
-  <a href="https://github.com/gptme/gptme/actions/workflows/docs.yml">
-    <img src="https://github.com/gptme/gptme/actions/workflows/docs.yml/badge.svg" alt="Docs Build Status" />
+  <a href="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml">
+    <img src="https://github.com/ErikBjare/gptme/actions/workflows/docs.yml/badge.svg" alt="Docs Build Status" />
   </a>
-  <a href="https://codecov.io/gh/gptme/gptme">
-    <img src="https://codecov.io/gh/gptme/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
+  <a href="https://codecov.io/gh/ErikBjare/gptme">
+    <img src="https://codecov.io/gh/ErikBjare/gptme/graph/badge.svg?token=DYAYJ8EF41" alt="Codecov" />
   </a>
   <br>
   <a href="https://pypi.org/project/gptme/">
@@ -52,11 +52,11 @@
 </p>
 
 <p align="center">
-📜 Personal AI assistant/agent in your terminal, with tools so it can:<br/>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br/>a great coding agent, but is general-purpose to assists in all kinds of knowledge-work, from a simple but powerful CLI.
+📜 Personal AI assistant in your terminal, with tools so it can:<br/>Use the terminal, run code, edit files, browse the web, use vision, and much more;<br/>Assists in all kinds of knowledge-work, especially programming, from a simple but powerful CLI.
 </p>
 
 <p align="center">
-An unconstrained local <a href="https://gptme.org/docs/alternatives.html">alternative</a> to: ChatGPT with "Code Interpreter", Cursor Agent, etc.<br/>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
+An unconstrained local alternative to ChatGPT's "Code Interpreter".<br/>Not limited by lack of software, internet access, timeouts, or privacy concerns (if using local models).
 </p>
 
 ## 📚 Table of Contents
@@ -146,45 +146,6 @@ An unconstrained local <a href="https://gptme.org/docs/alternatives.html">altern
   </details>
   </td>
   </tr>
-
-  <tr>
-    <th>Terminal UI</th>
-    <th>Web UI</th>
-  </tr>
-  <tr>
-  <td width="50%">
-
-<!--[![terminal-ui](https://github.com/ErikBjare/gptme/assets/1405370/terminal-ui-demo)](https://asciinema.org/a/terminal-demo)-->
-
-  <details>
-  <summary>Features</summary>
-  <ul>
-    <li> Powerful terminal interface
-    <li> Convenient CLI commands
-    <li> Diff & Syntax highlighting
-    <li> Tab completion
-    <li> Command history
-  </ul>
-  </details>
-
-  </td>
-  <td width="50%">
-
-<!--[![web-ui](https://github.com/ErikBjare/gptme/assets/1405370/web-ui-demo)](https://chat.gptme.org)-->
-
-  <details>
-  <summary>Features</summary>
-  <ul>
-    <li> Chat with gptme from your browser
-    <li> Access to all tools and features
-    <li> Modern, responsive interface
-    <li> Self-hostable
-    <li> Available at <a href="https://chat.gptme.org">chat.gptme.org</a>
-  </ul>
-  </details>
-
-  </td>
-  </tr>
 </table>
 
 You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [documentation][docs].
@@ -203,23 +164,19 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Output is fed back to the assistant, allowing it to respond and self-correct.
 - 🤖 Support for several LLM [providers][docs-providers]
   - Use OpenAI, Anthropic, OpenRouter, or serve locally with `llama.cpp`
-- 🌐 Web UI and REST API
-  - Modern web interface at [chat.gptme.org](https://chat.gptme.org) ([gptme-webui])
-  - Simple built-in web UI included in the Python package
-  - [Server][docs-server] with REST API
-- 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/gptme/gptme/issues/216))
+- 💬 Web UI frontend and REST API (optional, see docs for [server][docs-server])
+  - Interact with the assistant from a web interface or via REST API.
+- 💻 [Computer use][docs-tools-computer] tool, as hyped by [Anthropic][anthropic-computer-use] (see [#216](https://github.com/ErikBjare/gptme/issues/216))
   - Give the assistant access to a full desktop, allowing it to interact with GUI applications.
-- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/gptme/gptme/issues/143) and [#259](https://github.com/gptme/gptme/issues/259))
-  - Create your own agent with persistence using [gptme-agent-template][agent-template], like [Bob][bob].
+- 🤖 Long-running agents and advanced agent architectures (see [#143](https://github.com/ErikBjare/gptme/issues/143) and [#259](https://github.com/ErikBjare/gptme/issues/259))
+  - Create your own agent with persistence using [gptme-agent-template][agent-template]
 - ✨ Many smaller features to ensure a great experience
   - 🚰 Pipe in context via `stdin` or as arguments.
     - Passing a filename as an argument will read the file and include it as context.
   - → Smart completion and highlighting:
     - Tab completion and highlighting for commands and paths
   - 📝 Automatic naming of conversations
-  - ✅ Detects and integrates [pre-commit](https://github.com/pre-commit/pre-commit)
-  - 🗣️ [Text-to-Speech][docs-tools-tts] support, locally generated using Kokoro
-  - 🎯 Feature flags for advanced usage, see [configuration docs][docs-config]
+  - 💬 Optional basic [Web UI and REST API][docs-server]
 
 ### 🛠 Use Cases
 
@@ -235,16 +192,17 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
   - Most functionality is implemented as [tools][docs-tools], making it easy to add new features.
 - 🧪 Extensive testing, high coverage.
 - 🧹 Clean codebase, checked and formatted with `mypy`, `ruff`, and `pyupgrade`.
-- 🤖 [GitHub Bot][docs-bot] to request changes from comments! (see [#16](https://github.com/gptme/gptme/issues/16))
-  - Operates in this repo! (see [#18](https://github.com/gptme/gptme/issues/18) for example)
+- 🤖 [GitHub Bot][docs-bot] to request changes from comments! (see [#16](https://github.com/ErikBjare/gptme/issues/16))
+  - Operates in this repo! (see [#18](https://github.com/ErikBjare/gptme/issues/18) for example)
   - Runs entirely in GitHub Actions.
 - 📊 [Evaluation suite][docs-evals] for testing capabilities of different models
 - 📝 [gptme.vim][gptme.vim] for easy integration with vim
 
 ### 🚧 In progress
 
-- 🌳 Tree-based conversation structure (see [#17](https://github.com/gptme/gptme/issues/17))
-- 📜 RAG to automatically include context from local files (see [#59](https://github.com/gptme/gptme/issues/59))
+- 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
+- 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
+- 🔌 MCP integration for connecting to external tools and resources via the Model Context Protocol ([docs/mcp.md](docs/mcp.md))
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
@@ -292,46 +250,30 @@ Usage: gptme [OPTIONS] [PROMPTS]...
   The interface provides user commands that can be used to interact with the
   system.
 
-  Available commands:
-    /undo         Undo the last action
-    /log          Show the conversation log
-    /tools        Show available tools
-    /edit         Edit the conversation in your editor
-    /rename       Rename the conversation
-    /fork         Create a copy of the conversation with a new name
-    /summarize    Summarize the conversation
-    /replay       Re-execute codeblocks in the conversation, wont store output in log
-    /impersonate  Impersonate the assistant
-    /tokens       Show the number of tokens used
-    /export       Export conversation as standalone HTML
-    /help         Show this help message
-    /exit         Exit the program
-
-  Keyboard shortcuts:
-    Ctrl+J        Insert a new line without executing the prompt
-
 Options:
-  -n, --name TEXT        Name of conversation. Defaults to generating a random
-                         name.
-  -m, --model TEXT       Model to use, e.g. openai/gpt-4o,
-                         anthropic/claude-3-5-sonnet-20240620. If only
-                         provider given, a default is used.
-  -w, --workspace TEXT   Path to workspace directory. Pass '@log' to create a
-                         workspace in the log directory.
-  -r, --resume           Load last conversation
-  -y, --no-confirm       Skips all confirmation prompts.
-  -n, --non-interactive  Force non-interactive mode. Implies --no-confirm.
-  --system TEXT          System prompt. Can be 'full', 'short', or something
-                         custom.
-  -t, --tools TEXT       Comma-separated list of tools to allow. Available:
-                         read, save, append, patch, shell, subagent, tmux,
-                         browser, gh, chats, screenshot, vision, computer,
-                         python.
-  --no-stream            Don't stream responses
-  --show-hidden          Show hidden system messages.
-  -v, --verbose          Show verbose output.
-  --version              Show version and configuration information
-  --help                 Show this message and exit.
+  --name TEXT                     Name of conversation. Defaults to generating
+                                  a random name.
+  -m, --model TEXT                Model to use, e.g.
+                                  openai/gpt-4-turbo-preview,
+                                  anthropic/claude-3-opus-20240229. If only
+                                  provider given then a default is used.
+  -w, --workspace TEXT            Path to workspace directory. Pass '@log' to
+                                  create a workspace in the log directory.
+  -r, --resume                    Load last conversation
+  -y, --no-confirm                Skips all confirmation prompts.
+  -n, --non-interactive           Non-interactive mode. Implies --no-confirm.
+  --system TEXT                   System prompt. Can be 'full', 'short', or
+                                  something custom.
+  -t, --tools TEXT                Comma-separated list of tools to allow.
+  --tool-format TEXT              Tool parsing method. Can be 'markdown',
+                                  'xml', 'tool'. (experimental)
+  --no-stream                     Don't stream responses
+  --show-hidden                   Show hidden system messages.
+  -v, --verbose                   Show verbose output.
+  --version                       Show version and configuration information
+  --mcp-config TEXT               Path to MCP servers configuration file.
+  --mcp-servers TEXT              Comma-separated list of MCP server IDs to use.
+  --help                          Show this message and exit.
 ```
 
 
@@ -339,7 +281,7 @@ Options:
 
 ### ⭐ Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/gptme/gptme.svg)](https://starchart.cc/gptme/gptme)
+[![Stargazers over time](https://starchart.cc/ErikBjare/gptme.svg)](https://starchart.cc/ErikBjare/gptme)
 
 ### 📈 Download Stats
 
@@ -360,11 +302,9 @@ Options:
 <!-- links -->
 [website]: https://gptme.org/
 [discord]: https://discord.gg/NMaCmmkxWv
-[github]: https://github.com/gptme/gptme
-[gptme.vim]: https://github.com/gptme/gptme.vim
-[gptme-webui]: https://github.com/gptme/gptme-webui
-[agent-template]: https://github.com/gptme/gptme-agent-template
-[bob]: https://github.com/TimeToBuildBob
+[github]: https://github.com/ErikBjare/gptme
+[gptme.vim]: https://github.com/ErikBjare/gptme.vim
+[agent-template]: https://github.com/ErikBjare/gptme-agent-template
 [docs]: https://gptme.org/docs/
 [docs-getting-started]: https://gptme.org/docs/getting-started.html
 [docs-examples]: https://gptme.org/docs/examples.html
@@ -376,10 +316,8 @@ Options:
 [docs-tools-patch]: https://gptme.org/docs/tools.html#patch
 [docs-tools-browser]: https://gptme.org/docs/tools.html#browser
 [docs-tools-computer]: https://gptme.org/docs/tools.html#computer
-[docs-tools-tts]: https://gptme.org/docs/tools.html#tts
 [docs-bot]: https://gptme.org/docs/bot.html
 [docs-server]: https://gptme.org/docs/server.html
 [docs-evals]: https://gptme.org/docs/evals.html
 [docs-server]: https://gptme.org/docs/server.html
-[docs-config]: https://gptme.org/docs/config.html
 [anthropic-computer-use]: https://www.anthropic.com/news/3-5-models-and-computer-use

@@ -8,14 +8,9 @@ projects
 demos
 eval[_-]results*
 
-# `tree --gitignore` wont handle the [_-] above
-eval-results*
-eval_results*
-
 # logs
 *.log
-*logs/
-logs*
+*logs*
 
 # fetched by make
 scripts/build_changelog.py
@@ -41,11 +36,6 @@ __pycache__
 .aider*
 .env
 
-# if you choose to keep ~/.config/gptme/config.toml in the repo
-config.toml
-
-# MacOS
-.DS_Store
-
-# VSCode
-.vscode
+# MCP specific
+mcp_servers.json
+.mcp_cache

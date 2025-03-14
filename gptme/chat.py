@@ -1,18 +1,25 @@
+import asyncio
+import errno
 import logging
 import os
+import re
 import sys
 import termios
+import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
 from typing import cast
 
-from .commands import execute_cmd
+from .commands import action_descriptions, execute_cmd
 from .config import get_config
 from .constants import INTERRUPT_CONTENT, PROMPT_USER
 from .init import init
 from .llm import reply
-from .llm.models import get_default_model, get_model
+from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
+
+# Import MCP module
+from .mcp.session import MCPSessionManager
 from .message import Message
 from .prompts import get_workspace_prompt
 from .tools import (
@@ -20,23 +27,19 @@ from .tools import (
     ToolFormat,
     ToolUse,
     execute_msg,
+    get_available_tools,
+    get_tool,
     get_tools,
     has_tool,
     set_tool_format,
 )
-from .tools.tts import (
-    audio_queue,
-    speak,
-    stop,
-    tts_request_queue,
-)
+from .tools.browser import read_url
 from .util import console, path_with_tilde, print_bell
 from .util.ask_execute import ask_execute
-from .util.context import include_paths, run_precommit_checks
+from .util.context import use_fresh_context
 from .util.cost import log_costs
 from .util.interrupt import clear_interruptible, set_interruptible
 from .util.prompt import add_history, get_input
-from .util.terminal import set_current_conv_name, terminal_state_title
 
 logger = logging.getLogger(__name__)
 
@@ -53,31 +56,26 @@ def chat(
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
     tool_format: ToolFormat | None = None,
+    mcp_config: str | None = None,
+    mcp_servers: list[str] | None = None,
 ) -> None:
     """
     Run the chat loop.
 
     prompt_msgs: list of messages to execute in sequence.
     initial_msgs: list of history messages.
-    workspace: path to workspace directory.
+    workspace: path to workspace directory, or @log to create one in the log directory.
 
     Callable from other modules.
     """
-    # Set initial terminal title with conversation name
-    conv_name = logdir.name
-    set_current_conv_name(conv_name)
-
     # init
     init(model, interactive, tool_allowlist)
 
-    default_model = get_default_model()
-    assert default_model is not None, "No model loaded and no model specified"
-    modelmeta = get_model(model or default_model.full)
-    if not modelmeta.supports_streaming and stream:
+    if not get_model().supports_streaming and stream:
         logger.info(
             "Disabled streaming for '%s/%s' model (not supported)",
-            modelmeta.provider,
-            modelmeta.model,
+            get_model().provider,
+            get_model().model,
         )
         stream = False
 
@@ -93,8 +91,20 @@ def chat(
     # configuration for subagent
     set_tool_format(tool_format_with_default)
 
-    # Initialize workspace
-    workspace = _init_workspace(workspace, logdir)
+    # change to workspace directory
+    # use if exists, create if @log, or use given path
+    # TODO: move this into LogManager? then just os.chdir(manager.workspace)
+    log_workspace = logdir / "workspace"
+    if log_workspace.exists():
+        assert not workspace or (
+            workspace == log_workspace
+        ), f"Workspace already exists in {log_workspace}, wont override."
+        workspace = log_workspace.resolve()
+    else:
+        if not workspace:
+            workspace = Path.cwd()
+            log_workspace.symlink_to(workspace, target_is_directory=True)
+        assert workspace.exists(), f"Workspace path {workspace} does not exist"
     console.log(f"Using workspace at {path_with_tilde(workspace)}")
     os.chdir(workspace)
 
@@ -118,106 +128,149 @@ def chat(
             return True
         return ask_execute(msg)
 
-    # main loop
-    while True:
-        # if prompt_msgs given, process each prompt fully before moving to the next
-        if prompt_msgs:
-            while prompt_msgs:
-                msg = prompt_msgs.pop(0)
-                msg = include_paths(msg, workspace)
-                manager.append(msg)
-                # if prompt is a user-command, execute it
-                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
-                    continue
+    # Initialize MCP if enabled
+    mcp_manager = None
+    if mcp_config or mcp_servers:
+        mcp_manager = MCPSessionManager(mcp_config)
+        
+        # Connect to specified servers
+        if mcp_servers:
+            server_ids = [s.strip() for s in mcp_servers.split(",")]
+            mcp_server_config = mcp_manager.config.get_all_servers()
+            
+            # Filter servers to only use specified ones
+            filtered_servers = {}
+            for server_id in server_ids:
+                if server_id in mcp_server_config:
+                    filtered_servers[server_id] = mcp_server_config[server_id]
+                else:
+                    logger.warning(f"MCP server '{server_id}' not found in configuration")
+            
+            mcp_manager.config.servers = filtered_servers
+                
+        # Initialize MCP
+        try:
+            # Create or get event loop
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+            # Initialize MCP
+            success = loop.run_until_complete(mcp_manager.initialize())
+            
+            if success:
+                # Register MCP tools with gptme
+                mcp_tools = loop.run_until_complete(mcp_manager.get_tools())
+                for tool_spec in mcp_tools:
+                    # Add the MCP tool to the available tools
+                    get_available_tools().append(tool_spec)
+                    
+                logger.info(f"Registered {len(mcp_tools)} MCP tools")
+            else:
+                logger.warning("Failed to initialize MCP")
+                
+        except Exception as e:
+            logger.error(f"Error initializing MCP: {e}")
+            
+    try:
+        # main loop
+        while True:
+            # if prompt_msgs given, process each prompt fully before moving to the next
+            if prompt_msgs:
+                while prompt_msgs:
+                    msg = prompt_msgs.pop(0)
+                    if not msg.content.startswith("/") and msg.role == "user":
+                        msg = _include_paths(msg, workspace)
+                    manager.append(msg)
+                    # if prompt is a user-command, execute it
+                    if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+                        continue
 
-                # Generate and execute response for this prompt
-                while True:
-                    try:
-                        set_interruptible()
-                        response_msgs = list(
-                            step(
-                                manager.log,
-                                stream,
-                                confirm_func,
-                                tool_format=tool_format_with_default,
-                                workspace=workspace,
-                                model=model,
+                    # Generate and execute response for this prompt
+                    while True:
+                        try:
+                            set_interruptible()
+                            response_msgs = list(
+                                step(
+                                    manager.log,
+                                    stream,
+                                    confirm_func,
+                                    tool_format=tool_format_with_default,
+                                    workspace=workspace,
+                                )
                             )
-                        )
-                    except KeyboardInterrupt:
-                        console.log("Interrupted. Stopping current execution.")
-                        manager.append(Message("system", INTERRUPT_CONTENT))
-                        break
-                    finally:
-                        clear_interruptible()
+                        except KeyboardInterrupt:
+                            console.log("Interrupted. Stopping current execution.")
+                            manager.append(Message("system", INTERRUPT_CONTENT))
+                            break
+                        finally:
+                            clear_interruptible()
 
-                    for response_msg in response_msgs:
-                        manager.append(response_msg)
-                        # run any user-commands, if msg is from user
-                        if response_msg.role == "user" and execute_cmd(
-                            response_msg, manager, confirm_func
+                        for response_msg in response_msgs:
+                            manager.append(response_msg)
+                            # run any user-commands, if msg is from user
+                            if response_msg.role == "user" and execute_cmd(
+                                response_msg, manager, confirm_func
+                            ):
+                                break
+
+                        # Check if there are any runnable tools left
+                        last_content = next(
+                            (
+                                m.content
+                                for m in reversed(manager.log)
+                                if m.role == "assistant"
+                            ),
+                            "",
+                        )
+                        if not any(
+                            tooluse.is_runnable
+                            for tooluse in ToolUse.iter_from_content(last_content)
                         ):
                             break
 
-                    # Check if there are any runnable tools left
-                    last_content = next(
-                        (
-                            m.content
-                            for m in reversed(manager.log)
-                            if m.role == "assistant"
-                        ),
-                        "",
-                    )
-                    has_runnable = any(
-                        tooluse.is_runnable
-                        for tooluse in ToolUse.iter_from_content(last_content)
-                    )
-                    if not has_runnable:
-                        break
+                # All prompts processed, continue to next iteration
+                continue
 
-            # All prompts processed, continue to next iteration
-            continue
-
-        # if:
-        #  - prompts exhausted
-        #  - non-interactive
-        #  - no executable block in last assistant message
-        # then exit
-        elif not interactive:
-            logger.debug("Non-interactive and exhausted prompts")
-            if has_tool("tts") and os.environ.get("GPTME_VOICE_FINISH", "").lower() in [
-                "1",
-                "true",
-            ]:
-                logger.info("Waiting for TTS to finish...")
-
-                set_interruptible()
-                try:
-                    # Wait for all TTS processing to complete
-                    tts_request_queue.join()
-                    logger.info("tts request queue joined")
-                    # Then wait for all audio to finish playing
-                    audio_queue.join()
-                    logger.info("audio queue joined")
-                except KeyboardInterrupt:
-                    logger.info("Interrupted while waiting for TTS")
-
-                    stop()
-            break
-
-        # ask for input if no prompt, generate reply, and run tools
-        clear_interruptible()  # Ensure we're not interruptible during user input
-        for msg in step(
-            manager.log,
-            stream,
-            confirm_func,
-            tool_format=tool_format_with_default,
-            workspace=workspace,
-        ):  # pragma: no cover
-            manager.append(msg)
-            # run any user-commands, if msg is from user
-            if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+            # if:
+            #  - prompts exhausted
+            #  - non-interactive
+            #  - no executable block in last assistant message
+            # then exit
+            elif not interactive:
+                logger.debug("Non-interactive and exhausted prompts, exiting")
                 break
+
+            # ask for input if no prompt, generate reply, and run tools
+            clear_interruptible()  # Ensure we're not interruptible during user input
+            for msg in step(
+                manager.log,
+                stream,
+                confirm_func,
+                tool_format=tool_format_with_default,
+                workspace=workspace,
+            ):  # pragma: no cover
+                manager.append(msg)
+                # run any user-commands, if msg is from user
+                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+                    break
+
+    except KeyboardInterrupt:
+        console.log("Interrupted. Stopping current execution.")
+        manager.append(Message("system", INTERRUPT_CONTENT))
+    finally:
+        # Clean up MCP resources if initialized
+        if mcp_manager:
+            try:
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(mcp_manager.shutdown())
+                logger.info("MCP sessions cleaned up")
+            except Exception as e:
+                logger.error(f"Error shutting down MCP: {e}")
+        
+        # ... other cleanup code if any ...
 
 
 def step(
@@ -226,26 +279,10 @@ def step(
     confirm: ConfirmFunc,
     tool_format: ToolFormat = "markdown",
     workspace: Path | None = None,
-    model: str | None = None,
 ) -> Generator[Message, None, None]:
     """Runs a single pass of the chat."""
-    default_model = get_default_model()
-    assert default_model is not None, "No model loaded and no model specified"
-    model = model or default_model.full
     if isinstance(log, list):
         log = Log(log)
-
-    # Check if we have any recent file modifications, and if so, run lint checks
-    if not any(
-        tooluse.is_runnable
-        for tooluse in ToolUse.iter_from_content(
-            next((m.content for m in reversed(log) if m.role == "assistant"), "")
-        )
-    ):
-        # Only check for modifications if the last assistant message has no runnable tools
-        if check_for_modifications(log) and (failed_check_message := check_changes()):
-            yield Message("system", failed_check_message, quiet=False)
-            return
 
     # If last message was a response, ask for input.
     # If last message was from the user (such as from crash/edited log),
@@ -260,7 +297,7 @@ def step(
     ):  # pragma: no cover
         inquiry = prompt_user()
         msg = Message("user", inquiry, quiet=True)
-        msg = include_paths(msg, workspace)
+        msg = _include_paths(msg, workspace)
         yield msg
         log = log.append(msg)
 
@@ -276,14 +313,9 @@ def step(
             tools = [t for t in get_tools() if t.is_runnable()]
 
         # generate response
-        with terminal_state_title("🤔 generating"):
-            msg_response = reply(msgs, get_model(model).full, stream, tools)
-            if os.environ.get("GPTME_COSTS") in ["1", "true"]:
-                log_costs(msgs + [msg_response])
-
-        # speak if TTS tool is available
-        if has_tool("tts"):
-            speak(msg_response.content)
+        msg_response = reply(msgs, get_model().model, stream, tools)
+        if os.environ.get("GPTME_COSTS") in ["1", "true"]:
+            log_costs(msgs + [msg_response])
 
         # log response and run tools
         if msg_response:
@@ -298,18 +330,17 @@ def prompt_user(value=None) -> str:  # pragma: no cover
     # Flush stdin to clear any buffered input before prompting
     termios.tcflush(sys.stdin, termios.TCIFLUSH)
     response = ""
-    with terminal_state_title("⌨️ waiting for input"):
-        while not response:
-            try:
-                set_interruptible()
-                response = prompt_input(PROMPT_USER, value)
-                if response:
-                    add_history(response)
-            except KeyboardInterrupt:
-                print("\nInterrupted. Press Ctrl-D to exit.")
-            except EOFError:
-                print("\nGoodbye!")
-                sys.exit(0)
+    while not response:
+        try:
+            set_interruptible()
+            response = prompt_input(PROMPT_USER, value)
+            if response:
+                add_history(response)
+        except KeyboardInterrupt:
+            print("\nInterrupted. Press Ctrl-D to exit.")
+        except EOFError:
+            print("\nGoodbye!")
+            sys.exit(0)
     clear_interruptible()
     return response
 
@@ -324,49 +355,204 @@ def prompt_input(prompt: str, value=None) -> str:  # pragma: no cover
     return get_input(prompt)
 
 
-def check_for_modifications(log: Log) -> bool:
-    """Check if there are any file modifications in last 3 messages or since last user message."""
-    messages_since_user = []
-    for m in reversed(log):
-        if m.role == "user":
-            break
-        messages_since_user.append(m)
-
-    # FIXME: this is hacky and unreliable
-    has_modifications = any(
-        tu.tool in ["save", "patch", "append"]
-        for m in messages_since_user[:3]
-        for tu in ToolUse.iter_from_content(m.content)
-    )
-    # logger.debug(
-    #     f"Found {len(messages_since_user)} messages since user ({has_modifications=})"
-    # )
-    return has_modifications
-
-
-def check_changes() -> str | None:
-    """Run lint/pre-commit checks after file modifications."""
-    return run_precommit_checks()
-
-
-def _init_workspace(workspace: Path | None, logdir: Path | None = None) -> Path:
-    """Initialize workspace and return the workspace path.
-
-    If workspace is None, use current directory.
-    If logdir is provided, use ``$logdir/workspace`` as workspace if it exists, else create a symlink to workspace.
+def _find_potential_paths(content: str) -> list[str]:
     """
-    if not workspace:
-        workspace = Path.cwd()
+    Find potential file paths and URLs in a message content.
+    Excludes content within code blocks.
 
-    if logdir:
-        log_workspace = logdir / "workspace"
-        if log_workspace.exists():
-            assert not workspace or (
-                workspace == log_workspace.resolve()
-            ), f"Workspace already exists in {log_workspace}, wont override."
-            workspace = log_workspace.resolve()
+    Args:
+        content: The message content to search
+
+    Returns:
+        List of potential paths/URLs found in the message
+    """
+    # Remove code blocks to avoid matching paths inside them
+    content_no_codeblocks = re.sub(r"```[\s\S]*?```", "", content)
+
+    # List current directory contents for relative path matching
+    cwd_files = [f.name for f in Path.cwd().iterdir()]
+
+    paths = []
+
+    def is_path_like(word: str) -> bool:
+        """Helper to check if a word looks like a path"""
+        return (
+            # Absolute/home/relative paths
+            any(word.startswith(s) for s in ["/", "~/", "./"])
+            # URLs
+            or word.startswith("http")
+            # Contains slash (for backtick-wrapped paths)
+            or "/" in word
+            # Files in current directory or subdirectories
+            or any(word.split("/", 1)[0] == file for file in cwd_files)
+        )
+
+    # First find backtick-wrapped content
+    for match in re.finditer(r"`([^`]+)`", content_no_codeblocks):
+        word = match.group(1).strip()
+        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
+        if is_path_like(word):
+            paths.append(word)
+
+    # Then find non-backtick-wrapped words
+    # Remove backtick-wrapped content first to avoid double-processing
+    content_no_backticks = re.sub(r"`[^`]+`", "", content_no_codeblocks)
+    for word in re.split(r"\s+", content_no_backticks):
+        word = word.strip()
+        word = word.rstrip("?").rstrip(".").rstrip(",").rstrip("!")
+        if not word:
+            continue
+
+        if is_path_like(word):
+            paths.append(word)
+
+    return paths
+
+
+def _include_paths(msg: Message, workspace: Path | None = None) -> Message:
+    """
+    Searches the message for any valid paths and:
+     - In legacy mode (default):
+       - includes the contents of text files as codeblocks
+       - includes images as msg.files
+     - In fresh context mode (GPTME_FRESH_CONTEXT=1):
+       - breaks the append-only nature of the log, but ensures we include fresh file contents
+       - includes all files in msg.files
+       - contents are applied right before sending to LLM (only paths stored in the log)
+
+    Args:
+        msg: Message to process
+        workspace: If provided, paths will be stored relative to this directory
+    """
+    # TODO: add support for directories?
+    assert msg.role == "user"
+
+    append_msg = ""
+    files = []
+
+    # Find potential paths in message
+    for word in _find_potential_paths(msg.content):
+        logger.debug(f"potential path/url: {word=}")
+        # If not using fresh context, include text file contents in the message
+        if not use_fresh_context and (contents := _parse_prompt(word)):
+            append_msg += "\n\n" + contents
         else:
-            assert workspace.exists(), f"Workspace path {workspace} does not exist"
-            log_workspace.symlink_to(workspace, target_is_directory=True)
+            # if we found an non-text file, include it in msg.files
+            file = _parse_prompt_files(word)
+            if file:
+                # Store path relative to workspace if provided
+                file = file.expanduser()
+                if workspace and not file.is_absolute():
+                    file = file.absolute().relative_to(workspace)
+                files.append(file)
 
-    return workspace
+    if files:
+        msg = msg.replace(files=msg.files + files)
+
+    # append the message with the file contents
+    if append_msg:
+        msg = msg.replace(content=msg.content + append_msg)
+
+    return msg
+
+
+def _parse_prompt(prompt: str) -> str | None:
+    """
+    Takes a string that might be a path or URL,
+    and if so, returns the contents of that file wrapped in a codeblock.
+    """
+    # if prompt is a command, exit early (as commands might take paths as arguments)
+    if any(
+        prompt.startswith(command)
+        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
+    ):
+        return None
+
+    try:
+        # check if prompt is a path, if so, replace it with the contents of that file
+        f = Path(prompt).expanduser()
+        if f.exists() and f.is_file():
+            return f"```{prompt}\n{f.read_text()}\n```"
+    except OSError as oserr:
+        # some prompts are too long to be a path, so we can't read them
+        if oserr.errno != errno.ENAMETOOLONG:
+            pass
+        raise
+    except UnicodeDecodeError:
+        # some files are not text files (images, audio, PDFs, binaries, etc), so we can't read them
+        # TODO: but can we handle them better than just printing the path? maybe with metadata from `file`?
+        # logger.warning(f"Failed to read file {prompt}: not a text file")
+        return None
+
+    # check if any word in prompt is a path or URL,
+    # if so, append the contents as a code block
+    words = prompt.split()
+    paths = []
+    urls = []
+    for word in words:
+        f = Path(word).expanduser()
+        if f.exists() and f.is_file():
+            paths.append(word)
+            continue
+        try:
+            p = urllib.parse.urlparse(word)
+            if p.scheme and p.netloc:
+                urls.append(word)
+        except ValueError:
+            pass
+
+    result = ""
+    if paths or urls:
+        result += "\n\n"
+        if paths:
+            logger.debug(f"{paths=}")
+        if urls:
+            logger.debug(f"{urls=}")
+    for path in paths:
+        result += _parse_prompt(path) or ""
+
+    if not has_tool("browser"):
+        logger.warning("Browser tool not available, skipping URL read")
+    else:
+        for url in urls:
+            try:
+                content = read_url(url)
+                result += f"```{url}\n{content}\n```"
+            except Exception as e:
+                logger.warning(f"Failed to read URL {url}: {e}")
+
+    return result
+
+
+def _parse_prompt_files(prompt: str) -> Path | None:
+    """
+    Takes a string that might be a supported file path (image, text, PDF) and returns the path.
+    Files added here will either be included inline (legacy mode) or in fresh context (fresh context mode).
+    """
+
+    # if prompt is a command, exit early (as commands might take paths as arguments)
+    if any(
+        prompt.startswith(command)
+        for command in [f"/{cmd}" for cmd in action_descriptions.keys()]
+    ):
+        return None
+
+    try:
+        p = Path(prompt).expanduser()
+        if not (p.exists() and p.is_file()):
+            return None
+
+        # Try to read as text
+        try:
+            p.read_text()
+            return p
+        except UnicodeDecodeError:
+            # If not text, check if supported binary format
+            if p.suffix[1:].lower() in ["png", "jpg", "jpeg", "gif", "pdf"]:
+                return p
+            return None
+    except OSError as oserr:  # pragma: no cover
+        # some prompts are too long to be a path, so we can't read them
+        if oserr.errno != errno.ENAMETOOLONG:
+            return None
+        raise

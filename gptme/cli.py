@@ -1,3 +1,4 @@
+import importlib.metadata
 import logging
 import os
 import signal
@@ -10,7 +11,6 @@ from typing import Literal
 import click
 from pick import pick
 
-from . import __version__
 from .chat import chat
 from .commands import _gen_help
 from .config import get_config
@@ -136,6 +136,16 @@ The interface provides user commands that can be used to interact with the syste
     is_flag=True,
     help="Show version and configuration information",
 )
+@click.option(
+    "--mcp-config",
+    default=None,
+    help="Path to MCP servers configuration file.",
+)
+@click.option(
+    "--mcp-servers",
+    default=None,
+    help="Comma-separated list of MCP server IDs to use.",
+)
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -151,12 +161,13 @@ def main(
     version: bool,
     resume: bool,
     workspace: str | None,
+    mcp_config: str | None,
+    mcp_servers: str | None,
 ):
     """Main entrypoint for the CLI."""
     if version:
         # print version
-
-        print(f"gptme v{__version__}")
+        print(f"gptme {importlib.metadata.version('gptme')}")
 
         # print dirs
         print(f"Logs dir: {get_logs_dir()}")
@@ -181,7 +192,6 @@ def main(
 
     config = get_config()
 
-    model = model or config.get_env("MODEL")
     selected_tool_format: ToolFormat = (
         tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
     )
@@ -195,7 +205,6 @@ def main(
             prompt_system,
             interactive=interactive,
             tool_format=selected_tool_format,
-            model=model,
         )
     ]
 
@@ -277,23 +286,22 @@ def main(
 
     try:
         chat(
-            prompt_msgs,
-            initial_msgs,
-            logdir,
-            model,
-            stream,
-            no_confirm,
-            interactive,
-            show_hidden,
-            workspace_path,
-            tool_allowlist,
-            selected_tool_format,
+            prompt_msgs=prompt_msgs,
+            initial_msgs=initial_msgs,
+            logdir=logdir,
+            model=model,
+            stream=stream,
+            no_confirm=no_confirm,
+            interactive=interactive,
+            show_hidden=show_hidden,
+            workspace=workspace_path,
+            tool_allowlist=tool_allowlist,
+            tool_format=selected_tool_format,
+            mcp_config=mcp_config,
+            mcp_servers=mcp_servers,
         )
     except RuntimeError as e:
-        if verbose:
-            logger.exception(e)
-        else:
-            logger.error(e)
+        logger.error(e)
         sys.exit(1)
 
 
