@@ -111,6 +111,7 @@ class MCPClient:
             logger.info(f"Found {len(servers_config)} MCP servers in configuration")
 
             # Start background tasks for each server
+            start_tasks = []
             for server_config in servers_config:
                 server_name = server_config.get("name", "unnamed")
                 server_type = server_config.get("type", "stdio")
@@ -132,9 +133,12 @@ class MCPClient:
 
                         # Start the server in the background
                         task = asyncio.create_task(self._run_server_in_background(server_name, server_params))
-
+                        
                         # Store the task
                         self.background_tasks[server_name] = task
+                        
+                        # Add to the list of tasks to watch for quick failures
+                        start_tasks.append(task)
 
                         logger.info(f"Started background task for server {server_name}")
                     except Exception as e:
@@ -144,15 +148,19 @@ class MCPClient:
 
             # Wait briefly for initialization, but not for the complete timeout
             # This gives servers a chance to start up and register tools
-            if self.background_tasks:
-                init_time = min(10.0, timeout / 2)
-                logger.info(f"Waiting {init_time:.1f} seconds for servers to initialize...")
+            if start_tasks:
+                # A shorter timeout that just checks for immediate failures
+                # but doesn't wait for full initialization
+                init_time = min(5.0, timeout / 4)
+                logger.info(f"Waiting {init_time:.1f} seconds to check for immediate startup failures...")
+                
+                # We don't want to wait for all tasks to complete, just check if any failed quickly
                 await asyncio.sleep(init_time)
-
-                # Check for any quick failures
+                
+                # Check for any quick failures without waiting for all tasks to complete
                 failed_tasks = []
-                for server_name, task in self.background_tasks.items():
-                    if task.done() and not task.cancelled():
+                for server_name, task in list(self.background_tasks.items()):
+                    if task.done():
                         try:
                             task.result()  # This will raise the exception if there was one
                         except Exception as e:
@@ -161,7 +169,8 @@ class MCPClient:
 
                 # Remove failed tasks
                 for server_name in failed_tasks:
-                    del self.background_tasks[server_name]
+                    if server_name in self.background_tasks:
+                        del self.background_tasks[server_name]
 
                 if not self.background_tasks:
                     logger.error("All MCP servers failed to start")
@@ -201,88 +210,23 @@ class MCPClient:
             # Connect to the server
             try:
                 logger.debug(f"Connecting to server {server_name} with params: {server_params}")
-                async with server_client(server_params) as (read_stream, write_stream):
-                    logger.info(f"Connected to server {server_name}")
-
-                    # Create a session
-                    try:
-                        # Create session with standard initialization
-                        session = ClientSession(read_stream, write_stream)
-
-                        # Add a timeout to initialize
-                        try:
-                            await asyncio.wait_for(session.initialize(), timeout=30.0)
-
-                            logger.info(f"Initialized session for {server_name}")
-
-                            # Store the session
-                            self.sessions[server_name] = session
-                        except asyncio.TimeoutError:
-                            logger.error(f"Timeout initializing session for {server_name}")
-                            raise  # Re-raise to be caught by outer exception handler
-                        except Exception as e:
-                            logger.error(f"Error during session initialization: {e}")
-                            raise  # Re-raise to be caught by outer exception handler
-
-                        # Cache tools
-                        try:
-                            # Add some debugging output
-                            logger.debug(f"Requesting tools list from {server_name}")
-
-                            # Use timeout to avoid hanging
-                            tools_result = await asyncio.wait_for(session.list_tools(), timeout=10.0)
-
-                            # Log what was received
-                            logger.debug(f"Received tools result from {server_name}: {tools_result}")
-
-                            if hasattr(tools_result, "tools"):
-                                self.tools_cache[server_name] = tools_result.tools
-                                logger.info(f"Cached {len(tools_result.tools)} tools from {server_name}")
-                                # List tool names for debugging
-                                tool_names = [t.name for t in tools_result.tools]
-                                logger.debug(f"Tool names: {tool_names}")
-                            else:
-                                logger.warning(f"No tools attribute in result from {server_name}")
-                                logger.debug(f"Result attributes: {dir(tools_result)}")
-                        except asyncio.TimeoutError:
-                            logger.error(f"Timeout while listing tools from {server_name}")
-                        except Exception as e:
-                            logger.error(f"Failed to list tools from {server_name}: {e}")
-                            import traceback
-
-                            logger.debug(f"Traceback: {traceback.format_exc()}")
-
-                        # Server is running and initialized
-                        logger.info(f"Server {server_name} is now running")
-
-                        # Keep the session alive
-                        try:
-                            while True:
-                                # Periodically ping to keep connection alive
-                                await asyncio.sleep(30)
-                                logger.debug(f"Pinging server {server_name}")
-                                # We won't actually ping for now since it might not be implemented
-                                # on all servers
-                        except asyncio.CancelledError:
-                            logger.info(f"Background task for {server_name} was cancelled")
-                            raise
-                        except Exception as e:
-                            logger.error(f"Error in background task for {server_name}: {e}")
-                            import traceback
-
-                            logger.debug(f"Traceback: {traceback.format_exc()}")
-                    except asyncio.TimeoutError:
-                        logger.error(f"Timeout initializing session for {server_name}")
-                        raise  # Re-raise to be caught by outer exception handler
-                    except Exception as e:
-                        logger.error(f"Failed to initialize session for {server_name}: {e}")
-                        import traceback
-
-                        logger.debug(f"Traceback: {traceback.format_exc()}")
+                
+                # Create connection task
+                connection_task = asyncio.create_task(self._maintain_server_connection(
+                    server_name, server_client, server_params
+                ))
+                
+                # Store the task but don't await it
+                self.background_tasks[server_name] = connection_task
+                
+                # Wait briefly to ensure connection is established
+                await asyncio.sleep(2)
+                
+                logger.info(f"Started background connection for server {server_name}")
+                
             except Exception as e:
                 logger.error(f"Failed to connect to server {server_name}: {e}")
                 import traceback
-
                 logger.debug(f"Traceback: {traceback.format_exc()}")
         except asyncio.CancelledError:
             logger.info(f"Background task for {server_name} was cancelled")
@@ -290,10 +234,103 @@ class MCPClient:
         except Exception as e:
             logger.error(f"Unexpected error in background task for {server_name}: {e}")
             import traceback
+            logger.debug(f"Traceback: {traceback.format_exc()}")
+    
+    async def _maintain_server_connection(self, server_name: str, server_client, server_params: Any) -> None:
+        """
+        Maintain a connection to an MCP server.
+        
+        This method is meant to be run as a background task.
 
+        Args:
+            server_name: Name of the server
+            server_client: Client to use for connection
+            server_params: Parameters for the server
+        """
+        try:
+            async with server_client(server_params) as (read_stream, write_stream):
+                logger.info(f"Connected to server {server_name}")
+
+                # Create a session
+                try:
+                    # Create session with standard initialization
+                    session = ClientSession(read_stream, write_stream)
+
+                    # Add a timeout to initialize
+                    try:
+                        await asyncio.wait_for(session.initialize(), timeout=30.0)
+
+                        logger.info(f"Initialized session for {server_name}")
+
+                        # Store the session
+                        self.sessions[server_name] = session
+                    except asyncio.TimeoutError:
+                        logger.error(f"Timeout initializing session for {server_name}")
+                        raise  # Re-raise to be caught by outer exception handler
+                    except Exception as e:
+                        logger.error(f"Error during session initialization: {e}")
+                        raise  # Re-raise to be caught by outer exception handler
+
+                    # Cache tools
+                    try:
+                        # Add some debugging output
+                        logger.debug(f"Requesting tools list from {server_name}")
+
+                        # Use timeout to avoid hanging
+                        tools_result = await asyncio.wait_for(session.list_tools(), timeout=10.0)
+
+                        # Log what was received
+                        logger.debug(f"Received tools result from {server_name}: {tools_result}")
+
+                        if hasattr(tools_result, "tools"):
+                            self.tools_cache[server_name] = tools_result.tools
+                            logger.info(f"Cached {len(tools_result.tools)} tools from {server_name}")
+                            # List tool names for debugging
+                            tool_names = [t.name for t in tools_result.tools]
+                            logger.debug(f"Tool names: {tool_names}")
+                        else:
+                            logger.warning(f"No tools attribute in result from {server_name}")
+                            logger.debug(f"Result attributes: {dir(tools_result)}")
+                    except asyncio.TimeoutError:
+                        logger.error(f"Timeout while listing tools from {server_name}")
+                    except Exception as e:
+                        logger.error(f"Failed to list tools from {server_name}: {e}")
+                        import traceback
+                        logger.debug(f"Traceback: {traceback.format_exc()}")
+
+                    # Server is running and initialized
+                    logger.info(f"Server {server_name} is now running")
+
+                    # Keep the session alive
+                    try:
+                        while True:
+                            # Periodically ping to keep connection alive
+                            await asyncio.sleep(30)
+                            logger.debug(f"Pinging server {server_name}")
+                            # We won't actually ping for now since it might not be implemented
+                            # on all servers
+                    except asyncio.CancelledError:
+                        logger.info(f"Background task for {server_name} was cancelled")
+                        raise
+                    except Exception as e:
+                        logger.error(f"Error in background task for {server_name}: {e}")
+                        import traceback
+                        logger.debug(f"Traceback: {traceback.format_exc()}")
+                except asyncio.TimeoutError:
+                    logger.error(f"Timeout initializing session for {server_name}")
+                    raise  # Re-raise to be caught by outer exception handler
+                except Exception as e:
+                    logger.error(f"Failed to initialize session for {server_name}: {e}")
+                    import traceback
+                    logger.debug(f"Traceback: {traceback.format_exc()}")
+        except asyncio.CancelledError:
+            logger.info(f"Connection task for {server_name} was cancelled")
+        except Exception as e:
+            logger.error(f"Error maintaining connection for {server_name}: {e}")
+            import traceback
             logger.debug(f"Traceback: {traceback.format_exc()}")
         finally:
-            logger.info(f"Background task for {server_name} is ending")
+            logger.info(f"Connection task for {server_name} is ending")
 
     async def close(self) -> None:
         """
@@ -349,52 +386,29 @@ class MCPClient:
         # Wait for background tasks to complete initialization if they're still running
         pending_tasks = [task for task in self.background_tasks.values() if not task.done() and not task.cancelled()]
 
+        # If we have pending tasks, give them more time to initialize
         if pending_tasks:
             logger.info(f"Waiting for {len(pending_tasks)} servers to complete initialization...")
             try:
-                # Wait for a short time for initialization to complete
-                # but don't block forever
-                done, pending = await asyncio.wait(pending_tasks, timeout=5.0, return_when=asyncio.ALL_COMPLETED)
+                # Wait a bit longer for initialization to complete - giving more time for tool registration
+                done, pending = await asyncio.wait(pending_tasks, timeout=10.0, return_when=asyncio.FIRST_COMPLETED)
 
                 if pending:
                     logger.warning(f"{len(pending)} servers are still initializing")
+                    # We'll continue anyway and try to get tools from servers that are ready
             except Exception as e:
                 logger.error(f"Error waiting for server initialization: {e}")
 
-        # Check the tools cache first
-        if self.tools_cache:
-            logger.info(f"Found tools in cache for {list(self.tools_cache.keys())} servers")
-            for server_name, server_tools in self.tools_cache.items():
-                for tool in server_tools:
-                    try:
-                        # Add server_name to the tool info
-                        tool_info = {
-                            "name": tool.name,
-                            "description": tool.description,
-                            "inputSchema": getattr(tool, "inputSchema", {}),
-                            "server_name": server_name,
-                        }
-                        tools.append(tool_info)
-                        logger.debug(f"Added tool from cache: {tool.name} from {server_name}")
-                    except Exception as e:
-                        logger.error(f"Error processing cached tool: {e}")
-        else:
-            logger.warning("No tools found in cache, will attempt direct discovery")
-
-        # If there are no tools in the cache, or we want to refresh,
-        # check each active session
-        if not tools and self.sessions:
-            logger.info(f"Attempting direct tool discovery from {len(self.sessions)} active sessions")
-            for server_name, session in self.sessions.items():
+        # Try to get tools from established sessions first, regardless of cache
+        if self.sessions:
+            logger.info(f"Attempting tool discovery from {len(self.sessions)} active sessions")
+            for server_name, session in list(self.sessions.items()):
                 try:
                     logger.debug(f"Requesting tools from server: {server_name}")
                     # Add timeout to avoid hanging
-                    tools_result = await asyncio.wait_for(session.list_tools(), timeout=10.0)
+                    tools_result = await asyncio.wait_for(session.list_tools(), timeout=5.0)
 
-                    # Log the raw response for debugging
-                    logger.debug(f"Raw tools result: {tools_result}")
-
-                    # Extract tools from the result
+                    # Process the tools result
                     if hasattr(tools_result, "tools") and tools_result.tools:
                         server_tools = tools_result.tools
                         logger.info(f"Found {len(server_tools)} tools from server {server_name}")
@@ -404,41 +418,28 @@ class MCPClient:
 
                         # Add to our results
                         for tool in server_tools:
-                            tool_info = {
-                                "name": tool.name,
-                                "description": tool.description,
-                                "inputSchema": getattr(tool, "inputSchema", {}),
-                                "server_name": server_name,
-                            }
-                            tools.append(tool_info)
-                            logger.debug(f"Added tool from direct discovery: {tool.name} from {server_name}")
-                    else:
-                        logger.warning(f"No tools found in result from server {server_name}")
-                        # Log the result structure for debugging
-                        logger.debug(f"Result attributes: {dir(tools_result)}")
-                except asyncio.TimeoutError:
-                    logger.error(f"Timeout requesting tools from server {server_name}")
-                except Exception as e:
-                    logger.error(f"Error requesting tools from server {server_name}: {e}")
-                    import traceback
-
-                    logger.debug(f"Traceback: {traceback.format_exc()}")
-
-        if not tools:
-            # As a last resort, check if any tasks have completed and examine their results
-            logger.warning("No tools found through normal methods, checking task results")
-            for server_name, task in self.background_tasks.items():
-                if task.done() and not task.cancelled():
-                    try:
-                        # Try to extract any useful information from the completed task
-                        result = task.result()
-                        logger.debug(f"Task result for {server_name}: {result}")
-
-                        # Look for tools in the result
-                        if isinstance(result, dict) and "tools" in result:
-                            server_tools = result["tools"]
-                            logger.info(f"Found {len(server_tools)} tools in task result for {server_name}")
-                            for tool in server_tools:
+                            try:
+                                tool_info = {
+                                    "name": tool.name,
+                                    "description": tool.description,
+                                    "inputSchema": getattr(tool, "inputSchema", {}),
+                                    "server_name": server_name,
+                                }
+                                tools.append(tool_info)
+                                logger.debug(f"Added tool: {tool.name} from {server_name}")
+                            except Exception as e:
+                                logger.error(f"Error processing tool {getattr(tool, 'name', 'unknown')}: {e}")
+                    elif isinstance(tools_result, dict) and "tools" in tools_result:
+                        # Handle case where tools_result is a dictionary
+                        server_tools = tools_result["tools"]
+                        logger.info(f"Found {len(server_tools)} tools from server {server_name} (dict format)")
+                        
+                        # Cache these tools for future use
+                        self.tools_cache[server_name] = server_tools
+                        
+                        # Add to our results
+                        for tool in server_tools:
+                            try:
                                 tool_info = {
                                     "name": tool.get("name", "unknown"),
                                     "description": tool.get("description", "No description"),
@@ -446,8 +447,69 @@ class MCPClient:
                                     "server_name": server_name,
                                 }
                                 tools.append(tool_info)
-                    except Exception as e:
-                        logger.error(f"Error extracting tools from task result for {server_name}: {e}")
+                                logger.debug(f"Added tool: {tool.get('name', 'unknown')} from {server_name}")
+                            except Exception as e:
+                                logger.error(f"Error processing tool {tool.get('name', 'unknown')}: {e}")
+                    else:
+                        # Log what we actually received for debugging
+                        logger.warning(f"No tools found in result from server {server_name}")
+                        logger.debug(f"Result type: {type(tools_result)}")
+                        if hasattr(tools_result, "__dict__"):
+                            logger.debug(f"Result attributes: {tools_result.__dict__}")
+                        else:
+                            logger.debug(f"Result: {tools_result}")
+                except asyncio.TimeoutError:
+                    logger.error(f"Timeout requesting tools from server {server_name}")
+                except Exception as e:
+                    logger.error(f"Error requesting tools from server {server_name}: {e}")
+                    import traceback
+                    logger.debug(f"Traceback: {traceback.format_exc()}")
+
+        # If we still didn't find any tools, check task results as a fallback
+        if not tools:
+            # Check if we have a tools cache we can use
+            if self.tools_cache:
+                logger.info(f"Using cached tools from {len(self.tools_cache)} servers")
+                for server_name, server_tools in self.tools_cache.items():
+                    for tool in server_tools:
+                        try:
+                            # Add server_name to the tool info
+                            tool_info = {
+                                "name": getattr(tool, "name", tool.get("name", "unknown")),
+                                "description": getattr(tool, "description", tool.get("description", "No description")),
+                                "inputSchema": getattr(tool, "inputSchema", tool.get("inputSchema", {})),
+                                "server_name": server_name,
+                            }
+                            tools.append(tool_info)
+                            logger.debug(f"Added tool from cache: {tool_info['name']} from {server_name}")
+                        except Exception as e:
+                            logger.error(f"Error processing cached tool: {e}")
+            else:
+                # As a last resort, check if any tasks have completed and examine their results
+                logger.info("Checking task results for tools")
+                for server_name, task in list(self.background_tasks.items()):
+                    if task.done() and not task.cancelled():
+                        try:
+                            # Try to extract any useful information from the completed task
+                            result = task.result()
+                            logger.debug(f"Task result for {server_name}: {result}")
+
+                            # Look for tools in the result
+                            if isinstance(result, dict) and "tools" in result:
+                                server_tools = result["tools"]
+                                logger.info(f"Found {len(server_tools)} tools in task result for {server_name}")
+                                # Cache these tools
+                                self.tools_cache[server_name] = server_tools
+                                for tool in server_tools:
+                                    tool_info = {
+                                        "name": tool.get("name", "unknown"),
+                                        "description": tool.get("description", "No description"),
+                                        "inputSchema": tool.get("inputSchema", {}),
+                                        "server_name": server_name,
+                                    }
+                                    tools.append(tool_info)
+                        except Exception as e:
+                            logger.error(f"Error extracting tools from task result for {server_name}: {e}")
 
         logger.info(f"Total tools found: {len(tools)}")
         return tools

@@ -93,7 +93,7 @@ async def initialize_mcp(mcp_config: str | None) -> MCPSessionManager | None:
         if success:
             # Register MCP tools with gptme
             logger.info("Registering MCP tools")
-            mcp_tools = await mcp_manager.tool_registry.register_all_tools(client=mcp_manager.client)
+            mcp_tools = await mcp_manager.register_tools()
 
             # Log the tool names for debugging
             tool_names = [tool.name for tool in mcp_tools]
@@ -127,7 +127,7 @@ async def chat(
     include_chat_history: bool = True,
     interactive: bool = True,
     function_declarations: Optional[List[Dict[str, Any]]] = None,
-    tool_choice: Optional[Dict[str, Any]] = None,
+    tool_choice: Optional[Dict[str, Any]]] = None,
     use_system_prompt: bool = True,
     system_prompt: Optional[str] = None,
     include_personal_prompt: bool = True,
@@ -196,7 +196,7 @@ async def chat(
             if init_successful:
                 # Get tools from the MCP server
                 try:
-                    mcp_tools = await mcp_manager.tool_registry.register_all_tools(client=mcp_manager.client)
+                    mcp_tools = await mcp_manager.register_tools()
                     print(f"Registered {len(mcp_tools)} MCP tools")
                 except Exception as e:
                     logging.error(f"Error registering MCP tools: {e}")
@@ -501,8 +501,8 @@ async def _chat_main(
     ai_assistant_bio: Optional[str] = None,
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
-    mcp_manager=None,
-    mcp_tools=None,
+    mcp_manager: Optional[MCPSessionManager] = None,
+    mcp_tools: Optional[List[Any]] = None,
     seed: Optional[int] = None,
     disable_response_formatting: bool = False,
 ) -> List[Dict[str, str]]:

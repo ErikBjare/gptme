@@ -39,3 +39,4 @@ __pycache__
 # MCP specific
 mcp_servers.json
 .mcp_cache
+.cpf
