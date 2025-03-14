@@ -1,80 +1,103 @@
-"""MCP session management for gptme."""
-import asyncio
-import logging
-from typing import Any, Dict, List, Optional
+"""MCP session management."""
 
-from gptme.mcp.client import MCPClient
-from gptme.mcp.config import MCPConfig
-from gptme.mcp.resource import MCPResourceManager
-from gptme.mcp.tools import MCPToolRegistry
+import asyncio
+import json
+import logging
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+
+from .client import MCPClient
+from .tools import MCPToolRegistry
 
 logger = logging.getLogger(__name__)
 
+
 class MCPSessionManager:
-    """Manager for MCP sessions in gptme."""
-    
+    """
+    Manager for Model Context Protocol (MCP) sessions and tools.
+    Handles the connection to MCP servers and tool registration.
+    """
+
     def __init__(self, config_path: Optional[str] = None):
-        """Initialize MCP session manager.
-        
+        """
+        Initialize the MCP session manager.
+
         Args:
-            config_path: Optional path to MCP configuration file
+            config_path: Optional path to the MCP configuration file.
+                         If None, will look for mcp.json in current directory.
         """
-        self.config = MCPConfig(config_path)
-        self.client = MCPClient()
-        self.tool_registry = MCPToolRegistry(self.client)
-        self.resource_manager = MCPResourceManager(self.client)
-        self._initialized = False
-        
-    async def initialize(self) -> bool:
-        """Initialize MCP sessions based on configuration.
-        
+        self.config_path = config_path or "mcp.json"
+        self.client = MCPClient(config_path=self.config_path)
+        self.tool_registry = MCPToolRegistry()
+        self.initialized = False
+
+    async def initialize(self, timeout: int = 45) -> bool:
+        """
+        Initialize MCP connections and register tools.
+
+        Args:
+            timeout: Maximum time in seconds to wait for initialization.
+
         Returns:
-            True if successful, False otherwise
+            bool: True if initialization successful, False otherwise.
         """
-        if self._initialized:
+        try:
+            # Create a task for initialization
+            logger.info(f"Initializing MCP client (timeout: {timeout}s)")
+
+            # Start the client initialization
+            init_success = await self.client.initialize()
+
+            if not init_success:
+                logger.error("Failed to initialize MCP client")
+                return False
+
+            self.initialized = True
+            logger.info("MCP session manager initialized successfully")
             return True
-            
-        servers = self.config.get_all_servers()
-        if not servers:
-            logger.info("No MCP servers configured")
+
+        except Exception as e:
+            logger.error(f"Error initializing MCP session manager: {e}")
+            import traceback
+
+            logger.debug(f"Detailed error: {traceback.format_exc()}")
             return False
-            
-        # Connect to all configured servers
-        success = False
-        for server_id, server_config in servers.items():
-            server_success = await self.client.connect_server(server_id, server_config)
-            success = success or server_success
-            
-        # Register tools
-        if success:
-            await self.tool_registry.register_all_tools()
-            
-        self._initialized = success
-        return success
-    
-    async def shutdown(self) -> None:
-        """Shutdown all MCP sessions."""
-        await self.client.disconnect_all()
-        self._initialized = False
-    
-    async def get_tools(self) -> List[Any]:
-        """Get all available MCP tools.
-        
-        Returns:
-            List of available tools
+
+    async def close(self) -> None:
         """
-        if not self._initialized:
-            await self.initialize()
-            
-        return await self.tool_registry.register_all_tools()
-    
+        Close all MCP connections.
+        """
+        if self.initialized:
+            await self.client.close()
+            self.initialized = False
+            logger.info("MCP session manager closed")
+
+    async def __aenter__(self):
+        """
+        Async context manager enter.
+        """
+        await self.initialize()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Async context manager exit.
+        """
+        await self.close()
+
+    async def get_tools(self) -> List[Any]:
+        """Get all available tools from MCP servers."""
+        if not self.initialized:
+            logger.warning("Getting tools from uninitialized MCP session manager")
+            return []
+
+        return await self.client.list_tools()
+
     async def get_resources(self) -> List[Dict[str, Any]]:
         """Get all available MCP resources.
-        
+
         Returns:
             List of available resources
         """
-        if not self._initialized:
-            await self.initialize()
-            
-        return await self.resource_manager.list_resources() 
+        return await self.resource_manager.list_resources()

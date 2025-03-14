@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import json
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
 
 from gptme.message import Message
 from gptme.tools.base import Parameter, ToolSpec
@@ -44,182 +44,280 @@ class BaseTool:
         self.parameters = parameters
 
 
-class MCPToolAdapter(BaseTool):
-    """Adapter for MCP tools to be used in gptme."""
+class MCPToolAdapter:
+    """Adapter to convert MCP tool to a function."""
 
-    def __init__(self, mcp_client, server_id: str, tool_name: str, description: str, schema: Dict[str, Any]):
-        """Initialize MCP tool adapter.
+    def __init__(
+        self,
+        name: str,
+        description: str,
+        server_name: str,
+        input_schema: Dict[str, Any],
+        client: Any,
+    ):
+        """
+        Initialize an adapter for an MCP tool.
 
         Args:
-            mcp_client: MCP client instance
-            server_id: Server identifier
-            tool_name: Name of the tool
-            description: Tool description
-            schema: JSON schema for tool input
+            name: Name of the tool
+            description: Description of the tool
+            server_name: Name of the server providing the tool
+            input_schema: JSON schema for the tool input
+            client: MCPClient instance to use for tool calls
         """
-        self.mcp_client = mcp_client
-        # Store the original server_id with @ prefix if it has one
-        self.server_id = server_id
-        self.tool_name = tool_name
-        self.mcp_schema = schema
+        self.name = name
+        self.description = description
+        self.server_name = server_name
+        self.input_schema = input_schema
+        self.client = client
 
-        # Create a unique name for the tool that preserves the @ prefix
-        unique_name = f"mcp_{server_id}_{tool_name}".replace("@", "at_")
-
-        # Extract parameter info from the schema
-        params = self._extract_params_from_schema(schema)
-
-        super().__init__(name=unique_name, description=description, function=self.execute, parameters=params)
-
-    def _extract_params_from_schema(self, schema: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """Extract parameter information from JSON schema.
+    async def __call__(self, **kwargs: Any) -> Any:
+        """
+        Call the tool on the MCP server.
 
         Args:
-            schema: JSON schema for tool input
+            **kwargs: Arguments to pass to the tool
 
         Returns:
-            Dictionary of parameter definitions
+            Result of the tool call
         """
-        params = {}
+        if not self.client:
+            raise ValueError(f"No MCP client available to call tool {self.name}")
 
-        if not schema or "properties" not in schema:
-            return params
-
-        properties = schema.get("properties", {})
-        required = schema.get("required", [])
-
-        for name, prop in properties.items():
-            param_type = prop.get("type", "string")
-            description = prop.get("description", "")
-
-            params[name] = {"type": param_type, "description": description, "required": name in required}
-
-            # Handle enums
-            if "enum" in prop:
-                params[name]["enum"] = prop["enum"]
-
-        return params
-
-    async def execute(self, **kwargs) -> ToolResult:
-        """Execute the MCP tool.
-
-        Args:
-            **kwargs: Tool arguments
-
-        Returns:
-            Tool execution result
-        """
-        try:
-            # Use the original server_id with @ prefix
-            result = await self.mcp_client.call_tool(self.server_id, self.tool_name, kwargs)
-
-            # Convert MCP result to gptme's ToolResult
-            content = []
-            for item in result.content:
-                if item.get("type") == "text":
-                    content.append(item.get("text", ""))
-
-            text_content = "\n".join(content)
-
-            return ToolResult(success=True, output=text_content)
-        except Exception as e:
-            error_msg = f"Error executing MCP tool {self.tool_name} on server {self.server_id}: {e}"
-            logger.error(error_msg)
-            return ToolResult(success=False, output=error_msg)
-
-    def to_toolspec(self) -> ToolSpec:
-        """Convert this adapter to a gptme ToolSpec.
-
-        Returns:
-            ToolSpec instance
-        """
-        parameters = []
-        for name, param_info in self.parameters.items():
-            parameters.append(
-                Parameter(
-                    name=name,
-                    type=param_info["type"],
-                    description=param_info.get("description", ""),
-                    enum=param_info.get("enum"),
-                    required=param_info.get("required", False),
-                )
-            )
-
-        # Create sync wrapper for the async execute method
-        def execute_wrapper(*args, **kwargs):
-            # Create event loop or use existing one
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-            # Run async function
-            result = loop.run_until_complete(self.execute(**kwargs))
-
-            # Return a generator that yields a single message
-            if result.success:
-                yield Message.system(result.output)
-            else:
-                yield Message.error(result.output)
-
-        # Create the tool spec
-        tool_spec = ToolSpec(name=self.name, desc=self.description, parameters=parameters, execute=execute_wrapper)
-
-        return tool_spec
+        result = await self.client.call_tool(self.server_name, self.name, kwargs)
+        return result
 
 
 class MCPToolRegistry:
-    """Registry for MCP tools in gptme."""
+    """Registry for MCP tools."""
 
-    def __init__(self, mcp_client):
-        """Initialize MCP tool registry.
+    def __init__(self):
+        """Initialize the tool registry."""
+        self.tools: Dict[str, MCPToolAdapter] = {}
+        self.tool_specs: List[Dict[str, Any]] = []
+
+    async def register_all_tools(self, client: Optional[Any] = None) -> List[Dict[str, Any]]:
+        """
+        Register all tools from connected MCP servers.
 
         Args:
-            mcp_client: MCP client instance
-        """
-        self.mcp_client = mcp_client
-        self.registered_tools = {}
-
-    async def register_all_tools(self) -> List[ToolSpec]:
-        """Register all available MCP tools.
+            client: MCPClient instance to use for tool registration. If None,
+                   tries to retrieve the client from the session manager.
 
         Returns:
-            List of registered tools
+            List of registered tool specifications
         """
-        all_tools = []
+        logger.info("Registering MCP tools")
 
-        # Get all available tools from MCP client
-        mcp_tools = await self.mcp_client.list_tools()
+        # Clear existing tools
+        self.tools = {}
+        self.tool_specs = []
 
-        for tool_info in mcp_tools:
-            server_id = tool_info["server_id"]
-            tool_name = tool_info["name"]
-            description = tool_info["description"]
-            schema = tool_info["schema"]
+        if not client:
+            logger.error("No MCP client provided, cannot register tools")
+            return []
 
-            # Create and register tool adapter
-            tool_adapter = MCPToolAdapter(self.mcp_client, server_id, tool_name, description, schema)
+        # Log the client type and attributes for debugging
+        logger.debug(f"Client type: {type(client)}")
+        logger.debug(f"Client attributes: {dir(client)}")
 
-            # Store in registry
-            tool_key = f"{server_id}_{tool_name}"
-            self.registered_tools[tool_key] = tool_adapter
+        # Verify client is initialized
+        if not getattr(client, "initialized", False):
+            logger.warning("Client is not initialized, tools may not be available")
 
-            # Convert to ToolSpec
-            tool_spec = tool_adapter.to_toolspec()
-            all_tools.append(tool_spec)
+        # Check if the client's sessions and tools_cache are populated
+        if hasattr(client, "sessions"):
+            logger.debug(f"Client has {len(client.sessions)} session(s)")
 
-        return all_tools
+        if hasattr(client, "tools_cache"):
+            logger.debug(f"Client has tools cached for {list(client.tools_cache.keys())} servers")
+            # Log what's in the cache for debugging
+            for server, tools in client.tools_cache.items():
+                logger.debug(f"Server {server} has {len(tools)} cached tools")
 
-    def get_tool(self, server_id: str, tool_name: str) -> Optional[BaseTool]:
-        """Get a specific tool from the registry.
+        try:
+            # Get tools from all servers
+            logger.info("Requesting tools from client.list_tools()")
+            all_tools = await client.list_tools()
+
+            logger.info(f"Received {len(all_tools)} tools from client.list_tools()")
+
+            if not all_tools:
+                # If no tools found, check if there might be a direct way to access them
+                logger.warning("No MCP tools found from client.list_tools() - trying alternative approaches")
+
+                # Attempt to access tools cache directly if available
+                direct_tools = []
+
+                if hasattr(client, "tools_cache"):
+                    for server_name, tools in client.tools_cache.items():
+                        logger.debug(f"Directly accessing {len(tools)} tools from server {server_name}")
+                        for tool in tools:
+                            try:
+                                tool_info = {
+                                    "name": tool.name,
+                                    "description": tool.description,
+                                    "inputSchema": getattr(tool, "inputSchema", {}),
+                                    "server_name": server_name,
+                                }
+                                direct_tools.append(tool_info)
+                            except Exception as e:
+                                logger.error(f"Error processing tool from cache: {e}")
+
+                    if direct_tools:
+                        logger.info(f"Found {len(direct_tools)} tools directly from cache")
+                        all_tools = direct_tools
+
+                if not all_tools:
+                    logger.warning("No MCP tools found from any approach")
+                    return []
+
+            logger.info(f"Found {len(all_tools)} MCP tools to register")
+
+            # Register each tool
+            registered_count = 0
+            for tool_info in all_tools:
+                try:
+                    # Log the raw tool info for debugging
+                    logger.debug(f"Processing tool: {tool_info}")
+
+                    # Extract required fields, with fallbacks
+                    name = tool_info.get("name", "<unnamed>")
+                    description = tool_info.get("description", f"Tool: {name}")
+
+                    # Handle different types of schema representation
+                    input_schema = tool_info.get("inputSchema", {})
+                    if not isinstance(input_schema, dict):
+                        logger.warning(f"Tool {name} has non-dict inputSchema: {type(input_schema)}")
+                        # Try to convert to dict if possible
+                        if hasattr(input_schema, "__dict__"):
+                            input_schema = input_schema.__dict__
+                        else:
+                            # Default empty schema
+                            input_schema = {"type": "object", "properties": {}}
+
+                    server_name = tool_info.get("server_name", "unknown")
+
+                    # Create adapter for the tool
+                    adapter = MCPToolAdapter(
+                        name=name,
+                        description=description,
+                        server_name=server_name,
+                        input_schema=input_schema,
+                        client=client,
+                    )
+
+                    # Store adapter
+                    self.tools[name] = adapter
+
+                    # Create tool specification
+                    tool_spec = {
+                        "type": "function",
+                        "function": {"name": name, "description": description, "parameters": input_schema},
+                    }
+
+                    self.tool_specs.append(tool_spec)
+                    registered_count += 1
+                    logger.debug(f"Registered MCP tool: {name} from server {server_name}")
+
+                except Exception as e:
+                    logger.error(f"Failed to register MCP tool {tool_info.get('name', '<unknown>')}: {e}")
+                    import traceback
+
+                    logger.debug(f"Traceback: {traceback.format_exc()}")
+
+            logger.info(f"Successfully registered {registered_count} MCP tools")
+            return self.tool_specs
+
+        except Exception as e:
+            logger.error(f"Error during tool registration: {e}")
+            import traceback
+        # Get tools from all servers
+        all_tools = await client.list_tools()
+
+        if not all_tools:
+            logger.warning("No MCP tools found from any servers")
+            return []
+
+        logger.info(f"Found {len(all_tools)} MCP tools to register")
+
+        # Register each tool
+        registered_count = 0
+        for tool_info in all_tools:
+            try:
+                name = tool_info["name"]
+                description = tool_info["description"]
+                input_schema = tool_info["inputSchema"]
+                server_name = tool_info["server_name"]
+
+                # Create adapter for the tool
+                adapter = MCPToolAdapter(
+                    name=name,
+                    description=description,
+                    server_name=server_name,
+                    input_schema=input_schema,
+                    client=client,
+                )
+
+                # Store adapter
+                self.tools[name] = adapter
+
+                # Create tool specification
+                tool_spec = {
+                    "type": "function",
+                    "function": {"name": name, "description": description, "parameters": input_schema},
+                }
+
+                self.tool_specs.append(tool_spec)
+                registered_count += 1
+                logger.debug(f"Registered MCP tool: {name} from server {server_name}")
+
+            except Exception as e:
+                logger.error(f"Failed to register MCP tool {tool_info.get('name', '<unknown>')}: {e}")
+
+        logger.info(f"Successfully registered {registered_count} MCP tools")
+        return self.tool_specs
+
+    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
+        """
+        Call a registered MCP tool.
+
+        Args:
+            tool_name: Name of the tool to call
+            arguments: Arguments to pass to the tool
+
+        Returns:
+            Result of the tool call
+
+        Raises:
+            ValueError: If the tool is not registered
+        """
+        if tool_name not in self.tools:
+            raise ValueError(f"Tool {tool_name} not registered")
+
+        return await self.tools[tool_name](**arguments)
+
+    def register_tool(self, server_id: str, tool: Any) -> ToolSpec:
+        """Register an MCP tool.
 
         Args:
             server_id: Server identifier
-            tool_name: Tool name
+            tool: MCP tool to register
 
         Returns:
-            Tool adapter or None if not found
+            Registered tool spec
         """
-        tool_key = f"{server_id}_{tool_name}"
-        return self.registered_tools.get(tool_key)
+        tool_id = f"{server_id}_{tool.name}"
+        if tool_id in self.tools:
+            return self.tools[tool_id]
+
+        # Create tool spec from MCP tool
+        tool_spec = ToolSpec(
+            name=f"{server_id}_{tool.name}",
+            desc=tool.description,
+            parameters=tool.inputSchema.get("properties", {}),
+            required=tool.inputSchema.get("required", []),
+        )
+
+        self.tools[tool_id] = tool_spec
+        return tool_spec
