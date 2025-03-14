@@ -4,20 +4,22 @@ import asyncio
 import json
 import logging
 import os
-import shutil
+import subprocess
+import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from mcp import ClientSession
-from mcp.client.stdio import StdioServerParameters, stdio_client
+from ..config import Config
+
+# Import the official MCP SDK
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 
 logger = logging.getLogger(__name__)
 
 
 class MCPClient:
-    """
-    MCP client that manages connections to MCP servers using the standard MCP protocol.
-    """
+    """MCP client that manages connections to MCP servers using the standard MCP protocol."""
 
     def __init__(self, config_path: Optional[Union[str, Path]] = None):
         """
@@ -28,9 +30,11 @@ class MCPClient:
         """
         self.config_path = Path(config_path) if config_path else Path("mcp.json")
         self.config = None
-        self.sessions = {}  # Server connections
+        self.sessions = {}  # Server connections using official SDK
         self.background_tasks = {}  # Background tasks for each server
         self.tools_cache = {}  # Cache for tools from each server
+        self.tools_cache_timestamp = 0
+        self.tools_cache_ttl = 60  # 1 minute
         self.initialized = False
         self.connection_timeout = 20  # seconds
 
@@ -41,496 +45,328 @@ class MCPClient:
         Returns:
             bool: True if initialization was successful, False otherwise.
         """
-        try:
-            # Load configuration
-            if not self.config_path.exists():
-                logger.error(f"MCP configuration file not found at {self.config_path}")
-                return False
-
-            with open(self.config_path) as f:
-                self.config = json.load(f)
-
-            # Handle both configuration formats:
-            # 1. New format: {"servers": [{"name": "server1", "type": "stdio", ...}, ...]}
-            # 2. Old format: {"mcpServers": {"server1": {"command": "...", ...}, ...}}
-
-            # Check for new format
-            if "servers" in self.config:
-                logger.info("Using 'servers' array configuration format")
-                # Already in the expected format
-                pass
-            # Check for old format
-            elif "mcpServers" in self.config:
-                logger.info("Converting 'mcpServers' format to 'servers' array format")
-                # Convert old format to new format
-                servers_config = []
-                for name, config in self.config["mcpServers"].items():
-                    server_config = config.copy()
-                    server_config["name"] = name
-                    server_config["type"] = "stdio"
-                    servers_config.append(server_config)
-
-                # Update config with new format
-                self.config["servers"] = servers_config
-            else:
-                logger.error("No MCP servers defined in configuration (missing 'servers' or 'mcpServers')")
-                return False
-
-            # Initialize all enabled servers
-            await self._connect_all_servers()
-            self.initialized = True
+        if self.initialized:
             return True
 
+        # Load configuration
+        try:
+            with open(self.config_path, "r") as f:
+                self.config = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to initialize MCP client: {e}")
-            import traceback
-
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Failed to load MCP configuration from {self.config_path}: {e}")
             return False
 
-    async def _connect_all_servers(self, *, timeout: float = 60.0) -> None:
+        # Handle both "mcpServers" format and "servers" array format
+        if "mcpServers" in self.config and not self.config.get("servers"):
+            # Convert mcpServers format to servers array format
+            logger.info("Converting 'mcpServers' format to 'servers' array format")
+            servers = []
+            for name, server_config in self.config["mcpServers"].items():
+                # Extract command and combine with args
+                command_parts = [server_config.get("command", "")]
+                if "args" in server_config:
+                    command_parts.extend(server_config["args"])
+                
+                # Create server entry
+                server_entry = {
+                    "name": name,
+                    "command": " ".join(command_parts),
+                    "config": {}  # Any server-specific config can go here
+                }
+                servers.append(server_entry)
+            
+            self.config["servers"] = servers
+
+        # Connect to MCP servers
+        logger.info("Connecting to all MCP servers")
+        servers = self.config.get("servers", [])
+        if not servers:
+            logger.warning("No MCP servers configured")
+            return False
+
+        logger.info(f"Found {len(servers)} MCP servers in configuration")
+
+        # Start MCP servers with a connection timeout
+        success = await self._connect_all_servers(timeout=self.connection_timeout)
+        self.initialized = success
+        return success
+
+    async def _connect_all_servers(self, *, timeout: float = 60.0) -> bool:
         """
         Connect to all configured MCP servers with timeout.
 
         Args:
             timeout: Timeout for connecting in seconds
         """
-        logger.info("Connecting to all MCP servers")
+        servers = self.config.get("servers", [])
+        if not servers:
+            return False
 
-        # Clear existing state
-        self.sessions = {}
-        self.tools_cache = {}
+        # Start each server in the background
+        for server in servers:
+            server_name = server.get("name", "")
+            command = server.get("command", "")
+            config = server.get("config", {})
 
-        # Get server configurations
-        try:
-            servers_config = self.config.get("servers", [])
-            if not servers_config:
-                logger.warning("No MCP servers configured")
-                return
+            if not server_name or not command:
+                logger.warning(f"Skipping invalid server configuration: {server}")
+                continue
 
-            logger.info(f"Found {len(servers_config)} MCP servers in configuration")
-
-            # Start background tasks for each server
-            start_tasks = []
-            for server_config in servers_config:
-                server_name = server_config.get("name", "unnamed")
-                server_type = server_config.get("type", "stdio")
-
-                if server_type == "stdio":
-                    # Extract stdio-specific configuration
-                    command = server_config.get("command", "npx")
-                    args = server_config.get("args", [])
-
-                    # Merge environment variables
-                    env = os.environ.copy()
-                    env.update(server_config.get("env", {}))
-
-                    logger.info(f"Starting MCP stdio server {server_name}: {command} {' '.join(args)}")
-
-                    try:
-                        # Create server parameters
-                        server_params = StdioServerParameters(command=command, args=args, env=env)
-
-                        # Start the server in the background
-                        task = asyncio.create_task(self._run_server_in_background(server_name, server_params))
-                        
-                        # Store the task
-                        self.background_tasks[server_name] = task
-                        
-                        # Add to the list of tasks to watch for quick failures
-                        start_tasks.append(task)
-
-                        logger.info(f"Started background task for server {server_name}")
-                    except Exception as e:
-                        logger.error(f"Failed to start server {server_name}: {e}")
-                else:
-                    logger.error(f"Unsupported server type: {server_type}")
-
-            # Wait briefly for initialization, but not for the complete timeout
-            # This gives servers a chance to start up and register tools
-            if start_tasks:
-                # A shorter timeout that just checks for immediate failures
-                # but doesn't wait for full initialization
-                init_time = min(5.0, timeout / 4)
-                logger.info(f"Waiting {init_time:.1f} seconds to check for immediate startup failures...")
+            # Start the server
+            logger.info(f"Starting MCP stdio server {server_name}: {command}")
+            
+            # Create server parameters for the official SDK
+            command_parts = command.split()
+            if not command_parts:
+                logger.warning(f"Invalid command for server {server_name}")
+                continue
                 
-                # We don't want to wait for all tasks to complete, just check if any failed quickly
-                await asyncio.sleep(init_time)
-                
-                # Check for any quick failures without waiting for all tasks to complete
-                failed_tasks = []
-                for server_name, task in list(self.background_tasks.items()):
-                    if task.done():
-                        try:
-                            task.result()  # This will raise the exception if there was one
-                        except Exception as e:
-                            logger.error(f"Server {server_name} failed to start: {e}")
-                            failed_tasks.append(server_name)
+            # Extract executable and arguments
+            executable = command_parts[0]
+            args = command_parts[1:]
+            
+            # Create server parameters with shell=True to properly handle the complex command
+            server_params = StdioServerParameters(
+                command=executable,
+                args=args,
+                env=os.environ.copy(),
+                shell=False  # Running without shell for better control
+            )
+            
+            # Start the server in the background
+            task = asyncio.create_task(
+                self._run_server_in_background(server_name, server_params)
+            )
+            self.background_tasks[server_name] = task
+            logger.info(f"Started background task for server {server_name}")
 
-                # Remove failed tasks
-                for server_name in failed_tasks:
-                    if server_name in self.background_tasks:
-                        del self.background_tasks[server_name]
+        # Wait for servers to start
+        if servers:
+            logger.info(f"Waiting {timeout} seconds to check for immediate startup failures...")
+            # Wait a bit to check for immediate startup failures
+            await asyncio.sleep(min(5.0, timeout / 3))
 
-                if not self.background_tasks:
-                    logger.error("All MCP servers failed to start")
-                else:
-                    logger.info(f"{len(self.background_tasks)} MCP servers started successfully")
-                    # Set initialized flag
-                    self.initialized = True
-            else:
-                logger.warning("No MCP servers were started")
-        except Exception as e:
-            logger.error(f"Failed to connect to MCP servers: {e}")
-            import traceback
+        # Check how many servers are connected
+        connected_servers = len(self.sessions)
+        total_servers = len(servers)
+        logger.info(f"Connected to {connected_servers}/{total_servers} MCP servers")
 
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-            # Reset state
-            self.close()
-            raise
+        # Consider initialization successful if any servers connected
+        return connected_servers > 0
 
-    async def _run_server_in_background(self, server_name: str, server_params: Any) -> None:
+    async def _run_server_in_background(self, server_name: str, server_params: StdioServerParameters):
         """
-        Run an MCP server in the background.
+        Run an MCP server in the background using the official SDK.
 
         Args:
             server_name: Name of the server
-            server_params: Server parameters
+            server_params: Server parameters for the official SDK
         """
-        try:
-            logger.info(f"Starting server {server_name} in background")
-
-            # Get the server client based on type
-            if isinstance(server_params, StdioServerParameters):
-                server_client = stdio_client
-            else:
-                logger.error(f"Unsupported server parameters type: {type(server_params)}")
-                return
-
-            # Connect to the server
-            try:
-                logger.debug(f"Connecting to server {server_name} with params: {server_params}")
-                
-                # Create connection task
-                connection_task = asyncio.create_task(self._maintain_server_connection(
-                    server_name, server_client, server_params
-                ))
-                
-                # Store the task but don't await it
-                self.background_tasks[server_name] = connection_task
-                
-                # Wait briefly to ensure connection is established
-                await asyncio.sleep(2)
-                
-                logger.info(f"Started background connection for server {server_name}")
-                
-            except Exception as e:
-                logger.error(f"Failed to connect to server {server_name}: {e}")
-                import traceback
-                logger.debug(f"Traceback: {traceback.format_exc()}")
-        except asyncio.CancelledError:
-            logger.info(f"Background task for {server_name} was cancelled")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error in background task for {server_name}: {e}")
-            import traceback
-            logger.debug(f"Traceback: {traceback.format_exc()}")
-    
-    async def _maintain_server_connection(self, server_name: str, server_client, server_params: Any) -> None:
-        """
-        Maintain a connection to an MCP server.
+        logger.info(f"Starting server {server_name} in background")
         
-        This method is meant to be run as a background task.
-
-        Args:
-            server_name: Name of the server
-            server_client: Client to use for connection
-            server_params: Parameters for the server
-        """
         try:
-            async with server_client(server_params) as (read_stream, write_stream):
-                logger.info(f"Connected to server {server_name}")
-
-                # Create a session
-                try:
-                    # Create session with standard initialization
-                    session = ClientSession(read_stream, write_stream)
-
-                    # Add a timeout to initialize
-                    try:
-                        await asyncio.wait_for(session.initialize(), timeout=30.0)
-
-                        logger.info(f"Initialized session for {server_name}")
-
-                        # Store the session
-                        self.sessions[server_name] = session
-                    except asyncio.TimeoutError:
-                        logger.error(f"Timeout initializing session for {server_name}")
-                        raise  # Re-raise to be caught by outer exception handler
-                    except Exception as e:
-                        logger.error(f"Error during session initialization: {e}")
-                        raise  # Re-raise to be caught by outer exception handler
-
-                    # Cache tools
-                    try:
-                        # Add some debugging output
-                        logger.debug(f"Requesting tools list from {server_name}")
-
-                        # Use timeout to avoid hanging
-                        tools_result = await asyncio.wait_for(session.list_tools(), timeout=10.0)
-
-                        # Log what was received
-                        logger.debug(f"Received tools result from {server_name}: {tools_result}")
-
-                        if hasattr(tools_result, "tools"):
-                            self.tools_cache[server_name] = tools_result.tools
-                            logger.info(f"Cached {len(tools_result.tools)} tools from {server_name}")
-                            # List tool names for debugging
-                            tool_names = [t.name for t in tools_result.tools]
-                            logger.debug(f"Tool names: {tool_names}")
-                        else:
-                            logger.warning(f"No tools attribute in result from {server_name}")
-                            logger.debug(f"Result attributes: {dir(tools_result)}")
-                    except asyncio.TimeoutError:
-                        logger.error(f"Timeout while listing tools from {server_name}")
-                    except Exception as e:
-                        logger.error(f"Failed to list tools from {server_name}: {e}")
-                        import traceback
-                        logger.debug(f"Traceback: {traceback.format_exc()}")
-
-                    # Server is running and initialized
-                    logger.info(f"Server {server_name} is now running")
-
-                    # Keep the session alive
-                    try:
-                        while True:
-                            # Periodically ping to keep connection alive
-                            await asyncio.sleep(30)
-                            logger.debug(f"Pinging server {server_name}")
-                            # We won't actually ping for now since it might not be implemented
-                            # on all servers
-                    except asyncio.CancelledError:
-                        logger.info(f"Background task for {server_name} was cancelled")
-                        raise
-                    except Exception as e:
-                        logger.error(f"Error in background task for {server_name}: {e}")
-                        import traceback
-                        logger.debug(f"Traceback: {traceback.format_exc()}")
-                except asyncio.TimeoutError:
-                    logger.error(f"Timeout initializing session for {server_name}")
-                    raise  # Re-raise to be caught by outer exception handler
-                except Exception as e:
-                    logger.error(f"Failed to initialize session for {server_name}: {e}")
-                    import traceback
-                    logger.debug(f"Traceback: {traceback.format_exc()}")
-        except asyncio.CancelledError:
-            logger.info(f"Connection task for {server_name} was cancelled")
+            # Connect to the server using the official SDK
+            async with stdio_client(server_params) as (read, write):
+                # Create a ClientSession
+                async with ClientSession(read, write) as session:
+                    # Initialize the connection
+                    await session.initialize()
+                    logger.info(f"Successfully initialized server {server_name}")
+                    
+                    # Store the session for later use
+                    self.sessions[server_name] = session
+                    
+                    # Keep the connection open
+                    while True:
+                        await asyncio.sleep(5)
+                        
+                        # Check if the session is still alive - if not, exit the loop
+                        if not session.is_connected():
+                            logger.warning(f"Server {server_name} disconnected")
+                            break
         except Exception as e:
-            logger.error(f"Error maintaining connection for {server_name}: {e}")
-            import traceback
-            logger.debug(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Error running server {server_name}: {e}")
         finally:
-            logger.info(f"Connection task for {server_name} is ending")
+            # Remove the session if it exists
+            if server_name in self.sessions:
+                logger.info(f"Removing server {server_name} from sessions")
+                del self.sessions[server_name]
 
-    async def close(self) -> None:
+    async def close(self):
         """
         Close all MCP server connections.
         """
         logger.info("Closing all MCP connections")
 
-        # Cancel all keep-alive futures to trigger cleanup
-        keep_alive_futures = getattr(self, "_keep_alive_futures", {})
-        for server_name, future in keep_alive_futures.items():
-            if not future.done():
-                future.cancel()
-
-        # Wait for all background tasks to complete
-        if self.background_tasks:
-            tasks = list(self.background_tasks.values())
-            if tasks:
-                logger.info(f"Waiting for {len(tasks)} background tasks to complete")
+        # Close background tasks
+        for server_name, task in self.background_tasks.items():
+            if not task.done():
+                logger.info(f"Cancelling background task for server {server_name}")
+                task.cancel()
                 try:
-                    # Wait with a timeout
-                    done, pending = await asyncio.wait(tasks, timeout=5)
-
-                    # Cancel any remaining tasks
-                    for task in pending:
-                        task.cancel()
-
-                    # Wait again briefly for cancelled tasks
-                    if pending:
-                        await asyncio.wait(pending, timeout=2)
+                    await asyncio.wait_for(task, timeout=2.0)
+                except asyncio.TimeoutError:
+                    logger.warning(f"Timeout waiting for {server_name} task to cancel")
+                except asyncio.CancelledError:
+                    logger.info(f"Task for {server_name} cancelled")
                 except Exception as e:
-                    logger.error(f"Error waiting for background tasks: {e}")
+                    logger.error(f"Error cancelling task for {server_name}: {e}")
 
         # Clear all collections
         self.sessions.clear()
         self.background_tasks.clear()
         self.tools_cache.clear()
-        self._keep_alive_futures = {}
         self.initialized = False
 
         logger.info("All MCP connections closed")
 
-    async def list_tools(self) -> List[Dict[str, Any]]:
+    async def list_tools(self, timeout: Optional[float] = None) -> List[Dict[str, Any]]:
         """
-        List all tools from all connected MCP servers.
-
-        Returns:
-            List of tool specifications
-        """
-        logger.info("Listing all tools from connected MCP servers")
-
-        tools = []
-
-        # Wait for background tasks to complete initialization if they're still running
-        pending_tasks = [task for task in self.background_tasks.values() if not task.done() and not task.cancelled()]
-
-        # If we have pending tasks, give them more time to initialize
-        if pending_tasks:
-            logger.info(f"Waiting for {len(pending_tasks)} servers to complete initialization...")
-            try:
-                # Wait a bit longer for initialization to complete - giving more time for tool registration
-                done, pending = await asyncio.wait(pending_tasks, timeout=10.0, return_when=asyncio.FIRST_COMPLETED)
-
-                if pending:
-                    logger.warning(f"{len(pending)} servers are still initializing")
-                    # We'll continue anyway and try to get tools from servers that are ready
-            except Exception as e:
-                logger.error(f"Error waiting for server initialization: {e}")
-
-        # Try to get tools from established sessions first, regardless of cache
-        if self.sessions:
-            logger.info(f"Attempting tool discovery from {len(self.sessions)} active sessions")
-            for server_name, session in list(self.sessions.items()):
-                try:
-                    logger.debug(f"Requesting tools from server: {server_name}")
-                    # Add timeout to avoid hanging
-                    tools_result = await asyncio.wait_for(session.list_tools(), timeout=5.0)
-
-                    # Process the tools result
-                    if hasattr(tools_result, "tools") and tools_result.tools:
-                        server_tools = tools_result.tools
-                        logger.info(f"Found {len(server_tools)} tools from server {server_name}")
-
-                        # Cache these tools for future use
-                        self.tools_cache[server_name] = server_tools
-
-                        # Add to our results
-                        for tool in server_tools:
-                            try:
-                                tool_info = {
-                                    "name": tool.name,
-                                    "description": tool.description,
-                                    "inputSchema": getattr(tool, "inputSchema", {}),
-                                    "server_name": server_name,
-                                }
-                                tools.append(tool_info)
-                                logger.debug(f"Added tool: {tool.name} from {server_name}")
-                            except Exception as e:
-                                logger.error(f"Error processing tool {getattr(tool, 'name', 'unknown')}: {e}")
-                    elif isinstance(tools_result, dict) and "tools" in tools_result:
-                        # Handle case where tools_result is a dictionary
-                        server_tools = tools_result["tools"]
-                        logger.info(f"Found {len(server_tools)} tools from server {server_name} (dict format)")
-                        
-                        # Cache these tools for future use
-                        self.tools_cache[server_name] = server_tools
-                        
-                        # Add to our results
-                        for tool in server_tools:
-                            try:
-                                tool_info = {
-                                    "name": tool.get("name", "unknown"),
-                                    "description": tool.get("description", "No description"),
-                                    "inputSchema": tool.get("inputSchema", {}),
-                                    "server_name": server_name,
-                                }
-                                tools.append(tool_info)
-                                logger.debug(f"Added tool: {tool.get('name', 'unknown')} from {server_name}")
-                            except Exception as e:
-                                logger.error(f"Error processing tool {tool.get('name', 'unknown')}: {e}")
-                    else:
-                        # Log what we actually received for debugging
-                        logger.warning(f"No tools found in result from server {server_name}")
-                        logger.debug(f"Result type: {type(tools_result)}")
-                        if hasattr(tools_result, "__dict__"):
-                            logger.debug(f"Result attributes: {tools_result.__dict__}")
-                        else:
-                            logger.debug(f"Result: {tools_result}")
-                except asyncio.TimeoutError:
-                    logger.error(f"Timeout requesting tools from server {server_name}")
-                except Exception as e:
-                    logger.error(f"Error requesting tools from server {server_name}: {e}")
-                    import traceback
-                    logger.debug(f"Traceback: {traceback.format_exc()}")
-
-        # If we still didn't find any tools, check task results as a fallback
-        if not tools:
-            # Check if we have a tools cache we can use
-            if self.tools_cache:
-                logger.info(f"Using cached tools from {len(self.tools_cache)} servers")
-                for server_name, server_tools in self.tools_cache.items():
-                    for tool in server_tools:
-                        try:
-                            # Add server_name to the tool info
-                            tool_info = {
-                                "name": getattr(tool, "name", tool.get("name", "unknown")),
-                                "description": getattr(tool, "description", tool.get("description", "No description")),
-                                "inputSchema": getattr(tool, "inputSchema", tool.get("inputSchema", {})),
-                                "server_name": server_name,
-                            }
-                            tools.append(tool_info)
-                            logger.debug(f"Added tool from cache: {tool_info['name']} from {server_name}")
-                        except Exception as e:
-                            logger.error(f"Error processing cached tool: {e}")
-            else:
-                # As a last resort, check if any tasks have completed and examine their results
-                logger.info("Checking task results for tools")
-                for server_name, task in list(self.background_tasks.items()):
-                    if task.done() and not task.cancelled():
-                        try:
-                            # Try to extract any useful information from the completed task
-                            result = task.result()
-                            logger.debug(f"Task result for {server_name}: {result}")
-
-                            # Look for tools in the result
-                            if isinstance(result, dict) and "tools" in result:
-                                server_tools = result["tools"]
-                                logger.info(f"Found {len(server_tools)} tools in task result for {server_name}")
-                                # Cache these tools
-                                self.tools_cache[server_name] = server_tools
-                                for tool in server_tools:
-                                    tool_info = {
-                                        "name": tool.get("name", "unknown"),
-                                        "description": tool.get("description", "No description"),
-                                        "inputSchema": tool.get("inputSchema", {}),
-                                        "server_name": server_name,
-                                    }
-                                    tools.append(tool_info)
-                        except Exception as e:
-                            logger.error(f"Error extracting tools from task result for {server_name}: {e}")
-
-        logger.info(f"Total tools found: {len(tools)}")
-        return tools
-
-    def _tool_to_dict(self, tool, server_name: str) -> Dict[str, Any]:
-        """
-        Convert a tool object to a dictionary with server information.
-
+        Get a list of all available tools from all MCP servers using the official SDK.
+        
         Args:
-            tool: Tool object from MCP.
-            server_name: Name of the server providing the tool.
-
+            timeout: Maximum time to wait for tool discovery in seconds
+            
         Returns:
-            Dictionary representation of the tool.
+            List of discovered tools
         """
-        return {
-            "name": tool.name,
-            "description": tool.description,
-            "inputSchema": tool.inputSchema,
-            "server_name": server_name,
-        }
+        if not self.initialized:
+            logger.warning("MCP client not initialized")
+            return []
+            
+        if not timeout:
+            timeout = 30.0  # Default timeout
+            
+        logger.info(f"Discovering tools from MCP servers (timeout: {timeout}s)")
+        
+        # Simple semaphore to limit concurrent requests
+        semaphore = asyncio.Semaphore(10)
+        
+        # List to hold all tools
+        all_tools = []
+        
+        # Function to get tools from a single server with timeout
+        async def get_server_tools(server_name: str, session):
+            async with semaphore:
+                try:
+                    # Skip servers that don't support tools/list
+                    if not hasattr(session, "list_tools") or not callable(session.list_tools):
+                        logger.debug(f"Server {server_name} does not support tool listing")
+                        return []
+                    
+                    # Get tools with timeout
+                    logger.debug(f"Getting tools from server {server_name}")
+                    tools_result = await asyncio.wait_for(session.list_tools(), timeout=timeout)
+                    
+                    # Process the tools result
+                    # The SDK returns tools in a different format, process accordingly
+                    tools = []
+                    if hasattr(tools_result, "tools"):
+                        # Handle SDK response object
+                        tools = tools_result.tools
+                    elif isinstance(tools_result, list):
+                        # Direct list of tools
+                        tools = tools_result
+                    
+                    # Format tools as needed for our application
+                    formatted_tools = []
+                    for tool in tools:
+                        # Convert to our tool format
+                        formatted_tool = self._tool_to_dict(tool, server_name)
+                        formatted_tools.append(formatted_tool)
+                    
+                    logger.info(f"Server {server_name} returned {len(formatted_tools)} tools")
+                    return formatted_tools
+                except asyncio.TimeoutError:
+                    logger.warning(f"Timeout getting tools from server {server_name}")
+                    return []
+                except Exception as e:
+                    logger.error(f"Error getting tools from server {server_name}: {e}")
+                    return []
+        
+        # Create tasks for each server
+        tasks = []
+        for server_name, session in self.sessions.items():
+            tasks.append(get_server_tools(server_name, session))
+        
+        # Run all tasks concurrently
+        if tasks:
+            try:
+                results = await asyncio.gather(*tasks)
+                # Combine all results
+                for tools in results:
+                    all_tools.extend(tools)
+                
+                logger.info(f"Discovered {len(all_tools)} tools from {len(tasks)} servers")
+            except Exception as e:
+                logger.error(f"Error gathering tools: {e}")
+        
+        return all_tools
+
+    async def get_server_status(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get detailed status information for all MCP servers.
+        
+        Returns:
+            Dictionary of server status information
+        """
+        status = {}
+        
+        if not self.initialized:
+            return {"overall": "not_initialized", "servers": {}}
+        
+        for server_name, session in self.sessions.items():
+            server_status = {
+                "connected": True,
+                "has_list_tools": hasattr(session, "list_tools") and callable(session.list_tools),
+                "background_task": None
+            }
+            
+            # Check if there's a background task for this server
+            if server_name in self.background_tasks:
+                task = self.background_tasks[server_name]
+                server_status["background_task"] = {
+                    "done": task.done(),
+                    "cancelled": task.cancelled(),
+                    "exception": str(task.exception()) if task.done() and not task.cancelled() and task.exception() else None
+                }
+            
+            # Try to get basic info from the session
+            if hasattr(session, "info") and callable(session.info):
+                try:
+                    # Use a timeout to avoid hanging
+                    info = await asyncio.wait_for(session.info(), timeout=2.0)
+                    server_status["info"] = info
+                except Exception as e:
+                    server_status["info_error"] = str(e)
+            
+            status[server_name] = server_status
+        
+        # For servers with background tasks but no session, add their status
+        for server_name, task in self.background_tasks.items():
+            if server_name not in self.sessions:
+                if task.done():
+                    if task.cancelled():
+                        status[server_name] = {
+                            "connected": False,
+                            "status": "cancelled",
+                            "exception": None
+                        }
+                    else:
+                        exception = task.exception()
+                        status[server_name] = {
+                            "connected": False,
+                            "status": "failed",
+                            "exception": str(exception) if exception else "Unknown error"
+                        }
+                else:
+                    status[server_name] = {
+                        "connected": False,
+                        "status": "starting",
+                        "exception": None
+                    }
+        
+        return status
 
     async def call_tool(self, server_name: str, tool_name: str, arguments: Dict[str, Any]) -> Any:
         """
@@ -547,16 +383,30 @@ class MCPClient:
         Raises:
             Exception: If the server is not connected or the tool call fails.
         """
+        if not self.initialized:
+            raise Exception("MCP client not initialized")
+            
         if server_name not in self.sessions:
             raise Exception(f"Server {server_name} not connected")
-
+            
+        session = self.sessions[server_name]
+        if not hasattr(session, "call_tool") or not callable(session.call_tool):
+            raise Exception(f"Server {server_name} does not support tool calls")
+            
+        logger.info(f"Calling tool {tool_name} on server {server_name}")
+        
         try:
-            # Call the tool on the specified server
-            session = self.sessions[server_name]
-            result = await session.call_tool(tool_name, arguments)
+            # Call the tool with a timeout
+            result = await asyncio.wait_for(
+                session.call_tool(tool_name, arguments),
+                timeout=60.0  # Default timeout of 60 seconds
+            )
+            
+            logger.info(f"Tool {tool_name} call completed successfully")
             return result
         except Exception as e:
-            raise Exception(f"Failed to call tool {tool_name} on {server_name}: {e}")
+            logger.error(f"Error calling tool {tool_name} on server {server_name}: {e}")
+            raise
 
     async def __aenter__(self):
         """
@@ -571,3 +421,41 @@ class MCPClient:
         """
         logger.info("Exiting MCP client context")
         await self.close()
+
+    def _tool_to_dict(self, tool, server_name: str) -> Dict[str, Any]:
+        """
+        Convert a tool object to a dictionary with server information.
+
+        Args:
+            tool: Tool object from MCP.
+            server_name: Name of the server providing the tool.
+
+        Returns:
+            Dictionary representation of the tool.
+        """
+        # Handle different tool formats from different SDK versions
+        if isinstance(tool, dict):
+            # SDK returns tool as a dictionary
+            tool_dict = tool.copy()
+        else:
+            # SDK returns tool as an object
+            tool_dict = {
+                "name": getattr(tool, "name", None),
+                "description": getattr(tool, "description", None),
+                "parameters": getattr(tool, "parameters", None),
+            }
+        
+        # Add server information
+        tool_dict["server_name"] = server_name
+        
+        # Format for OpenAI function calling
+        return {
+            "type": "function",
+            "function": {
+                "name": f"mcp{tool_dict.get('name', '')}",
+                "description": f"This is a tool from the {server_name} MCP server.\n\n{tool_dict.get('description', '')}",
+                "parameters": tool_dict.get("parameters", {})
+            },
+            "server_name": server_name,
+            "original_name": tool_dict.get("name", "")
+        }

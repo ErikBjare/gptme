@@ -137,48 +137,84 @@ class MCPSessionManager:
 
     async def register_tools(self) -> List[Dict[str, Any]]:
         """
-        Register all tools available from MCP servers.
-        
-        This method attempts to discover and register all available tools
-        from connected MCP servers, with retry logic for servers that are
-        still initializing.
+        Register tools from the MCP client.
         
         Returns:
-            List of registered tool declarations
+            List of registered function declarations
         """
-        # Get all tools with retry logic
-        tools = await self.get_tools()
-        
-        if not tools:
-            logger.warning("No tools found to register")
+        if not self.initialized or not self.client:
+            logger.warning("MCP client not initialized, cannot register tools")
             return []
         
-        # Process the tools to create proper declarations
-        tool_declarations = []
+        logger.info("Starting MCP tool registration process")
         
-        for tool in tools:
-            try:
-                name = tool.get("name", "unknown")
-                description = tool.get("description", "No description")
+        # Get tools from the MCP client with fallback mechanism
+        try:
+            logger.info("Discovering tools from MCP servers...")
+            raw_tools = await self.client.get_tools_with_fallback(timeout=60.0)  # Use our new fallback method
+            
+            if not raw_tools:
+                logger.warning("No tools discovered from MCP servers")
+                return []
+            
+            logger.info(f"Successfully discovered {len(raw_tools)} raw tools from MCP servers")
+            
+            # Group tools by server for better diagnostics
+            tools_by_server = {}
+            for tool in raw_tools:
                 server_name = tool.get("server_name", "unknown")
-                
-                # Create a proper tool declaration
-                declaration = {
-                    "type": "function",
-                    "function": {
-                        "name": f"mcp_{server_name}_{name}".replace("-", "_").replace("/", "_"),
-                        "description": f"This is a tool from the {server_name} MCP server.\n{description}",
-                        "parameters": tool.get("inputSchema", {})
-                    }
-                }
-                
-                tool_declarations.append(declaration)
-                logger.debug(f"Registered tool: {declaration['function']['name']}")
-            except Exception as e:
-                logger.error(f"Error registering tool {tool.get('name', 'unknown')}: {e}")
+                if server_name not in tools_by_server:
+                    tools_by_server[server_name] = []
+                tools_by_server[server_name].append(tool)
+            
+            # Log tool counts by server
+            for server_name, server_tools in tools_by_server.items():
+                logger.info(f"Server {server_name} provided {len(server_tools)} tools")
+            
+            # Convert raw tools to function declarations
+            function_declarations = []
+            for tool in raw_tools:
+                try:
+                    name = tool.get("name")
+                    description = tool.get("description", "")
+                    server_name = tool.get("server_name", "unknown")
+                    
+                    # Ensure the name is prefixed with the server name for uniqueness
+                    # This helps avoid conflicts between tools from different servers
+                    if name and not name.startswith(f"mcp{len(function_declarations)}"):
+                        # Create a unique prefix for this tool
+                        prefix = f"mcp{len(function_declarations)}_"
+                        
+                        # Format the function declaration
+                        func_decl = {
+                            "type": "function",
+                            "function": {
+                                "name": f"{prefix}{name}",
+                                "description": f"This is a tool from the {server_name} MCP server.\n{description}",
+                                "parameters": tool.get("inputSchema", {})
+                            }
+                        }
+                        
+                        # Add mapping for this tool
+                        self.tool_registry.add_mapping(
+                            function_name=func_decl["function"]["name"],
+                            tool_name=name,
+                            server_name=server_name
+                        )
+                        
+                        function_declarations.append(func_decl)
+                        logger.debug(f"Registered tool: {func_decl['function']['name']} from {server_name}")
+                except Exception as e:
+                    logger.error(f"Error converting tool to function declaration: {e}")
+            
+            logger.info(f"Successfully registered {len(function_declarations)} MCP tools")
+            return function_declarations
         
-        logger.info(f"Registered {len(tool_declarations)} MCP tools")
-        return tool_declarations
+        except Exception as e:
+            logger.error(f"Error registering MCP tools: {e}")
+            import traceback
+            logger.error(f"Tool registration traceback: {traceback.format_exc()}")
+            return []
 
     async def get_resources(self) -> List[Dict[str, Any]]:
         """Get all available MCP resources.

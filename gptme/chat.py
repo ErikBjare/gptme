@@ -127,7 +127,7 @@ async def chat(
     include_chat_history: bool = True,
     interactive: bool = True,
     function_declarations: Optional[List[Dict[str, Any]]] = None,
-    tool_choice: Optional[Dict[str, Any]]] = None,
+    tool_choice: Optional[Dict[str, Any]] = None,
     use_system_prompt: bool = True,
     system_prompt: Optional[str] = None,
     include_personal_prompt: bool = True,
