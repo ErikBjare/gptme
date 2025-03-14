@@ -1,3 +1,5 @@
+import asyncio
+import importlib.metadata
 import logging
 import os
 import signal
@@ -5,7 +7,7 @@ import sys
 from datetime import datetime
 from itertools import islice
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import click
 from pick import pick
@@ -14,15 +16,15 @@ from . import __version__
 from .chat import chat
 from .commands import _gen_help
 from .config import get_config
-from .constants import MULTIPROMPT_SEPARATOR
+from .constants import MULTIPROMPT_SEPARATOR, PROMPT_USER
 from .dirs import get_logs_dir
-from .init import init_logging
-from .llm.models import get_recommended_model
-from .logmanager import ConversationMeta, get_user_conversations
+from .init import init, init_logging
+from .llm.models import get_default_model, get_recommended_model
+from .logmanager import ConversationMeta, LogManager, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
 from .tools import ToolFormat, get_available_tools, init_tools
-from .util import epoch_to_age
+from .util import console, epoch_to_age
 from .util.generate_name import generate_name
 from .util.interrupt import handle_keyboard_interrupt, set_interruptible
 from .util.prompt import add_history
@@ -32,9 +34,7 @@ logger = logging.getLogger(__name__)
 
 script_path = Path(os.path.realpath(__file__))
 commands_help = "\n".join(_gen_help(incl_langtags=False))
-available_tool_names = ", ".join(
-    sorted([tool.name for tool in get_available_tools() if tool.available])
-)
+available_tool_names = ", ".join(sorted([tool.name for tool in get_available_tools() if tool.available]))
 
 
 docstring = f"""
@@ -47,6 +47,16 @@ The interface provides user commands that can be used to interact with the syste
 
 \b
 {commands_help}"""
+
+
+def run_async(coro):
+    """Run an async coroutine in the event loop.
+
+    This function follows the standard pattern for running asyncio coroutines
+    from synchronous code.
+    """
+    # Use asyncio.run() which properly sets up and tears down a new event loop
+    return asyncio.run(coro)
 
 
 @click.command(help=docstring)
@@ -136,7 +146,19 @@ The interface provides user commands that can be used to interact with the syste
     is_flag=True,
     help="Show version and configuration information",
 )
+@click.option(
+    "--mcp-config",
+    default=None,
+    help="Path to MCP servers configuration file.",
+)
+@click.option(
+    "--mcp-enable",
+    is_flag=True,
+    help="Enable Model Context Protocol integration.",
+)
+@click.pass_context
 def main(
+    ctx,
     prompts: list[str],
     prompt_system: str,
     name: str,
@@ -151,12 +173,13 @@ def main(
     version: bool,
     resume: bool,
     workspace: str | None,
+    mcp_config: str | None,
+    mcp_enable: bool,
 ):
     """Main entrypoint for the CLI."""
     if version:
         # print version
-
-        print(f"gptme v{__version__}")
+        print(f"gptme {importlib.metadata.version('gptme')}")
 
         # print dirs
         print(f"Logs dir: {get_logs_dir()}")
@@ -181,7 +204,6 @@ def main(
 
     config = get_config()
 
-    model = model or config.get_env("MODEL")
     selected_tool_format: ToolFormat = (
         tool_format or config.get_env("TOOL_FORMAT") or "markdown"  # type: ignore
     )
@@ -195,7 +217,6 @@ def main(
             prompt_system,
             interactive=interactive,
             tool_format=selected_tool_format,
-            model=model,
         )
     ]
 
@@ -243,22 +264,14 @@ def main(
         if not prompt_msgs:
             prompt_msgs.append(stdin_msg)
         else:
-            prompt_msgs[0] = prompt_msgs[0].replace(
-                content=f"{prompt_msgs[0].content}\n\n{stdin_msg.content}"
-            )
+            prompt_msgs[0] = prompt_msgs[0].replace(content=f"{prompt_msgs[0].content}\n\n{stdin_msg.content}")
         return prompt_msgs
 
     if resume:
         logdir = get_logdir_resume()
         prompt_msgs = inject_stdin(prompt_msgs, piped_input)
     # don't run pick in tests/non-interactive mode, or if the user specifies a name
-    elif (
-        interactive
-        and name == "random"
-        and not prompt_msgs
-        and not was_piped
-        and sys.stdin.isatty()
-    ):
+    elif interactive and name == "random" and not prompt_msgs and not was_piped and sys.stdin.isatty():
         logdir = pick_log()
     else:
         logdir = get_logdir(name)
@@ -276,24 +289,31 @@ def main(
     signal.signal(signal.SIGINT, handle_keyboard_interrupt)
 
     try:
-        chat(
-            prompt_msgs,
-            initial_msgs,
-            logdir,
-            model,
-            stream,
-            no_confirm,
-            interactive,
-            show_hidden,
-            workspace_path,
-            tool_allowlist,
-            selected_tool_format,
+        # Convert prompt_msgs to the format expected by the new chat function
+        messages = []
+        for msg in prompt_msgs:
+            messages.append({"role": msg.role, "content": msg.content})
+
+        # Convert initial_msgs to system prompt
+        system_prompt = None
+        if initial_msgs and initial_msgs[0].role == "system":
+            system_prompt = initial_msgs[0].content
+
+        run_async(
+            chat(
+                model=model,
+                messages=messages,
+                interactive=interactive,
+                function_declarations=None,  # No function declarations for now
+                system_prompt=system_prompt,
+                max_tokens=None,  # Use model default
+                temperature=None,  # Use model default
+                mcp_config=mcp_config,
+                mcp_enable=mcp_enable,
+            )
         )
     except RuntimeError as e:
-        if verbose:
-            logger.exception(e)
-        else:
-            logger.error(e)
+        logger.error(e)
         sys.exit(1)
 
 
@@ -401,3 +421,7 @@ def _read_stdin() -> str:
         all_data += chunk
 
     return all_data
+
+
+if __name__ == "__main__":
+    main()

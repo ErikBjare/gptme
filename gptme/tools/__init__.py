@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import inspect
 import logging
@@ -115,23 +116,51 @@ def init_tools(
 
 
 def execute_msg(msg: Message, confirm: ConfirmFunc) -> Generator[Message, None, None]:
-    """Uses any tools called in a message and returns the response."""
-    assert msg.role == "assistant", "Only assistant messages can be executed"
-
+    """Execute any tools in a message."""
     for tooluse in ToolUse.iter_from_content(msg.content):
-        if tooluse.is_runnable:
-            with terminal_state_title("🛠️ running {tooluse.tool}"):
+        if not tooluse.is_runnable:
+            continue
+
+        # Get the tool
+        tool = get_tool(tooluse.name)
+        if not tool:
+            logger.warning(f"Tool {tooluse.name} not found")
+            continue
+
+        # Confirm execution if needed
+        if not confirm(tooluse):
+            continue
+
+        try:
+            # Execute the tool - handle both sync and async tools
+            if asyncio.iscoroutinefunction(tool.run):
+                # Get or create event loop
                 try:
-                    for tool_response in tooluse.execute(confirm):
-                        yield tool_response.replace(call_id=tooluse.call_id)
-                except KeyboardInterrupt:
-                    clear_interruptible()
-                    yield Message(
-                        "system",
-                        INTERRUPT_CONTENT,
-                        call_id=tooluse.call_id,
-                    )
-                    break
+                    loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+
+                # Run async tool
+                result = loop.run_until_complete(tool.run(**tooluse.args))
+            else:
+                # Run sync tool
+                result = tool.run(**tooluse.args)
+
+            # Handle the result
+            if result is not None:
+                yield Message("assistant", str(result), quiet=True)
+
+        except Exception as e:
+            logger.error(f"Error executing tool {tooluse.name}: {e}")
+            import traceback
+
+            logger.error(f"Detailed error: {traceback.format_exc()}")
+            yield Message(
+                "assistant",
+                f"Error executing tool {tooluse.name}: {e}",
+                quiet=True,
+            )
 
 
 # Called often when checking streaming output for executable blocks,

@@ -1,0 +1,70 @@
+{
+    "mcpServers": {
+        "docker-mcp": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "docker-mcp",
+                "--config",
+                "{}"
+            ]
+        },
+        "@sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "@smithery-ai/server-sequential-thinking",
+                "--config",
+                "{}"
+            ]
+        },
+        "@notion-api-mcp": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "notion-api-mcp",
+                "--config",
+                "{\"notionApiKey\":\"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\",\"notionParentPageId\":\"b37d3857038043278d6b8019070ec6fa\",\"notionDatabaseId\":\"e693be0a92694befa5707611781c079a\"}"
+            ]
+        },
+        "@IzumiSy-mcp-duckdb-memory-server": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "@IzumiSy/mcp-duckdb-memory-server",
+                "--config",
+                "{\"memoryFilePath\":\"/Users/jaraddelorenzo/code/reprally-cpf/session/jarad\"}"
+            ]
+        },
+        "@21st-dev/magic": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "@21st-dev/magic-mcp",
+                "--config",
+                "{\"TWENTY_FIRST_API_KEY\":\"b7030746f64d96c9f4db4ab2cd5422ccb90256ae861ecdffec4236601a3eba09\"}"
+            ]
+        },
+        "@pashpashpash-taskmanager": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@smithery/cli@latest",
+                "run",
+                "@kazuph/mcp-taskmanager",
+                "--config",
+                "{}"
+            ]
+        }
+    }
+}

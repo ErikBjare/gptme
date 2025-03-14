@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "sequential-thinking": {
+    "enabled": true,
+    "steps": 3,
+    "description": "Break down complex problems into steps"
+  }
+}

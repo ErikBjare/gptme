@@ -9,7 +9,7 @@ To get an understanding about how it works, the easiest way is to try it out you
 
 It is designed to be easy to use and extend, and can be used as a library or a standalone application. It also has a tiny :ref:`server:Web UI` with basic functionality.
 
-See the `README <https://github.com/gptme/gptme/blob/master/README.md>`_ file for more general information about the project.
+See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ file for more general information about the project.
 
 .. note::
     This documentation site is still under construction.
@@ -22,6 +22,7 @@ See the `README <https://github.com/gptme/gptme/blob/master/README.md>`_ file fo
    usage
    examples
    tools
+   mcp
    config
    providers
    agents
@@ -38,22 +39,17 @@ See the `README <https://github.com/gptme/gptme/blob/master/README.md>`_ file fo
    bot
    finetuning
    custom_tool
-   api
-
-.. toctree::
-   :maxdepth: 2
-   :caption: About
-
-   alternatives
    arewetiny
    timeline
-   Changelog <https://github.com/gptme/gptme/releases>
+   alternatives
+   Changelog <https://github.com/ErikBjare/gptme/releases>
+   api
 
 .. toctree::
    :caption: External
    :maxdepth: 2
 
-   GitHub <https://github.com/gptme/gptme>
+   GitHub <https://github.com/ErikBjare/gptme>
    Discord <https://discord.gg/NMaCmmkxWv>
    X <https://x.com/gptmeorg>
 

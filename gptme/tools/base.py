@@ -133,11 +133,7 @@ def derive_type(t) -> str:
 
 def callable_signature(func: Callable) -> str:
     # returns a signature f(arg1: type1, arg2: type2, ...) -> return_type
-    args = ", ".join(
-        f"{k}: {derive_type(v)}"
-        for k, v in func.__annotations__.items()
-        if k != "return"
-    )
+    args = ", ".join(f"{k}: {derive_type(v)}" for k, v in func.__annotations__.items() if k != "return")
     ret_type = func.__annotations__.get("return")
     ret = f" -> {derive_type(ret_type)}" if ret_type else ""
     return f"{func.__name__}({args}){ret}"
@@ -234,9 +230,7 @@ class ToolSpec:
         instructions = self.get_instructions(tool_format)
         if instructions:
             prompt += f"\n\n**Instructions:** {instructions}"
-        if examples and (
-            examples_content := self.get_examples(tool_format, quote=True).strip()
-        ):
+        if examples and (examples_content := self.get_examples(tool_format, quote=True).strip()):
             prompt += f"\n\n### Examples\n\n{examples_content}"
         return prompt
 
@@ -256,8 +250,7 @@ class ToolSpec:
             return (
                 description
                 + "\n".join(
-                    f"{callable_signature(func)}: {func.__doc__ or 'No description'}"
-                    for func in self.functions
+                    f"{callable_signature(func)}: {func.__doc__ or 'No description'}" for func in self.functions
                 )
                 + "\n```"
             )
@@ -265,41 +258,101 @@ class ToolSpec:
             return "None"
 
 
-@dataclass(frozen=True)
 class ToolUse:
-    tool: str
-    args: list[str] | None
-    content: str | None
-    kwargs: dict[str, str] | None = None
-    call_id: str | None = None
-    start: int | None = None
+    """Represents a tool invocation from a message."""
+
+    def __init__(
+        self,
+        tool: str,
+        args: list[str] | None = None,
+        content: str | None = None,
+        kwargs: dict[str, str] | None = None,
+        call_id: str | None = None,
+        start: int | None = None,
+    ):
+        self.tool = tool
+        self.args = args
+        self.content = content
+        self.kwargs = kwargs
+        self.call_id = call_id
+        self.start = start
 
     def execute(self, confirm: ConfirmFunc) -> Generator[Message, None, None]:
-        """Executes a tool-use tag and returns the output."""
-        # noreorder
-        from . import get_tool  # fmt: skip
+        """Execute this tool use."""
+        from . import get_tool
 
-        tool = get_tool(self.tool)
-        if tool and tool.execute:
+        tool_spec = get_tool(self.tool)
+        if not tool_spec:
+            logger.warning(f"Tool {self.tool} not found")
+            return
+
+        if not tool_spec.execute:
+            logger.warning(f"Tool {self.tool} has no execute function")
+            return
+
+        # Handle MCP tools
+        if "@" in self.tool:
             try:
-                ex = tool.execute(
-                    self.content,
-                    self.args,
-                    self.kwargs,
-                    confirm,
+                # Get or create event loop
+                try:
+                    loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+
+                # Run MCP tool
+                result = loop.run_until_complete(
+                    tool_spec.execute(
+                        code=self.content,
+                        args=self.args,
+                        kwargs=self.kwargs,
+                        confirm=confirm,
+                    )
                 )
-                if isinstance(ex, Generator):
-                    yield from ex
+
+                # Handle generator or single message result
+                if isinstance(result, types.GeneratorType):
+                    yield from result
                 else:
-                    yield ex
+                    yield result
+
             except Exception as e:
-                # if we are testing, raise the exception
-                logger.exception(e)
-                if "pytest" in globals():
-                    raise e
-                yield Message("system", f"Error executing tool '{self.tool}': {e}")
-        else:
-            logger.warning(f"Tool '{self.tool}' is not available for execution.")
+                logger.error(f"Error executing MCP tool {self.tool}: {e}")
+                import traceback
+
+                logger.error(f"Detailed error: {traceback.format_exc()}")
+                yield Message(
+                    "assistant",
+                    f"Error executing MCP tool {self.tool}: {e}",
+                    call_id=self.call_id,
+                )
+            return
+
+        # Handle regular tools
+        try:
+            result = tool_spec.execute(
+                code=self.content,
+                args=self.args,
+                kwargs=self.kwargs,
+                confirm=confirm,
+            )
+
+            # Handle generator or single message result
+            if isinstance(result, types.GeneratorType):
+                yield from result
+            else:
+                yield result
+
+        except Exception as e:
+            logger.error(f"Error executing tool {self.tool}: {e}")
+            import traceback
+
+            logger.error(f"Detailed error: {traceback.format_exc()}")
+            yield Message(
+                "assistant",
+                f"Error executing tool {self.tool}: {e}",
+                call_id=self.call_id,
+            )
 
     @property
     def is_runnable(self) -> bool:
@@ -323,11 +376,7 @@ class ToolUse:
 
         if tool := get_tool_for_langtag(codeblock.lang):
             # NOTE: special case
-            args = (
-                codeblock.lang.split(" ")[1:]
-                if tool.name != "save"
-                else [codeblock.lang]
-            )
+            args = codeblock.lang.split(" ")[1:] if tool.name != "save" else [codeblock.lang]
             return ToolUse(tool.name, args, codeblock.content, start=codeblock.start)
         else:
             # no_op_langs = ["csv", "json", "html", "xml", "stdout", "stderr", "result"]
@@ -478,17 +527,11 @@ class ToolUse:
         return f"@{self.tool}: {json.dumps(self._to_params(), indent=2)}"
 
 
-def get_path(
-    code: str | None, args: list[str] | None, kwargs: dict[str, str] | None
-) -> Path:
+def get_path(code: str | None, args: list[str] | None, kwargs: dict[str, str] | None) -> Path:
     """Get the path from args/kwargs for save, append, and patch."""
     if code is not None and args is not None:
         fn = " ".join(args)
-        if (
-            fn.startswith("save ")
-            or fn.startswith("append ")
-            or fn.startswith("patch ")
-        ):
+        if fn.startswith("save ") or fn.startswith("append ") or fn.startswith("patch "):
             fn = fn.split(" ", 1)[1]
     elif kwargs is not None:
         fn = kwargs.get("path", "")
