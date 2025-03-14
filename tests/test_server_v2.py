@@ -207,8 +207,3 @@ def test_v2_interrupt(v2_conv, client: FlaskClient):
     assert data is not None
     assert data["status"] == "ok"
     assert "interrupted" in data["message"].lower()
-
-
-# Note: Testing the event stream and tool confirmation would require
-# more sophisticated test infrastructure like mocking the SSE connection
-# We might also need to mock the model to reliably produce tool calls
