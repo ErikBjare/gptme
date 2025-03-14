@@ -202,6 +202,7 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
+- 🔌 MCP integration for connecting to external tools and resources via the Model Context Protocol
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
@@ -249,43 +250,30 @@ Usage: gptme [OPTIONS] [PROMPTS]...
   The interface provides user commands that can be used to interact with the
   system.
 
-  Available commands:
-    /undo         Undo the last action
-    /log          Show the conversation log
-    /tools        Show available tools
-    /edit         Edit the conversation in your editor
-    /rename       Rename the conversation
-    /fork         Create a copy of the conversation with a new name
-    /summarize    Summarize the conversation
-    /replay       Re-execute codeblocks in the conversation, wont store output in log
-    /impersonate  Impersonate the assistant
-    /tokens       Show the number of tokens used
-    /export       Export conversation as standalone HTML
-    /help         Show this help message
-    /exit         Exit the program
-
 Options:
-  -n, --name TEXT        Name of conversation. Defaults to generating a random
-                         name.
-  -m, --model TEXT       Model to use, e.g. openai/gpt-4o,
-                         anthropic/claude-3-5-sonnet-20240620. If only
-                         provider given, a default is used.
-  -w, --workspace TEXT   Path to workspace directory. Pass '@log' to create a
-                         workspace in the log directory.
-  -r, --resume           Load last conversation
-  -y, --no-confirm       Skips all confirmation prompts.
-  -n, --non-interactive  Force non-interactive mode. Implies --no-confirm.
-  --system TEXT          System prompt. Can be 'full', 'short', or something
-                         custom.
-  -t, --tools TEXT       Comma-separated list of tools to allow. Available:
-                         read, save, append, patch, shell, subagent, tmux,
-                         browser, gh, chats, screenshot, vision, computer,
-                         python.
-  --no-stream            Don't stream responses
-  --show-hidden          Show hidden system messages.
-  -v, --verbose          Show verbose output.
-  --version              Show version and configuration information
-  --help                 Show this message and exit.
+  --name TEXT                     Name of conversation. Defaults to generating
+                                  a random name.
+  -m, --model TEXT                Model to use, e.g.
+                                  openai/gpt-4-turbo-preview,
+                                  anthropic/claude-3-opus-20240229. If only
+                                  provider given then a default is used.
+  -w, --workspace TEXT            Path to workspace directory. Pass '@log' to
+                                  create a workspace in the log directory.
+  -r, --resume                    Load last conversation
+  -y, --no-confirm                Skips all confirmation prompts.
+  -n, --non-interactive           Non-interactive mode. Implies --no-confirm.
+  --system TEXT                   System prompt. Can be 'full', 'short', or
+                                  something custom.
+  -t, --tools TEXT                Comma-separated list of tools to allow.
+  --tool-format TEXT              Tool parsing method. Can be 'markdown',
+                                  'xml', 'tool'. (experimental)
+  --no-stream                     Don't stream responses
+  --show-hidden                   Show hidden system messages.
+  -v, --verbose                   Show verbose output.
+  --version                       Show version and configuration information
+  --mcp-config TEXT               Path to MCP servers configuration file.
+  --mcp-servers TEXT              Comma-separated list of MCP server IDs to use.
+  --help                          Show this message and exit.
 ```
 
 

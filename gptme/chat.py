@@ -1,13 +1,14 @@
+import asyncio
 import errno
 import logging
 import os
 import re
 import sys
 import termios
-from typing import cast
 import urllib.parse
 from collections.abc import Generator
 from pathlib import Path
+from typing import cast
 
 from .commands import action_descriptions, execute_cmd
 from .config import get_config
@@ -16,15 +17,20 @@ from .init import init
 from .llm import reply
 from .llm.models import get_model
 from .logmanager import Log, LogManager, prepare_messages
+
+# Import MCP module
+from .mcp.session import MCPSessionManager
 from .message import Message
 from .prompts import get_workspace_prompt
 from .tools import (
+    ConfirmFunc,
     ToolFormat,
     ToolUse,
-    has_tool,
-    get_tools,
     execute_msg,
-    ConfirmFunc,
+    get_available_tools,
+    get_tool,
+    get_tools,
+    has_tool,
     set_tool_format,
 )
 from .tools.browser import read_url
@@ -50,6 +56,8 @@ def chat(
     workspace: Path | None = None,
     tool_allowlist: list[str] | None = None,
     tool_format: ToolFormat | None = None,
+    mcp_config: str | None = None,
+    mcp_servers: list[str] | None = None,
 ) -> None:
     """
     Run the chat loop.
@@ -120,87 +128,149 @@ def chat(
             return True
         return ask_execute(msg)
 
-    # main loop
-    while True:
-        # if prompt_msgs given, process each prompt fully before moving to the next
-        if prompt_msgs:
-            while prompt_msgs:
-                msg = prompt_msgs.pop(0)
-                if not msg.content.startswith("/") and msg.role == "user":
-                    msg = _include_paths(msg, workspace)
-                manager.append(msg)
-                # if prompt is a user-command, execute it
-                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
-                    continue
+    # Initialize MCP if enabled
+    mcp_manager = None
+    if mcp_config or mcp_servers:
+        mcp_manager = MCPSessionManager(mcp_config)
+        
+        # Connect to specified servers
+        if mcp_servers:
+            server_ids = [s.strip() for s in mcp_servers.split(",")]
+            mcp_server_config = mcp_manager.config.get_all_servers()
+            
+            # Filter servers to only use specified ones
+            filtered_servers = {}
+            for server_id in server_ids:
+                if server_id in mcp_server_config:
+                    filtered_servers[server_id] = mcp_server_config[server_id]
+                else:
+                    logger.warning(f"MCP server '{server_id}' not found in configuration")
+            
+            mcp_manager.config.servers = filtered_servers
+                
+        # Initialize MCP
+        try:
+            # Create or get event loop
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+            # Initialize MCP
+            success = loop.run_until_complete(mcp_manager.initialize())
+            
+            if success:
+                # Register MCP tools with gptme
+                mcp_tools = loop.run_until_complete(mcp_manager.get_tools())
+                for tool_spec in mcp_tools:
+                    # Add the MCP tool to the available tools
+                    get_available_tools().append(tool_spec)
+                    
+                logger.info(f"Registered {len(mcp_tools)} MCP tools")
+            else:
+                logger.warning("Failed to initialize MCP")
+                
+        except Exception as e:
+            logger.error(f"Error initializing MCP: {e}")
+            
+    try:
+        # main loop
+        while True:
+            # if prompt_msgs given, process each prompt fully before moving to the next
+            if prompt_msgs:
+                while prompt_msgs:
+                    msg = prompt_msgs.pop(0)
+                    if not msg.content.startswith("/") and msg.role == "user":
+                        msg = _include_paths(msg, workspace)
+                    manager.append(msg)
+                    # if prompt is a user-command, execute it
+                    if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+                        continue
 
-                # Generate and execute response for this prompt
-                while True:
-                    try:
-                        set_interruptible()
-                        response_msgs = list(
-                            step(
-                                manager.log,
-                                stream,
-                                confirm_func,
-                                tool_format=tool_format_with_default,
-                                workspace=workspace,
+                    # Generate and execute response for this prompt
+                    while True:
+                        try:
+                            set_interruptible()
+                            response_msgs = list(
+                                step(
+                                    manager.log,
+                                    stream,
+                                    confirm_func,
+                                    tool_format=tool_format_with_default,
+                                    workspace=workspace,
+                                )
                             )
-                        )
-                    except KeyboardInterrupt:
-                        console.log("Interrupted. Stopping current execution.")
-                        manager.append(Message("system", INTERRUPT_CONTENT))
-                        break
-                    finally:
-                        clear_interruptible()
+                        except KeyboardInterrupt:
+                            console.log("Interrupted. Stopping current execution.")
+                            manager.append(Message("system", INTERRUPT_CONTENT))
+                            break
+                        finally:
+                            clear_interruptible()
 
-                    for response_msg in response_msgs:
-                        manager.append(response_msg)
-                        # run any user-commands, if msg is from user
-                        if response_msg.role == "user" and execute_cmd(
-                            response_msg, manager, confirm_func
+                        for response_msg in response_msgs:
+                            manager.append(response_msg)
+                            # run any user-commands, if msg is from user
+                            if response_msg.role == "user" and execute_cmd(
+                                response_msg, manager, confirm_func
+                            ):
+                                break
+
+                        # Check if there are any runnable tools left
+                        last_content = next(
+                            (
+                                m.content
+                                for m in reversed(manager.log)
+                                if m.role == "assistant"
+                            ),
+                            "",
+                        )
+                        if not any(
+                            tooluse.is_runnable
+                            for tooluse in ToolUse.iter_from_content(last_content)
                         ):
                             break
 
-                    # Check if there are any runnable tools left
-                    last_content = next(
-                        (
-                            m.content
-                            for m in reversed(manager.log)
-                            if m.role == "assistant"
-                        ),
-                        "",
-                    )
-                    if not any(
-                        tooluse.is_runnable
-                        for tooluse in ToolUse.iter_from_content(last_content)
-                    ):
-                        break
+                # All prompts processed, continue to next iteration
+                continue
 
-            # All prompts processed, continue to next iteration
-            continue
-
-        # if:
-        #  - prompts exhausted
-        #  - non-interactive
-        #  - no executable block in last assistant message
-        # then exit
-        elif not interactive:
-            logger.debug("Non-interactive and exhausted prompts, exiting")
-            break
-
-        # ask for input if no prompt, generate reply, and run tools
-        clear_interruptible()  # Ensure we're not interruptible during user input
-        for msg in step(
-            manager.log,
-            stream,
-            confirm_func,
-            tool_format=tool_format_with_default,
-            workspace=workspace,
-        ):  # pragma: no cover
-            manager.append(msg)
-            # run any user-commands, if msg is from user
-            if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+            # if:
+            #  - prompts exhausted
+            #  - non-interactive
+            #  - no executable block in last assistant message
+            # then exit
+            elif not interactive:
+                logger.debug("Non-interactive and exhausted prompts, exiting")
                 break
+
+            # ask for input if no prompt, generate reply, and run tools
+            clear_interruptible()  # Ensure we're not interruptible during user input
+            for msg in step(
+                manager.log,
+                stream,
+                confirm_func,
+                tool_format=tool_format_with_default,
+                workspace=workspace,
+            ):  # pragma: no cover
+                manager.append(msg)
+                # run any user-commands, if msg is from user
+                if msg.role == "user" and execute_cmd(msg, manager, confirm_func):
+                    break
+
+    except KeyboardInterrupt:
+        console.log("Interrupted. Stopping current execution.")
+        manager.append(Message("system", INTERRUPT_CONTENT))
+    finally:
+        # Clean up MCP resources if initialized
+        if mcp_manager:
+            try:
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(mcp_manager.shutdown())
+                logger.info("MCP sessions cleaned up")
+            except Exception as e:
+                logger.error(f"Error shutting down MCP: {e}")
+        
+        # ... other cleanup code if any ...
 
 
 def step(

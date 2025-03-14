@@ -22,6 +22,7 @@ See the `README <https://github.com/ErikBjare/gptme/blob/master/README.md>`_ fil
    usage
    examples
    tools
+   mcp
    config
    providers
    agents

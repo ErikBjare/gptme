@@ -35,3 +35,7 @@ __pycache__
 *.png
 .aider*
 .env
+
+# MCP specific
+mcp_servers.json
+.mcp_cache

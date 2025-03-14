@@ -11,10 +11,9 @@ from typing import Literal
 import click
 from pick import pick
 
-
 from .chat import chat
-from .config import get_config
 from .commands import _gen_help
+from .config import get_config
 from .constants import MULTIPROMPT_SEPARATOR
 from .dirs import get_logs_dir
 from .init import init_logging
@@ -22,7 +21,7 @@ from .llm.models import get_recommended_model
 from .logmanager import ConversationMeta, get_user_conversations
 from .message import Message
 from .prompts import get_prompt
-from .tools import ToolFormat, init_tools, get_available_tools
+from .tools import ToolFormat, get_available_tools, init_tools
 from .util import epoch_to_age
 from .util.generate_name import generate_name
 from .util.interrupt import handle_keyboard_interrupt, set_interruptible
@@ -137,6 +136,16 @@ The interface provides user commands that can be used to interact with the syste
     is_flag=True,
     help="Show version and configuration information",
 )
+@click.option(
+    "--mcp-config",
+    default=None,
+    help="Path to MCP servers configuration file.",
+)
+@click.option(
+    "--mcp-servers",
+    default=None,
+    help="Comma-separated list of MCP server IDs to use.",
+)
 def main(
     prompts: list[str],
     prompt_system: str,
@@ -152,6 +161,8 @@ def main(
     version: bool,
     resume: bool,
     workspace: str | None,
+    mcp_config: str | None,
+    mcp_servers: str | None,
 ):
     """Main entrypoint for the CLI."""
     if version:
@@ -275,17 +286,19 @@ def main(
 
     try:
         chat(
-            prompt_msgs,
-            initial_msgs,
-            logdir,
-            model,
-            stream,
-            no_confirm,
-            interactive,
-            show_hidden,
-            workspace_path,
-            tool_allowlist,
-            selected_tool_format,
+            prompt_msgs=prompt_msgs,
+            initial_msgs=initial_msgs,
+            logdir=logdir,
+            model=model,
+            stream=stream,
+            no_confirm=no_confirm,
+            interactive=interactive,
+            show_hidden=show_hidden,
+            workspace=workspace_path,
+            tool_allowlist=tool_allowlist,
+            tool_format=selected_tool_format,
+            mcp_config=mcp_config,
+            mcp_servers=mcp_servers,
         )
     except RuntimeError as e:
         logger.error(e)
