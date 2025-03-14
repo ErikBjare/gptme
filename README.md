@@ -202,7 +202,7 @@ You can find more [Demos][docs-demos] and [Examples][docs-examples] in the [docu
 
 - 🌳 Tree-based conversation structure (see [#17](https://github.com/ErikBjare/gptme/issues/17))
 - 📜 RAG to automatically include context from local files (see [#59](https://github.com/ErikBjare/gptme/issues/59))
-- 🔌 MCP integration for connecting to external tools and resources via the Model Context Protocol
+- 🔌 MCP integration for connecting to external tools and resources via the Model Context Protocol ([docs/mcp.md](docs/mcp.md))
 - 🏆 Advanced evals for testing frontier capabilities
 
 ## 🚀 Getting Started
