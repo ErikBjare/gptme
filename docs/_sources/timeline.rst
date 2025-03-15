@@ -20,6 +20,7 @@ The idea is to later make this into a timeline similar to the one for `ActivityW
 March
 
 - v0.27.0 (2025-03-11)
+
   - Pre-commit integration for automatic code quality checks
   - macOS support for computer use tool
   - Claude 3.7 Sonnet and DeepSeek R1 support
@@ -37,6 +38,7 @@ January
 December
 
 - v0.25.0 (2024-12-20)
+
   - New prompt_toolkit-based interface with better completion and highlighting
   - Support for OpenAI/Anthropic tools APIs
   - Improved cost & performance through better prompt caching
@@ -53,9 +55,11 @@ October
 
 - v0.21.0 (2024-10-25)
 - v0.20.0 (2024-10-10)
+
   - Updated web UI with sidebar
   - Improved performance with faster imports
   - Enhanced error handling for tools
+
 - `First viral tweet <https://x.com/rohanpaul_ai/status/1841999030999470326>`_ (2024-10-04)
 - v0.19.0 (2024-10-02)
 
@@ -65,6 +69,7 @@ September
 - v0.17.0 (2024-09-19)
 - v0.16.0 (2024-09-16)
 - v0.15.0 (2024-09-06)
+
   - Added screenshot_url function to browser tool
   - Added GitHub bot features for non-change questions/answers
   - Added special prompting for non-interactive mode
@@ -73,14 +78,18 @@ August
 
 - v0.14.0 (2024-08-21)
 - v0.13.0 (2024-08-09)
+
   - Added Anthropic Claude support
   - Added tmux terminal tool
   - Improved shell tool with better bash syntax support
   - Major tools refactoring
+
 - v0.12.0 (2024-08-06)
+
   - Improved browsing with assistant-driven navigation
   - Added subagent tool (early version)
   - Tools refactoring
+
 - `Show HN <https://news.ycombinator.com/item?id=41204256>`__
 
 2023
@@ -89,39 +98,49 @@ August
 November
 
 - v0.11.0 (2023-11-29)
+
   - Added support for paths/URLs in prompts
   - Mirror working directory in shell and Python tools
   - Started evaluation suite
 - v0.10.0 (2023-11-03)
+
   - Improved file handling in prompts
   - Added GitHub bot documentation
 
 October
 
 - v0.9.0 (2023-10-27)
+
   - Added automatic naming of conversations
   - Added patch tool
   - Initial documentation
+
 - v0.8.0 (2023-10-16)
+
   - Added web UI for conversations
   - Added rename and fork commands
   - Improved web UI responsiveness
+
 - v0.7.0 (2023-10-10)
 - v0.6.0 (2023-10-10)
 - v0.5.0 (2023-10-02)
+
   - Added browser tool (early version)
 
 September
 
 - v0.4.0 (2023-09-10)
 - v0.3.0 (2023-09-06)
+
   - Added configuration system
   - Improved context awareness
   - Made OpenAI model configurable
+
 - `Reddit announcement <https://www.reddit.com/r/LocalLLaMA/comments/16atlia/gptme_a_fancy_cli_to_interact_with_llms_gpt_or/>`_ (2023-09-05)
 - `Twitter announcement <https://x.com/ErikBjare/status/1699097896451289115>`_ (2023-09-05)
 - `Show HN <https://news.ycombinator.com/item?id=37394845>`__ (2023-09-05)
 - v0.2.1 (2023-09-05)
+
   - Initial release
 
 August
