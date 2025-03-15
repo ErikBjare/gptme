@@ -12,6 +12,18 @@ The idea is to later make this into a timeline similar to the one for `ActivityW
    GitHub stargazers over time
 
 ..
+    This timeline tracks development across the entire gptme ecosystem, including:
+
+    - `gptme <https://github.com/gptme/gptme>`_ (main repository)
+    - `gptme-agent-template <https://github.com/gptme/gptme-agent-template>`_
+    - `gptme-rag <https://github.com/gptme/gptme-rag>`_
+    - `gptme.vim <https://github.com/gptme/gptme.vim>`_
+    - `gptme-webui <https://github.com/gptme/gptme-webui>`_
+
+    For repositories with formal releases, we track significant version releases.
+    For repositories without formal releases (like gptme.vim and gptme-webui),
+    we track initial releases and major feature additions based on commit history.
+
     This file can be automatically updated by gptme with the help of `gh release list` and `gh release view` commands.
 
 2025
@@ -28,9 +40,22 @@ March
   - Context tree for including repository structure in prompts
   - Enhanced RAG with LLM post-processing
 
+February
+
+- Added image support to gptme-webui (2025-02-07)
+
 January
 
+- Major UI improvements to gptme-webui (2025-01-28)
 - v0.26.0 (2025-01-14)
+
+  - Added support for loading tools from external modules (custom tools)
+  - Added experimental local TTS support using Kokoro
+
+- gptme-contrib repository created (2025-01-10)
+
+  - Initial tools: Twitter and Perplexity CLI integrations
+  - Later expanded with Discord bot, Pushover notifications, and enhanced Twitter automation
 
 2024
 ----
@@ -44,11 +69,18 @@ December
   - Improved cost & performance through better prompt caching
   - Better path handling and workspace context
   - Added heredoc support
+- gptme-agent-template v0.3 release (2024-12-20)
+- gptme-rag v0.5.1 release (2024-12-13)
 
 November
 
+- gptme.vim initial release (2024-11-29)
 - v0.24.0 (2024-11-22)
+- gptme-rag v0.3.0 release (2024-11-22)
+- gptme-agent-template initial release v0.1 (2024-11-21)
+- gptme-rag initial release v0.1.0 (2024-11-15)
 - v0.23.0 (2024-11-14)
+- gptme-webui initial release (2024-11-03)
 - v0.22.0 (2024-11-01)
 
 October
@@ -102,6 +134,7 @@ November
   - Added support for paths/URLs in prompts
   - Mirror working directory in shell and Python tools
   - Started evaluation suite
+
 - v0.10.0 (2023-11-03)
 
   - Improved file handling in prompts
