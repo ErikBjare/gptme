@@ -133,10 +133,11 @@ def main():
             found_issues = True
             print(f"Issues found in {file_path}:")
             for parent_line, child_line, context in issues:
+                newline = "\n"
                 print(
                     f"  Parent list item at line {parent_line}, nested list at line {child_line} without blank line separation"
                 )
-                print(f"  Context:\n    {context.replace('\n', '\n    ')}")
+                print(f"  Context:\n    {context.replace(newline, newline + '    ')}")
                 print("  Fix: Add a blank line before the nested list")
                 print()
 
