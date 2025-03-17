@@ -237,12 +237,24 @@ def mock_generation():
 
 @pytest.fixture
 def wait_for_event():
-    """Wait for a specific event type in the event listener."""
+    """
+    Wait for a specific event type in the event listener.
+
+    Waiting for an event will mark all events before it as already awaited,
+    so repeated calls don't wait for events before the last awaited one.
+    """
+    # max index awaited
+    already_awaited = 0
 
     def wait(event_listener, event_type, timeout=10):
+        nonlocal already_awaited
         start_time = time.time()
+        seq = event_listener["event_sequence"]
         while time.time() - start_time < timeout:
-            if event_type in event_listener["event_sequence"]:
+            if event_type in seq[already_awaited:]:
+                events_passed = seq[already_awaited:].index(event_type) + 1
+                already_awaited += events_passed
+                # print(already_awaited)
                 return True
             time.sleep(0.1)
         return False

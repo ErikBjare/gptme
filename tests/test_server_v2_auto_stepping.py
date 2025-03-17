@@ -2,7 +2,6 @@
 
 import logging
 import unittest.mock
-from time import sleep
 
 import pytest
 import requests
@@ -87,9 +86,6 @@ def test_auto_stepping(
         assert wait_for_event(event_listener, "tool_pending")
         assert wait_for_event(event_listener, "tool_executing")
         assert wait_for_event(event_listener, "message_added")
-
-        # Verify the conversation log includes all tools and outputs
-        sleep(2)  # Give time for persistence
 
     resp = requests.get(
         f"http://localhost:{port}/api/v2/conversations/{conversation_id}"
