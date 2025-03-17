@@ -5,9 +5,7 @@ from typing import cast
 
 import pytest
 from flask.testing import FlaskClient  # noqa
-from gptme.init import init  # noqa
 from gptme.llm.models import ModelMeta, get_default_model
-from gptme.server.api import create_app  # noqa
 
 # Skip if flask not installed
 pytest.importorskip(
@@ -16,20 +14,6 @@ pytest.importorskip(
 
 # Mark tests that require the server and add timeouts
 pytestmark = [pytest.mark.timeout(10)]  # 10 second timeout for all tests
-
-# Delay imports until after skip check to prevent hanging during collection
-
-
-@pytest.fixture(autouse=True)
-def init_():
-    init(None, interactive=False, tool_allowlist=None)
-
-
-@pytest.fixture
-def client():
-    app = create_app()
-    with app.test_client() as client:
-        yield client
 
 
 @pytest.fixture

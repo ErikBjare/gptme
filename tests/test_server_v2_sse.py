@@ -15,60 +15,12 @@ pytest.importorskip(
     "flask", reason="flask not installed, install server extras (-E server)"
 )
 
-# Import after skip check
-from flask.testing import FlaskClient  # noqa
-from gptme.init import init  # noqa
-from gptme.server.api import create_app  # noqa
-
-
-@pytest.fixture(autouse=True)
-def init_():
-    init(None, interactive=False, tool_allowlist=None)
-
-
-@pytest.fixture
-def server_thread():
-    """Start a server in a thread for testing."""
-    app = create_app()
-
-    # Use a queue to communicate between threads
-    event_queue: queue.Queue[dict[str, Any]] = queue.Queue()
-
-    # Find a free port
-    import socket
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("localhost", 0))
-    free_port = s.getsockname()[1]
-    s.close()
-
-    # Configure the app for testing
-    app.config["TESTING"] = True
-    app.config["SERVER_NAME"] = f"localhost:{free_port}"
-
-    # Start the server in a thread
-    def run_server():
-        with app.app_context():
-            app.run(port=free_port, threaded=True)
-
-    thread = threading.Thread(target=run_server)
-    thread.daemon = True
-    thread.start()
-
-    # Give the server time to start
-    time.sleep(0.5)
-
-    # Include the port in what we yield
-    yield (event_queue, free_port)
-
-    # Note: We don't need to stop the thread explicitly since it's a daemon thread
-
 
 @pytest.mark.timeout(20)
 def test_event_stream(server_thread):
     """Test the event stream endpoint."""
     # Unpack the port from the fixture
-    event_queue, port = server_thread
+    port = server_thread
 
     # Create a conversation
     conversation_id = f"test-sse-{int(time.time())}"
@@ -164,7 +116,7 @@ def test_event_stream(server_thread):
 def test_event_stream_with_generation(server_thread):
     """Test that the event stream receives generation events."""
     # Unpack the port from the fixture
-    event_queue, port = server_thread
+    port = server_thread
 
     # This test requires an API connection, so we'll mock the generation
     # rather than actually calling an LLM

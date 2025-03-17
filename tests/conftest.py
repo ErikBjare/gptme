@@ -138,6 +138,13 @@ def server_thread():
 
 
 @pytest.fixture
+def client():
+    app = create_app()
+    with app.test_client() as client:
+        yield client
+
+
+@pytest.fixture
 def setup_conversation(server_thread):
     """Create a conversation and return its ID, session ID, and port."""
     port = server_thread
