@@ -49,7 +49,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install apt dependencies
-      run: sudo apt-get install universal-ctags pandoc tmux
+      run: sudo apt-get install universal-ctags pandoc tmux x11-xserver-utils
     - name: Install poetry
       run: |
         pipx install poetry
