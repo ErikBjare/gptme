@@ -21,9 +21,9 @@ On Linux, requires X11 and xdotool::
     # On Arch Linux
     sudo pacman -S xdotool
 
-On macOS, uses native ``screencapture`` and external tool `cliclicker`::
+On macOS, uses native ``screencapture`` and external tool `cliclick`::
 
-    brew install cliclicker
+    brew install cliclick
 
 You need to give your terminal both screen recording and accessibility permissions in System Preferences.
 
@@ -57,6 +57,17 @@ Screen:
 
 The tool automatically handles screen resolution scaling to ensure optimal performance
 with LLM vision capabilities.
+
+.. rubric:: Tips for Complex Operations
+
+For complex operations involving multiple keypresses, you can use semicolon-separated sequences:
+
+Examples:
+    - Opening Spotlight and searching: ``cmd+space;t:firefox;return``
+    - Switching applications: ``cmd+tab``
+    - Filling a login form: ``t:username;kp:tab;t:password;kp:return``
+
+Using a single sequence for complex operations ensures proper timing and recognition of keyboard shortcuts.
 """
 
 import logging
@@ -232,12 +243,24 @@ def _ensure_cliclick() -> None:
         raise RuntimeError("cliclick not found. Install with: brew install cliclick")
 
 
+# TODO: write tests for common transforms
 def _macos_key(key_sequence: str) -> None:
     """
     Send key sequence using cliclick on macOS.
 
     Maps common key names to cliclick key codes.
     Uses cliclick's key down/up commands for modifiers and key press for regular keys.
+
+    For complex operations, you can use a semicolon-separated sequence of operations.
+    Example: "cmd+space;t:firefox;return" to open Spotlight, type firefox, and press return.
+
+    Supported operations in chains:
+    - key+key: Press modifier+key combination (e.g., cmd+space)
+    - t:text: Type the specified text
+    - key: Press a single key (e.g., return, esc)
+
+    TODO: Add support for typing literal semicolons (currently used as operation delimiter)
+    TODO: Implement a cross-platform chaining mechanism for Linux/xdotool backend
 
     Security:
         - Input is properly escaped
@@ -248,53 +271,111 @@ def _macos_key(key_sequence: str) -> None:
     # Map common key names to cliclick key codes
     key_map = {
         "Return": "return",
+        "return": "return",
+        "enter": "return",
         "Control_L": "ctrl",
+        "ctrl": "ctrl",
         "Alt_L": "alt",
+        "alt": "alt",
+        "option": "alt",
         "Super_L": "cmd",
+        "cmd": "cmd",
+        "command": "cmd",
         "Shift_L": "shift",
+        "shift": "shift",
+        "Escape": "esc",
+        "escape": "esc",
+        "esc": "esc",
+        "space": "space",
+        "tab": "tab",
         # Add more mappings as needed
     }
 
-    keys = key_sequence.split("+")
-    modifiers = []
-    main_key = None
-
-    for key in keys:
-        if key in key_map:
-            if key in ["Control_L", "Alt_L", "Super_L", "Shift_L"]:
-                modifiers.append(key_map[key])
-            else:
-                main_key = key_map[key]
-        else:
-            # For regular characters, use key press
-            main_key = key.lower()
+    # Map of modifier keys to their cliclick representation
+    modifier_keys = ["ctrl", "alt", "cmd", "shift"]
 
     commands = []
-    if modifiers:
-        # Press modifiers
-        commands.append(f"kd:{','.join(modifiers)}")
 
-    if main_key:
-        if len(main_key) == 1:
-            # For single characters, use type
-            commands.append(f"t:{main_key}")
-        else:
-            # For special keys, use key press
-            commands.append(f"kp:{main_key}")
+    # Note: Semicolons in text can be typed using the cliclick syntax: t:";"
+    # Example: cmd+space;t:hello;t:";";t:world
 
-    if modifiers:
-        # Release modifiers
-        commands.append(f"ku:{','.join(modifiers)}")
+    # Check if we have a complex chain of operations (semicolon-separated)
+    if ";" in key_sequence:
+        operations = key_sequence.split(";")
+
+        for operation in operations:
+            operation = operation.strip()
+
+            # Handle explicit type operations (t:text)
+            if operation.startswith("t:"):
+                commands.append(operation)
+            # Handle key combinations (modifier+key)
+            elif "+" in operation:
+                # Handle modifiers and key separately for each operation
+                op_keys = operation.split("+")
+                op_mods = []
+                op_main = None
+
+                for k in op_keys:
+                    mapped = key_map.get(k, k).lower()
+                    if mapped in modifier_keys:
+                        op_mods.append(mapped)
+                    else:
+                        op_main = mapped
+
+                if op_mods:
+                    commands.append(f"kd:{','.join(op_mods)}")
+                if op_main:
+                    commands.append(f"kp:{op_main}")
+                if op_mods:
+                    commands.append(f"ku:{','.join(op_mods)}")
+            # Handle single key presses
+            else:
+                mapped = key_map.get(operation, operation).lower()
+                commands.append(f"kp:{mapped}")
+    else:
+        # Handle traditional modifier+key format
+        keys = key_sequence.split("+")
+        modifiers = []
+        main_key = None
+
+        for key in keys:
+            mapped_key = key_map.get(key, key).lower()
+
+            if mapped_key in modifier_keys:
+                modifiers.append(mapped_key)
+            else:
+                main_key = mapped_key
+
+        commands = []
+        if modifiers:
+            # Press modifiers
+            commands.append(f"kd:{','.join(modifiers)}")
+
+        if main_key:
+            if len(main_key) == 1:
+                # For single characters, use type
+                commands.append(f"t:{main_key}")
+            else:
+                # For special keys, use key press
+                commands.append(f"kp:{main_key}")
+
+        if modifiers:
+            # Release modifiers
+            commands.append(f"ku:{','.join(modifiers)}")
 
     try:
-        for cmd in commands:
-            subprocess.run(
-                ["cliclick", cmd], check=True, capture_output=True, text=True
-            )
+        # Use shell=True with the joined commands, which we know works reliably
+        cmd_shell = "cliclick " + " ".join(commands)
+        print(f"Running: {cmd_shell}")
+        subprocess.run(
+            cmd_shell, shell=True, check=True, capture_output=True, text=True
+        )
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to send key sequence: {e.stderr}") from e
 
 
+# TODO: write test for mouse move and mouse position, since it's unreliable
 def _macos_mouse_move(x: int, y: int) -> None:
     """
     Move mouse using cliclick on macOS.
@@ -310,6 +391,69 @@ def _macos_mouse_move(x: int, y: int) -> None:
         raise RuntimeError(
             "cliclick not found. Install with: brew install cliclick"
         ) from None
+
+
+def _linux_handle_key_sequence(key_sequence: str, display: str) -> None:
+    """
+    Handle complex key sequences for Linux using xdotool.
+
+    Supports chained operations separated by semicolons, similar to macOS implementation.
+    Examples:
+        - "ctrl+l;type firefox;Return" (clear address bar, type "firefox", press Enter)
+        - "alt+Tab;alt+Tab" (switch between two applications)
+
+    Args:
+        key_sequence: The key sequence to send
+        display: The X11 display to use
+    """
+    # Map common key names
+    key_map = {
+        "return": "Return",
+        "enter": "Return",
+        "ctrl": "ctrl",
+        "alt": "alt",
+        "option": "alt",
+        "cmd": "super",
+        "command": "super",
+        "shift": "shift",
+        "esc": "Escape",
+        "escape": "Escape",
+        "space": "space",
+        "tab": "Tab",
+    }
+
+    # If we have a semicolon-separated sequence
+    if ";" in key_sequence:
+        operations = key_sequence.split(";")
+
+        for operation in operations:
+            operation = operation.strip()
+
+            # Handle typing text (t:text)
+            if operation.startswith("t:"):
+                text = operation[2:]
+                _run_xdotool(
+                    f"type --delay {TYPING_DELAY_MS} -- {shlex.quote(text)}", display
+                )
+            # Handle key combinations
+            elif "+" in operation:
+                # Convert keys using the map, handling modifiers
+                parts = operation.split("+")
+                xdotool_keys = []
+
+                for part in parts:
+                    key = key_map.get(part.lower(), part)
+                    xdotool_keys.append(key)
+
+                xdotool_key_seq = " ".join(xdotool_keys)
+                _run_xdotool(f"key {xdotool_key_seq}", display)
+            # Handle single keys
+            else:
+                key = key_map.get(operation.lower(), operation)
+                _run_xdotool(f"key {key}", display)
+    else:
+        # For backwards compatibility, handle simple key sequences
+        _run_xdotool(f"key -- {key_sequence}", display)
 
 
 def _macos_click(button: int) -> None:
@@ -428,7 +572,7 @@ def computer(
                 print(f"Typed text: {text}")
         else:
             if action == "key":
-                _run_xdotool(f"key -- {text}", display)
+                _linux_handle_key_sequence(text, display)
                 print(f"Sent key sequence: {text}")
             else:  # type
                 for chunk in _chunks(text, TYPING_GROUP_SIZE):
