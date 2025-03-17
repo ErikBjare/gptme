@@ -233,7 +233,7 @@ def test_event_stream_with_generation(server_thread):
 
     # Use a real model instead of mocking
     requests.post(
-        f"http://localhost:{port}/api/v2/conversations/{conversation_id}/generate",
+        f"http://localhost:{port}/api/v2/conversations/{conversation_id}/step",
         json={"session_id": session_id, "model": "openai/gpt-4o-mini"},
     )
 

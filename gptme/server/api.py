@@ -351,7 +351,8 @@ def create_app(cors_origin: str | None = None) -> flask.Flask:
     app.register_blueprint(api)
 
     # Register v2 API
-    from .api_v2 import v2_api
+    # noreorder
+    from .api_v2 import v2_api  # fmt: skip
 
     app.register_blueprint(v2_api)
 

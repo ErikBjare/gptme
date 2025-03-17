@@ -8,6 +8,7 @@ Key improvements:
 - Better interruption handling
 """
 
+import dataclasses
 import logging
 import threading
 import time
@@ -19,7 +20,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from itertools import islice
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Literal, TypedDict
 
 import flask
 from flask import request
@@ -29,7 +30,7 @@ from ..llm import _stream
 from ..llm.models import get_default_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
-from ..tools import ToolUse, execute_msg, init_tools
+from ..tools import ToolUse, init_tools
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,14 @@ class MessageDict(TypedDict):
     timestamp: str
 
 
+class ToolUseDict(TypedDict):
+    """Tool use dictionary type."""
+
+    tool: str
+    args: list[str] | None
+    content: str | None
+
+
 # Event Type Definitions
 # ---------------------
 
@@ -51,7 +60,18 @@ class MessageDict(TypedDict):
 class BaseEvent(TypedDict):
     """Base event type with common fields."""
 
-    type: str
+    type: Literal[
+        "connected",
+        "ping",
+        "message_added",
+        "generation_started",
+        "generation_progress",
+        "generation_complete",
+        "tool_pending",
+        "tool_executing",
+        "interrupted",
+        "error",
+    ]
 
 
 class ConnectedEvent(BaseEvent):
@@ -65,9 +85,12 @@ class PingEvent(BaseEvent):
 
 
 class MessageAddedEvent(BaseEvent):
-    """Sent when a new message is added to the conversation."""
+    """
+    Sent when a new message is added to the conversation, such as when a tool has output to display.
 
-    # Contains role, content, timestamp
+    Not used for streaming generated messages.
+    """
+
     message: MessageDict
 
 
@@ -84,48 +107,20 @@ class GenerationProgressEvent(BaseEvent):
 class GenerationCompleteEvent(BaseEvent):
     """Sent when generation is complete."""
 
-    message: dict[str, Any]  # Contains role, content, timestamp
-
-
-class GenerationResumingEvent(BaseEvent):
-    """Sent when generation resumes after a tool execution."""
+    message: MessageDict
 
 
 class ToolPendingEvent(BaseEvent):
     """Sent when a tool is detected and waiting for confirmation."""
 
     tool_id: str
-    tool: str
-    args: list[str]
-    content: str
+    tooluse: ToolUseDict
     auto_confirm: bool
     message_persisted: bool
 
 
 class ToolExecutingEvent(BaseEvent):
     """Sent when a tool is being executed."""
-
-    tool_id: str
-
-
-class ToolOutputEvent(BaseEvent):
-    """Sent with output from a tool."""
-
-    tool_id: str
-    role: str
-    content: str
-    timestamp: str
-
-
-class ToolFailedEvent(BaseEvent):
-    """Sent when a tool execution fails."""
-
-    tool_id: str
-    error: str
-
-
-class ToolSkippedEvent(BaseEvent):
-    """Sent when a tool execution is skipped."""
 
     tool_id: str
 
@@ -148,12 +143,8 @@ EventType = (
     | GenerationStartedEvent
     | GenerationProgressEvent
     | GenerationCompleteEvent
-    | GenerationResumingEvent
     | ToolPendingEvent
     | ToolExecutingEvent
-    | ToolOutputEvent
-    | ToolFailedEvent
-    | ToolSkippedEvent
     | InterruptedEvent
     | ErrorEvent
 )
@@ -178,9 +169,7 @@ class ToolExecution:
     """Tracks a tool execution."""
 
     id: str
-    tool: str
-    args: list[str]
-    content: str
+    tooluse: ToolUse
     status: ToolStatus = ToolStatus.PENDING
     result: str | None = None
     auto_confirm: bool = False
@@ -269,63 +258,70 @@ class SessionManager:
 # ------------------------------
 
 
-def _handle_generation(
+def _append_and_notify(manager: LogManager, session: ConversationSession, msg: Message):
+    """Append a message and notify clients."""
+    manager.append(msg)
+    SessionManager.add_event(
+        session.conversation_id,
+        {
+            "type": "message_added",
+            "message": {
+                "role": msg.role,
+                "content": msg.content,
+                "timestamp": msg.timestamp.isoformat(),
+            },
+        },
+    )
+
+
+def step(
     conversation_id: str,
     session: ConversationSession,
     model: str,
     branch: str = "main",
-    is_resuming: bool = False,
-    executed_tool_contents: set[str] | None = None,
+    auto_confirm: bool = False,
 ) -> None:
     """
-    Common logic for both initial generation and resuming after tool execution.
+    Generate a response and detect tools.
+
+    This function handles generating a response from the LLM and detecting tools
+    in the response. When tools are detected, it creates a pending tool record
+    and either waits for confirmation or auto-confirms based on settings.
+
+    It's designed to be used both for initial generation and for continuing
+    after tool execution is complete.
 
     Args:
         conversation_id: The conversation ID
         session: The current session
         model: Model to use
         branch: Branch to use (default: "main")
-        is_resuming: Whether this is resuming after tool execution
-        executed_tool_contents: Set of already executed tool contents to skip
     """
-    if executed_tool_contents is None:
-        executed_tool_contents = set()
-        # Collect already executed tools from session
-        for _tool_id, tool_exec in list(session.pending_tools.items()):
-            if tool_exec.status in [
-                ToolStatus.COMPLETED,
-                ToolStatus.SKIPPED,
-                ToolStatus.FAILED,
-            ]:
-                executed_tool_contents.add(tool_exec.content)
+    # Load conversation
+    manager = LogManager.load(
+        conversation_id,
+        branch=branch,
+        lock=False,
+    )
+
+    # Prepare messages for the model
+    msgs = prepare_messages(manager.log.messages)
+    if not msgs:
+        error_event: ErrorEvent = {
+            "type": "error",
+            "error": "No messages to process",
+        }
+        SessionManager.add_event(conversation_id, error_event)
+        session.generating = False
+        return
+
+    # Notify clients about generation status
+    SessionManager.add_event(conversation_id, {"type": "generation_started"})
 
     try:
-        # Load conversation
-        manager = LogManager.load(
-            conversation_id,
-            branch=branch,
-            lock=False,
-        )
-
-        # Prepare messages for the model
-        msgs = prepare_messages(manager.log.messages)
-        if not msgs:
-            error_event: ErrorEvent = {
-                "type": "error",
-                "error": "No messages to process",
-            }
-            SessionManager.add_event(conversation_id, error_event)
-            session.generating = False
-            return
-
-        # Notify clients about generation status
-        if is_resuming:
-            SessionManager.add_event(conversation_id, {"type": "generation_resuming"})
-        else:
-            SessionManager.add_event(conversation_id, {"type": "generation_started"})
-
         # Stream tokens from the model
         output = ""
+        tooluses = []
         for token in (
             char for chunk in _stream(msgs, model, tools=None) for char in chunk
         ):
@@ -338,76 +334,16 @@ def _handle_generation(
 
             # Check for complete tool uses
             tooluses = list(ToolUse.iter_from_content(output))
-            tool_uses_to_process = []
-
-            # Filter out tools we've already executed
-            for tooluse in tooluses:
-                if tooluse.is_runnable and str(tooluse) not in executed_tool_contents:
-                    tool_uses_to_process.append(tooluse)
-
-            if tool_uses_to_process:
-                # Persist the assistant message with the tool use immediately
-                msg = Message("assistant", output)
-                msg = msg.replace(quiet=True)
-                manager.append(msg)
-                logger.debug(
-                    f"Persisted assistant message with tool: {output[:100]}..."
-                )
-
-                # Handle tool use
-                for tooluse in tool_uses_to_process:
-                    # Mark this tool as processed to avoid detecting it again
-                    executed_tool_contents.add(str(tooluse))
-
-                    # Create a tool execution record
-                    tool_id = str(uuid.uuid4())
-                    # Get tool details from the ToolUse object
-                    tool_name = (
-                        getattr(tooluse, "tool", "") or tooluse.__class__.__name__
-                    )
-                    tool_args = getattr(tooluse, "args", []) or []
-                    raw_content = str(tooluse)  # Use string representation
-
-                    tool_exec = ToolExecution(
-                        id=tool_id,
-                        tool=tool_name,
-                        args=tool_args,
-                        content=raw_content,
-                        auto_confirm=session.auto_confirm_count > 0,
-                    )
-                    session.pending_tools[tool_id] = tool_exec
-
-                    # Notify about pending tool
-                    SessionManager.add_event(
-                        conversation_id,
-                        {
-                            "type": "tool_pending",
-                            "tool_id": tool_id,
-                            "tool": tool_name,
-                            "args": tool_args,
-                            "content": raw_content,
-                            "auto_confirm": tool_exec.auto_confirm,
-                            "message_persisted": True,  # Indicate that the message has been persisted
-                        },
-                    )
-
-                    # If auto-confirm is enabled, execute the tool
-                    if tool_exec.auto_confirm:
-                        session.auto_confirm_count -= 1
-                        await_tool_execution(conversation_id, session, tool_id, tooluse)
-                    else:
-                        # Wait for confirmation
-                        session.generating = False
-                        return
-
+            if tooluses:
                 break
 
-        # Store the complete message if we reached here (no tools to execute)
+        # Persist the assistant message
         msg = Message("assistant", output)
-        msg = msg.replace(quiet=True)
-        manager.append(msg)
+        _append_and_notify(manager, session, msg)
+        logger.debug("Persisted assistant message")
 
-        # Notify clients that generation is complete
+        # Signal message generation complete
+        logger.debug("Generation complete")
         SessionManager.add_event(
             conversation_id,
             {
@@ -420,13 +356,44 @@ def _handle_generation(
             },
         )
 
+        # Handle tool use
+        for tooluse in tooluses:
+            # Create a tool execution record
+            tool_id = str(uuid.uuid4())
+
+            tool_exec = ToolExecution(
+                id=tool_id,
+                tooluse=tooluse,
+                auto_confirm=session.auto_confirm_count > 0 or auto_confirm,
+            )
+            session.pending_tools[tool_id] = tool_exec
+
+            # Notify about pending tool
+            SessionManager.add_event(
+                conversation_id,
+                {
+                    "type": "tool_pending",
+                    "tool_id": tool_id,
+                    "tooluse": {
+                        "tool": tooluse.tool,
+                        "args": tooluse.args,
+                        "content": tooluse.content,
+                    },
+                    "auto_confirm": tool_exec.auto_confirm,
+                    "message_persisted": True,  # Indicate that the message has been persisted
+                },
+            )
+
+            # If auto-confirm is enabled, execute the tool
+            if tool_exec.auto_confirm:
+                session.auto_confirm_count -= 1
+                await_tool_execution(conversation_id, session, tool_id, tooluse)
+
         # Mark session as not generating
         session.generating = False
 
     except Exception as e:
-        logger.exception(
-            f"Error during {'resuming' if is_resuming else 'initial'} generation: {e}"
-        )
+        logger.exception(f"Error during step execution: {e}")
         SessionManager.add_event(conversation_id, {"type": "error", "error": str(e)})
         session.generating = False
 
@@ -504,6 +471,10 @@ def api_conversation_put(conversation_id: str):
     # Create a session for this conversation
     session = SessionManager.create_session(conversation_id)
 
+    # Check for auto_confirm parameter and set auto_confirm_count
+    if req_json and req_json.get("auto_confirm"):
+        session.auto_confirm_count = 999  # High number to essentially make it unlimited
+
     return flask.jsonify(
         {"status": "ok", "conversation_id": conversation_id, "session_id": session.id}
     )
@@ -554,26 +525,6 @@ def api_conversation_post(conversation_id: str):
     return flask.jsonify({"status": "ok"})
 
 
-@v2_api.route(
-    "/api/v2/conversations/<string:conversation_id>/session", methods=["POST"]
-)
-def api_conversation_session(conversation_id: str):
-    """Create a new session for a conversation."""
-    # Check if conversation exists
-    try:
-        LogManager.load(conversation_id, lock=False)
-    except FileNotFoundError:
-        return (
-            flask.jsonify({"error": f"Conversation not found: {conversation_id}"}),
-            404,
-        )
-
-    # Create a new session
-    session = SessionManager.create_session(conversation_id)
-
-    return flask.jsonify({"status": "ok", "session_id": session.id})
-
-
 @v2_api.route("/api/v2/conversations/<string:conversation_id>/events")
 def api_conversation_events(conversation_id: str):
     """Subscribe to conversation events."""
@@ -590,9 +541,9 @@ def api_conversation_events(conversation_id: str):
 
     # Generate event stream
     def generate_events() -> Generator[str, None, None]:
+        client_id = str(uuid.uuid4())
         try:
             # Add this client to the session
-            client_id = str(uuid.uuid4())
             session.clients.add(client_id)
 
             # Send initial connection event
@@ -637,13 +588,12 @@ def api_conversation_events(conversation_id: str):
     )
 
 
-@v2_api.route(
-    "/api/v2/conversations/<string:conversation_id>/generate", methods=["POST"]
-)
-def api_conversation_generate(conversation_id: str):
-    """Start generation of a response."""
+@v2_api.route("/api/v2/conversations/<string:conversation_id>/step", methods=["POST"])
+def api_conversation_step(conversation_id: str):
+    """Take a step in the conversation - generate a response or continue after tool execution."""
     req_json = flask.request.json or {}
     session_id = req_json.get("session_id")
+    auto_confirm = req_json.get("auto_confirm", False)
 
     if not session_id:
         return flask.jsonify({"error": "session_id is required"}), 400
@@ -655,16 +605,6 @@ def api_conversation_generate(conversation_id: str):
     if session.generating:
         return flask.jsonify({"error": "Generation already in progress"}), 409
 
-    # Keep track of executed tools to avoid re-detecting the same tools
-    executed_tool_contents = set()
-    for _tool_id, tool_exec in list(session.pending_tools.items()):
-        if tool_exec.status in [
-            ToolStatus.COMPLETED,
-            ToolStatus.SKIPPED,
-            ToolStatus.FAILED,
-        ]:
-            executed_tool_contents.add(tool_exec.content)
-
     # Get the branch and model
     branch = req_json.get("branch", "main")
     default_model = get_default_model()
@@ -673,28 +613,17 @@ def api_conversation_generate(conversation_id: str):
     ), "No model loaded and no model specified in request"
     model = req_json.get("model", default_model.full)
 
-    # Keep track of executed tools to avoid re-detecting the same tools
-    executed_tool_contents = set()
-    for _tool_id, tool_exec in list(session.pending_tools.items()):
-        if tool_exec.status in [
-            ToolStatus.COMPLETED,
-            ToolStatus.SKIPPED,
-            ToolStatus.FAILED,
-        ]:
-            executed_tool_contents.add(tool_exec.content)
-
-    # Start generation in a background thread
-    _start_generation_thread(
+    # Start step execution in a background thread
+    _start_step_thread(
         conversation_id=conversation_id,
         session=session,
         model=model,
         branch=branch,
-        is_resuming=False,
-        executed_tool_contents=executed_tool_contents,
+        auto_confirm=auto_confirm,
     )
 
     return flask.jsonify(
-        {"status": "ok", "message": "Generation started", "session_id": session_id}
+        {"status": "ok", "message": "Step started", "session_id": session_id}
     )
 
 
@@ -703,10 +632,13 @@ def api_conversation_generate(conversation_id: str):
 )
 def api_conversation_tool_confirm(conversation_id: str):
     """Confirm or modify a tool execution."""
+
     req_json = flask.request.json or {}
     session_id = req_json.get("session_id")
     tool_id = req_json.get("tool_id")
     action = req_json.get("action")
+    # TODO: Use the model from the conversation
+    model = m.full if (m := get_default_model()) else "anthropic"
 
     if not session_id or not tool_id or not action:
         return (
@@ -725,51 +657,11 @@ def api_conversation_tool_confirm(conversation_id: str):
 
     if action == "confirm":
         # Execute the tool
-        tooluses = list(ToolUse.iter_from_content(tool_exec.content))
-        logger.info(
-            f"Found {len(tooluses)} tooluses in content: {tool_exec.content[:100]}"
-        )
+        tooluse = tool_exec.tooluse
 
-        # First try to process with detected tooluses
-        for tooluse in tooluses:
-            logger.info(
-                f"Checking tooluse: {tooluse}, is_runnable: {tooluse.is_runnable}"
-            )
-            if tooluse.is_runnable:
-                logger.info(f"Executing runnable tooluse: {tooluse}")
-                await_tool_execution(conversation_id, session, tool_id, tooluse)
-                return flask.jsonify({"status": "ok", "message": "Tool confirmed"})
-
-        # If no tooluses were found, handle as special case
-        logger.warning(f"No runnable tools found in content: {tool_exec.content[:100]}")
-
-        # First send a tool_executing event
-        executing_event: ToolExecutingEvent = {
-            "type": "tool_executing",
-            "tool_id": tool_id,
-        }
-        SessionManager.add_event(conversation_id, executing_event)
-        logger.info(f"Sent tool_executing event for {tool_id}")
-
-        # Wait a bit to simulate tool execution
-        time.sleep(0.1)
-
-        # Force a dummy tool output - create a system message showing the content
-        manager = LogManager.load(conversation_id, lock=False)
-        output_content = f"Tool execution completed with output: {tool_exec.content}"
-        output_msg = Message("system", output_content)
-        manager.append(output_msg)
-
-        # Send a tool output event to notify the client
-        tool_output_event: ToolOutputEvent = {
-            "type": "tool_output",
-            "tool_id": tool_id,
-            "role": "system",
-            "content": output_content,
-            "timestamp": datetime.now().isoformat(),
-        }
-        SessionManager.add_event(conversation_id, tool_output_event)
-        logger.info(f"Sent tool_output event for {tool_id}")
+        logger.info(f"Executing runnable tooluse: {tooluse}")
+        await_tool_execution(conversation_id, session, tool_id, tooluse)
+        return flask.jsonify({"status": "ok", "message": "Tool confirmed"})
 
     elif action == "edit":
         # Edit and then execute the tool
@@ -777,25 +669,24 @@ def api_conversation_tool_confirm(conversation_id: str):
         if not edited_content:
             return flask.jsonify({"error": "content is required for edit action"}), 400
 
-        tool_exec.edited_content = edited_content
-
         # Execute with edited content
-        # In a real implementation, parse the edited content to create a new ToolUse
-        # For this example, just use a placeholder
-        await_tool_execution(conversation_id, session, tool_id, None, edited_content)
+        await_tool_execution(
+            conversation_id,
+            session,
+            tool_id,
+            dataclasses.replace(tool_exec.tooluse, content=edited_content),
+        )
 
     elif action == "skip":
         # Skip the tool execution
         tool_exec.status = ToolStatus.SKIPPED
         del session.pending_tools[tool_id]
 
-        # Notify all sessions that the tool was skipped
-        SessionManager.add_event(
-            conversation_id, {"type": "tool_skipped", "tool_id": tool_id}
-        )
+        msg = Message("system", f"Skipped tool {tool_id}")
+        _append_and_notify(LogManager.load(conversation_id, lock=False), session, msg)
 
-        # Resume generation (message is already persisted)
-        resume_generation(conversation_id, session)
+        # Resume generation
+        _start_step_thread(conversation_id, session, model)
 
     elif action == "auto":
         # Enable auto-confirmation for future tools
@@ -806,12 +697,7 @@ def api_conversation_tool_confirm(conversation_id: str):
         session.auto_confirm_count = count
 
         # Also confirm this tool
-        tooluses = list(ToolUse.iter_from_content(tool_exec.content))
-        for tooluse in tooluses:
-            if tooluse.is_runnable:
-                await_tool_execution(conversation_id, session, tool_id, tooluse)
-                break
-
+        await_tool_execution(conversation_id, session, tool_id, tool_exec.tooluse)
     else:
         return flask.jsonify({"error": f"Unknown action: {action}"}), 400
 
@@ -861,185 +747,55 @@ def await_tool_execution(
     conversation_id: str,
     session: ConversationSession,
     tool_id: str,
-    tooluse: ToolUse | None,
-    edited_content: str | None = None,
+    edited_tooluse: ToolUse | None,
 ):
     """Execute a tool and handle its output."""
+    # TODO: Use the model from the conversation
+    model = m.full if (m := get_default_model()) else "anthropic"
 
     # This function would ideally run asynchronously to not block the request
     # For simplicity, we'll run it in a thread
     def execute_tool_thread():
+        # Load the conversation
+        manager = LogManager.load(conversation_id, lock=False)
+
+        tool_exec = session.pending_tools[tool_id]
+        tool_exec.status = ToolStatus.EXECUTING
+
+        # use explicit tooluse if set (may be modified), else use the one from the pending tool
+        tooluse: ToolUse = edited_tooluse or tool_exec.tooluse
+
+        # Remove the tool from pending
+        if tool_id in session.pending_tools:
+            del session.pending_tools[tool_id]
+
+        # Notify about tool execution
+        SessionManager.add_event(
+            conversation_id, {"type": "tool_executing", "tool_id": tool_id}
+        )
+        logger.info(f"Tool {tool_id} executing")
+
+        # Execute the tool
         try:
-            tool_exec = session.pending_tools[tool_id]
-            tool_exec.status = ToolStatus.EXECUTING
+            logger.info(f"Executing tool: {tooluse.tool}")
+            tool_outputs = list(tooluse.execute(lambda _: True))
+            logger.info(f"Tool execution complete, outputs: {len(tool_outputs)}")
 
-            # Notify about tool execution
-            SessionManager.add_event(
-                conversation_id, {"type": "tool_executing", "tool_id": tool_id}
-            )
-            logger.info(f"Tool {tool_id} executing")
-
-            # Load the conversation
-            manager = LogManager.load(conversation_id, lock=False)
-
-            if tooluse:
-                # The assistant message has already been persisted in generate_response_thread
-                # No need to append it again - just execute the tool
-
-                # Execute the tool
-                try:
-                    if edited_content:
-                        # Create a new message with the edited content
-                        edit_msg = Message(
-                            "system", f"[Tool execution was edited]\n\n{edited_content}"
-                        )
-                        manager.append(edit_msg)
-
-                        # Try to parse the edited content as a tool use
-                        edited_tooluses = list(
-                            ToolUse.iter_from_content(edited_content)
-                        )
-                        if edited_tooluses and any(
-                            tu.is_runnable for tu in edited_tooluses
-                        ):
-                            # Execute the edited tool use without needing to extract the specific tooluse
-                            edited_msg = Message("assistant", edited_content)
-                            tool_outputs = list(execute_msg(edited_msg, lambda _: True))
-                        else:
-                            # Cannot parse the edited content
-                            tool_outputs = []
-                            tool_exec.result = (
-                                "Could not parse edited content as a valid tool use"
-                            )
-                            tool_exec.status = ToolStatus.FAILED
-                    else:
-                        # Execute the original tool directly via tooluse
-                        if not tooluse:
-                            logger.warning("No tooluse provided for execution")
-                            tool_outputs = []
-                        else:
-                            logger.info(f"Executing tool: {tooluse.tool}")
-                            tool_outputs = list(tooluse.execute(lambda _: True))
-                        logger.info(
-                            f"Tool execution complete, outputs: {len(tool_outputs)}"
-                        )
-
-                    # Store the tool outputs
-                    for tool_output in tool_outputs:
-                        manager.append(tool_output)
-                        logger.info(
-                            f"Tool output: {tool_output.role} - {tool_output.content[:100]}..."
-                        )
-
-                        # Create tool output event
-                        tool_event: ToolOutputEvent = {
-                            "type": "tool_output",
-                            "tool_id": tool_id,
-                            "role": tool_output.role,
-                            "content": tool_output.content,
-                            "timestamp": tool_output.timestamp.isoformat(),
-                        }
-
-                        # Notify about tool output - using flat structure for consistency
-                        SessionManager.add_event(conversation_id, tool_event)
-                        logger.info(
-                            f"Sent tool_output event for {tool_id}: {tool_output.content[:50]}..."
-                        )
-
-                    if tool_outputs:
-                        tool_exec.result = "\n".join(
-                            out.content for out in tool_outputs
-                        )
-                        tool_exec.status = ToolStatus.COMPLETED
-                    else:
-                        logger.warning("Tool execution produced no outputs")
-                        tool_exec.result = "Tool execution completed with no output"
-                        tool_exec.status = ToolStatus.COMPLETED
-
-                        # Send a dummy tool output event to ensure clients are notified
-                        dummy_event: ToolOutputEvent = {
-                            "type": "tool_output",
-                            "tool_id": tool_id,
-                            "role": "system",
-                            "content": "Tool execution completed with no output",
-                            "timestamp": datetime.now().isoformat(),
-                        }
-                        SessionManager.add_event(conversation_id, dummy_event)
-                        logger.info(
-                            "Sent dummy tool_output event due to no real output"
-                        )
-
-                except Exception as e:
-                    logger.exception(
-                        f"Error executing tool {tooluse.__class__.__name__}: {e}"
-                    )
-                    tool_exec.result = f"Error: {str(e)}"
-                    tool_exec.status = ToolStatus.FAILED
-
-                    # Notify about tool failure and send a tool_output event with the error
-                    # This ensures clients always get a closing event
-                    SessionManager.add_event(
-                        conversation_id,
-                        {"type": "tool_failed", "tool_id": tool_id, "error": str(e)},
-                    )
-
-                    # Also send a tool_output to ensure we close the sequence
-                    error_event: ToolOutputEvent = {
-                        "type": "tool_output",
-                        "tool_id": tool_id,
-                        "role": "system",
-                        "content": f"Error executing tool: {str(e)}",
-                        "timestamp": datetime.now().isoformat(),
-                    }
-                    SessionManager.add_event(conversation_id, error_event)
-
-            # Check if we have sent a tool_output event
-            has_sent_output = any(
-                e.get("type") == "tool_output" for e in session.events[-10:]
-            )
-
-            # If no tool_output event was sent, send a dummy one to ensure clients get notified
-            if not has_sent_output:
-                logger.warning(
-                    f"No tool_output event detected for {tool_id}, sending dummy event"
-                )
-                error_dummy_event: ToolOutputEvent = {
-                    "type": "tool_output",
-                    "tool_id": tool_id,
-                    "role": "system",
-                    "content": "Tool execution completed",
-                    "timestamp": datetime.now().isoformat(),
-                }
-                SessionManager.add_event(conversation_id, error_dummy_event)
-
-            # Remove the tool from pending
-            if tool_id in session.pending_tools:
-                del session.pending_tools[tool_id]
-
-            # Resume generation if needed
-            if not session.pending_tools:
-                resume_generation(conversation_id, session)
-
+            # Store the tool outputs
+            for tool_output in tool_outputs:
+                _append_and_notify(manager, session, tool_output)
         except Exception as e:
-            logger.exception(f"Error in tool execution thread: {e}")
-            # Make sure we always send some kind of tool_output event
-            SessionManager.add_event(
-                conversation_id,
-                {
-                    "type": "error",
-                    "error": f"Internal error during tool execution: {str(e)}",
-                },
-            )
-            # Also send a tool_output to ensure we close the sequence
-            error_output_event: ToolOutputEvent = {
-                "type": "tool_output",
-                "tool_id": tool_id,
-                "role": "system",
-                "content": f"Internal error during tool execution: {str(e)}",
-                "timestamp": datetime.now().isoformat(),
-            }
-            SessionManager.add_event(conversation_id, error_output_event)
-            session.generating = False
+            logger.exception(f"Error executing tool {tooluse.__class__.__name__}: {e}")
+            tool_exec.result = f"Error: {str(e)}"
+            tool_exec.status = ToolStatus.FAILED
+
+            msg = Message("system", tool_exec.result)
+            _append_and_notify(manager, session, msg)
+
+        # Automatically resume generation if auto-confirm is enabled
+        # This implements auto-stepping similar to the CLI behavior
+        if session.auto_confirm_count > 0:
+            _start_step_thread(conversation_id, session, model)
 
     # Start execution in a thread
     thread = threading.Thread(target=execute_tool_thread)
@@ -1047,69 +803,36 @@ def await_tool_execution(
     thread.start()
 
 
-def resume_generation(conversation_id: str, session: ConversationSession):
-    """Resume generation after tool execution."""
-
-    # Keep track of executed tools to avoid re-detecting the same tools
-    executed_tool_contents = set()
-    for _tool_id, tool_exec in list(session.pending_tools.items()):
-        if tool_exec.status in [
-            ToolStatus.COMPLETED,
-            ToolStatus.SKIPPED,
-            ToolStatus.FAILED,
-        ]:
-            executed_tool_contents.add(tool_exec.content)
-
-    # Get the default model
-    default_model = get_default_model()
-    assert default_model is not None, "No model loaded and no model specified"
-    model = default_model.full
-
-    # Start generation in a background thread
-    _start_generation_thread(
-        conversation_id=conversation_id,
-        session=session,
-        model=model,
-        branch="main",
-        is_resuming=True,
-        executed_tool_contents=executed_tool_contents,
-    )
-
-
-def _start_generation_thread(
+def _start_step_thread(
     conversation_id: str,
     session: ConversationSession,
     model: str,
     branch: str = "main",
-    is_resuming: bool = False,
-    executed_tool_contents: set[str] | None = None,
+    auto_confirm: bool = False,
 ):
-    """Start generation in a background thread."""
+    """Start a step execution in a background thread."""
 
-    def generate_thread():
+    def step_thread():
         try:
             # Mark session as generating
             session.generating = True
 
-            _handle_generation(
+            step(
                 conversation_id=conversation_id,
                 session=session,
                 model=model,
                 branch=branch,
-                is_resuming=is_resuming,
-                executed_tool_contents=executed_tool_contents,
+                auto_confirm=auto_confirm,
             )
 
         except Exception as e:
-            logger.exception(
-                f"Error during {'resuming' if is_resuming else 'initial'} generation: {e}"
-            )
+            logger.exception(f"Error during step execution: {e}")
             SessionManager.add_event(
                 conversation_id, {"type": "error", "error": str(e)}
             )
             session.generating = False
 
-    # Start generation in a thread
-    thread = threading.Thread(target=generate_thread)
+    # Start step execution in a thread
+    thread = threading.Thread(target=step_thread)
     thread.daemon = True
     thread.start()

@@ -4,6 +4,10 @@ from datetime import datetime
 from typing import cast
 
 import pytest
+from flask.testing import FlaskClient  # noqa
+from gptme.init import init  # noqa
+from gptme.llm.models import ModelMeta, get_default_model
+from gptme.server.api import create_app  # noqa
 
 # Skip if flask not installed
 pytest.importorskip(
@@ -14,10 +18,6 @@ pytest.importorskip(
 pytestmark = [pytest.mark.timeout(10)]  # 10 second timeout for all tests
 
 # Delay imports until after skip check to prevent hanging during collection
-from flask.testing import FlaskClient  # noqa
-from gptme.init import init  # noqa
-from gptme.llm.models import ModelMeta, get_default_model, get_recommended_model  # noqa
-from gptme.server.api import create_app  # noqa
 
 
 @pytest.fixture(autouse=True)
@@ -114,22 +114,6 @@ def test_v2_conversation_post(v2_conv, client: FlaskClient):
     assert data["log"][1]["content"] == "Hello, this is a test message."
 
 
-def test_v2_create_session(v2_conv, client: FlaskClient):
-    """Test creating a new session for a V2 conversation."""
-    conversation_id = v2_conv["conversation_id"]
-
-    response = client.post(f"/api/v2/conversations/{conversation_id}/session")
-
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data is not None
-    assert data["status"] == "ok"
-    assert "session_id" in data
-
-    # Make sure it's a different session ID
-    assert data["session_id"] != v2_conv["session_id"]
-
-
 @pytest.mark.slow
 @pytest.mark.requires_api
 def test_v2_generate(v2_conv, client: FlaskClient):
@@ -154,7 +138,7 @@ def test_v2_generate(v2_conv, client: FlaskClient):
 
     # Start generation
     response = client.post(
-        f"/api/v2/conversations/{conversation_id}/generate",
+        f"/api/v2/conversations/{conversation_id}/step",
         json={"session_id": session_id, "model": model_name},
     )
 
@@ -189,7 +173,7 @@ def test_v2_interrupt(v2_conv, client: FlaskClient):
 
     # Start generation
     client.post(
-        f"/api/v2/conversations/{conversation_id}/generate",
+        f"/api/v2/conversations/{conversation_id}/step",
         json={"session_id": session_id, "model": model_name},
     )
 
