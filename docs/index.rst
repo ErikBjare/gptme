@@ -26,7 +26,6 @@ See the `README <https://github.com/gptme/gptme/blob/master/README.md>`_ file fo
    providers
    agents
    server
-   server_v2_api
    cli
 
 .. toctree::

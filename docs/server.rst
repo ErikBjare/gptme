@@ -5,7 +5,7 @@ gptme has a minimal REST API with very minimalistic web UI.
 
 .. note::
    The server and web UI is still in development and does not have all the features of the CLI.
-   However, the new V2 API (see :doc:`server_v2_api`) now supports tool confirmation and much better control flow.
+   However, the new V2 API now supports tool confirmation and much better control flow.
 
 To use it, you need to install gptme with ``server`` extras:
 
