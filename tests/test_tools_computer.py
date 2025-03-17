@@ -1,5 +1,7 @@
 """Tests for the computer tool."""
 
+import shutil
+import subprocess
 from unittest import mock
 
 import pytest
@@ -11,6 +13,29 @@ from gptme.tools.computer import (
     IS_MACOS,
     COMMON_KEY_MAP,
     MODIFIER_KEYS,
+)
+
+
+def is_display_available():
+    """Check if a usable display is available for tests."""
+    if IS_MACOS:
+        return True
+
+    # Check if xrandr is available and can run successfully
+    if not shutil.which("xrandr"):
+        return False
+
+    try:
+        subprocess.run(["xrandr"], capture_output=True, check=True)
+        return True
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return False
+
+
+# Create a pytest marker for tests that require a display
+display_required = pytest.mark.skipif(
+    not IS_MACOS and not is_display_available(),
+    reason="Test requires a working display environment",
 )
 
 
@@ -84,6 +109,7 @@ def test_key_mapping():
 
 # Scale coordinate tests
 @mock.patch("gptme.tools.computer._get_display_resolution", return_value=(1920, 1080))
+@display_required
 def test_coordinate_scaling(mock_resolution):
     """Test coordinate scaling between API and physical space."""
     # API space: 1024x768
@@ -116,6 +142,7 @@ def test_macos_key_generation():
 
 
 @pytest.mark.skipif(IS_MACOS, reason="Linux-only test")
+@display_required
 def test_linux_key_generation():
     """Test command generation for Linux key handling."""
     with mock.patch("gptme.tools.computer._linux_handle_key_sequence") as mock_key:
