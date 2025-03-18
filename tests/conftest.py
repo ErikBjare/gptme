@@ -210,7 +210,10 @@ def event_listener(setup_conversation):
     event_thread = threading.Thread(target=listen_for_events)
     event_thread.daemon = True
     event_thread.start()
-    time.sleep(0.2)  # Give time to connect, otherwise we may get HTTP 409 (Conflict)
+
+    # Give time to connect, otherwise we may get HTTP 409 (Conflict).
+    # 0.2s was too low for CI
+    time.sleep(1)
 
     return {
         "port": port,
