@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import queue
+import random
 import socket
 import tempfile
 import threading
@@ -131,9 +132,6 @@ def server_thread():
     thread.daemon = True
     thread.start()
 
-    # Give the server time to start
-    time.sleep(0.5)
-
     yield port  # Return the port to the test
 
 
@@ -144,11 +142,11 @@ def client():
         yield client
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def setup_conversation(server_thread):
     """Create a conversation and return its ID, session ID, and port."""
     port = server_thread
-    conversation_id = f"test-tools-{int(time.time())}"
+    conversation_id = f"test-tools-{int(time.time())}-{random.randint(1000, 9999)}"
 
     # Create conversation with system message
     resp = requests.put(
@@ -169,7 +167,7 @@ def setup_conversation(server_thread):
     return port, conversation_id, session_id
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def event_listener(setup_conversation):
     """Set up an event listener for the conversation."""
     port, conversation_id, session_id = setup_conversation
@@ -210,10 +208,6 @@ def event_listener(setup_conversation):
     event_thread = threading.Thread(target=listen_for_events)
     event_thread.daemon = True
     event_thread.start()
-
-    # Give time to connect, otherwise we may get HTTP 409 (Conflict).
-    # 0.2s was too low for CI
-    time.sleep(1)
 
     return {
         "port": port,
