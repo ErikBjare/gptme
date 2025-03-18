@@ -519,7 +519,7 @@ def api_conversation_post(conversation_id: str):
                 "content": msg.content,
                 "timestamp": msg.timestamp.isoformat(),
             },
-        },  # type: ignore[arg-type]
+        },
     )
 
     return flask.jsonify({"status": "ok"})
@@ -557,11 +557,11 @@ def api_conversation_events(conversation_id: str):
 
             while True:
                 # Check if there are new events
-                if last_event_index < len(session.events):
+                if last_event_index < (new_index := len(session.events)):
                     # Send any new events
-                    for event in session.events[last_event_index:]:
+                    for event in session.events[last_event_index:new_index]:
                         yield f"data: {flask.json.dumps(event)}\n\n"
-                    last_event_index = len(session.events)
+                    last_event_index = new_index
 
                 # Wait a bit before checking again
                 yield f"data: {flask.json.dumps({'type': 'ping'})}\n\n"
@@ -569,14 +569,6 @@ def api_conversation_events(conversation_id: str):
                 # Use event.wait() with timeout to avoid busy waiting while allowing ping intervals
                 # 15s timeout for connection keep-alive
                 session.event_flag.wait(timeout=15)
-
-                # Check again immediately after wake-up, before clearing the flag
-                # This prevents missing events that might have arrived during wake-up
-                if last_event_index < len(session.events):
-                    for event in session.events[last_event_index:]:
-                        yield f"data: {flask.json.dumps(event)}\n\n"
-                    last_event_index = len(session.events)
-
                 session.event_flag.clear()
 
         except GeneratorExit:
