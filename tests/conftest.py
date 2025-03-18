@@ -212,7 +212,7 @@ def event_listener(setup_conversation):
     event_thread = threading.Thread(target=listen_for_events)
     event_thread.daemon = True
     event_thread.start()
-    time.sleep(1)  # Give time to connect
+    time.sleep(0.2)  # Give time to connect, otherwise we may get HTTP 409 (Conflict)
 
     return {
         "port": port,
@@ -230,10 +230,8 @@ def event_listener(setup_conversation):
 def mock_generation():
     """Create a mock generation with customizable output."""
 
-    def create(content, delay=0):
+    def create(content):
         def mock_stream(messages, model, tools=None, max_tokens=None):
-            if delay:
-                time.sleep(delay)
             # Yield the content as a single chunk that will be iterated over char by char
             yield [content]  # Wrap in list so it's only iterated once
 

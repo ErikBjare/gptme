@@ -11,7 +11,6 @@ Key improvements:
 import dataclasses
 import logging
 import threading
-import time
 import uuid
 from collections import defaultdict
 from collections.abc import Generator
@@ -116,7 +115,6 @@ class ToolPendingEvent(BaseEvent):
     tool_id: str
     tooluse: ToolUseDict
     auto_confirm: bool
-    message_persisted: bool
 
 
 class ToolExecutingEvent(BaseEvent):
@@ -171,9 +169,7 @@ class ToolExecution:
     id: str
     tooluse: ToolUse
     status: ToolStatus = ToolStatus.PENDING
-    result: str | None = None
     auto_confirm: bool = False
-    edited_content: str | None = None
 
 
 @dataclass
@@ -189,6 +185,7 @@ class ConversationSession:
     pending_tools: dict[str, ToolExecution] = field(default_factory=dict)
     auto_confirm_count: int = 0
     clients: set[str] = field(default_factory=set)
+    event_flag: threading.Event = field(default_factory=threading.Event)
 
 
 class SessionManager:
@@ -228,6 +225,7 @@ class SessionManager:
         for session in cls.get_sessions_for_conversation(conversation_id):
             session.events.append(event)
             session.last_activity = datetime.now()
+            session.event_flag.set()  # Signal that new events are available
 
     @classmethod
     def clean_inactive_sessions(cls, max_age_minutes: int = 60) -> None:
@@ -380,13 +378,13 @@ def step(
                         "content": tooluse.content,
                     },
                     "auto_confirm": tool_exec.auto_confirm,
-                    "message_persisted": True,  # Indicate that the message has been persisted
                 },
             )
 
             # If auto-confirm is enabled, execute the tool
             if tool_exec.auto_confirm:
-                session.auto_confirm_count -= 1
+                if session.auto_confirm_count > 0:
+                    session.auto_confirm_count -= 1
                 await_tool_execution(conversation_id, session, tool_id, tooluse)
 
         # Mark session as not generating
@@ -565,9 +563,11 @@ def api_conversation_events(conversation_id: str):
 
                 # Wait a bit before checking again
                 yield f"data: {flask.json.dumps({'type': 'ping'})}\n\n"
-                # In a real implementation, use asyncio or similar for better performance
-                # For this example, just sleep briefly
-                time.sleep(1)
+
+                # Use event.wait() with timeout to avoid busy waiting while allowing ping intervals
+                # 15s timeout for connection keep-alive
+                session.event_flag.wait(timeout=15)
+                session.event_flag.clear()
 
         except GeneratorExit:
             # Client disconnected
@@ -786,10 +786,9 @@ def await_tool_execution(
                 _append_and_notify(manager, session, tool_output)
         except Exception as e:
             logger.exception(f"Error executing tool {tooluse.__class__.__name__}: {e}")
-            tool_exec.result = f"Error: {str(e)}"
             tool_exec.status = ToolStatus.FAILED
 
-            msg = Message("system", tool_exec.result)
+            msg = Message("system", f"Error: {str(e)}")
             _append_and_notify(manager, session, msg)
 
         # Automatically resume generation if auto-confirm is enabled
