@@ -567,6 +567,14 @@ def api_conversation_events(conversation_id: str):
                 # Use event.wait() with timeout to avoid busy waiting while allowing ping intervals
                 # 15s timeout for connection keep-alive
                 session.event_flag.wait(timeout=15)
+
+                # Check again immediately after wake-up, before clearing the flag
+                # This prevents missing events that might have arrived during wake-up
+                if last_event_index < len(session.events):
+                    for event in session.events[last_event_index:]:
+                        yield f"data: {flask.json.dumps(event)}\n\n"
+                    last_event_index = len(session.events)
+
                 session.event_flag.clear()
 
         except GeneratorExit:
