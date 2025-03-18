@@ -81,10 +81,12 @@ This allows better control and cleanup of resources.
 
 1. Event Stream:
    - GET `/api/conversations/<id>/events` - Subscribe to conversation events:
+     - generation_started
      - generation_progress
+     - generation_complete
+     - message_added
      - tool_pending
      - tool_executing
-     - tool_output
      - error
      - connection_status
 
@@ -93,7 +95,7 @@ This allows better control and cleanup of resources.
    - GET `/api/conversations/<id>` - Get conversation
    - PUT `/api/conversations/<id>` - Create conversation
    - POST `/api/conversations/<id>` - Append message
-   - POST `/api/conversations/<id>/generate` - Start generation
+   - POST `/api/conversations/<id>/step` - Step the conversation, starts generation
    - POST `/api/conversations/<id>/interrupt` - Stop generation
    - POST `/api/conversations/<id>/tool/confirm` - Confirm tool execution
 
@@ -103,19 +105,21 @@ This allows better control and cleanup of resources.
 ```mermaid
 sequenceDiagram
     Client->>Server: POST /message (user message)
-    Client->>Server: POST /generate
-    Server-->>Client: SSE: generation progress
-    Server-->>Client: SSE: tool detected
+    Client->>Server: POST /step
+    Server-->>Client: SSE: generation_started
+    Server-->>Client: SSE: generation_progress
+    Server-->>Client: SSE: generation_complete
+    Server-->>Client: SSE: tool_pending
     Client->>Server: POST /tool/confirm
-    Server-->>Client: SSE: tool output
-    Client->>Server: POST /continue
-    Server-->>Client: SSE: generation progress
+    Server-->>Client: SSE: tool_executing
+    Server-->>Client: SSE: message_added
 ```
 
 2. Interruption:
 ```mermaid
 sequenceDiagram
-    Client->>Server: POST /generate
+    Client->>Server: POST /step
+    Server-->>Client: SSE: generation started
     Server-->>Client: SSE: generation progress
     Client->>Server: POST /interrupt
     Server-->>Client: SSE: interrupted
@@ -161,7 +165,7 @@ sequenceDiagram
 1. When tool use is detected:
    ```mermaid
    sequenceDiagram
-       Server-->>Client: SSE: tool_pending {id, tool, args}
+       Server-->>Client: SSE: tool_pending {id, tooluse}
        Note right of Client: Show preview to user
        Client->>Server: POST /tool/confirm {id, action}
        Note left of Server: action can be:
@@ -170,17 +174,18 @@ sequenceDiagram
        Note left of Server: - skip
        Note left of Server: - auto (with count)
        Server-->>Client: SSE: tool_executing
-       Server-->>Client: SSE: tool_output
+       Server-->>Client: SSE: message_added
    ```
 
 2. Confirmation Request includes:
    ```json
    {
      "id": "tool-1234",
-     "tool": "shell",
-     "args": ["ls", "-la"],
-     "preview": "# Preview of command\nls -la\n",
-     "preview_lang": "bash"
+     "tooluse": {
+        "tool": "shell",
+        "args": [],
+        "content": "ls -la /"
+     }
    }
    ```
 
@@ -217,17 +222,19 @@ sequenceDiagram
    - Auto-confirm settings
    - Modified content
 
-4. Auto-stepping:
-   - Client can enable/disable auto-stepping mode
+4. Auto-confirm:
+   - Client can enable/disable auto-confirm mode
+   - Can be interrupted at any point
+   - Respects tool confirmation settings
    - When enabled:
      ```mermaid
      sequenceDiagram
-         Client->>Server: POST /conversations/<id>/auto-step {enabled: true}
-         Note right of Client: Each response automatically triggers next step
-         Server-->>Client: SSE: generation_complete
-         Server-->>Client: SSE: auto_continuing
+         Client->>Server: POST /conversations/<id>/step {auto_confirm: true}
+         Note right of Client: Tools are auto-confirmed
+         Server-->>Client: SSE: generation_started
          Server-->>Client: SSE: generation_progress
+         Server-->>Client: SSE: generation_complete
+         Server-->>Client: SSE: tool_pending
+         Server-->>Client: SSE: tool_executing
+         Server-->>Client: SSE: message_added
      ```
-   - Configurable delay between steps
-   - Can be interrupted at any point
-   - Respects tool confirmation settings
