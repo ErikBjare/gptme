@@ -1,8 +1,10 @@
 # Server API Improvements
 
+Here we discuss the v1 conversation API and specify the improved v2 API to address the shortcomings of v1.
+
 ## Current Implementation
 
-The current server implementation uses a combination of REST endpoints and Server-Sent Events (SSE) for real-time updates.
+The current server implementation ("v1") uses a combination of REST endpoints and Server-Sent Events (SSE) for real-time updates.
 
 ### Endpoints
 
@@ -66,7 +68,7 @@ The current server implementation uses a combination of REST endpoints and Serve
    - No session context
    - Hard to manage multiple parallel operations
 
-## Proposed Improvements
+## Proposed Improvements (v2)
 
 ### Session Management
 
@@ -119,8 +121,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     Client->>Server: POST /step
-    Server-->>Client: SSE: generation started
-    Server-->>Client: SSE: generation progress
+    Server-->>Client: SSE: generation_started
+    Server-->>Client: SSE: generation_progress
     Client->>Server: POST /interrupt
     Server-->>Client: SSE: interrupted
 ```
