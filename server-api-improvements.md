@@ -229,7 +229,7 @@ sequenceDiagram
    - When enabled:
      ```mermaid
      sequenceDiagram
-         Client->>Server: POST /conversations/<id>/step {auto_confirm: true}
+         Client->>Server: POST /step {auto_confirm: true}
          Note right of Client: Tools are auto-confirmed
          Server-->>Client: SSE: generation_started
          Server-->>Client: SSE: generation_progress
