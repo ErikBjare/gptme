@@ -132,6 +132,9 @@ def server_thread():
     thread.daemon = True
     thread.start()
 
+    # Give server time to start (so we don't get Connection Refused)
+    time.sleep(0.5)
+
     yield port  # Return the port to the test
 
 
