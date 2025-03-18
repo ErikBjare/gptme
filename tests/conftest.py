@@ -202,8 +202,6 @@ def event_listener(setup_conversation):
                                 tool_id = event_data.get("tool_id")
                             elif event_type == "tool_executing":
                                 tool_executing_received = True
-                            elif event_type == "tool_output":
-                                tool_output_received = True
         except Exception as e:
             events.put({"error": str(e)})
         finally:
@@ -221,7 +219,6 @@ def event_listener(setup_conversation):
         "events": events,
         "event_sequence": event_sequence,
         "get_tool_id": lambda: tool_id,
-        "is_tool_output_received": lambda: tool_output_received,
         "is_tool_executing_received": lambda: tool_executing_received,
     }
 

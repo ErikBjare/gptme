@@ -166,7 +166,7 @@ class ToolStatus(Enum):
 class ToolExecution:
     """Tracks a tool execution."""
 
-    id: str
+    tool_id: str
     tooluse: ToolUse
     status: ToolStatus = ToolStatus.PENDING
     auto_confirm: bool = False
@@ -330,10 +330,12 @@ def step(
                 conversation_id, {"type": "generation_progress", "token": token}
             )
 
-            # Check for complete tool uses
-            tooluses = list(ToolUse.iter_from_content(output))
-            if tooluses:
-                break
+            # Check for complete tool uses on \n
+            if "\n" in token:
+                if any(ToolUse.iter_from_content(output)):
+                    break
+
+        tooluses = list(ToolUse.iter_from_content(output))
 
         # Persist the assistant message
         msg = Message("assistant", output)
@@ -360,7 +362,7 @@ def step(
             tool_id = str(uuid.uuid4())
 
             tool_exec = ToolExecution(
-                id=tool_id,
+                tool_id=tool_id,
                 tooluse=tooluse,
                 auto_confirm=session.auto_confirm_count > 0 or auto_confirm,
             )
