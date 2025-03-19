@@ -1,6 +1,4 @@
+# gptme project configuration
+base_prompt = "This is a project using MCP tools."
 prompt = "This is gptme"
 files = ["README.md", "Makefile"]
-#files = ["README.md", "Makefile", "gptme/cli.py", "docs/*.rst", "docs/*.md"]
-
-#[rag]
-#enabled = true
