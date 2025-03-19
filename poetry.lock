@@ -3359,6 +3359,25 @@ docutils = "*"
 sphinx = ">=4.0"
 
 [[package]]
+name = "sphinx-sitemap"
+version = "2.6.0"
+description = "Sitemap generator for Sphinx"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = [
+    {file = "sphinx_sitemap-2.6.0-py3-none-any.whl", hash = "sha256:7478e417d141f99c9af27ccd635f44c03a471a08b20e778a0f9daef7ace1d30b"},
+    {file = "sphinx_sitemap-2.6.0.tar.gz", hash = "sha256:5e0c66b9f2e371ede80c659866a9eaad337d46ab02802f9c7e5f7bc5893c28d2"},
+]
+
+[package.dependencies]
+sphinx = ">=1.2"
+
+[package.extras]
+dev = ["build", "flake8", "pre-commit", "pytest", "sphinx", "tox"]
+
+[[package]]
 name = "sphinxcontrib-applehelp"
 version = "2.0.0"
 description = "sphinxcontrib-applehelp is a Sphinx extension which outputs Apple help books"
@@ -3896,4 +3915,4 @@ youtube = ["youtube_transcript_api"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "d1d095e917f85fa33933036eedb507939f197f20c2783a9b5e9e5b89dc5a15e9"
+content-hash = "729f9b2cbfce2b12afa59b5cab5e466fb9def25084ab24585beb4a1af670618c"
