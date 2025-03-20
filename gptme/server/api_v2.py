@@ -323,6 +323,11 @@ def step(
         for token in (
             char for chunk in _stream(msgs, model, tools=None) for char in chunk
         ):
+            # check if interrupted
+            if not session.generating:
+                output += " [INTERRUPTED]"
+                break
+
             output += token
 
             # Send token to clients
