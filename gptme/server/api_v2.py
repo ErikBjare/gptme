@@ -25,7 +25,7 @@ import flask
 from flask import request
 
 from ..dirs import get_logs_dir
-from ..llm import _stream
+from ..llm import _chat_complete, _stream
 from ..llm.models import get_default_model
 from ..logmanager import LogManager, get_user_conversations, prepare_messages
 from ..message import Message
@@ -278,6 +278,7 @@ def step(
     model: str,
     branch: str = "main",
     auto_confirm: bool = False,
+    stream: bool = True,
 ) -> None:
     """
     Generate a response and detect tools.
@@ -321,7 +322,11 @@ def step(
         output = ""
         tooluses = []
         for token in (
-            char for chunk in _stream(msgs, model, tools=None) for char in chunk
+            char
+            for chunk in (_stream if stream else _chat_complete)(
+                msgs, model, tools=None
+            )
+            for char in chunk
         ):
             # check if interrupted
             if not session.generating:
@@ -601,6 +606,7 @@ def api_conversation_step(conversation_id: str):
     req_json = flask.request.json or {}
     session_id = req_json.get("session_id")
     auto_confirm = req_json.get("auto_confirm", False)
+    stream = req_json.get("stream", True)
 
     if not session_id:
         return flask.jsonify({"error": "session_id is required"}), 400
@@ -627,6 +633,7 @@ def api_conversation_step(conversation_id: str):
         model=model,
         branch=branch,
         auto_confirm=auto_confirm,
+        stream=stream,
     )
 
     return flask.jsonify(
@@ -815,6 +822,7 @@ def _start_step_thread(
     model: str,
     branch: str = "main",
     auto_confirm: bool = False,
+    stream: bool = True,
 ):
     """Start a step execution in a background thread."""
 
@@ -829,6 +837,7 @@ def _start_step_thread(
                 model=model,
                 branch=branch,
                 auto_confirm=auto_confirm,
+                stream=stream,
             )
 
         except Exception as e:
