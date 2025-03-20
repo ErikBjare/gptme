@@ -337,10 +337,10 @@ def step(
 
             # Check for complete tool uses on \n
             if "\n" in token:
-                if any(ToolUse.iter_from_content(output)):
+                if tooluses := list(ToolUse.iter_from_content(output)):
                     break
-
-        tooluses = list(ToolUse.iter_from_content(output))
+        else:
+            tooluses = list(ToolUse.iter_from_content(output))
 
         # Persist the assistant message
         msg = Message("assistant", output)
